@@ -1,0 +1,33 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/assets/fonts/Poppins-Medium.ttf",
+      "sha1": "283f21b44efbdbf276ba802be2d949a36bbc4233"
+    },
+    {
+      "path": "src/assets/fonts/Poppins-Regular.ttf",
+      "sha1": "fdd3002e7d814ee47c1c1b8487c72c6bbb3a2d00"
+    },
+    {
+      "path": "src/assets/fonts/Poppins-SemiBold.ttf",
+      "sha1": "8a4ace9392d06bcb7f8ea2f5169b07e4c383a90d"
+    },
+    {
+      "path": "src/assets/fonts/Whyte-Inktrap-Regular.otf",
+      "sha1": "fcd9af3515355e86bb28402e1ba5f281a14dcca6"
+    },
+    {
+      "path": "src/assets/fonts/WhyteInktrap-Bold.ttf",
+      "sha1": "d341c1171859ab368cbb1093dd873e0cf5cef851"
+    },
+    {
+      "path": "src/assets/fonts/WhyteInktrap-Heavy.ttf",
+      "sha1": "d9dd1ab5fc18a763166a419fa578c68ff106f1a7"
+    },
+    {
+      "path": "src/assets/fonts/WhyteInktrap-Medium.ttf",
+      "sha1": "3886bc23289288626338cc3b28b426c53d544b50"
+    }
+  ]
+}

@@ -1,0 +1,187 @@
+import React, { useState } from "react";
+import {
+  Dimensions,
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+} from "react-native";
+import ProfleSettingHeader from "../component/headers/ProfileHeader/ProfleSettingHeader";
+import { ImagesAssets } from "../assets/ImagesAssets";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { apiCallWithToken, apiServerUrl } from "../Api";
+import SignOutModal from "../component/Modals/SignOutModal";
+import DeleteModal from "../component/Modals/DeleteModal";
+
+const { width, height } = Dimensions.get("screen");
+
+const Setting = ({ navigation }) => {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+
+  const handleLogout = async () => {
+    setModalVisible(false);
+    try {
+      const UserData = await AsyncStorage.getItem("userDetails");
+      const mydata = JSON.parse(UserData);
+      const checkToken = await AsyncStorage.getItem("fmcToken");
+
+      await apiCallWithToken(
+        `${apiServerUrl}/user/logout`,
+        "POST",
+        { deviceTokens: [checkToken] },
+        mydata.authToken
+      );
+
+      await AsyncStorage.clear();
+      navigation.replace("AuthNav", { screen: "LoginData" });
+    } catch (error) {
+      console.error("Error during logout process:", error);
+    }
+  };
+
+  const handleAccountDelete = async () => {
+    setDeleteModalVisible(false);
+    try {
+      const UserData = await AsyncStorage.getItem("userDetails");
+      const mydata = JSON.parse(UserData);
+
+      await apiCallWithToken(
+        `${apiServerUrl}/admin/updateUserDetails`,
+        "PUT",
+        { status: "DELETE", userId: mydata.id },
+        mydata.authToken
+      );
+
+      await AsyncStorage.clear();
+      navigation.replace("AuthNav", { screen: "LoginData" });
+    } catch (error) {
+      console.error("Error during account deletion:", error);
+    }
+  };
+
+  const renderSettingItem = (label, onPress, value = null, isVerified = false) => (
+    <TouchableOpacity style={styles.itemContainer} onPress={onPress}>
+      <Text style={styles.itemText}>{label}</Text>
+      {value ? (
+        <>
+          <Text style={styles.itemValue}>{value}</Text>
+          <Image source={ImagesAssets.CircleRightArrow} style={styles.headerIcon} />
+        </>
+      ) : (
+        <View style={styles.iconContainer}>
+          {isVerified && <Text style={styles.verifiedText}>Verified </Text>}
+          <Image source={ImagesAssets.CircleRightArrow} style={styles.headerIcon} />
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+
+  return (
+    <>
+      <ProfleSettingHeader navigation={navigation} title="Settings" />
+      <View style={{ flex: 1 }}>
+        <ScrollView style={styles.container}>
+          {/* Profile Information */}
+          <Text style={styles.sectionTitle}>Profile Information</Text>
+          <View style={styles.section}>
+            {renderSettingItem("Name, Nationality, Contact Details", () =>
+              navigation.navigate("EditProfile", { screen: "Setting" })
+            )}
+            {renderSettingItem("Profile Photo", () => navigation.navigate("ProfilePhoto"))}
+            {renderSettingItem("Shipboard Experience", () => navigation.navigate("WorkExperienceScreen"))}
+            {renderSettingItem("Social Media", () => navigation.navigate("SocialMediaLinks"))}
+            {renderSettingItem("Certifications", () => navigation.navigate("Certifications"))}
+          </View>
+
+          {/* Account */}
+          <Text style={styles.sectionTitle}>Account</Text>
+          <View style={styles.section1}>
+            {renderSettingItem("Change Password", () =>
+              navigation.navigate("ChangePasswordScreen")
+            )}
+            {renderSettingItem("Log Out", () => setModalVisible(true))}
+          </View>
+        </ScrollView>
+
+        <DeleteModal
+          visible={deleteModalVisible}
+          onClose={() => setDeleteModalVisible(false)}
+          onDelete={handleAccountDelete}
+          title="Are you sure you want to delete your account?"
+        />
+
+        <SignOutModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onDelete={handleLogout}
+        />
+      </View>
+    </>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 14,
+    width,
+  },
+  section: {
+    marginBottom: 20,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 10,
+  },
+  section1: {
+    marginBottom: height * 0.2,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 10,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#262626",
+    marginBottom: 10,
+    lineHeight: 27,
+    fontFamily: "WhyteInktrap-Medium",
+  },
+  itemContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomColor: "#e5e5e5",
+  },
+  itemText: {
+    fontSize: 12,
+    fontWeight: "500",
+    fontFamily:'Poppins-Regular',
+    color: "#949494",
+  },
+  itemValue: {
+    fontSize: 14,
+    fontFamily:'Poppins-Regular',
+    color: "#666",
+  },
+  iconContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  verifiedText: {
+    fontSize: 12,
+    color: "#B0DB02",
+    fontWeight: "600",
+    marginRight: 5,
+  },
+  headerIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
+  },
+});
+
+export default Setting;
