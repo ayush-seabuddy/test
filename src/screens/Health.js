@@ -509,7 +509,7 @@ const Health = ({ navigation }) => {
 
 
 
-          {customSurvey?.length > 0 && visibleCards[3] && (
+          {/* {customSurvey?.length > 0 && visibleCards[3] && (
             customSurvey.map((survey, index) => (
               <View key={index} style={{ marginBottom: 15 }}>
                 <Pressable
@@ -595,7 +595,7 @@ const Health = ({ navigation }) => {
                 </Pressable>
               </View>
             ))
-          )}
+          )} */}
         </View>
 
         {categoryList?.map((item, index) => {

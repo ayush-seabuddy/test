@@ -30,7 +30,7 @@ import VersionCheck from "react-native-version-check";
 import * as Clarity from "@microsoft/react-native-clarity";
 import Colors from "./src/colors/Colors";
 import CustomSurvey from "./src/CustomSurvey";
-
+import { apiServerUrl } from "./src/Api";
 const { width } = Dimensions.get("window");
 
 const Stack = createStackNavigator();
@@ -545,7 +545,7 @@ const App = () => {
       const currentVersion = await VersionCheck.getCurrentVersion();
       console.log("📱 Current Version:", currentVersion);
 
-      const response = await fetch('https://seabuddyapi.seekware.in/api/v1/user/getLastVersion', {
+      const response = await fetch(`${apiServerUrl}/user/getLastVersion`, {
         method: 'GET',
         headers: {
           'accept': 'application/json'

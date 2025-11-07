@@ -15,7 +15,6 @@ import {
 import FocusAwareStatusBar from "../statusbar/FocusAwareStatusBar";
 import Colors from "../colors/Colors";
 import HomeHangout from "./HomeHangout";
-
 import { ImagesAssets } from "../assets/ImagesAssets";
 import HomeHeader from "../component/headers/HomeHeader";
 import AiModal from "../component/Modals/AiModal";
@@ -27,22 +26,35 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { apiCallWithToken, apiServerUrl } from "../Api";
 import socketService from "../Socket/Socket";
+
 const { width, height } = Dimensions.get("window");
+
 const Home = ({ navigation, route }) => {
   const [activeComponent, setActiveComponent] = useState("hangout");
   const [modalVisible, setModalVisible] = useState(false);
-  const [MoodTracker, setMoodTracker] = useState(false);
   const [singlePostData, setSinglePostData] = useState(null);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [unSeenCount, setUnSeenCount] = useState(0);
 
+  const scaleValue = useRef(new Animated.Value(1)).current;
+  const componentOpacity = useRef(new Animated.Value(1)).current;
+
+  const animatePress = useCallback((toValue) => {
+    Animated.spring(scaleValue, { toValue, friction: 3, useNativeDriver: true }).start();
+  }, []);
+
+  const transitionComponent = useCallback(async (newComponent) => {
+    Animated.timing(componentOpacity, { toValue: 0, duration: 300, useNativeDriver: true }).start(async () => {
+      setActiveComponent(newComponent);
+      await AsyncStorage.setItem("lastHomeTab", newComponent);
+      Animated.timing(componentOpacity, { toValue: 1, duration: 300, useNativeDriver: true }).start();
+    });
+  }, []);
+
   const fetchUnreadMessageCount = async () => {
     try {
       const authToken = await AsyncStorage.getItem("authToken");
-      if (!authToken) {
-        console.error("No auth token found");
-        return;
-      }
+      if (!authToken) return;
       const response = await apiCallWithToken(
         `${apiServerUrl}/user/getUnreadMessageCount`,
         "GET",
@@ -53,9 +65,7 @@ const Home = ({ navigation, route }) => {
         setUnreadMessageCount(response.result.unReadCount);
         setUnSeenCount(response.result.unSeenCount);
       }
-    } catch (error) {
-      console.error("Error fetching data:", error.message);
-    }
+    } catch (error) {}
   };
 
   useFocusEffect(
@@ -64,132 +74,67 @@ const Home = ({ navigation, route }) => {
     }, [])
   );
 
-  // Animation values
-  const scaleValue = useRef(new Animated.Value(1)).current;
-  const componentOpacity = useRef(new Animated.Value(1)).current;
-
-  const animatePress = useCallback((toValue) => {
-    Animated.spring(scaleValue, {
-      toValue,
-      friction: 3,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
-  const transitionComponent = useCallback((newComponent) => {
-    Animated.timing(componentOpacity, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      setActiveComponent(newComponent);
-      Animated.timing(componentOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-    });
-  }, []);
-
   useFocusEffect(
     useCallback(() => {
-      const routeName = route.params?.name?.toLowerCase?.() || "hangout";
+      const initializeTab = async () => {
+        let targetTab = "hangout";
+        const routeName = route.params?.name?.toLowerCase?.();
 
-      if (routeName === "chat") {
-        setActiveComponent("Chat");
-      } else if (routeName === "hangout") {
-        setActiveComponent("hangout");
-      } else {
-        setActiveComponent("hangout");
-      }
-    }, [route.params])
+        if (routeName === "chat") {
+          targetTab = "Chat";
+          navigation.setParams({ name: undefined });
+        } else if (routeName === "hangout") {
+          targetTab = "hangout";
+          navigation.setParams({ name: undefined });
+        } else {
+          const saved = await AsyncStorage.getItem("lastHomeTab");
+          if (saved === "Chat" || saved === "hangout") {
+            targetTab = saved;
+          }
+        }
+
+        await AsyncStorage.setItem("lastHomeTab", targetTab);
+        setActiveComponent(targetTab);
+      };
+
+      initializeTab();
+    }, [route, navigation])
   );
-
 
   const renderActiveComponent = () => {
     switch (activeComponent) {
       case "hangout":
         return <HomeHangout singlePostData={singlePostData} />;
       case "Chat":
-        return <NewChatPage onBackToHangout={() => setActiveComponent("hangout")} />
-
+        return <NewChatPage />;
       default:
         return null;
     }
   };
 
   const renderHeader = () => {
-    if (activeComponent === "Chat") {
-      return <ChatHeader navigation={navigation} />;
-    }
-    return <HomeHeader navigation={navigation} />;
+    return activeComponent === "Chat" ? <ChatHeader navigation={navigation} /> : <HomeHeader navigation={navigation} />;
   };
 
   const renderButton = (component, label) => {
-    const count =
-      label === "Chat"
-        ? unreadMessageCount
-        : label === "Hangout"
-          ? unSeenCount
-          : 0;
+    const count = label === "Chat" ? unreadMessageCount : label === "Hangout" ? unSeenCount : 0;
 
     return (
       <TouchableOpacity
-        style={[
-          styles.button,
-          activeComponent === component && styles.activeButton,
-        ]}
+        style={[styles.button, activeComponent === component && styles.activeButton]}
         onPress={() => transitionComponent(component)}
       >
-        <Text
-          style={[
-            styles.buttonText,
-            activeComponent !== component && styles.inactiveButtonText,
-          ]}
-        >
+        <Text style={[styles.buttonText, activeComponent !== component && styles.inactiveButtonText]}>
           {label}
         </Text>
         {count > 0 && (
           <View style={styles.customBadge}>
-            <Text style={styles.customBadgeText}>
-              {count > 9 ? "9+" : count}
-            </Text>
+            <Text style={styles.customBadgeText}>{count > 9 ? "9+" : count}</Text>
           </View>
         )}
       </TouchableOpacity>
     );
   };
-
-  // useEffect(() => {
-  // const checkMoodStatus = async () => {
-  // try {
-  // let dbResult = await AsyncStorage.getItem("userDetails");
-  // const today = moment().format("YYYY-MM-DD");
-
-  // let userData = dbResult ? JSON.parse(JSON.stringify(dbResult)) : {};
-
-  // // If lastMoodDate is missing or different, show modal and update
-  // console.log('userData.lastMoodDate: ', userData.lastMoodDate);
-  // if (!userData.lastMoodDate || userData.lastMoodDate !== today) {
-
-  // setModalVisible(true);
-
-  // // Update or initialize lastMoodDate immediately
-  // userData = {
-  // ...userData,
-  // lastMoodDate: today,
-  // };
-
-  // await AsyncStorage.setItem("userDetails", JSON.stringify(userData));
-  // }
-  // } catch (error) {
-  // console.error("Error checking MoodTracker popup:", error);
-  // }
-  // };
-
-  // checkMoodStatus();
-  // }, []);
-
 
   useFocusEffect(
     useCallback(() => {
@@ -199,58 +144,49 @@ const Home = ({ navigation, route }) => {
         const date = new Date();
         const todayDate = `${date.getFullYear()}-${(date.getMonth() + 1)
           .toString()
-          .padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+          .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
         const lastMoodDate = Data.lastCloseMoodDate;
 
-
         if (lastMoodDate !== todayDate && !Data.isMoodTracker && !Data.isMoodTrackerClose) {
-          console.log('Data: ', Data);
           setModalVisible(true);
         } else {
-          setModalVisible(false)
+          setModalVisible(false);
         }
         Data.isMoodTrackerClose = true;
         Data.lastCloseMoodDate = todayDate;
         await AsyncStorage.setItem("userDetails", JSON.stringify(Data));
       };
-
       fetchData();
     }, [])
   );
 
   const handleMoodTrackerClose = async () => {
-
-    const date = new Date()
+    const date = new Date();
     const todayDate = `${date.getFullYear()}-${(date.getMonth() + 1)
       .toString()
-      .padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+      .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
     const userDetailsString = await AsyncStorage.getItem("userDetails");
     const userDetails = JSON.parse(userDetailsString);
     userDetails.isMoodTrackerClose = true;
     userDetails.lastCloseMoodDate = todayDate;
     await AsyncStorage.setItem("userDetails", JSON.stringify(userDetails));
-    setModalVisible(false)
-
-  }
-
+    setModalVisible(false);
+  };
 
   const getChatRoom = async () => {
     try {
       const storedUser = await AsyncStorage.getItem("userDetails");
       const user = JSON.parse(storedUser);
-      const userId = user.id;
-      const payload = { userId };
+      const payload = { userId: user.id };
       socketService.emit("getUnreadMessageCount", payload);
       socketService.on("unreadMessageCount", (data) => {
         setUnreadMessageCount(data?.unReadCount);
         setUnSeenCount(data?.unSeenCount);
       });
-      socketService.on("newMessage", async () => {
+      socketService.on("newMessage", () => {
         socketService.emit("getUnreadMessageCount", payload);
       });
-    } catch (error) {
-      console.log(error, "error");
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -258,32 +194,15 @@ const Home = ({ navigation, route }) => {
     socketService.initilizeSocket();
   }, []);
 
-  const insets = useSafeAreaInsets();
-
-
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
-    >
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
-          {MoodTracker == false ? (
-            <AiModal
-              visible={modalVisible}
-              onClose={handleMoodTrackerClose}
-            />
-          ) : null}
-
-          <FocusAwareStatusBar
-            barStyle={Platform.OS === "ios" ? "light-content" : "light-content"}
-            backgroundColor={Colors.white}
-            hidden={false}
-          />
+          <AiModal visible={modalVisible} onClose={handleMoodTrackerClose} />
+          <FocusAwareStatusBar barStyle="light-content" backgroundColor={Colors.white} />
 
           {renderHeader()}
-          <View style={[styles.buttonGroup]}>
+          <View style={styles.buttonGroup}>
             <View style={styles.buttonContainer}>
               {renderButton("hangout", "Hangout")}
               {renderButton("Chat", "Chat")}
@@ -298,19 +217,12 @@ const Home = ({ navigation, route }) => {
 
           {activeComponent === "hangout" && (
             <TouchableOpacity
-              style={[
-                styles.stickyButton,
-                { transform: [{ scale: scaleValue }] },
-              ]}
+              style={[styles.stickyButton, { transform: [{ scale: scaleValue }] }]}
               onPress={() => navigation.navigate("NewPost")}
               onPressIn={() => animatePress(0.9)}
               onPressOut={() => animatePress(1)}
             >
-              <Image
-                style={{ width: 18, height: 18 }}
-                source={ImagesAssets.plus}
-                resizeMode="cover"
-              />
+              <Image style={{ width: 18, height: 18 }} source={ImagesAssets.plus} resizeMode="cover" />
             </TouchableOpacity>
           )}
         </View>
@@ -320,7 +232,7 @@ const Home = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { height: height },
+  container: { height },
   buttonGroup: {
     position: "absolute",
     top: 65,
@@ -364,16 +276,13 @@ const styles = StyleSheet.create({
     fontFamily: "WhyteInktrap-Bold",
     lineHeight: 15,
   },
-  inactiveButtonText: {
-    color: Colors.white,
-    backgroundColor: "transparent",
-  },
+  inactiveButtonText: { color: Colors.white },
   customBadge: {
     position: "absolute",
     top: -8,
     right: -2,
     backgroundColor: Colors.secondary,
-    borderColor: 'white',
+    borderColor: "white",
     borderWidth: 0.5,
     borderRadius: 50,
     minWidth: 18,
@@ -399,22 +308,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: "rgba(255, 255, 255, 0.2)",
-    justifyContent: "center",
-    flexDirection: "row",
-    gap: 4,
-  },
-  homeStickyButton: {
-    position: "absolute",
-    bottom: 145,
-    right: "5%",
-    marginLeft: -40,
-    backgroundColor: "rgba(84, 97, 94, 0.80)",
-    borderRadius: 50,
-    width: 50,
-    height: 50,
-    alignItems: "center",
-    borderWidth: 0.1,
-    borderColor: "white",
     justifyContent: "center",
     flexDirection: "row",
     gap: 4,

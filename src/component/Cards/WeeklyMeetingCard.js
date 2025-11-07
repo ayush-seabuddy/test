@@ -39,7 +39,7 @@ const WeeklyMeetingCard = ({ announcement = [], keyId, showSurvey = false }) => 
 
   // Prepare data
   const dataToRender =
-    keyId === "PublicScreen" ? announcement : announcement.slice(0, 10);
+    keyId === "PublicScreen" ? announcement : announcement.slice(0, 6);
 
   // Auto-scroll effect
   useEffect(() => {

@@ -6,14 +6,14 @@ import NetInfo from "@react-native-community/netinfo";
 // export const apiServerUrl = "http://192.168.0.235:2193/api/v1"; // office
 
 // export const apiServerUrl = "https://6f58fd9614ff.ngrok-free.app/api/v1"; // production
-// export const apiServerUrl = "https://seabuddyapi.seekware.in/api/v1";
-export const apiServerUrl = "https://api.seabuddy.co/api/v1";
+export const apiServerUrl = "https://seabuddyapi.seekware.in/api/v1";
+// export const apiServerUrl = "https://api.seabuddy.co/api/v1";
 
 
-export const SocketApiUri = "https://api.seabuddy.co/";
+// export const SocketApiUri = "https://api.seabuddy.co/";
 // export const SocketApiUriV1 = "http://192.168.0.235:2193";
 
-// export const SocketApiUri = "https://seabuddyapi.seekware.in";
+export const SocketApiUri = "https://seabuddyapi.seekware.in";
 // export const SocketApiUri = "https://6f58fd9614ff.ngrok-free.app";//office?
 
 export async function GetDataFromApiServerAsync(_ApiMethod) {

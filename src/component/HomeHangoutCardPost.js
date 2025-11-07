@@ -40,7 +40,7 @@ import DeleteModal from "../component/Modals/DeleteModal";
 import Video from "react-native-video";
 import RBSheet from "react-native-raw-bottom-sheet";
 import FastImage from "react-native-fast-image";
-import MediaPreviewModalForPosts from "../component/Modals/MediaPreviewModalForPosts";
+import MediaPreviewModalForPosts from "../component/Modals/MediaPreviewModalForPosts";``
 
 TimeAgo.addDefaultLocale(en);
 

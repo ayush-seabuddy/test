@@ -20,22 +20,19 @@ const isProMax = height >= 926;
 
 const HelperFrame = ({ navigation, onOpenPDF }) => {
   const [name, setName] = useState(null);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const pdfUrl = "https://seabuddy.s3.amazonaws.com/1752225459197_CrewAppGuide_SeaBuddy.pdf";
 
-  const GetuserDetails = async () => {
+  const getUserDetails = async () => {
     const dbResult = await AsyncStorage.getItem("userDetails");
     const userDetails = JSON.parse(dbResult);
     setName(userDetails.fullName);
   };
-  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
 
   const fetchUnreadMessageCount = async () => {
     try {
       const authToken = await AsyncStorage.getItem("authToken");
-      if (!authToken) {
-        console.error("No auth token found");
-        return;
-      }
+      if (!authToken) return;
       const response = await apiCallWithToken(
         `${apiServerUrl}/user/getUnreadMessageCount`,
         "GET",
@@ -46,13 +43,12 @@ const HelperFrame = ({ navigation, onOpenPDF }) => {
         setUnreadMessageCount(response.result.unReadCount);
       }
     } catch (error) {
-      console.error("Error fetching data:", error.message);
+      // Silent fail in production
     }
   };
 
   useEffect(() => {
-    // fetchUnreadMessageCount()
-    GetuserDetails();
+    getUserDetails();
   }, []);
 
   useFocusEffect(
@@ -61,119 +57,71 @@ const HelperFrame = ({ navigation, onOpenPDF }) => {
     }, [])
   );
 
+  const goToChat = async () => {
+    await AsyncStorage.setItem("lastHomeTab", "Chat");
+    navigation.navigate("Home", {
+      screen: "SeaBuddy",
+      params: { name: "chat" },
+    });
+  };
+
+  const goToHangout = async () => {
+    await AsyncStorage.setItem("lastHomeTab", "hangout");
+    navigation.navigate("Home", {
+      screen: "SeaBuddy",
+      params: { name: "hangout" },
+    });
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.frameParent}>
-        <BlurView
-          style={StyleSheet.absoluteFill}
-          blurType="light"
-          blurAmount={30}
-          reducedTransparencyFallbackColor="white"
-        />
+        <BlurView style={StyleSheet.absoluteFill} blurType="light" blurAmount={30} />
 
         <View style={styles.frameGroup}>
-          <TouchableOpacity
-            style={styles.heyGladYouAreBackContainer}
-            onPress={() => {
-              navigation.navigate("Home", {
-                screen: "SeaBuddy",
-                params: { name: "chat" },
-              });
-            }}
-          >
-            <View style={[styles.rowCenter, {
-              width: "92%"
-            }]}>
+          <TouchableOpacity style={styles.heyGladYouAreBackContainer} onPress={goToChat}>
+            <View style={[styles.rowCenter, { width: "92%" }]}>
               <View style={styles.textBlock}>
-                <Text style={[styles.heyGladYou]}>
+                <Text style={styles.heyGladYou}>
                   {`Hi ${name?.split(" ")[0]?.charAt(0).toUpperCase() + name?.split(" ")[0]?.slice(1)}, how are you today?`}
                 </Text>
                 <Text style={styles.selfAwareness}>Chat with your crewmates</Text>
               </View>
 
               <View style={{ position: "relative" }}>
-                <Image
-                  style={styles.chatbotImage}
-                  resizeMode="cover"
-                  source={ImagesAssets.chatLogo}
-                />
-
+                <Image style={styles.chatbotImage} resizeMode="cover" source={ImagesAssets.chatLogo} />
                 {unreadMessageCount > 0 && (
-                  <View
-                    style={{
-                      backgroundColor: Colors.secondary,
-                      borderRadius: 50,
-                      position: "absolute",
-                      top: -8,
-                      right: 2,
-                      minWidth: 18,
-                      height: 18,
-                      justifyContent: "center",
-                      alignItems: "center",
-                      paddingHorizontal: 4,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontFamily: 'Poppins-Regular',
-                        textAlign: "center",
-                      }}
-                    >
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>
                       {unreadMessageCount > 9 ? "9+" : unreadMessageCount}
                     </Text>
                   </View>
                 )}
               </View>
-
-
-
             </View>
           </TouchableOpacity>
         </View>
 
         <View style={styles.frameContainer}>
-          <View style={{ marginTop: 5 }}></View>
+          <View style={{ marginTop: 5 }} />
           <View style={styles.frameView}>
             <View style={{ flexDirection: "row", gap: 6 }}>
-              <TouchableOpacity
-                style={styles.baseLayout}
-                onPress={() => {
-                  navigation.navigate("Home", {
-                    screen: "SeaBuddy",
-                    params: { name: "hangout" },
-                  });
-                }}
-              >
-                <Image
-                  style={styles.baseIcons}
-                  resizeMode="cover"
-                  source={ImagesAssets.helper_img_5}
-                />
+              <TouchableOpacity style={styles.baseLayout} onPress={goToHangout}>
+                <Image style={styles.baseIcons} resizeMode="cover" source={ImagesAssets.helper_img_5} />
                 <View style={styles.hangoutParent}>
                   <Text style={styles.healthHappiness}>Social</Text>
-                  <Text style={styles.selfAwareness}>
-                    Post, engage and connect across your fleet
-                  </Text>
+                  <Text style={styles.selfAwareness}>Post, engage and connect across your fleet</Text>
                 </View>
               </TouchableOpacity>
+
               <TouchableOpacity
                 style={styles.baseLayout}
-                onPress={() => {
-                  navigation.navigate("Home", { screen: "Huddle" });
-                }}
+                onPress={() => navigation.navigate("Home", { screen: "Huddle" })}
               >
-                <Image
-                  style={styles.baseIcons}
-                  resizeMode="cover"
-                  source={ImagesAssets.helper_img_6}
-                />
+                <Image style={styles.baseIcons} resizeMode="cover" source={ImagesAssets.helper_img_6} />
                 <View style={styles.hangoutParent}>
                   <Text style={styles.healthHappiness}>Ship Life</Text>
-                  <Text style={styles.selfAwareness}>
-                    Join or create{"\n"}events and win rewards
-                  </Text>
+                  <Text style={styles.selfAwareness}>Join or create{"\n"}events and win rewards</Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -181,55 +129,30 @@ const HelperFrame = ({ navigation, onOpenPDF }) => {
             <View style={{ flexDirection: "row", gap: 6 }}>
               <TouchableOpacity
                 style={styles.baseLayout}
-                onPress={() => {
-                  navigation.navigate("Home", { screen: "Health" });
-                }}
+                onPress={() => navigation.navigate("Home", { screen: "Health" })}
               >
-                <Image
-                  style={styles.baseIcons}
-                  resizeMode="cover"
-                  source={ImagesAssets.madelplushicon}
-                />
+                <Image style={styles.baseIcons} resizeMode="cover" source={ImagesAssets.madelplushicon} />
                 <View style={styles.hangoutParent}>
-                  {Platform.OS === "ios" ? (
-                    <Text style={styles.healthHappiness}>Wellness{"\n"}Hub</Text>
-                  ) : (
-                    <Text style={styles.healthHappiness}>Wellness Hub</Text>
-                  )}
-                  <Text style={styles.selfAwareness}>
-                    Self-care tools and support
-                  </Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.baseLayout}
-                onPress={() => {
-                  navigation.navigate("Home", {
-                    screen: "Ai",
-                  });
-                }}
-              >
-                <Image
-                  style={styles.baseIcons}
-                  resizeMode="cover"
-                  source={ImagesAssets.helper_img_8}
-                />
-                <View style={styles.hangoutParent}>
-                  <Text style={styles.healthHappiness}>Helplines</Text>
-                  <Text style={styles.selfAwareness}>
-                    Emergency & complaint lines
-                  </Text>
+                  <Text style={styles.healthHappiness}>Wellness Hub</Text>
+                  <Text style={styles.selfAwareness}>Self-care tools and support</Text>
                 </View>
               </TouchableOpacity>
 
+              <TouchableOpacity
+                style={styles.baseLayout}
+                onPress={() => navigation.navigate("Home", { screen: "Ai" })}
+              >
+                <Image style={styles.baseIcons} resizeMode="cover" source={ImagesAssets.helper_img_8} />
+                <View style={styles.hangoutParent}>
+                  <Text style={styles.healthHappiness}>Helplines</Text>
+                  <Text style={styles.selfAwareness}>Emergency & complaint lines</Text>
+                </View>
+              </TouchableOpacity>
             </View>
+
             <TouchableOpacity style={[styles.rowCenter, { marginTop: 10 }]} onPress={() => onOpenPDF(pdfUrl, "App Guide")}>
               <View style={styles.textBlock}>
-                <TouchableOpacity onPress={() => onOpenPDF(pdfUrl, "App Guide")}>
-                  <Text style={styles.selfAwareness}>
-                    How to use SeaBuddy - Guide
-                  </Text>
-                </TouchableOpacity>
+                <Text style={styles.selfAwareness}>How to use SeaBuddy - Guide</Text>
               </View>
               <Image
                 style={[styles.chatbotImage, { height: 20, width: 20, marginBottom: 10 }]}
@@ -297,16 +220,8 @@ const styles = StyleSheet.create({
     width: width * 0.05,
     height: width * 0.05,
   },
-  frameContainer: {
-    gap: 16,
-    width: "100%",
-  },
-  frameView: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
+  frameContainer: { gap: 16, width: "100%" },
+  frameView: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8 },
   baseLayout: {
     flexDirection: "row",
     width: "50%",
@@ -315,11 +230,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: "center",
   },
-  hangoutParent: {
-    flex: 1,
-    marginLeft: 8,
-    paddingVertical: 10,
-  },
+  hangoutParent: { flex: 1, marginLeft: 8, paddingVertical: 10 },
   frameParent: {
     borderRadius: 32,
     backgroundColor: "rgba(218, 218, 218, 0.4)",
@@ -334,6 +245,23 @@ const styles = StyleSheet.create({
     lineHeight: isProMax ? 22 : 20,
     color: "#262626",
     fontFamily: "WhyteInktrap-Bold",
+  },
+  badge: {
+    backgroundColor: Colors.secondary,
+    borderRadius: 50,
+    position: "absolute",
+    top: -8,
+    right: 2,
+    minWidth: 18,
+    height: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: Colors.white,
+    fontSize: 10,
+    fontFamily: "Poppins-Regular",
   },
 });
 

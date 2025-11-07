@@ -14,14 +14,6 @@ const SurveyCard = ({ surveyData }) => {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        {surveyData.image ? (
-          <Image
-            source={{ uri: surveyData.image }}
-            style={styles.icon}
-            resizeMode="contain"
-          />
-        ) : null}
-
         <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">
           {surveyData.title || "Seafarers' Well-Being Survey"}
         </Text>

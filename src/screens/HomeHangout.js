@@ -4,6 +4,7 @@ import {
   Dimensions,
   FlatList,
   Image,
+  InteractionManager,
   RefreshControl,
   StyleSheet,
   Text,
@@ -322,16 +323,21 @@ const HomeHangout = React.memo(({ singlePostData }) => {
 
   // ✅ Scroll to top
   useEffect(() => {
-    if (isHeaderReady && flatListRef.current) {
-      setTimeout(() => {
-        flatListRef.current.scrollToOffset({ offset: 0, animated: true });
-      }, 100);
-    }
+    if (!isHeaderReady) return;
+
+    InteractionManager.runAfterInteractions(() => {
+      if (flatListRef.current) {
+        flatListRef.current.scrollToOffset({
+          offset: 0,
+          animated: true,
+        });
+      }
+    });
   }, [isHeaderReady]);
 
   // ✅ Offline detection on app start
 
-  
+
   // useEffect(() => {
   //   (async () => {
   //     const isConnected = await checkConnected();
@@ -346,7 +352,7 @@ const HomeHangout = React.memo(({ singlePostData }) => {
   // }, []);
 
   // ✅ Live offline listener
-  
+
   // useEffect(() => {
   //   const unsubscribe = NetInfo.addEventListener((state) => {
   //     console.log("state.isConnected: ", state.isConnected);
@@ -394,10 +400,10 @@ const HomeHangout = React.memo(({ singlePostData }) => {
           // setHasMore(false);
           // SimpleToast.show("No internet connection 2");
           // return;
-        }else{
+        } else {
           console.log("sflkjsdflksdjflkjsdfk");
-          
-            await getAnnouncement();
+
+          await getAnnouncement();
           await getDataFromApi(1);
         }
       };
