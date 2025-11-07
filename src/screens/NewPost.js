@@ -38,6 +38,7 @@ import { Image as ImageCompressor, Video as VideoCompressor } from 'react-native
 import BottomSheet, { BottomSheetView, BottomSheetBackdrop, BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import { Linking } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
+import { useTranslation } from "react-i18next";
 
 // Error Boundary Component
 class ErrorBoundary extends Component {
@@ -108,7 +109,7 @@ const NewPost = ({ navigation }) => {
   const [showTagPeopleSheet, setShowTagPeopleSheet] = useState(false);
   const [postId, setPostId] = useState(null);
   const [isTagPeopleSheetReady, setIsTagPeopleSheetReady] = useState(false); // New state for delayed rendering
-
+  const { t } = useTranslation();
   // Refs for BottomSheets
   const mediaBottomSheetRef = useRef(null);
   const tagPeopleBottomSheetRef = useRef(null);
@@ -252,7 +253,7 @@ const NewPost = ({ navigation }) => {
   const handleAddTag = useCallback(() => {
     const trimmed = input.trim();
     if (trimmed === "" || trimmed === "#" || trimmed.length < 2) {
-      showToast("Hashtags must be at least one character long (excluding #).", 'error');
+      showToast(t('hashtagError'), 'error');
       return;
     }
 
@@ -260,7 +261,7 @@ const NewPost = ({ navigation }) => {
 
     setHashtags(prevTags => {
       if (prevTags.includes(formattedTag)) {
-        showToast(`Hashtag ${formattedTag} is already added.`, 'info');
+        showToast(t("hashtagAlreadyAdded", { tag: formattedTag }), 'info');
         return prevTags;
       }
       return [...prevTags, formattedTag];
@@ -289,11 +290,11 @@ const NewPost = ({ navigation }) => {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.CAMERA,
           {
-            title: "Camera Permission",
-            message: "App needs access to your camera to take photos or videos.",
-            buttonNeutral: "Ask Me Later",
-            buttonNegative: "Cancel",
-            buttonPositive: "OK",
+            title: t('camerapermission'),
+            message: t('camerapermission_description'),
+            buttonNeutral: t('askmelater'),
+            buttonNegative: t('cancel'),
+            buttonPositive: t('ok'),
           }
         );
         return granted === PermissionsAndroid.RESULTS.GRANTED;
@@ -309,16 +310,16 @@ const NewPost = ({ navigation }) => {
             return true;
           case RESULTS.DENIED:
             Alert.alert(
-              "Permission Denied",
-              "You need to grant camera permission to use this feature.",
-              [{ text: "OK" }]
+              t('permissiondenied'),
+              t('permissiondenied_description'),
+              [{ text: t('ok') }]
             );
             return false;
           case RESULTS.BLOCKED:
             Alert.alert(
-              "Permission Blocked",
-              "Camera permission is blocked in your device settings. Please go to Settings > Privacy > Camera to enable it.",
-              [{ text: "Cancel" }, { text: "Settings", onPress: () => Linking.openSettings() }]
+              t('permissionblocked'),
+              t('permissionblocked_description'),
+              [{ text: t('cancel') }, { text: t('settings'), onPress: () => Linking.openSettings() }]
             );
             return false;
           default:
@@ -349,11 +350,11 @@ const NewPost = ({ navigation }) => {
           const granted = await PermissionsAndroid.request(
             PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
             {
-              title: "Storage Permission",
-              message: "App needs access to your storage to select photos or videos.",
-              buttonNeutral: "Ask Me Later",
-              buttonNegative: "Cancel",
-              buttonPositive: "OK",
+              title: t('storagepermission'),
+              message: t('storagepermission_description'),
+              buttonNeutral: t('askmelater'),
+              buttonNegative: t('cancel'),
+              buttonPositive: t('ok'),
             }
           );
           return granted === PermissionsAndroid.RESULTS.GRANTED;
@@ -391,11 +392,12 @@ const NewPost = ({ navigation }) => {
 
       if (!hasPermission) {
         Alert.alert(
-          'Permission Denied',
-          `${type === 'camera' ? 'Camera' : 'Storage'} permission is required.`
+          t('permissiondenied'),
+          `${type === 'camera' ? t('camera') : t('storage')} ${t('permissionisrequired')}`
         );
         return;
       }
+
 
       const options = {
         ...imagePickerOptions,
@@ -466,18 +468,22 @@ const NewPost = ({ navigation }) => {
       const oversizedFiles = compressedMediaItems.filter((item) => item.size > 20 * 1024 * 1024);
       if (oversizedFiles.length > 0) {
         Alert.alert(
-          'File Too Large',
-          `The following files exceed the 20 MB limit:\n${oversizedFiles
+          t('filetoolarge'),
+          `${t('fileexceedlimit')}\n${oversizedFiles
             .map((f) => f.uri.split('/').pop())
-            .join('\n')}\n\nPlease select smaller files.`,
-          [{ text: 'OK' }]
+            .join('\n')}\n\n${t('pleaseselectsmallerfiles')}`,
+          [{ text: t('ok') }]
         );
         return;
       }
 
+
       setSelectedMedia(prev => [...prev, ...compressedMediaItems]);
 
-      showToast(`${compressedMediaItems.length} media item(s) added.`, 'success');
+      showToast(
+        t('mediaitemsadded', { count: compressedMediaItems.length }),
+        'success'
+      );
     } catch (error) {
       if (!error.message?.includes('cancelled')) {
         console.error('Error in openImagePicker:', error);
@@ -556,7 +562,7 @@ const NewPost = ({ navigation }) => {
   // Optimized CreateNewPost function
   const CreateNewPost = useCallback(async () => {
     if (!caption.trim()) {
-      showToast("Please add a caption to your post.", 'error');
+      showToast(t('captionerror'), 'error');
       return;
     }
 
@@ -596,7 +602,14 @@ const NewPost = ({ navigation }) => {
         successfulUploads = [...existingUrls, ...uploadedUrls.filter((url) => url !== null)];
 
         if (newMedia.length > 0 && successfulUploads.length < selectedMedia.length) {
-          showToast(`Some media files failed to upload. Proceeding with ${successfulUploads.length} of ${selectedMedia.length} files.`, 'warning');
+          showToast(
+            t('uploadpartialsuccess', {
+              success: successfulUploads.length,
+              total: selectedMedia.length
+            }),
+            'warning'
+          );
+
         }
       }
 
@@ -635,7 +648,7 @@ const NewPost = ({ navigation }) => {
       const result = await response.json();
 
       if (result.responseCode === 200) {
-        showToast(postId ? "Your post has been updated successfully." : "Your post has been shared successfully.", 'success');
+        showToast(postId ? t('postupdatedsuccessfully') : t('postcreatedsuccessfully'), 'success');
         setTimeout(() => {
           navigation.navigate("Home", {
             screen: "SeaBuddy",
@@ -644,7 +657,7 @@ const NewPost = ({ navigation }) => {
         }, 1500);
       } else {
         throw new Error(
-          result.message || (postId ? "Post update failed" : "Post creation failed")
+          result.message || (postId ? t('postupdatefailed') : t('postcreatefailed'))
         );
       }
     } catch (error) {
@@ -678,7 +691,7 @@ const NewPost = ({ navigation }) => {
         source={require("../assets/images/NewPostImage/camera.png")}
         style={[styles.headerIcon, { height: 30, width: 30 }]}
       />
-      <Text style={styles.attachText}>+ Attach more</Text>
+      <Text style={styles.attachText}>{t('attachmore')}</Text>
     </TouchableOpacity>
   ), [selectedMedia.length]);
 
@@ -806,7 +819,7 @@ const NewPost = ({ navigation }) => {
 
           <ProfleSettingHeader
             navigation={navigation}
-            title={postId ? "Edit Post" : "Create New Post"}
+            title={postId ? t('editpost') : t('createnewpost')}
           />
 
           <FlatList
@@ -823,8 +836,8 @@ const NewPost = ({ navigation }) => {
 
                 <View style={styles.contentContainer}>
                   <Text style={styles.headingText}>
-                    Keep it positive{'\n'}
-                    Share content that’s safe, respectful, and uplifting for your crew
+                    {t('keepitpositive')}{'\n'}
+                    {t('keepitpositive_description')}
                   </Text>
                   {/* Media Selection */}
                   {selectedMedia.length > 0 ? (
@@ -850,7 +863,7 @@ const NewPost = ({ navigation }) => {
                           source={require("../assets/images/NewPostImage/gallery.png")}
                           style={[styles.headerIcon, { height: 30, width: 30 }]}
                         />
-                        <Text style={styles.attachText}>+ Add Photo/Video (Optional)</Text>
+                        <Text style={styles.attachText}>{t('addphotovideo')}</Text>
                       </TouchableOpacity>
                     </View>
                   )}
@@ -859,11 +872,11 @@ const NewPost = ({ navigation }) => {
                   <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                     <View style={styles.captionContainer}>
                       <View style={[styles.inputSection, { marginHorizontal: 10 }]}>
-                        <Text style={styles.sectionTitle}>Write a caption</Text>
+                        <Text style={styles.sectionTitle}>{t('writeacaption')}</Text>
                         <TextInput
                           style={styles.captionInput}
                           maxLength={400}
-                          placeholder="What's on your mind? Share your thoughts..."
+                          placeholder={t('captionplaceholder')}
                           placeholderTextColor="#949494"
                           value={caption}
                           onChangeText={setCaption}
@@ -876,7 +889,7 @@ const NewPost = ({ navigation }) => {
                       <View style={styles.postOptions}>
                         {/* Tag People Section */}
                         <View style={styles.inputSection}>
-                          <Text style={styles.sectionTitle}>Tag People</Text>
+                          <Text style={styles.sectionTitle}>{t('tagpeople')}</Text>
                           <TouchableOpacity
                             style={styles.postOption5}
                             onPress={() => tagPeopleBottomSheetRef.current?.expand()}
@@ -884,7 +897,7 @@ const NewPost = ({ navigation }) => {
                           >
                             <View style={styles.postOptionLeft2}>
                               <Icon name="user-tag" size={20} color="#b0db02" />
-                              <Text style={styles.tagPeopleText}>Tag people</Text>
+                              <Text style={styles.tagPeopleText}>{t('tagpeople')}</Text>
                             </View>
                             <Image
                               source={ImagesAssets.CircleRightArrow}
@@ -901,7 +914,7 @@ const NewPost = ({ navigation }) => {
 
                         {/* Hashtags Section */}
                         <View style={styles.inputSection}>
-                          <Text style={styles.sectionTitle}>Add Hashtags</Text>
+                          <Text style={styles.sectionTitle}>{t('addhashtags')}</Text>
                           <View style={styles.postOption5}>
                             <Image
                               source={ImagesAssets.hastag}
@@ -909,7 +922,7 @@ const NewPost = ({ navigation }) => {
                             />
                             <TextInput
                               style={styles.postOptionLeft}
-                              placeholder="Add hashtags"
+                              placeholder={t('addhashtags')}
                               placeholderTextColor={"#949494"}
                               value={input}
                               onChangeText={handleInputChange}
@@ -938,7 +951,7 @@ const NewPost = ({ navigation }) => {
                             styles.shareButtonText,
                             isLoading && styles.disabledshareButtonText,
                           ]}>
-                            {postId ? "Update" : "Share"}
+                            {postId ? t('update') : t('share')}
                           </Text>
                         </TouchableOpacity>
                       </View>
@@ -962,14 +975,14 @@ const NewPost = ({ navigation }) => {
         >
           <BottomSheetView style={{ flex: 1 }}>
             <View style={styles.sheetHeader}>
-              <Text style={styles.sheetTitle}>Select people to Tag</Text>
+              <Text style={styles.sheetTitle}>{t('selectpeopletotag')}</Text>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 {selectedItems.length > 0 && (
                   <TouchableOpacity
                     style={styles.doneButton}
                     onPress={() => tagPeopleBottomSheetRef.current?.close()}
                   >
-                    <Text style={styles.doneButtonText}>Done</Text>
+                    <Text style={styles.doneButtonText}>{t('done')}</Text>
                   </TouchableOpacity>
                 )}
                 <TouchableOpacity
@@ -984,7 +997,7 @@ const NewPost = ({ navigation }) => {
               filteredCrewList.length === 0 ? (
                 <View style={styles.emptyUsersContainer}>
                   <Text style={styles.emptyUsersText}>
-                    No users have boarded your ship yet.
+                    {t('nousersboarded')}
                   </Text>
                 </View>
               ) : (
@@ -1010,7 +1023,7 @@ const NewPost = ({ navigation }) => {
               )
             ) : (
               <View style={styles.emptyUsersContainer}>
-                <Text style={styles.emptyUsersText}>Loading...</Text>
+                <Text style={styles.emptyUsersText}>{t('loading')}</Text>
               </View>
             )}
           </BottomSheetView>
@@ -1026,7 +1039,7 @@ const NewPost = ({ navigation }) => {
           backdropComponent={renderMediaBackdrop}
         >
           <BottomSheetView style={styles.containerPhoto}>
-            <Text style={styles.titlePhoto}>Select Media</Text>
+            <Text style={styles.titlePhoto}>{t('selectmedia')}</Text>
             <TouchableOpacity
               style={styles.buttonPhoto}
               onPress={() => {
@@ -1035,7 +1048,7 @@ const NewPost = ({ navigation }) => {
               }}
               activeOpacity={0.7}
             >
-              <Text style={styles.buttonTextPhoto}>Take Photo</Text>
+              <Text style={styles.buttonTextPhoto}>{t('takephoto')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.buttonPhoto}
@@ -1045,7 +1058,7 @@ const NewPost = ({ navigation }) => {
               }}
               activeOpacity={0.7}
             >
-              <Text style={styles.buttonTextPhoto}>Take Video</Text>
+              <Text style={styles.buttonTextPhoto}>{t('takevideo')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.buttonPhoto}
@@ -1055,13 +1068,13 @@ const NewPost = ({ navigation }) => {
               }}
               activeOpacity={0.7}
             >
-              <Text style={styles.buttonTextPhoto}>Choose from Gallery</Text>
+              <Text style={styles.buttonTextPhoto}>{t('choosefromgallery')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => mediaBottomSheetRef.current?.close()}
               style={styles.cancelButton}
             >
-              <Text style={styles.cancelTextPhoto}>Cancel</Text>
+              <Text style={styles.cancelTextPhoto}>{t('cancel')}</Text>
             </TouchableOpacity>
           </BottomSheetView>
         </BottomSheet>

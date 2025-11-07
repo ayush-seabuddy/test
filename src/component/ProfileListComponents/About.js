@@ -9,6 +9,7 @@ import moment from "moment";
 import { apiServerUrl } from "../../Api";
 import Colors from "../../colors/Colors";
 import { Divider } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 
 const { width, height } = Dimensions.get("screen");
 
@@ -78,7 +79,7 @@ const About = ({ profile, setProfile }) => {
   const [userDepartment, setUserDepartment] = useState(null);
   const [showAgeToOther, setShowAgeToOther] = useState(profile?.showAge || false);
   const [showReligionToOther, setShowReligionToOther] = useState(profile?.showReligion || false);
-
+  const { t } = useTranslation();
   const colorCombination = useMemo(() => [
     { color: "#70611B", backgroundColor: "#F9CF23" },
     { color: "#436E0E", backgroundColor: "#B1DC02" },
@@ -171,14 +172,14 @@ const About = ({ profile, setProfile }) => {
     <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
       {!profile && (
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>No profile data available.</Text>
+          <Text style={styles.errorText}>{t('noprofiledata')}</Text>
         </View>
       )}
       {userDepartment !== "Shore_Staff" && profile && (
         <View style={styles.leaderboardContainer}>
           <View style={styles.headerCard}>
             <View style={styles.leaderboardRow}>
-              <Text style={styles.labelText}>Leaderboard Rank</Text>
+              <Text style={styles.labelText}>{t('leaderboardrank')}</Text>
               <Text style={styles.countText}>
                 <Text style={styles.hashSymbol}>#</Text>
                 {profile?.userLeaderBoardPosition || "0"}
@@ -192,14 +193,14 @@ const About = ({ profile, setProfile }) => {
                 <FontAwesome5 name="users" size={16} color="grey" style={styles.statIcon} />
                 <Text style={styles.countTextOther}>{profile?.groupActivityCount || "0"}</Text>
               </View>
-              <Text style={styles.labelTextOther}>BuddyUp Events</Text>
+              <Text style={styles.labelTextOther}>{t('buddyupevents')}</Text>
             </View>
             <View style={styles.statCard}>
               <View style={styles.statRow}>
                 <FontAwesome5 name="coins" size={16} color="grey" style={styles.statIcon} />
                 <Text style={styles.countTextOther}>{profile?.rewardPoints || "0"}</Text>
               </View>
-              <Text style={styles.labelTextOther}>BuddyUp Miles</Text>
+              <Text style={styles.labelTextOther}>{t('buddyupmiles')}</Text>
             </View>
           </View>
         </View>
@@ -234,22 +235,22 @@ const About = ({ profile, setProfile }) => {
         <View style={styles.chipCard}>
           {profile?.bio && (
             <View style={styles.section}>
-              <Text style={[styles.chipTitle, { fontSize: 16, marginTop: 10 }]}>Personal Information</Text>
+              <Text style={[styles.chipTitle, { fontSize: 16, marginTop: 10 }]}>{t('personalinformation')}</Text>
               <Divider style={{ marginVertical: 10, marginHorizontal: 0 }} />
-              <Text style={styles.chipTitle}>Bio</Text>
+              <Text style={styles.chipTitle}>{t('bio')}</Text>
               <Text style={styles.sectionText}>{profile.bio}</Text>
             </View>
           )}
           {profile?.nationality && (
             <View style={styles.section}>
-              <Text style={styles.chipTitle}>Location</Text>
+              <Text style={styles.chipTitle}>{t('location')}</Text>
               <Text style={styles.chipText}>{capitalize(profile.nationality)}</Text>
             </View>
           )}
           {profile?.dob && (
             <View style={styles.section}>
               <View style={styles.switchRow}>
-                <Text style={styles.chipTitle}>Age</Text>
+                <Text style={styles.chipTitle}>{t('age')}</Text>
                 <View style={styles.switchContainer}>
                   <Text style={styles.switchLabel}>{showAgeToOther ? "Shown" : "Hidden"}</Text>
                   <Switch
@@ -269,16 +270,16 @@ const About = ({ profile, setProfile }) => {
           )}
           {(profile?.mobileNumber || profile?.email) && (
             <View style={styles.section}>
-              <Text style={styles.chipTitle}>Contact</Text>
+              <Text style={styles.chipTitle}>{t('contact')}</Text>
               {profile?.mobileNumber && (
                 <View style={styles.row}>
-                  <Text style={styles.title}>Phone</Text>
+                  <Text style={styles.title}>{t('phone')}</Text>
                   <Text style={styles.value}>{profile.mobileNumber}</Text>
                 </View>
               )}
               {profile?.email && (
                 <View style={styles.row}>
-                  <Text style={styles.title}>Email</Text>
+                  <Text style={styles.title}>{t('email')}</Text>
                   <Text style={styles.value}>{profile.email}</Text>
                 </View>
               )}
@@ -290,7 +291,7 @@ const About = ({ profile, setProfile }) => {
       {profile?.workingExperience?.length > 0 && (
         <View style={styles.card}>
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle]}>Shipboard Experience</Text>
+            <Text style={[styles.sectionTitle]}>{t('shipboard_experience')}</Text>
             <Divider style={{ marginVertical: 10, marginHorizontal: 0 }} />
             <FlatList
               data={profile.workingExperience}
@@ -305,7 +306,7 @@ const About = ({ profile, setProfile }) => {
       {profile?.certifications?.length > 0 && (
         <View style={styles.card}>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Certifications</Text>
+            <Text style={styles.sectionTitle}>{t('certifications')}</Text>
             <Divider style={{ marginVertical: 10, marginHorizontal: 0 }} />
             <FlatList
               data={profile.certifications}
@@ -320,7 +321,7 @@ const About = ({ profile, setProfile }) => {
       {profile?.SocialMediaLinks?.length > 0 && (
         <View style={styles.card}>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Social Media</Text>
+            <Text style={styles.sectionTitle}>{t('social_media')}</Text>
             <FlatList
               data={profile.SocialMediaLinks}
               renderItem={({ item }) => <SocialMediaItem item={item} />}
@@ -334,25 +335,25 @@ const About = ({ profile, setProfile }) => {
         <View style={styles.card}>
           <View style={styles.section}>
             <View>
-              <Text style={styles.sectionTitle}>More Information</Text>
+              <Text style={styles.sectionTitle}>{t('moreinformation')}</Text>
               <Divider style={{ marginVertical: 10, marginHorizontal: 0 }} />
             </View>
             <View style={styles.containerText}>
               {profile?.shipName && (
                 <View style={styles.row}>
-                  <Text style={styles.title}>Vessel</Text>
+                  <Text style={styles.title}>{t('vessel')}</Text>
                   <Text style={styles.value}>{capitalize(profile.shipName)}</Text>
                 </View>
               )}
               {profile?.gender && (
                 <View style={styles.row}>
-                  <Text style={styles.title}>Gender</Text>
+                  <Text style={styles.title}>{t('gender')}</Text>
                   <Text style={styles.value}>{capitalize(profile.gender)}</Text>
                 </View>
               )}
               {profile?.experience && (
                 <View style={styles.row}>
-                  <Text style={[styles.title]}>Experience</Text>
+                  <Text style={[styles.title]}>{t('experience')}</Text>
                   <Text style={[styles.value, { color: "purple", fontWeight: "bold" }]}>
                     {`${profile.experience} Years`}
                   </Text>
@@ -360,24 +361,24 @@ const About = ({ profile, setProfile }) => {
               )}
               {profile?.ethnicity && (
                 <View style={styles.row}>
-                  <Text style={styles.title}>Ethnicity</Text>
+                  <Text style={styles.title}>{t('ethnicity')}</Text>
                   <Text style={styles.value}>{capitalize(profile.ethnicity)}</Text>
                 </View>
               )}
               {profile?.relationshipStatus && (
                 <View style={styles.row}>
-                  <Text style={styles.title}>Relationship</Text>
+                  <Text style={styles.title}>{t('relationship')}</Text>
                   <Text style={styles.value}>{capitalize(profile.relationshipStatus)}</Text>
                 </View>
               )}
               {profile?.religion && (
                 <View style={styles.row}>
-                  <Text style={styles.title}>Religion</Text>
+                  <Text style={styles.title}>{t('religion')}</Text>
                   <View style={styles.switchRow}>
                     <Text style={styles.value}>{capitalize(profile.religion)}</Text>
                     <View style={styles.switchContainer}>
                       <Text style={styles.switchLabel}>
-                        {showReligionToOther ? "Shown" : "Hidden"}
+                        {showReligionToOther ? t('shown') : t('hidden')}
                       </Text>
                       <Switch
                         trackColor={{ false: "#ccc", true: "#4cd137" }}
@@ -395,19 +396,19 @@ const About = ({ profile, setProfile }) => {
               )}
               {profile?.smoker && (
                 <View style={styles.row}>
-                  <Text style={styles.title}>Smoking</Text>
+                  <Text style={styles.title}>{t('smoking')}</Text>
                   <Text style={styles.value}>{capitalize(profile.smoker)}</Text>
                 </View>
               )}
               {profile?.alcohol && (
                 <View style={styles.row}>
-                  <Text style={styles.title}>Alcohol</Text>
+                  <Text style={styles.title}>{t('alcohol')}</Text>
                   <Text style={styles.value}>{capitalize(profile.alcohol)}</Text>
                 </View>
               )}
               {profile?.healthCondition && (
                 <View style={styles.row}>
-                  <Text style={styles.title}>Health Condition</Text>
+                  <Text style={styles.title}>{t('healthcondition')}</Text>
                   <Text style={styles.value}>{capitalize(profile.healthCondition)}</Text>
                 </View>
               )}

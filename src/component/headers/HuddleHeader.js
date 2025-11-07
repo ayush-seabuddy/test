@@ -17,13 +17,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiCallWithToken, apiServerUrl } from "../../Api";
 import Octicons from 'react-native-vector-icons/Octicons'
 import { Badge } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 
 const HuddleHeader = () => {
   const navigation = useNavigation();
   const [profile, setProfile] = useState({});
   const [Notification, setNotification] = useState([]);
   const [unreadNotification, setUnreadNotification] = useState(0)
-
+  const { t } = useTranslation();
   const GetUserDetails = async () => {
     try {
       const UserData = await AsyncStorage.getItem("userDetails");
@@ -86,7 +87,7 @@ const HuddleHeader = () => {
       {/* <Image source={ImagesAssets.apptitle} style={{height:22, width:114}} />
        */}
       <View style={{ flexDirection: "row", alignItems: "center", gap: 4, marginLeft: 16, marginTop: 6 }}>
-        <Text style={styles.Huddle}>Ship Life</Text>
+        <Text style={styles.Huddle}>{t('ship_life')}</Text>
       </View>
       <View style={styles.headerButtonsContainer}>
         <TouchableOpacity

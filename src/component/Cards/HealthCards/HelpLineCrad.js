@@ -10,10 +10,13 @@ import {
   Dimensions,
 } from "react-native";
 import { ImagesAssets } from "../../../assets/ImagesAssets";
+import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 
 const { width, height } = Dimensions.get("window");
 const isProMax = height >= 926;
 const HelpLineCrad = ({ navigation, setModalVisible }) => {
+  const { t } = useTranslation();
   // () => { navigation.replace('HelpLine') }
   return (
     <View style={styles.frameParent}>
@@ -25,12 +28,12 @@ const HelpLineCrad = ({ navigation, setModalVisible }) => {
       >
         <View style={styles.helplinesParent}>
           <Text style={[styles.helplines, styles.helplinesFlexBox]}>
-            Speak to a Wellness Officer!
+            {t('speaktowellnessofficer')}
           </Text>
           <Text
             style={[styles.supportServicesOffering, styles.helplinesFlexBox]}
           >
-            Schedule a session with trusted experts offering confidential support, a fresh perspective, and real guidance—this is your safe space.
+            {t('speaktowellnesssofficer_description')}
           </Text>
         </View>
         <View style={{ width: "20%", height: "100%" }}>
@@ -67,7 +70,7 @@ const HelpLineCrad = ({ navigation, setModalVisible }) => {
           />
           <View>
             <Text style={[styles.articles, styles.articlesTypo]}>
-              Mood Tracker
+              {t('moodTracker')}
             </Text>
           </View>
         </TouchableOpacity>
@@ -109,7 +112,7 @@ const HelpLineCrad = ({ navigation, setModalVisible }) => {
           />
           <View>
             <Text style={[styles.articles, styles.articlesTypo]}>
-              Analytics
+              {t('analytics')}
             </Text>
           </View>
         </TouchableOpacity>

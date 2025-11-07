@@ -20,6 +20,8 @@ import {
   FreshchatUser,
 } from "react-native-freshchat-sdk";
 import { getApiLevel } from "../../Api";
+import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get("window");
 
@@ -30,26 +32,20 @@ const DOMAIN = "msdk.freshchat.com";
 const AiJoliCard = ({ navigation, page = "ai" }) => {
   const [name, setName] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const { t, i18n } = useTranslation();
 
-  const initialBots = [
-    {
-      type: "HEALTH",
-      label: "Health",
-      image: ImagesAssets.MarineBuddy,
-    },
-    {
-      type: "SPIRITUAL",
-      label: "Spiritual",
-      image: ImagesAssets.SpiritualBuddy,
-    },
-    {
-      type: "TECHNICAL",
-      label: "Marine",
-      image: ImagesAssets.healthBuddy1,
-    },
+  const buildBots = () => [
+    { type: "HEALTH", label: t('health'), image: ImagesAssets.MarineBuddy },
+    { type: "SPIRITUAL", label: t('spiritual'), image: ImagesAssets.SpiritualBuddy },
+    { type: "TECHNICAL", label: t('marine'), image: ImagesAssets.healthBuddy1 },
   ];
 
-  const [bots, setBots] = useState(initialBots);
+  const [bots, setBots] = useState(buildBots());
+
+  // Re-compute when language changes
+  useEffect(() => {
+    setBots(buildBots());
+  }, [i18n.language]);
   const animation = useRef(new Animated.Value(0)).current;
 
   const GetuserDetails = async () => {
@@ -131,7 +127,7 @@ const AiJoliCard = ({ navigation, page = "ai" }) => {
         }),
       ]).start(() => {
         setBots((prevBots) => {
-          const newOrder = [prevBots[1] ,prevBots[2], prevBots[0], ];
+          const newOrder = [prevBots[1], prevBots[2], prevBots[0],];
           return newOrder;
         });
       });
@@ -167,7 +163,7 @@ const AiJoliCard = ({ navigation, page = "ai" }) => {
           />
 
           <Text style={[styles.heyGladYou, { textAlign: "center" }]}>
-            One Assistant, Many Faces
+            {t('oneassistantmanyfaces')}
           </Text>
           <Text
             style={{
@@ -178,8 +174,7 @@ const AiJoliCard = ({ navigation, page = "ai" }) => {
               marginBottom: 16,
             }}
           >
-            AI-powered buddies built to guide, support, and answer you—anytime,
-            anywhere
+            {t('oneassistantmanyfaces_description')}
           </Text>
 
           <View style={styles.botRow}>
@@ -210,7 +205,7 @@ const AiJoliCard = ({ navigation, page = "ai" }) => {
                     onPress={() =>
                       navigation.navigate("JollyAi", {
                         chatType: bot.type,
-                        name: `${bot.label} Buddy`,
+                        name: `${bot.label} ${t('buddy')}`,
                       })
                     }
                     activeOpacity={0.8}

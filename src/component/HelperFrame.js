@@ -14,37 +14,41 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiCallWithToken, apiServerUrl } from "../Api";
 import Colors from "../colors/Colors";
 import { useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 
 const { height, width } = Dimensions.get("screen");
 const isProMax = height >= 926;
 
 const HelperFrame = ({ navigation, onOpenPDF }) => {
-  const [name, setName] = useState(null);
+  const { t } = useTranslation();
+  const [name, setName] = useState("");
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const pdfUrl = "https://seabuddy.s3.amazonaws.com/1752225459197_CrewAppGuide_SeaBuddy.pdf";
 
   const getUserDetails = async () => {
-    const dbResult = await AsyncStorage.getItem("userDetails");
-    const userDetails = JSON.parse(dbResult);
-    setName(userDetails.fullName);
+    try {
+      const dbResult = await AsyncStorage.getItem("userDetails");
+      const user = JSON.parse(dbResult);
+      setName(user.fullName || "");
+    } catch (error) {}
   };
 
   const fetchUnreadMessageCount = async () => {
     try {
       const authToken = await AsyncStorage.getItem("authToken");
       if (!authToken) return;
+
       const response = await apiCallWithToken(
         `${apiServerUrl}/user/getUnreadMessageCount`,
         "GET",
         null,
         authToken
       );
+
       if (response.responseCode) {
         setUnreadMessageCount(response.result.unReadCount);
       }
-    } catch (error) {
-      // Silent fail in production
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -73,6 +77,10 @@ const HelperFrame = ({ navigation, onOpenPDF }) => {
     });
   };
 
+  const firstName = name
+    ? name.split(" ")[0].charAt(0).toUpperCase() + name.split(" ")[0].slice(1)
+    : "";
+
   return (
     <View style={styles.container}>
       <View style={styles.frameParent}>
@@ -83,9 +91,9 @@ const HelperFrame = ({ navigation, onOpenPDF }) => {
             <View style={[styles.rowCenter, { width: "92%" }]}>
               <View style={styles.textBlock}>
                 <Text style={styles.heyGladYou}>
-                  {`Hi ${name?.split(" ")[0]?.charAt(0).toUpperCase() + name?.split(" ")[0]?.slice(1)}, how are you today?`}
+                  {t("hi")} {firstName}, {t("how_are_you_today")}
                 </Text>
-                <Text style={styles.selfAwareness}>Chat with your crewmates</Text>
+                <Text style={styles.selfAwareness}>{t("chat_with_your_crewmates")}</Text>
               </View>
 
               <View style={{ position: "relative" }}>
@@ -103,14 +111,13 @@ const HelperFrame = ({ navigation, onOpenPDF }) => {
         </View>
 
         <View style={styles.frameContainer}>
-          <View style={{ marginTop: 5 }} />
           <View style={styles.frameView}>
             <View style={{ flexDirection: "row", gap: 6 }}>
               <TouchableOpacity style={styles.baseLayout} onPress={goToHangout}>
                 <Image style={styles.baseIcons} resizeMode="cover" source={ImagesAssets.helper_img_5} />
                 <View style={styles.hangoutParent}>
-                  <Text style={styles.healthHappiness}>Social</Text>
-                  <Text style={styles.selfAwareness}>Post, engage and connect across your fleet</Text>
+                  <Text style={styles.healthHappiness}>{t("social")}</Text>
+                  <Text style={styles.selfAwareness}>{t("social_description")}</Text>
                 </View>
               </TouchableOpacity>
 
@@ -120,8 +127,8 @@ const HelperFrame = ({ navigation, onOpenPDF }) => {
               >
                 <Image style={styles.baseIcons} resizeMode="cover" source={ImagesAssets.helper_img_6} />
                 <View style={styles.hangoutParent}>
-                  <Text style={styles.healthHappiness}>Ship Life</Text>
-                  <Text style={styles.selfAwareness}>Join or create{"\n"}events and win rewards</Text>
+                  <Text style={styles.healthHappiness}>{t("ship_life")}</Text>
+                  <Text style={styles.selfAwareness}>{t("ship_life_description")}</Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -133,8 +140,8 @@ const HelperFrame = ({ navigation, onOpenPDF }) => {
               >
                 <Image style={styles.baseIcons} resizeMode="cover" source={ImagesAssets.madelplushicon} />
                 <View style={styles.hangoutParent}>
-                  <Text style={styles.healthHappiness}>Wellness Hub</Text>
-                  <Text style={styles.selfAwareness}>Self-care tools and support</Text>
+                  <Text style={styles.healthHappiness}>{t("wellness_hub")}</Text>
+                  <Text style={styles.selfAwareness}>{t("wellness_description")}</Text>
                 </View>
               </TouchableOpacity>
 
@@ -144,15 +151,18 @@ const HelperFrame = ({ navigation, onOpenPDF }) => {
               >
                 <Image style={styles.baseIcons} resizeMode="cover" source={ImagesAssets.helper_img_8} />
                 <View style={styles.hangoutParent}>
-                  <Text style={styles.healthHappiness}>Helplines</Text>
-                  <Text style={styles.selfAwareness}>Emergency & complaint lines</Text>
+                  <Text style={styles.healthHappiness}>{t("helplines")}</Text>
+                  <Text style={styles.selfAwareness}>{t("helplines_description")}</Text>
                 </View>
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity style={[styles.rowCenter, { marginTop: 10 }]} onPress={() => onOpenPDF(pdfUrl, "App Guide")}>
+            <TouchableOpacity
+              style={[styles.rowCenter, { marginTop: 10 }]}
+              onPress={() => onOpenPDF(pdfUrl, t("app_guide"))}
+            >
               <View style={styles.textBlock}>
-                <Text style={styles.selfAwareness}>How to use SeaBuddy - Guide</Text>
+                <Text style={styles.selfAwareness}>{t("how_to_use_guide")}</Text>
               </View>
               <Image
                 style={[styles.chatbotImage, { height: 20, width: 20, marginBottom: 10 }]}
@@ -177,7 +187,7 @@ const styles = StyleSheet.create({
   frameGroup: {
     borderTopWidth: 1.5,
     borderBottomWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.6)",
+    borderColor: "rgba(255,255,255,0.6)",
     paddingVertical: 10,
     alignItems: "center",
     width: "100%",
@@ -198,7 +208,6 @@ const styles = StyleSheet.create({
   chatbotImage: {
     height: 25,
     width: 25,
-    marginRight: 10,
   },
   textBlock: {
     flexDirection: "column",
@@ -220,8 +229,17 @@ const styles = StyleSheet.create({
     width: width * 0.05,
     height: width * 0.05,
   },
-  frameContainer: { gap: 16, width: "100%" },
-  frameView: { flex: 1, alignItems: "center", justifyContent: "center", gap: 8 },
+  frameContainer: {
+    gap: 16,
+    width: "100%",
+    marginTop: 20,
+  },
+  frameView: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
   baseLayout: {
     flexDirection: "row",
     width: "50%",
@@ -230,10 +248,14 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: "center",
   },
-  hangoutParent: { flex: 1, marginLeft: 8, paddingVertical: 10 },
+  hangoutParent: {
+    flex: 1,
+    marginLeft: 8,
+    paddingVertical: 10,
+  },
   frameParent: {
     borderRadius: 32,
-    backgroundColor: "rgba(218, 218, 218, 0.4)",
+    backgroundColor: "rgba(218,218,218,0.4)",
     paddingHorizontal: 20,
     paddingVertical: 30,
     alignItems: "center",

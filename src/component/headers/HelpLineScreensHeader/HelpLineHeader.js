@@ -10,8 +10,11 @@ import {
 } from "react-native";
 import { ImagesAssets } from "../../../assets/ImagesAssets";
 import Colors from "../../../colors/Colors";
+import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 
 const HelpLineHeader = ({ navigation }) => {
+  const { t } = useTranslation();
   return (
     <View style={styles.container}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
@@ -25,7 +28,7 @@ const HelpLineHeader = ({ navigation }) => {
             <Image source={ImagesAssets.backArrow} style={styles.headerIcon} />
           </View>
         </TouchableOpacity>
-        <Text style={styles.health}>Complaint History</Text>
+        <Text style={styles.health}>{t('complaintHistory')}</Text>
       </View>
       {/* <View style={styles.headerButtonsContainer}>
       

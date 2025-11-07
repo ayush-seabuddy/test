@@ -25,14 +25,16 @@ import { FontFamily } from "../GlobalStyle";
 import PersonalityResultInfoPopup from "./PersonalityMapInfoPopup";
 import api from "../CustomAxios";
 import FastImage from "react-native-fast-image";
+import { useTranslation } from "react-i18next";
 
 const { height, width } = Dimensions.get("screen");
 
 const Huddle = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const [groupActivities, setGroupActivities] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [dataLoaded, setDataLoaded] = useState(false); // Prevents flash
-  const [selectedStatus, setSelectedStatus] = useState("ONGOING");
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState('ONGOING');
   const [modalVisible, setModalVisible] = useState(false);
   const [requestedEvent, setRequestedEvents] = useState([]);
   const [onGoingEvents, setOnGoingEvents] = useState([]);
@@ -307,7 +309,7 @@ const Huddle = ({ navigation, route }) => {
           />
         </View>
         <Text style={{ fontFamily: 'Poppins-Regular', fontSize: 10, marginTop: 5 }}>
-          {item?.rewardPoints || "0"} miles
+          {item?.rewardPoints || "0"} {t('miles')}
         </Text>
         <Text style={{ fontFamily: 'Poppins-Regular', fontSize: 10 }}>
           {item?.fullName?.split(" ")[0] || ""}
@@ -372,7 +374,7 @@ const Huddle = ({ navigation, route }) => {
                   {isBoarded ? (
                     <>
                       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                        <Text style={[styles.sectionTitle, { marginTop: 20, fontSize: 30 }]}>BuddyUp!</Text>
+                        <Text style={[styles.sectionTitle, { marginTop: 20, fontSize: 30 }]}>{t('buddyup')}</Text>
                         <TouchableOpacity onPress={() => setModalVisible(true)} style={{ marginRight: 9 }}>
                           <AntDesign name="infocirlce" size={18} color="gray" />
                         </TouchableOpacity>
@@ -382,32 +384,30 @@ const Huddle = ({ navigation, route }) => {
                           screenName="Huddle"
                           content={
                             <>
-                              <Text style={styles.popupTitle}>How Miles Work</Text>
+                              <Text style={styles.popupTitle}>{t('howmileswork')}</Text>
                               <Text style={styles.popupText}>
-                                Join or host BuddyUp events to earn miles, climb the leaderboard, and get recognized
-                                by your crew and company.
+                                {t('howmileswork_description1')}
                               </Text>
                               <Text style={styles.popupText}>
-                                Your participation adds up — unlock badges, earn visibility, and become a recognised
-                                name in your fleet.
+                                {t('howmileswork_description2')}
                               </Text>
-                              <Text style={styles.popupTitle}>Badge Milestones</Text>
+                              <Text style={styles.popupTitle}> {t('badgemilestones')}</Text>
                               <View style={styles.table}>
                                 <View style={styles.row}>
-                                  <Text style={styles.cellHeader}>Miles</Text>
-                                  <Text style={styles.cellHeader}>Badge</Text>
+                                  <Text style={styles.cellHeader}>{t('miles')}</Text>
+                                  <Text style={styles.cellHeader}>{t('badge')}</Text>
                                 </View>
                                 <View style={styles.row}>
-                                  <Text style={styles.cell}>500</Text>
-                                  <Text style={styles.cell}>Beacon</Text>
+                                  <Text style={styles.cell}>{t('fivehundred')}</Text>
+                                  <Text style={styles.cell}>{t('beacon')}</Text>
                                 </View>
                                 <View style={styles.row}>
-                                  <Text style={styles.cell}>1000</Text>
-                                  <Text style={styles.cell}>Harbour</Text>
+                                  <Text style={styles.cell}>{t('onethousand')}</Text>
+                                  <Text style={styles.cell}>{t('harbour')}</Text>
                                 </View>
                                 <View style={styles.row}>
-                                  <Text style={styles.cell}>2000+</Text>
-                                  <Text style={styles.cell}>Chief Anchor</Text>
+                                  <Text style={styles.cell}>{t('twothousand')}</Text>
+                                  <Text style={styles.cell}>{t('chief_anchor')}</Text>
                                 </View>
                               </View>
                             </>
@@ -416,7 +416,7 @@ const Huddle = ({ navigation, route }) => {
                       </View>
 
                       <Text style={{ marginHorizontal: 13, marginBottom: 12, fontFamily: 'Poppins-Regular', fontSize: 13 }}>
-                        Unwind, connect with your crew, and get rewarded for making ship life more fun.
+                        {t('buddyup_description')}
                       </Text>
 
                       <FlatList
@@ -472,7 +472,7 @@ const Huddle = ({ navigation, route }) => {
                           fontFamily: "Poppins-Regular",
                           textAlign: "center",
                         }}>
-                          Create your BuddyUp Event
+                          {t('createyourbuddyup')}
                         </Text>
                       </TouchableOpacity>
 
@@ -481,14 +481,14 @@ const Huddle = ({ navigation, route }) => {
                           style={[styles.tab, selectedStatus === "ONGOING" && styles.activeTab]}
                           onPress={() => handleTabChange("ONGOING")}
                         >
-                          <Text style={styles.tabText}>Ongoing</Text>
+                          <Text style={styles.tabText}>{t('ongoing')}</Text>
                           {selectedStatus === "ONGOING" && <View style={styles.underline} />}
                         </TouchableOpacity>
                         <TouchableOpacity
                           style={[styles.tab, selectedStatus === "PAST" && styles.activeTab]}
                           onPress={() => handleTabChange("PAST")}
                         >
-                          <Text style={styles.tabText}>Past</Text>
+                          <Text style={styles.tabText}>{t('past')}</Text>
                           {selectedStatus === "PAST" && <View style={styles.underline} />}
                         </TouchableOpacity>
                         {designation === "Captain" && (
@@ -496,7 +496,7 @@ const Huddle = ({ navigation, route }) => {
                             style={[styles.tab, selectedStatus === "REQUESTED" && styles.activeTab]}
                             onPress={() => handleTabChange("REQUESTED")}
                           >
-                            <Text style={styles.tabText}>Requested</Text>
+                            <Text style={styles.tabText}>{t('requested')}</Text>
                             {selectedStatus === "REQUESTED" && <View style={styles.underline} />}
                           </TouchableOpacity>
                         )}
@@ -507,7 +507,7 @@ const Huddle = ({ navigation, route }) => {
                           (selectedStatus === "PAST" && pastEvents.length > 5) ||
                           (selectedStatus === "REQUESTED" && designation === "Captain" && requestedEvent.length > 5)) ? (
                           <TouchableOpacity style={styles.ViewAllButton} onPress={() => handleViewAllactivity(selectedStatus)}>
-                            <Text style={styles.ViewAllText}>View all</Text>
+                            <Text style={styles.ViewAllText}>{t('viewall')}</Text>
                           </TouchableOpacity>
                         ) : (
                           <View style={styles.ViewAllButton} />
@@ -534,7 +534,7 @@ const Huddle = ({ navigation, route }) => {
                             color: "gray",
                             fontFamily: "Poppins-Regular",
                           }}>
-                            No BuddyUp Event found!
+                            {t('nobuddyupfound')}
                           </Text>
                         </View>
                       )}
@@ -547,7 +547,7 @@ const Huddle = ({ navigation, route }) => {
                           style={[styles.tab, selectedStatus === "PAST" && styles.activeTab]}
                           onPress={() => handleTabChange("PAST")}
                         >
-                          <Text style={styles.tabText}>Past</Text>
+                          <Text style={styles.tabText}>{t('past')}</Text>
                           {selectedStatus === "PAST" && <View style={styles.underline} />}
                         </TouchableOpacity>
                       </View>
@@ -555,7 +555,7 @@ const Huddle = ({ navigation, route }) => {
                       <View style={{ alignItems: "flex-end", marginHorizontal: 5 }}>
                         {(selectedStatus === "PAST" && pastEvents.length > 5) ? (
                           <TouchableOpacity style={styles.ViewAllButton} onPress={() => handleViewAllactivity("PAST")}>
-                            <Text style={styles.ViewAllText}>View all</Text>
+                            <Text style={styles.ViewAllText}>{t('viewall')}</Text>
                           </TouchableOpacity>
                         ) : (
                           <View style={styles.ViewAllButton} />
@@ -582,7 +582,7 @@ const Huddle = ({ navigation, route }) => {
                             color: "gray",
                             fontFamily: "Poppins-Regular",
                           }}>
-                            No BuddyUp Event found!
+                            {t('nobuddyupfound')}
                           </Text>
                         </View>
                       )}
@@ -604,7 +604,7 @@ const Huddle = ({ navigation, route }) => {
                     textAlign: 'center',
                     paddingHorizontal: 20,
                   }}>
-                    This section is applicable only for ship staff signed onboard vessel
+                    {t('thissectionapplicableforshipstaff')}
                   </Text>
                 </View>
               ) : (
@@ -622,7 +622,7 @@ const Huddle = ({ navigation, route }) => {
                     textAlign: 'center',
                     paddingHorizontal: 20,
                   }}>
-                    You're not currently part of any ship.
+                    {t('youarenotonanyship')}
                   </Text>
                 </View>
               )}

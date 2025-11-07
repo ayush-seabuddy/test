@@ -2,9 +2,10 @@ import React from "react";
 import { Image, Text, View } from "react-native";
 import { ImagesAssets } from "../../../assets/ImagesAssets";
 import FastImage from "react-native-fast-image";
+import { useTranslation } from "react-i18next";
 
 const LeaderboardCard = ({ isSelected, item, index, userDetails }) => {
-  
+  const { t } = useTranslation();
   const rank = index + 1;
   return (
     <View
@@ -119,7 +120,7 @@ const LeaderboardCard = ({ isSelected, item, index, userDetails }) => {
             textAlign: "center",
           }}
         >
-          Miles
+          {t('miles')}
         </Text>
       </View>
     </View>

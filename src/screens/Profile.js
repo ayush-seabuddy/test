@@ -30,11 +30,12 @@ import { useRoute } from "@react-navigation/native";
 import FocusAwareStatusBar from "../statusbar/FocusAwareStatusBar";
 import FastImage from 'react-native-fast-image'
 import Colors from "../colors/Colors";
+import { useTranslation } from "react-i18next";
 
 const { width, height } = Dimensions.get("screen");
 const Profile = ({ navigation }) => {
   const route = useRoute();
-
+  const { t } = useTranslation();
   React.useEffect(() => {
     if (route.params?.activeTab) {
       setActiveTab(route.params.activeTab);
@@ -45,6 +46,11 @@ const Profile = ({ navigation }) => {
   const [profile, setProfile] = useState({});
   const [isloading, setIsLoading] = React.useState(false);
 
+
+  useFocusEffect(useCallback(() => {
+    let activeTab = t('about')
+    setActiveTab(activeTab)
+  }, [t]))
   const GetUserDetails = async () => {
     try {
       const UserData = await AsyncStorage.getItem("userDetails");
@@ -60,7 +66,7 @@ const Profile = ({ navigation }) => {
   const GetDetails = async () => {
     const dbResult = await AsyncStorage.getItem("userDetails");
     if (!dbResult) {
-      SimpleToast.show("User not logged in. Please log in.");
+      SimpleToast.show(t('usernotlogggedin'));
       setIsLoading(false);
       return;
     }
@@ -88,9 +94,9 @@ const Profile = ({ navigation }) => {
         const cachedProfile = await AsyncStorage.getItem("cachedProfile");
         if (cachedProfile) {
           setProfile(JSON.parse(cachedProfile));
-          SimpleToast.show("No internet connection.");
+          SimpleToast.show(t('nointernetconnection'));
         } else {
-          SimpleToast.show("Failed to fetch profile data.");
+          SimpleToast.show(t('failedtofetchdata'));
         }
       }
     } catch (error) {
@@ -99,9 +105,9 @@ const Profile = ({ navigation }) => {
       const cachedProfile = await AsyncStorage.getItem("cachedProfile");
       if (cachedProfile) {
         setProfile(JSON.parse(cachedProfile));
-        SimpleToast.show("No internet connection.");
+        SimpleToast.show(t('nointernetconnection'));
       } else {
-        SimpleToast.show("Unable to connect to the server.");
+        SimpleToast.show(t('unabletoconnectserver'));
       }
     } finally {
       setIsLoading(false);
@@ -118,19 +124,14 @@ const Profile = ({ navigation }) => {
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case "About":
+      case t('about'):
         return <About navigation={navigation} profile={profile} setProfile={setProfile} />;
-      case "Posts":
+      case t('posts'):
         return <Post navigation={navigation} />;
-      case "BuddyUp":
+      case t('buddyuponprofile'):
         return <GroupAct navigation={navigation} />;
-      case "Assessments":
+      case t('assessments'):
         return <Assessment navigation={navigation} />;
-      case "Task":
-        return <Task navigation={navigation} />;
-      case "Events":
-        return <Events navigation={navigation} />;
-
       default:
         return null;
     }
@@ -183,7 +184,7 @@ const Profile = ({ navigation }) => {
             navigation.navigate("EditProfile", { screen: "Profile" })
           }
         >
-          <Text style={styles.editProfileBtnText}>Edit Profile</Text>
+          <Text style={styles.editProfileBtnText}>{t('editprofile')}</Text>
         </TouchableOpacity>
       </View>
       <ProfleListHeader

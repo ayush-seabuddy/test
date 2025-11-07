@@ -30,7 +30,6 @@ const AnouncementDetails = ({ navigation, route }) => {
   const [fullDetails, setFullDetails] = useState(null);
   const [isOffline, setIsOffline] = useState(false);
   const [notificationDetailModalVisible, setNotificationDetailModalVisible] = useState(false);
-  const [selectedNotification, setSelectedNotification] = useState(null);
   const [mediaPreviewVisible, setMediaPreviewVisible] = useState(false);
   const [mediaUri, setMediaUri] = useState("");
   const [webViewVisible, setWebViewVisible] = useState(false);
@@ -45,10 +44,6 @@ const AnouncementDetails = ({ navigation, route }) => {
       setData(item);
     } else {
       console.warn("⚠️ Invalid or missing item in route.params:", item);
-      setSelectedNotification({
-        title: "Invalid Content",
-        content: "The requested content is not available.",
-      });
       setNotificationDetailModalVisible(true);
     }
   }, [item]);
@@ -98,10 +93,6 @@ const AnouncementDetails = ({ navigation, route }) => {
       // Check if data has a valid id
       if (!data?.id) {
         console.warn("⚠️ No valid activity ID in data:", data);
-        setSelectedNotification({
-          title: "Invalid Content",
-          content: "The requested content is not available.",
-        });
         setNotificationDetailModalVisible(true);
         setIsLoading(false);
         return;
@@ -115,10 +106,6 @@ const AnouncementDetails = ({ navigation, route }) => {
         parsedItem = typeof data === "string" ? JSON.parse(decodeURIComponent(data)) : data;
       } catch (error) {
         console.error("❌ Error parsing activity:", error);
-        setSelectedNotification({
-          title: "Error",
-          content: "Failed to parse content data.",
-        });
         setNotificationDetailModalVisible(true);
         setIsLoading(false);
         return;
@@ -126,10 +113,6 @@ const AnouncementDetails = ({ navigation, route }) => {
 
       if (!parsedItem?.id) {
         console.error("❌ No valid activity ID found in parsedItem:", parsedItem);
-        setSelectedNotification({
-          title: "Invalid Content",
-          content: "The requested content is not available.",
-        });
         setNotificationDetailModalVisible(true);
         setIsLoading(false);
         return;
@@ -145,7 +128,6 @@ const AnouncementDetails = ({ navigation, route }) => {
         if (response.responseCode === 200) {
           if (!response.result.id) {
             const newData = { title: "Post not found", content: "This post is not available anymore" };
-            setSelectedNotification(newData);
             setNotificationDetailModalVisible(true);
             return;
           }
@@ -155,10 +137,6 @@ const AnouncementDetails = ({ navigation, route }) => {
         }
       } catch (error) {
         console.error("❌ API call error:", error);
-        setSelectedNotification({
-          title: "Error",
-          content: "Failed to fetch content details. Please try again later.",
-        });
         setNotificationDetailModalVisible(true);
       } finally {
         setIsLoading(false);
@@ -167,6 +145,17 @@ const AnouncementDetails = ({ navigation, route }) => {
 
     fetchDetails();
   }, [data]);
+
+
+
+
+
+  const DetailsData = async () => {
+  };
+
+  useEffect(() => {
+    DetailsData();
+  }, []);
 
 
   const handleAcknowledge = useCallback(async () => {
@@ -233,19 +222,19 @@ const AnouncementDetails = ({ navigation, route }) => {
   const webViewSource = useMemo(() =>
     Platform.OS === "android"
       ? {
-          uri: `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`,
-          headers: {
-            Accept: "text/html,application/xhtml+xml,application/pdf",
-            "Content-Type": "application/pdf",
-          },
-        }
-      : {
-          uri: pdfUrl,
-          headers: {
-            Accept: "application/pdf",
-            "Content-Type": "application/pdf",
-          },
+        uri: `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`,
+        headers: {
+          Accept: "text/html,application/xhtml+xml,application/pdf",
+          "Content-Type": "application/pdf",
         },
+      }
+      : {
+        uri: pdfUrl,
+        headers: {
+          Accept: "application/pdf",
+          "Content-Type": "application/pdf",
+        },
+      },
     [pdfUrl]
   );
 
@@ -479,29 +468,6 @@ const AnouncementDetails = ({ navigation, route }) => {
               </TouchableOpacity>
             </View>
           )}
-        </View>
-      </Modal>
-
-      <Modal
-        visible={notificationDetailModalVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setNotificationDetailModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.notificationDetailModal}>
-            <Text style={styles.modalTitle}>{selectedNotification?.title}</Text>
-            <Text style={styles.modalContent}>{selectedNotification?.content}</Text>
-            <TouchableOpacity
-              onPress={() => {
-                setNotificationDetailModalVisible(false);
-                navigation.goBack();
-              }}
-              style={styles.closeButton}
-            >
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </Modal>
     </View>

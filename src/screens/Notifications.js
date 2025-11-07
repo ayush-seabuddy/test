@@ -23,6 +23,7 @@ import { Swipeable } from "react-native-gesture-handler";
 import axios from "axios";
 import Toast from "react-native-simple-toast";
 import api from "../CustomAxios";
+import { useTranslation } from "react-i18next";
 
 // Memoized ParsedText component - optimized with areEqual
 const ParsedText = React.memo(
@@ -53,6 +54,7 @@ const ParsedText = React.memo(
 // FIXED: Notification Item - use status for initial styling
 const NotificationItem = React.memo(
   ({ item, onPress, onDelete, calculateTimeSince }) => {
+    const { t } = useTranslation();
     // FIXED: Use status string field for styling (initial fetch)
     const isRead = item.status === "READ";
     const truncatedTitle = useMemo(() => {
@@ -68,7 +70,7 @@ const NotificationItem = React.memo(
         <View style={styles.deleteView}>
           <TouchableOpacity onPress={() => onDelete(item.id)} style={styles.deleteAction}>
             <Ionicons name="trash-outline" size={30} color="white" />
-            <Text style={styles.deleteText}>Delete</Text>
+            <Text style={styles.deleteText}>{t('delete')}</Text>
           </TouchableOpacity>
         </View>
       ),
@@ -102,13 +104,13 @@ const NotificationItem = React.memo(
 );
 
 // Memoized Empty State Component
-const EmptyState = React.memo(() => (
+const EmptyState = React.memo(({ t }) => (
   <View style={styles.emptyContainer}>
     <Image
       source={require("../assets/images/AnotherImage/no-content.png")}
       style={styles.emptyImage}
     />
-    <Text style={styles.emptyText}>No notification found</Text>
+    <Text style={styles.emptyText}>{t('nonotificationfound')}</Text>
   </View>
 ));
 
@@ -120,12 +122,14 @@ const LoaderFooter = React.memo(() => (
 ));
 
 // No More Items Footer
-const NoMoreFooter = React.memo(() => (
+// To this
+const NoMoreFooter = React.memo(({ t }) => (
   <View style={styles.noMoreFooter}>
-    <Text style={styles.noMoreText}>No more notifications</Text>
+    <Text style={styles.noMoreText}>
+      {t('nomorenotifications')}
+    </Text>
   </View>
 ));
-
 const Notifications = React.memo(
   ({ navigation }) => {
     const [notifications, setNotifications] = useState([]);
@@ -136,7 +140,7 @@ const Notifications = React.memo(
     const [hasMore, setHasMore] = useState(true);
     const [selectedNotification, setSelectedNotification] = useState(null);
     const [notificationDetailModalVisible, setNotificationDetailModalVisible] = useState(false);
-
+    const { t } = useTranslation();
     // Optimized time calculation with memoization
     const calculateTimeSince = useCallback((updatedAt) => {
       const diffInMinutes = Math.floor(
@@ -184,11 +188,11 @@ const Notifications = React.memo(
             timeout: 3000,
           });
 
-          showToast("Notification has been deleted successfully.", "success");
+          showToast(t('notificationdeletedsuccessfully'), "success");
         } catch (error) {
           // Revert on error
           setNotifications(currentNotifications);
-          showToast("Failed to delete", "error");
+          showToast(t('failedtodeletenotification'), "error");
           GetAllNotification(false);
         }
       },
@@ -247,8 +251,8 @@ const Notifications = React.memo(
               }
             } else {
               setSelectedNotification({
-                title: "Post not found",
-                content: "This post is not available anymore",
+                title: t('postnotfound'),
+                content: t('thispostnotavailable'),
               });
               setNotificationDetailModalVisible(true);
             }
@@ -275,8 +279,8 @@ const Notifications = React.memo(
               });
             } else {
               setSelectedNotification({
-                title: "Post not found",
-                content: "This post is not available anymore",
+                title: t('postnotfound'),
+                content: t('thispostnotavailable'),
               });
               setNotificationDetailModalVisible(true);
             }
@@ -297,16 +301,16 @@ const Notifications = React.memo(
               navigation.push("WorkoutBuddies", { item: { id: item.data.id } });
             } else {
               setSelectedNotification({
-                title: "BuddyUp Event not found.",
-                content: "This BuddyUp Event is not available anymore",
+                title: t('buddyupnotfound'),
+                content: t('thisbuddyupnotavailable'),
               });
               setNotificationDetailModalVisible(true);
               return;
             }
           } catch (error) {
             setSelectedNotification({
-              title: "BuddyUp Event not found.",
-              content: "This BuddyUp Event is not available anymore",
+              title: t('buddyupnotfound'),
+              content: t('thisbuddyupnotavailable'),
             });
             setNotificationDetailModalVisible(true);
           }
@@ -366,7 +370,7 @@ const Notifications = React.memo(
 
         if (unreadCount === 0) {
           setMarkAllAsReadModalVisible(false);
-          showToast("All notifications are already read", "success");
+          showToast(t('allnotificationalreadyread'), "success");
           return;
         }
 
@@ -385,7 +389,7 @@ const Notifications = React.memo(
           );
 
           setMarkAllAsReadModalVisible(false);
-          showToast("All notifications marked as read", "success");
+          showToast(t('allnotificationmarkedasread'), "success");
         } catch (error) {
           console.log("Read all error:", error);
           showToast("Failed to mark all as read", "error");
@@ -414,10 +418,10 @@ const Notifications = React.memo(
             timeout: 3000,
           });
           setDeleteAllModalVisible(false);
-          showToast("All notifications have been deleted successfully.", "success");
+          showToast(t('allnotificationdeletedsuccessfully'), "success");
         } catch (error) {
           setNotifications(currentNotifications);
-          showToast("Failed to delete all", "error");
+          showToast(t('failedtodeleteallnotifications'), "error");
           GetAllNotification(false);
         }
       },
@@ -464,7 +468,7 @@ const Notifications = React.memo(
           setHasMore(response.result.currentPage < response.result.totalPages);
         } catch (error) {
           console.error("Fetch error:", error);
-          showToast("Failed to load notifications", "error");
+          showToast(t('failedtoloadnotifications'), "error");
         } finally {
           setDataLoading(false);
         }
@@ -513,7 +517,7 @@ const Notifications = React.memo(
     );
     const footerComponent = useMemo(() => {
       if (dataLoading) return <LoaderFooter />;
-      if (!hasMore && listData.length > 0) return <NoMoreFooter />;
+      if (!hasMore && listData.length > 0) return <NoMoreFooter t={t} />;
       return null;
     }, [dataLoading, hasMore, listData.length]);
 
@@ -526,7 +530,7 @@ const Notifications = React.memo(
         />
 
         <NotificationHeader
-          title="Notifications"
+          title={t('notifications')}
           navigation={navigation}
           modalVisible={deleteAllModalVisible}
           setModalVisible={setDeleteAllModalVisible}
@@ -536,7 +540,7 @@ const Notifications = React.memo(
         />
 
         {isEmpty ? (
-          <EmptyState />
+          <EmptyState t={t} />
         ) : (
           <FlatList
             data={listData}
@@ -568,22 +572,22 @@ const Notifications = React.memo(
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Delete All Notifications?</Text>
-              <Text style={styles.modalSubText}>This action cannot be undone.</Text>
+              <Text style={styles.modalTitle}>{t('deleteallNotification')}</Text>
+              <Text style={styles.modalSubText}>{t('actioncannotundone')}</Text>
               <View style={styles.modalActions}>
                 <TouchableOpacity
                   style={styles.cancelButton}
                   onPress={() => setDeleteAllModalVisible(false)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.cancelText}>Cancel</Text>
+                  <Text style={styles.cancelText}>{t('cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.deleteButton}
                   onPress={handleDeleteAllNotification}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.deleteText}>Delete All</Text>
+                  <Text style={styles.deleteText}>{t('deleteAll')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -608,7 +612,7 @@ const Notifications = React.memo(
                 onPress={() => setNotificationDetailModalVisible(false)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.closeText}>Close</Text>
+                <Text style={styles.closeText}>{t('close')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -622,15 +626,15 @@ const Notifications = React.memo(
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Mark All as Read?</Text>
-               <Text style={styles.modalSubText}>This will mark all your notifications as read.</Text>
+              <Text style={styles.modalTitle}>{t('markallasread')}</Text>
+              <Text style={styles.modalSubText}>{t('markallasread_description')}</Text>
               <View style={styles.modalActions}>
                 <TouchableOpacity
                   style={styles.cancelButton}
                   onPress={() => setMarkAllAsReadModalVisible(false)}
                   activeOpacity={0.7}
                 >
-                  <Text style={[styles.cancelText,{fontSize: 13}]}>Cancel</Text>
+                  <Text style={[styles.cancelText, { fontSize: 13 }]}>{t('cancel')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.readButton, dataLoading && styles.disabledButton]}
@@ -639,7 +643,7 @@ const Notifications = React.memo(
                   activeOpacity={0.7}
                 >
                   <Text style={styles.readText}>
-                    {dataLoading ? "Processing..." : "Mark All Read"}
+                    {dataLoading ? "Processing..." : t('markallread')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -753,7 +757,7 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#fff",
     borderRadius: 10,
-    justifyContent:'center',
+    justifyContent: 'center',
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -783,22 +787,22 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    paddingVertical:10,
+    paddingVertical: 10,
     backgroundColor: "#f8f9fa",
     borderRadius: 8,
     borderWidth: 1,
-    justifyContent:'center',
+    justifyContent: 'center',
     borderColor: "#e9ecef",
     alignItems: "center",
   },
   deleteButton: {
     flex: 1,
-    marginLeft:10,
-    paddingVertical:10,
+    marginLeft: 10,
+    paddingVertical: 10,
     backgroundColor: "#ff3b30",
     borderRadius: 8,
     borderWidth: 1,
-    justifyContent:'center',
+    justifyContent: 'center',
     borderColor: "#e9ecef",
     alignItems: "center",
   },
@@ -808,7 +812,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     backgroundColor: Colors.secondary,
     borderRadius: 8,
-    justifyContent:'center',
+    justifyContent: 'center',
     alignItems: "center",
   },
   disabledButton: {
@@ -856,12 +860,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.secondary,
     paddingVertical: 12,
     borderRadius: 8,
-    width:'100%'
+    width: '100%'
   },
   closeText: {
     fontFamily: "Poppins-SemiBold",
     color: "white",
-    textAlign:'center',
+    textAlign: 'center',
     fontWeight: "600",
     fontSize: 12,
   },

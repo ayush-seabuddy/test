@@ -26,11 +26,13 @@ import HelpLineHeader from "../component/headers/HelpLineScreensHeader/HelpLineH
 import LottieView from "lottie-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiCallWithToken, apiServerUrl } from "../Api";
+import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 const { width, height } = Dimensions.get("window");
 const AllListHelplinesForm = ({ navigation }) => {
   const [data, setData] = useState();
   const [loading, setLoading] = useState(false);
-
+  const { t } = useTranslation();
 
   const allFormList = async () => {
     const dbResult = await AsyncStorage.getItem("userDetails");
@@ -175,7 +177,7 @@ const AllListHelplinesForm = ({ navigation }) => {
               fontFamily: "Poppins-SemiBold",
             }}
           >
-            No Complaint History found!
+            {t('nocomplaintHistoryFound')}
           </Text>
         </View>
       )}

@@ -16,6 +16,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDispatch } from "react-redux";
 import { setSearchData } from "../../Redux/Search/action";
 import { useFocusEffect } from "@react-navigation/native";
+import { t } from "i18next";
 
 const SearchComponent = ({ navigation }) => {
   const [dataSearch, setdataSearch] = useState(null);
@@ -86,7 +87,7 @@ const SearchComponent = ({ navigation }) => {
         />
         <TextInput
           style={styles.searchInput}
-          placeholder="Type to search"
+          placeholder={t('typetosearch')}
           placeholderTextColor="#B7B7B7"
           value={dataSearch}
           onChangeText={SearchData}

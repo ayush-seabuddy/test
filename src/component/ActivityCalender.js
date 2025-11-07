@@ -1,35 +1,26 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-  Platform,
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform } from "react-native";
 import ProfleSettingHeader from "../component/headers/ProfileHeader/ProfleSettingHeader";
 import { Calendar } from "react-native-calendars";
 import FocusAwareStatusBar from "../statusbar/FocusAwareStatusBar";
 import Colors from "../colors/Colors";
 import moment from "moment";
 import CustomDateTimePicker from "./Modals/CustomDateTimePicker";
+import { useTranslation } from "react-i18next";
 
 const ActivityCalendar = ({ navigation, route }) => {
+  const { t } = useTranslation();
   const { Data } = route?.params || {};
 
   const extractDateTime = (dateTimeString) => {
     const momentObj = moment(dateTimeString);
-    return {
-      date: momentObj.format("YYYY-MM-DD"),
-      time: momentObj.toDate(),
-    };
+    return { date: momentObj.format("YYYY-MM-DD"), time: momentObj.toDate() };
   };
 
-  let initialStartDate = null;
-  let initialEndDate = null;
-  let initialStartTime = null;
-  let initialEndTime = null;
+  let initialStartDate = null,
+    initialEndDate = null,
+    initialStartTime = null,
+    initialEndTime = null;
 
   if (Data?.startDateTime) {
     const startDateTime = extractDateTime(Data.startDateTime);
@@ -51,19 +42,16 @@ const ActivityCalendar = ({ navigation, route }) => {
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
 
-  // Minimum start time = current time + 15 minutes
   const getMinimumStartTime = () => {
     const now = new Date();
     now.setSeconds(0);
     now.setMilliseconds(0);
-    now.setMinutes(now.getMinutes() + 15); // add 15 min
+    now.setMinutes(now.getMinutes() + 15);
     return now;
   };
 
   const getMinimumEndTime = () => {
-    if (startTime) {
-      return new Date(startTime.getTime() + 15 * 60 * 1000);
-    }
+    if (startTime) return new Date(startTime.getTime() + 15 * 60 * 1000);
     return getMinimumStartTime();
   };
 
@@ -72,11 +60,7 @@ const ActivityCalendar = ({ navigation, route }) => {
       setMarkedDates(getDateRange(initialStartDate, initialEndDate));
     } else if (initialStartDate) {
       setMarkedDates({
-        [initialStartDate]: {
-          selected: true,
-          color: "#6ab04c",
-          textColor: "white",
-        },
+        [initialStartDate]: { selected: true, color: "#6ab04c", textColor: "white" },
       });
     }
   }, [initialStartDate, initialEndDate]);
@@ -86,7 +70,7 @@ const ActivityCalendar = ({ navigation, route }) => {
     const today = moment().format("YYYY-MM-DD");
 
     if (selectedDate < today) {
-      alert("Cannot select a past date.");
+      alert(t("cannotSelectPastDate"));
       return;
     }
 
@@ -94,11 +78,7 @@ const ActivityCalendar = ({ navigation, route }) => {
       setStartDate(selectedDate);
       setEndDate(null);
       setMarkedDates({
-        [selectedDate]: {
-          selected: true,
-          color: "#6ab04c",
-          textColor: "white",
-        },
+        [selectedDate]: { selected: true, color: "#6ab04c", textColor: "white" },
       });
     } else {
       if (selectedDate > startDate) {
@@ -107,11 +87,7 @@ const ActivityCalendar = ({ navigation, route }) => {
       } else {
         setStartDate(selectedDate);
         setMarkedDates({
-          [selectedDate]: {
-            selected: true,
-            color: "#6ab04c",
-            textColor: "white",
-          },
+          [selectedDate]: { selected: true, color: "#6ab04c", textColor: "white" },
         });
       }
     }
@@ -135,47 +111,38 @@ const ActivityCalendar = ({ navigation, route }) => {
 
   const handleTimeChange = (event, selectedDate, type) => {
     if (!selectedDate) return;
+
     if (type === "start") {
       setShowStartPicker(false);
-
       const minStartTime = getMinimumStartTime();
       if (selectedDate < minStartTime) {
-        alert(`Start time must be at least 15 minutes from now.`);
+        alert(t("startTimeWarning"));
         return;
       }
-
       setStartTime(selectedDate);
-
-      // Update end time if needed
       if (endTime && endTime < new Date(selectedDate.getTime() + 15 * 60 * 1000)) {
         setEndTime(new Date(selectedDate.getTime() + 15 * 60 * 1000));
       }
-
     } else {
       setShowEndPicker(false);
-
-      const minEndTime = startDate === moment().format("YYYY-MM-DD")
-        ? new Date(Math.max(getMinimumEndTime().getTime(), new Date().getTime()))
-        : getMinimumEndTime();
+      const minEndTime =
+        startDate === moment().format("YYYY-MM-DD")
+          ? new Date(Math.max(getMinimumEndTime().getTime(), new Date().getTime()))
+          : getMinimumEndTime();
 
       if (selectedDate < minEndTime) {
-        alert("End time must be at least 15 minutes after start time and not in the past.");
+        alert(t("endTimeWarning"));
         return;
       }
-
       setEndTime(selectedDate);
     }
   };
 
-  const getTimeLabel = (time, placeholder) => {
-    return time ? moment(time).format("hh:mm A") : placeholder;
-  };
+  const getTimeLabel = (time, placeholder) =>
+    time ? moment(time).format("hh:mm A") : t(placeholder);
 
   const formatDateTime = (date, time) => {
-    if (!date || !time) {
-      console.warn(`Invalid date or time: date=${date}, time=${time}`);
-      return null;
-    }
+    if (!date || !time) return null;
     return moment(date)
       .set({
         hour: moment(time).hour(),
@@ -187,23 +154,18 @@ const ActivityCalendar = ({ navigation, route }) => {
 
   const handleSubmit = () => {
     if (!startDate || !startTime) {
-      alert("Please select a start date and time.");
+      alert(t("selectStartMessage"));
       return;
     }
-
     const startDateTime = formatDateTime(startDate, startTime);
     const endDateTime = endDate
       ? formatDateTime(endDate, endTime)
       : formatDateTime(startDate, endTime || startTime);
 
     if (!startDateTime || !endDateTime) {
-      alert("Invalid date or time selected. Please try again.");
+      alert(t("invalidDateTime"));
       return;
     }
-
-    console.log("📤 Sending to CreateGroupActivity:", {
-      data: { startDateTime, endDateTime },
-    });
 
     navigation.navigate("CreateGroupActivity", {
       data: { startDateTime, endDateTime },
@@ -212,93 +174,69 @@ const ActivityCalendar = ({ navigation, route }) => {
 
   return (
     <>
-      <FocusAwareStatusBar
-        barStyle={Platform.OS === "ios" ? "light-content" : "light-content"}
-        backgroundColor={Colors.white}
-      />
-      <ProfleSettingHeader
-        navigation={navigation}
-        title="Create your BuddyUp event"
-      />
+      <FocusAwareStatusBar barStyle="light-content" backgroundColor={Colors.white} />
+      <ProfleSettingHeader navigation={navigation} title={t("createBuddyEvent")} />
 
       <View style={styles.container}>
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           <View style={styles.calendarContainer}>
             <Calendar
-              enableSwipeMonths={true}
+              enableSwipeMonths
               minDate={new Date()}
               markingType={"period"}
               markedDates={markedDates}
               onDayPress={onDateSelect}
               theme={{
-                selectedDayBackgroundColor: "#B0DB02",
-                selectedDayTextColor: "blue",
                 todayTextColor: "#B0DB02",
                 arrowColor: "#B0DB02",
               }}
             />
           </View>
 
-          <TouchableOpacity
-            style={styles.pickerContainer}
-            onPress={() => setShowStartPicker(true)}
-          >
-            <Image
-              source={require("../assets/images/NewPostImage/clock.png")}
-              style={styles.icon}
-            />
+          <TouchableOpacity style={styles.pickerContainer} onPress={() => setShowStartPicker(true)}>
+            <Image source={require("../assets/images/NewPostImage/clock.png")} style={styles.icon} />
             <Text style={[styles.pickerText, !startTime && { color: "gray" }]}>
-              {getTimeLabel(startTime, "Start Time")}
+              {getTimeLabel(startTime, "startTime")}
             </Text>
           </TouchableOpacity>
+
           {showStartPicker && (
             <CustomDateTimePicker
               value={startTime || getMinimumStartTime()}
               mode="time"
-              minimumDate={getMinimumStartTime()} // allow exactly 15 minutes from now
-              onChange={(event, date) => handleTimeChange(event, date, "start")}
+              minimumDate={getMinimumStartTime()}
+              onChange={(e, d) => handleTimeChange(e, d, "start")}
               isVisible={showStartPicker}
               onClose={() => setShowStartPicker(false)}
             />
-
           )}
 
-          <TouchableOpacity
-            style={styles.pickerContainer}
-            onPress={() => setShowEndPicker(true)}
-          >
-            <Image
-              source={require("../assets/images/NewPostImage/clock.png")}
-              style={styles.icon}
-            />
+          <TouchableOpacity style={styles.pickerContainer} onPress={() => setShowEndPicker(true)}>
+            <Image source={require("../assets/images/NewPostImage/clock.png")} style={styles.icon} />
             <Text style={[styles.pickerText, !endTime && { color: "gray" }]}>
-              {getTimeLabel(endTime, "End Time")}
+              {getTimeLabel(endTime, "endTime")}
             </Text>
           </TouchableOpacity>
+
           {showEndPicker && (
             <CustomDateTimePicker
               value={endTime || getMinimumEndTime()}
               mode="time"
-              minimumDate={startDate === endDate ? getMinimumEndTime() : getMinimumStartTime()}
-              onChange={(event, date) => handleTimeChange(event, date, "end")}
+              minimumDate={getMinimumEndTime()}
+              onChange={(e, d) => handleTimeChange(e, d, "end")}
               isVisible={showEndPicker}
               onClose={() => setShowEndPicker(false)}
-              cancelText="Cancel"
-              confirmText="Done"
-              containerStyle={{ backgroundColor: "#fff" }}
-              buttonTextStyle={{ fontSize: 18, color: "#84A402" }}
+              cancelText={t("cancel")}
+              confirmText={t("done")}
             />
           )}
 
           <TouchableOpacity
-            style={[
-              styles.submitButton,
-              (!startDate || !startTime) && styles.disabledButton,
-            ]}
+            style={[styles.submitButton, (!startDate || !startTime) && styles.disabledButton]}
             onPress={handleSubmit}
             disabled={!startDate || !startTime}
           >
-            <Text style={styles.submitText}>Submit</Text>
+            <Text style={styles.submitText}>{t("submit")}</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
@@ -307,19 +245,10 @@ const ActivityCalendar = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  disabledButton: {
-    backgroundColor: "#c1c1c1",
-  },
-  content: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-  },
-  calendarContainer: {
-    marginBottom: 20,
-  },
+  container: { flex: 1 },
+  disabledButton: { backgroundColor: "#c1c1c1" },
+  content: { paddingHorizontal: 20, paddingVertical: 10 },
+  calendarContainer: { marginBottom: 20 },
   pickerContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -329,17 +258,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 10,
   },
-  pickerText: {
-    flex: 1,
-    fontSize: 16,
-    color: "gray",
-  },
-  icon: {
-    width: 24,
-    height: 24,
-    resizeMode: "contain",
-    marginRight: 10,
-  },
+  pickerText: { flex: 1, fontSize: 16 },
+  icon: { width: 24, height: 24, marginRight: 10 },
   submitButton: {
     backgroundColor: "#02130B",
     padding: 15,
@@ -347,11 +267,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 20,
   },
-  submitText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
+  submitText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
 });
 
 export default ActivityCalendar;

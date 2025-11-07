@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   FlatList,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import { ImagesAssets } from "../../assets/ImagesAssets";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -14,7 +15,8 @@ import { apiCallWithToken, apiServerUrl } from "../../Api";
 import { useFocusEffect } from "@react-navigation/native";
 import GroupActivity from "./GroupActivity";
 import Loader from "../Loader";
-import ActivityLog from "../../screens/ActivityLog";
+import { useTranslation } from "react-i18next";
+import Colors from "../../colors/Colors";
 
 const { height, width } = Dimensions.get("screen");
 
@@ -63,6 +65,7 @@ const GroupAct = ({ navigation }) => {
   const [groupActivities, setGroupActivities] = React.useState([]);
   const [loading, setLoading] = React.useState(false);
   const [menuVisible, setMenuVisible] = useState(null);
+  const { t } = useTranslation();
   const GetDatafromApi = async () => {
     try {
       setLoading(true);
@@ -115,63 +118,72 @@ const GroupAct = ({ navigation }) => {
       {/* <ActivityLog navigation={navigation} /> */}
       <View style={styles.cardsContainer}>
         {loading && <Loader />}
-        {groupActivities.length > 0 ? (
-          <FlatList
-            data={groupActivities}
-            renderItem={renderItem}
-            keyExtractor={(item, index) => index.toString()}
-            numColumns={2} // Display two columns
-            contentContainerStyle={styles.flatListContentContainer}
-            columnWrapperStyle={styles.columnWrapper} // Add space between columns
-            ListEmptyComponent={
-              !loading && (
-                <View
-                  style={{
-                    flex: 1,
-                    width: width,
-                    height: height * 0.4,
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <Text
+        {groupActivities.length > 0
+          ? (
+            <FlatList
+              data={groupActivities}
+              renderItem={renderItem}
+              keyExtractor={(item, index) => index.toString()}
+              numColumns={2} // Display two columns
+              contentContainerStyle={styles.flatListContentContainer}
+              columnWrapperStyle={styles.columnWrapper} // Add space between columns
+              ListEmptyComponent={
+                !loading && (
+                  <View
                     style={{
-                      fontSize: 20,
-                      color: "gray",
-                      fontFamily: "Poppins-Regular",
+                      flex: 1,
+                      width: width,
+                      height: height * 0.4,
+                      justifyContent: "center",
+                      alignItems: "center",
                     }}
                   >
-                    No post Found
-                  </Text>
-                </View>
-              )
-            }
-          />
-        ) : (
-          <View
-            style={{
-              flex: 1,
-              width: width - 28,
-              height: height * 0.4,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Image
-              style={{ height: 150, width: 150 }}
-              source={require("../../assets/images/AnotherImage/no-content.png")}
+                    <Text
+                      style={{
+                        fontSize: 20,
+                        color: "gray",
+                        fontFamily: "Poppins-Regular",
+                      }}
+                    >
+                      {t('nopostfound')}
+                    </Text>
+                  </View>
+                )
+              }
             />
-            <Text
-              style={{
-                fontSize: 20,
-                color: "gray",
-                fontFamily: "Poppins-Regular",
-              }}
-            >
-              No BuddyUp Event Found
-            </Text>
-          </View>
-        )}
+          )
+          : loading ?
+            <View style={{height:height / 2,justifyContent:'center',alignItems:'center'}}>
+              <ActivityIndicator size={"large"} color={Colors.secondary} />
+
+            </View>
+            : (
+              <View
+                style={{
+                  flex: 1,
+                  width: width - 28,
+                  height: height * 0.4,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Image
+                  style={{ height: 150, width: 150 }}
+                  source={require("../../assets/images/AnotherImage/no-content.png")}
+                />
+                <Text
+                  style={{
+                    fontSize: 16,
+                    marginTop: 20,
+                    color: "gray",
+                    fontFamily: "Poppins-Regular",
+                  }}
+                >
+                  {t('nobuddyupfound')}
+                </Text>
+              </View>
+            )
+        }
       </View>
     </View>
   );

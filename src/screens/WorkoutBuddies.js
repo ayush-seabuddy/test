@@ -23,6 +23,7 @@ import Loader from "../component/Loader";
 import Toast from "react-native-toast-message";
 import { Modal } from "react-native-paper";
 import api from "../CustomAxios";
+import { useTranslation } from "react-i18next";
 const { width, height } = Dimensions.get("window");
 
 const WorkoutBuddies = ({ navigation, route }) => {
@@ -42,7 +43,7 @@ const WorkoutBuddies = ({ navigation, route }) => {
   const [peopleDetails, setPeopleDetails] = useState();
   const [notificationDetailModalVisible, setNotificationDetailModalVisible] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(null);
-
+  const { t } = useTranslation();
   const handleApporve = async () => {
     navigation.navigate("AppNav", {
       screen: "ApprovalFromCaptain",
@@ -237,7 +238,7 @@ const WorkoutBuddies = ({ navigation, route }) => {
       {loading && <Loader isLoading={loading} />}
       <WorkoutBuddiesHeader
         navigation={navigation}
-        headername={"Activity Details"}
+        headername={t('activityDetails')}
       />
       <FocusAwareStatusBar
         barStyle={Platform.OS === "ios" ? "light-content" : "light-content"}
@@ -256,7 +257,7 @@ const WorkoutBuddies = ({ navigation, route }) => {
           }
         />
       </View>
-{/* Join Button */}
+      {/* Join Button */}
       <View style={{ paddingHorizontal: 16, paddingBottom: "7%", position: "absolute", bottom: 0, width: "100%" }}>
         {(userDetails && (userDetails.designation === "Captain" || userDetails.designation === "Chief engineer")) ? (
           isJoined ? (
@@ -280,7 +281,7 @@ const WorkoutBuddies = ({ navigation, route }) => {
                     })
                   }
                 >
-                  <Text style={styles.submitButtonText}>PENDING (Re-Schedule)</Text>
+                  <Text style={styles.submitButtonText}>{t('pendingreschedule')}</Text>
                 </TouchableOpacity>
               ) : (
                 <TouchableOpacity
@@ -289,7 +290,7 @@ const WorkoutBuddies = ({ navigation, route }) => {
                   disabled={eventDetail.status === "COMPLETED"}
                 >
                   <Text style={styles.submitButtonText}>
-                    {eventDetail.status === "COMPLETED" ? "COMPLETED" : "MARK AS COMPLETE"}
+                    {eventDetail.status === "COMPLETED" ? t('completed') : t('markascomplete')}
                   </Text>
                 </TouchableOpacity>
               )
@@ -305,7 +306,7 @@ const WorkoutBuddies = ({ navigation, route }) => {
                 ]}
                 disabled={true}
               >
-                <Text style={styles.submitButtonText}>Joined</Text>
+                <Text style={styles.submitButtonText}>{t('joined')}</Text>
               </TouchableOpacity>
             )
           ) : isEventEnded ? (
@@ -327,7 +328,7 @@ const WorkoutBuddies = ({ navigation, route }) => {
                   }}
                   onPress={() => handleApporvalGivenByUser("REJECTED")}
                 >
-                  <Text style={styles.submitButtonText}>Reject</Text>
+                  <Text style={styles.submitButtonText}>{t('reject')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={{
@@ -340,7 +341,7 @@ const WorkoutBuddies = ({ navigation, route }) => {
                   }}
                   onPress={() => handleApporvalGivenByUser("COMPLETED")}
                 >
-                  <Text style={styles.submitButtonText}>Approve</Text>
+                  <Text style={styles.submitButtonText}>{t('approve')}</Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -356,7 +357,7 @@ const WorkoutBuddies = ({ navigation, route }) => {
                 disabled={true}
               >
                 <Text style={styles.submitButtonText}>
-                  {eventDetail.isJoined ? "Joined" : "Join"}
+                  {eventDetail.isJoined ? t('joined') : t('join')}
                 </Text>
               </TouchableOpacity>
             )
@@ -373,7 +374,7 @@ const WorkoutBuddies = ({ navigation, route }) => {
               disabled={true}
             >
               <Text style={styles.submitButtonText}>
-                {eventDetail.isJoined ? "Joined" : "Join"}
+                {eventDetail.isJoined ? t('joined') : t('join')}
               </Text>
             </TouchableOpacity>
           ) : (
@@ -390,7 +391,7 @@ const WorkoutBuddies = ({ navigation, route }) => {
               disabled={eventDetail.isJoined}
             >
               <Text style={styles.submitButtonText}>
-                {eventDetail.isJoined ? "Joined" : "Join"}
+                {eventDetail.isJoined ? t('joined') : t('join')}
               </Text>
             </TouchableOpacity>
           )
@@ -412,8 +413,8 @@ const WorkoutBuddies = ({ navigation, route }) => {
                 {eventDetail.status === "COMPLETED"
                   ? "Completed"
                   : eventDetail.status === "REQUESTED"
-                  ? "Requested For Approval"
-                  : "Request For Approval"}
+                    ? "Requested For Approval"
+                    : "Request For Approval"}
               </Text>
             </TouchableOpacity>
           ) : isEventStarted ? (
@@ -429,7 +430,7 @@ const WorkoutBuddies = ({ navigation, route }) => {
               disabled={true}
             >
               <Text style={styles.submitButtonText}>
-                {eventDetail.isJoined ? "Joined" : "Join"}
+                {eventDetail.isJoined ? t('joined') : t('join')}
               </Text>
             </TouchableOpacity>
           ) : (
@@ -446,7 +447,7 @@ const WorkoutBuddies = ({ navigation, route }) => {
               disabled={isJoined}
             >
               <Text style={styles.submitButtonText}>
-                {isJoined ? "Joined" : "Join"}
+                {isJoined ? t('joined') : t('join')}
               </Text>
             </TouchableOpacity>
           )
@@ -463,7 +464,7 @@ const WorkoutBuddies = ({ navigation, route }) => {
             disabled={true}
           >
             <Text style={styles.submitButtonText}>
-              {eventDetail.isJoined ? "Joined" : "Join"}
+              {eventDetail.isJoined ? t('joined') : t('join')}
             </Text>
           </TouchableOpacity>
         ) : (
@@ -485,7 +486,7 @@ const WorkoutBuddies = ({ navigation, route }) => {
                 isAnotherUserJoined && { color: "white" },
               ]}
             >
-              {isAnotherUserJoined ? "Joined" : "Join"}
+              {isAnotherUserJoined ? t('joined') : t('join')}
             </Text>
           </TouchableOpacity>
         )}
@@ -533,7 +534,7 @@ const WorkoutBuddies = ({ navigation, route }) => {
                 }}
                 style={styles.closeButton}
               >
-                <Text style={styles.closeButtonText}>Close</Text>
+                <Text style={styles.closeButtonText}>{t('close')}</Text>
               </TouchableOpacity>
             </View>
           </View>

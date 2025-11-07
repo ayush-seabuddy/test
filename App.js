@@ -87,15 +87,17 @@ function buildDeepLinkFromNotificationData(data) {
   }
   if (navigationId === "ANNOUNCEMENT") {
     const item = data?.item;
+    console.log(item,"KILLED STATE")
     return item
       ? `seabuddyapp://app/AnouncementDetails/${encodeURIComponent(
-          JSON.stringify(item)
-        )}`
+        JSON.stringify(item)
+      )}`
       : `seabuddyapp://app/AnouncementDetails`;
   }
   if (navigationId === "CONTENT") {
     const contentType = data?.contentType;
     const item = data?.item;
+    console.log(item,'KILLED STATE CONTENT')
     if (!contentType) {
       console.warn("Missing contentType for CONTENT navigationId:", data);
       return null;
@@ -106,29 +108,29 @@ function buildDeepLinkFromNotificationData(data) {
       case "MUSIC":
         url = item
           ? `seabuddyapp://app/MusicPlayer/${encodeURIComponent(
-              JSON.stringify(item)
-            )}`
+            JSON.stringify(item)
+          )}`
           : `seabuddyapp://app/MusicPlayer`;
         break;
       case "ANNOUNCEMENT":
         url = item
           ? `seabuddyapp://app/AnouncementDetails/${encodeURIComponent(
-              JSON.stringify(item)
-            )}`
+            JSON.stringify(item)
+          )}`
           : `seabuddyapp://app/AnouncementDetails`;
         break;
       case "VIDEO":
         url = item
           ? `seabuddyapp://app/VideosDetails/${encodeURIComponent(
-              JSON.stringify(item)
-            )}`
+            JSON.stringify(item)
+          )}`
           : `seabuddyapp://app/VideosDetails`;
         break;
       case "ARTICLE":
         url = item
           ? `seabuddyapp://app/ArticlesDetails/${encodeURIComponent(
-              JSON.stringify(item)
-            )}`
+            JSON.stringify(item)
+          )}`
           : `seabuddyapp://app/ArticlesDetails`;
         break;
       default:
@@ -497,15 +499,24 @@ const App = () => {
 
   const handleLogout = async () => {
     try {
+      const language = await AsyncStorage.getItem('userLanguage');
+
       await AsyncStorage.clear();
-      if (linkData) {
-        navigationRef.current?.reset({
-          index: 0,
-          routes: [{ name: "RegisterData", params: linkData }],
-        });
+
+      if (language) {
+        await AsyncStorage.setItem('userLanguage', language);
       }
-    } catch (error) {
-      console.error("Error clearing AsyncStorage:", error);
+
+      const resetRoute = linkData
+        ? { name: 'RegisterData', params: linkData }
+        : { name: 'Login' };
+
+      navigationRef.current?.reset({
+        index: 0,
+        routes: [resetRoute],
+      });
+    } catch (err) {
+      console.error('Logout process encountered an exception:', err);
     } finally {
       setIsModalVisible(false);
     }

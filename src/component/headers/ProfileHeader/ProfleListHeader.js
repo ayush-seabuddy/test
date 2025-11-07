@@ -1,8 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 const ProfileListHeader = ({ activeTab, setActiveTab }) => {
-  const tabs = ['About', 'Posts', 'BuddyUp', 'Assessments'];
+  const { t } = useTranslation();
+  const tabs = [t('about'), t('posts'), t('buddyuponprofile'), t('assessments')];
 
   return (
     <View style={styles.container}>

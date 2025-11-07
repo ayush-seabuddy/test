@@ -13,6 +13,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import Pdf from "react-native-pdf";
 import { WebView } from "react-native-webview";
+import { useTranslation } from "react-i18next";
 
 const { height, width } = Dimensions.get("window");
 
@@ -25,7 +26,7 @@ const PDFModal = ({
 }) => {
   const navigation = useNavigation();
   const [useWebView, setUseWebView] = useState(false);
-
+  const { t } = useTranslation();
   const pdfModalStyle = {
     backgroundColor: "#fff",
     alignItems: "center",
@@ -86,7 +87,7 @@ const PDFModal = ({
                 }
                 onError={(error) => {
                   console.warn("PDF load error:", error);
-                  setUseWebView(true); // fallback to WebView
+                  setUseWebView(true); 
                 }}
                 activityIndicator={<ActivityIndicator size="large" color="#007AFF" />}
               />
@@ -101,12 +102,12 @@ const PDFModal = ({
                 renderLoading={() => (
                   <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="#007AFF" />
-                    <Text>Loading PDF...</Text>
+                    <Text>{t('loadingpdf')}</Text>
                   </View>
                 )}
                 renderError={() => (
                   <View style={styles.loadingContainer}>
-                    <Text>Error loading PDF. Please try again.</Text>
+                    <Text>{t('errorloadingpdf')}</Text>
                     <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                       <Text style={styles.closeButtonText}>Close</Text>
                     </TouchableOpacity>

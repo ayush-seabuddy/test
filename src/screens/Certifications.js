@@ -23,6 +23,7 @@ import LottieView from "lottie-react-native";
 import CustomLottie from "../component/CustomLottie";
 import CustomDateTimePicker from "../component/Modals/CustomDateTimePicker";
 import api from "../CustomAxios";
+import { useTranslation } from "react-i18next";
 
 const { height, width } = Dimensions.get("screen");
 
@@ -40,7 +41,7 @@ const Certifications = ({ navigation }) => {
   const [editId, setEditID] = useState("");
   const [isUpdate, setIsUpdate] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-
+  const { t } = useTranslation();
 
   const convertToISOString = (dateString) => {
     // Split the input date (assuming format is "DD/MM/YYYY")
@@ -125,7 +126,7 @@ const Certifications = ({ navigation }) => {
         getProfileDetails();
         Toast.show({
           type: "success",
-          text1: "Certificate deleted.",
+          text1: t('certificatedeletedsuccessfully'),
           text2: response.responseMessage,
           autoHide: true,
           visibilityTime: 2000,
@@ -146,7 +147,7 @@ const Certifications = ({ navigation }) => {
       console.log("API Error:", error.response?.data || error.message);
       Toast.show({
         type: "error",
-        text1: "Something went wrong!",
+        text1: t('somethingwentwrong'),
         text2: response.responseMessage,
         autoHide: true,
         visibilityTime: 2000,
@@ -169,21 +170,21 @@ const Certifications = ({ navigation }) => {
 
   const validateInputs = () => {
     const newErrors = {
-      jobTitle: jobTitle ? "" : "Certificate name is required.",
-      company: company ? "" : "Organization name is required.",
-      startDate: startDate ? "" : "Start Date is required.",
-      endDate: endDate ? "" : "End Date is required.",
+      jobTitle: jobTitle ? "" : t("certificate_required"),
+      company: company ? "" : t("organization_required"),
+      startDate: startDate ? "" : t("start_date_required"),
+      endDate: endDate ? "" : t("end_date_required"),
     };
 
-    // Date validation: Start Date should not be later than End Date
     if (startDate && endDate && startDate > endDate) {
-      newErrors.startDate = "Start Date cannot be later than End Date.";
-      newErrors.endDate = "End Date cannot be earlier than Start Date.";
+      newErrors.startDate = t("start_date_invalid");
+      newErrors.endDate = t("end_date_invalid");
     }
 
     setErrors(newErrors);
     return Object.values(newErrors).every((error) => !error);
   };
+
 
   const addExperience = async () => {
     if (!validateInputs()) return;
@@ -268,7 +269,7 @@ const Certifications = ({ navigation }) => {
 
         Toast.show({
           type: "success",
-          text1: "Certificate added successfully.",
+          text1: t('certificateaddedsuccessfully'),
         });
       } else {
         console.error("Error updating profile:", response.data);
@@ -296,7 +297,7 @@ const Certifications = ({ navigation }) => {
         // Add existing experiences to state
         setExperiences(response.data.result.certifications);
 
-         if (response.data.result?.companyLogo) {
+        if (response.data.result?.companyLogo) {
           userDetails.companyLogo = response?.data?.result?.companyLogo
         }
         if (response.data.result?.companyName) {
@@ -322,7 +323,7 @@ const Certifications = ({ navigation }) => {
 
   return (
     <>
-      <ProfileSettingHeader navigation={navigation} title="Certifications" />
+      <ProfileSettingHeader navigation={navigation} title={t('certifications')} />
       {loading && <Loader />}
       <View style={{ flex: 1, padding: 14 }}>
         {/* <TextInput
@@ -356,7 +357,7 @@ const Certifications = ({ navigation }) => {
         )} */}
 
         <TextInput
-          label="Certificate Name"
+          label={t('certificateName')}
           value={jobTitle}
           onChangeText={handleJobTitleChange}
           mode="outlined"
@@ -371,7 +372,7 @@ const Certifications = ({ navigation }) => {
         )}
 
         <TextInput
-          label="Organization Name"
+          label={t('organizationName')}
           value={company}
           onChangeText={handleCompanyChange}
           mode="outlined"
@@ -392,7 +393,7 @@ const Certifications = ({ navigation }) => {
           }}
         >
           <TextInput
-            label="Start Date"
+            label={t('startdate')}
             value={startDate ? new Date(startDate).toLocaleDateString() : ""}
             mode="outlined"
             editable={false} // Prevents keyboard
@@ -441,7 +442,7 @@ const Certifications = ({ navigation }) => {
           }}
         >
           <TextInput
-            label="End Date"
+            label={t('enddate')}
             value={endDate ? new Date(endDate).toLocaleDateString() : ""}
             mode="outlined"
             editable={false} // Prevents keyboard
@@ -502,7 +503,7 @@ const Certifications = ({ navigation }) => {
                 fontSize: 18,
               }}
             >
-              Add Certification
+              {t('addCertificate')}
             </Text>
           </TouchableOpacity>
         ) : (
@@ -526,7 +527,7 @@ const Certifications = ({ navigation }) => {
                 fontSize: 18,
               }}
             >
-              Edit Certification
+              {t('editCertificate')}
             </Text>
           </TouchableOpacity>
         )}
@@ -619,13 +620,13 @@ const Certifications = ({ navigation }) => {
               }}
             >
               <View>
-              <Text style={{ fontFamily: "Poppins-SemiBold", fontSize: 12 }}>
+                <Text style={{ fontFamily: "Poppins-SemiBold", fontSize: 12 }}>
                   {item.role}
                 </Text>
-                <Text style={{ fontFamily: "Poppins-Regular", fontSize: 10}}>
+                <Text style={{ fontFamily: "Poppins-Regular", fontSize: 10 }}>
                   {item.companyName}
                 </Text>
-                
+
                 <Text style={{ fontFamily: "Poppins-Regular", fontSize: 10 }}>
                   {item.from} - {item.to}
                 </Text>
@@ -693,7 +694,7 @@ const Certifications = ({ navigation }) => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalText}>
-              Are you sure you want to delete this certifications?
+              {t('deletecertificateconfirmation')}
             </Text>
             <View style={styles.modalActions}>
               <TouchableOpacity
@@ -703,13 +704,13 @@ const Certifications = ({ navigation }) => {
                 }}
                 style={styles.cancelButton}
               >
-                <Text style={styles.cancelButtonText}>No</Text>
+                <Text style={styles.cancelButtonText}>{t('no')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => handleDelete()}
                 style={styles.deleteButton}
               >
-                <Text style={styles.deleteButtonText}>Yes</Text>
+                <Text style={styles.deleteButtonText}>{t('yes')}</Text>
               </TouchableOpacity>
             </View>
           </View>

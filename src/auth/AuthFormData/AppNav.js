@@ -39,7 +39,6 @@ import EventList from "../../screens/EventList";
 import WorkoutBuddies from "../../screens/WorkoutBuddies";
 import Leaderboard from "../../screens/LeaderboardScreens/Leaderboard";
 import CrewProfile from "../../screens/LeaderboardScreens/CrewProfile";
-import ActivityLog from "../../screens/ActivityLog";
 import CrewList from "../../screens/CrewList";
 import AiChat from "../../screens/AiChat";
 import Setting from "../../screens/Setting";
@@ -91,6 +90,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import ChangePasswordScreen from "../../screens/ChangePassword";
 import Profile from "../../screens/Profile";
 import CustomSurvey from "../../CustomSurvey";
+import ChangeLanguage from "../../screens/ChangeLanguage";
 
 const Stack = createStackNavigator();
 
@@ -342,11 +342,6 @@ const AppNav = () => {
       <Stack.Screen
         name="Profile"
         component={Profile}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="ActivityLog"
-        component={ActivityLog}
         options={{ headerShown: false }}
       />
       <Stack.Screen
@@ -613,6 +608,13 @@ const AppNav = () => {
       <Stack.Screen
         name="CustomSurvey"
         component={CustomSurvey}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="ChangeLanguage"
+        component={ChangeLanguage}
         options={{
           headerShown: false,
         }}
