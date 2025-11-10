@@ -1,7 +1,0 @@
-<resources>
-    <string-array name="health_permissions">
-        <item>android.permission.health.READ_SLEEP</item>
-        <item>android.permission.health.WRITE_SLEEP</item>
-        <item>android.permission.ACCESS_HEALTH_CONNECT</item> <!-- Required for Health Connect -->
-    </string-array>
-</resources>
