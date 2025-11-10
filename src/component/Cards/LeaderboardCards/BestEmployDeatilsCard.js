@@ -22,6 +22,7 @@ import { useDispatch } from "react-redux";
 import { Modal } from "react-native-paper";
 import MediaPreviewModal from "../../Modals/MediaPreviewModal";
 import { formatShipName } from "../../../Api";
+import { useTranslation } from "react-i18next";
 
 const { width, height } = Dimensions.get("screen");
 const BestEmployDeatilsCard = ({ crew }) => {
@@ -29,7 +30,7 @@ const BestEmployDeatilsCard = ({ crew }) => {
   const dispatch = useDispatch();
   // navigation.navigate("ChatRoom", { data: item });
 
-
+  const { t } = useTranslation();
   const handleOpenLink = async (item) => {
     const url = item.link;
 
@@ -123,7 +124,7 @@ const BestEmployDeatilsCard = ({ crew }) => {
           backgroundColor: "rgba(255, 255, 255, 0.07)",
           paddingHorizontal: 25,
           paddingVertical: 40,
-          borderRadius: 32,
+          borderRadius: 20,
           overflow: "hidden",
         }}
       >
@@ -345,7 +346,7 @@ const BestEmployDeatilsCard = ({ crew }) => {
         </View>
 
 
-        <Text style={styles.aboutText}>More Information</Text>
+        <Text style={styles.aboutText}>{t('moreinformation')}</Text>
         <View style={{ paddingVertical: 10 }}>
 
 
@@ -360,7 +361,7 @@ const BestEmployDeatilsCard = ({ crew }) => {
               <Text
                 style={styles.aboutTextHeading}
               >
-                Vessel
+                {t('vessel')}
               </Text>
               <Text
                 style={styles.aboutTextItem}
@@ -382,7 +383,7 @@ const BestEmployDeatilsCard = ({ crew }) => {
               <Text
                 style={styles.aboutTextHeading}
               >
-                Status
+                {t('status')}
               </Text>
               <Text
                 style={styles.aboutTextItem}
@@ -407,7 +408,7 @@ const BestEmployDeatilsCard = ({ crew }) => {
             <Text
               style={styles.aboutTextHeading}
             >
-              Hobbies
+              {t('hobbies')}
             </Text>
             <Text
               style={styles.aboutTextItem}
@@ -426,7 +427,7 @@ const BestEmployDeatilsCard = ({ crew }) => {
             <Text
               style={styles.aboutTextHeading}
             >
-              Onboard interests
+              {t('onboardinterests')}
             </Text>
             <Text
               style={styles.aboutTextItem}
@@ -482,7 +483,7 @@ const BestEmployDeatilsCard = ({ crew }) => {
                   lineHeight: 14.4,
                 }}
               >
-                Crew Ranking
+                {t('crewranking')}
               </Text>
             </View>
           )}
@@ -517,7 +518,7 @@ const BestEmployDeatilsCard = ({ crew }) => {
                 textAlign: "center",
               }}
             >
-              Years of Experience
+              {t('yearsofexperience')}
             </Text>
           </View>
 
@@ -529,7 +530,7 @@ const BestEmployDeatilsCard = ({ crew }) => {
           style={{
             backgroundColor: "rgba(255, 255, 255, 0.07)",
             padding: 16,
-            borderRadius: 32,
+            borderRadius: 20,
             overflow: "hidden",
             marginTop: 7,
           }}
@@ -553,10 +554,9 @@ const BestEmployDeatilsCard = ({ crew }) => {
                 fontSize: 18,
                 color: "black",
                 fontFamily: "WhyteInktrap-Bold",
-                paddingTop: 20
               }}
             >
-              Experience
+              {t('experience')}
             </Text>
           </View>
 
@@ -629,7 +629,7 @@ const BestEmployDeatilsCard = ({ crew }) => {
                     marginTop: 5,
                     color: "rgba(69, 69, 69, 1)",
                     fontFamily: 'Poppins-Regular',
-                    lineHeight: 12,
+                    lineHeight: 20,
                   }}
                 >
                   {item?.role.slice(0, 30) || ""}
@@ -647,7 +647,7 @@ const BestEmployDeatilsCard = ({ crew }) => {
           style={{
             backgroundColor: "rgba(255, 255, 255, 0.07)",
             padding: 16,
-            borderRadius: 32,
+            borderRadius: 20,
             overflow: "hidden",
             marginTop: 7,
           }}
@@ -674,7 +674,7 @@ const BestEmployDeatilsCard = ({ crew }) => {
                 paddingTop: Platform.OS === "ios" ? 20 : null,
               }}
             >
-              Socials
+              {t('socials')}
             </Text>
           </View>
 

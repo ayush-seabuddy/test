@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Platform } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+} from "react-native";
 import ProfleSettingHeader from "../component/headers/ProfileHeader/ProfleSettingHeader";
 import { Calendar } from "react-native-calendars";
 import FocusAwareStatusBar from "../statusbar/FocusAwareStatusBar";
@@ -12,9 +19,10 @@ const ActivityCalendar = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { Data } = route?.params || {};
 
+  // ---------- Extract initial values ----------
   const extractDateTime = (dateTimeString) => {
-    const momentObj = moment(dateTimeString);
-    return { date: momentObj.format("YYYY-MM-DD"), time: momentObj.toDate() };
+    const m = moment(dateTimeString);
+    return { date: m.format("YYYY-MM-DD"), time: m.toDate() };
   };
 
   let initialStartDate = null,
@@ -23,17 +31,17 @@ const ActivityCalendar = ({ navigation, route }) => {
     initialEndTime = null;
 
   if (Data?.startDateTime) {
-    const startDateTime = extractDateTime(Data.startDateTime);
-    initialStartDate = startDateTime.date;
-    initialStartTime = startDateTime.time;
+    const s = extractDateTime(Data.startDateTime);
+    initialStartDate = s.date;
+    initialStartTime = s.time;
   }
-
   if (Data?.endDateTime) {
-    const endDateTime = extractDateTime(Data.endDateTime);
-    initialEndDate = endDateTime.date;
-    initialEndTime = endDateTime.time;
+    const e = extractDateTime(Data.endDateTime);
+    initialEndDate = e.date;
+    initialEndTime = e.time;
   }
 
+  // ---------- State ----------
   const [startDate, setStartDate] = useState(initialStartDate);
   const [endDate, setEndDate] = useState(initialEndDate);
   const [startTime, setStartTime] = useState(initialStartTime);
@@ -42,17 +50,47 @@ const ActivityCalendar = ({ navigation, route }) => {
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
 
+  const todayStr = moment().format("YYYY-MM-DD");
+
   const getMinimumStartTime = () => {
-    const now = new Date();
-    now.setSeconds(0);
-    now.setMilliseconds(0);
-    now.setMinutes(now.getMinutes() + 15);
-    return now;
+    if (!startDate || startDate === todayStr) {
+      const now = new Date();
+      now.setSeconds(0);
+      now.setMilliseconds(0);
+      now.setMinutes(now.getMinutes() + 15);
+      return now;
+    }
+    return moment(startDate).startOf("day").toDate();
   };
 
   const getMinimumEndTime = () => {
-    if (startTime) return new Date(startTime.getTime() + 15 * 60 * 1000);
-    return getMinimumStartTime();
+    if (!startTime || !startDate) return getMinimumStartTime();
+
+    const startDT = new Date(startDate);
+    startDT.setHours(
+      startTime.getHours(),
+      startTime.getMinutes(),
+      startTime.getSeconds(),
+      0
+    );
+
+    const minFromStart = new Date(startDT.getTime() + 15 * 60 * 1000); // +15 min
+
+    const effectiveEndDate = endDate || startDate;
+
+    if (endDate && endDate > startDate) {
+      return moment(effectiveEndDate).startOf("day").toDate();
+    }
+
+    if (effectiveEndDate === todayStr) {
+      const nowPlus15 = new Date();
+      nowPlus15.setSeconds(0);
+      nowPlus15.setMilliseconds(0);
+      nowPlus15.setMinutes(nowPlus15.getMinutes() + 15);
+      return new Date(Math.max(minFromStart.getTime(), nowPlus15.getTime()));
+    }
+
+    return minFromStart;
   };
 
   useEffect(() => {
@@ -60,53 +98,61 @@ const ActivityCalendar = ({ navigation, route }) => {
       setMarkedDates(getDateRange(initialStartDate, initialEndDate));
     } else if (initialStartDate) {
       setMarkedDates({
-        [initialStartDate]: { selected: true, color: "#6ab04c", textColor: "white" },
+        [initialStartDate]: {
+          selected: true,
+          color: "#6ab04c",
+          textColor: "white",
+        },
       });
     }
-  }, [initialStartDate, initialEndDate]);
+  }, []);
+
+  const getDateRange = (start, end) => {
+    const range = {};
+    let current = new Date(start);
+    const endDate = new Date(end);
+    while (current <= endDate) {
+      const str = moment(current).format("YYYY-MM-DD");
+      range[str] = {
+        color: "#6ab04c",
+        textColor: "white",
+        startingDay: str === start,
+        endingDay: str === end,
+      };
+      current.setDate(current.getDate() + 1);
+    }
+    return range;
+  };
 
   const onDateSelect = (day) => {
-    const selectedDate = day.dateString;
-    const today = moment().format("YYYY-MM-DD");
-
-    if (selectedDate < today) {
+    const selected = day.dateString;
+    if (selected < todayStr) {
       alert(t("cannotSelectPastDate"));
       return;
     }
 
     if (!startDate || (startDate && endDate)) {
-      setStartDate(selectedDate);
+      setStartDate(selected);
       setEndDate(null);
+      setStartTime(null);
+      setEndTime(null);
       setMarkedDates({
-        [selectedDate]: { selected: true, color: "#6ab04c", textColor: "white" },
+        [selected]: { selected: true, color: "#6ab04c", textColor: "white" },
       });
     } else {
-      if (selectedDate > startDate) {
-        setEndDate(selectedDate);
-        setMarkedDates(getDateRange(startDate, selectedDate));
+      if (selected >= startDate) {
+        setEndDate(selected);
+        setMarkedDates(getDateRange(startDate, selected));
       } else {
-        setStartDate(selectedDate);
+        setStartDate(selected);
+        setEndDate(null);
+        setStartTime(null);
+        setEndTime(null);
         setMarkedDates({
-          [selectedDate]: { selected: true, color: "#6ab04c", textColor: "white" },
+          [selected]: { selected: true, color: "#6ab04c", textColor: "white" },
         });
       }
     }
-  };
-
-  const getDateRange = (start, end) => {
-    let range = {};
-    let currentDate = new Date(start);
-    while (currentDate <= new Date(end)) {
-      const dateStr = moment(currentDate).format("YYYY-MM-DD");
-      range[dateStr] = {
-        color: "#6ab04c",
-        textColor: "white",
-        startingDay: dateStr === start,
-        endingDay: dateStr === end,
-      };
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-    return range;
   };
 
   const handleTimeChange = (event, selectedDate, type) => {
@@ -114,23 +160,19 @@ const ActivityCalendar = ({ navigation, route }) => {
 
     if (type === "start") {
       setShowStartPicker(false);
-      const minStartTime = getMinimumStartTime();
-      if (selectedDate < minStartTime) {
+      if (selectedDate < getMinimumStartTime()) {
         alert(t("startTimeWarning"));
         return;
       }
       setStartTime(selectedDate);
+
+      // Auto-adjust end time if it becomes invalid
       if (endTime && endTime < new Date(selectedDate.getTime() + 15 * 60 * 1000)) {
         setEndTime(new Date(selectedDate.getTime() + 15 * 60 * 1000));
       }
     } else {
       setShowEndPicker(false);
-      const minEndTime =
-        startDate === moment().format("YYYY-MM-DD")
-          ? new Date(Math.max(getMinimumEndTime().getTime(), new Date().getTime()))
-          : getMinimumEndTime();
-
-      if (selectedDate < minEndTime) {
+      if (selectedDate < getMinimumEndTime()) {
         alert(t("endTimeWarning"));
         return;
       }
@@ -145,9 +187,9 @@ const ActivityCalendar = ({ navigation, route }) => {
     if (!date || !time) return null;
     return moment(date)
       .set({
-        hour: moment(time).hour(),
-        minute: moment(time).minute(),
-        second: moment(time).second(),
+        hour: time.getHours(),
+        minute: time.getMinutes(),
+        second: time.getSeconds(),
       })
       .format("YYYY-MM-DD HH:mm:ss");
   };
@@ -157,18 +199,14 @@ const ActivityCalendar = ({ navigation, route }) => {
       alert(t("selectStartMessage"));
       return;
     }
-    const startDateTime = formatDateTime(startDate, startTime);
-    const endDateTime = endDate
-      ? formatDateTime(endDate, endTime)
-      : formatDateTime(startDate, endTime || startTime);
 
-    if (!startDateTime || !endDateTime) {
-      alert(t("invalidDateTime"));
-      return;
-    }
+    const startDT = formatDateTime(startDate, startTime);
+    const finalEndDate = endDate || startDate;
+    const finalEndTime = endTime || new Date(startTime.getTime() + 60 * 60 * 1000);
+    const endDT = formatDateTime(finalEndDate, finalEndTime);
 
     navigation.navigate("CreateGroupActivity", {
-      data: { startDateTime, endDateTime },
+      data: { startDateTime: startDT, endDateTime: endDT },
     });
   };
 
@@ -183,17 +221,17 @@ const ActivityCalendar = ({ navigation, route }) => {
             <Calendar
               enableSwipeMonths
               minDate={new Date()}
-              markingType={"period"}
+              markingType="period"
               markedDates={markedDates}
               onDayPress={onDateSelect}
-              theme={{
-                todayTextColor: "#B0DB02",
-                arrowColor: "#B0DB02",
-              }}
+              theme={{ todayTextColor: "#B0DB02", arrowColor: "#B0DB02" }}
             />
           </View>
 
-          <TouchableOpacity style={styles.pickerContainer} onPress={() => setShowStartPicker(true)}>
+          <TouchableOpacity
+            style={styles.pickerContainer}
+            onPress={() => setShowStartPicker(true)}
+          >
             <Image source={require("../assets/images/NewPostImage/clock.png")} style={styles.icon} />
             <Text style={[styles.pickerText, !startTime && { color: "gray" }]}>
               {getTimeLabel(startTime, "startTime")}
@@ -211,7 +249,10 @@ const ActivityCalendar = ({ navigation, route }) => {
             />
           )}
 
-          <TouchableOpacity style={styles.pickerContainer} onPress={() => setShowEndPicker(true)}>
+          <TouchableOpacity
+            style={styles.pickerContainer}
+            onPress={() => setShowEndPicker(true)}
+          >
             <Image source={require("../assets/images/NewPostImage/clock.png")} style={styles.icon} />
             <Text style={[styles.pickerText, !endTime && { color: "gray" }]}>
               {getTimeLabel(endTime, "endTime")}
@@ -232,7 +273,10 @@ const ActivityCalendar = ({ navigation, route }) => {
           )}
 
           <TouchableOpacity
-            style={[styles.submitButton, (!startDate || !startTime) && styles.disabledButton]}
+            style={[
+              styles.submitButton,
+              (!startDate || !startTime) && styles.disabledButton,
+            ]}
             onPress={handleSubmit}
             disabled={!startDate || !startTime}
           >
@@ -246,7 +290,6 @@ const ActivityCalendar = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  disabledButton: { backgroundColor: "#c1c1c1" },
   content: { paddingHorizontal: 20, paddingVertical: 10 },
   calendarContainer: { marginBottom: 20 },
   pickerContainer: {
@@ -255,8 +298,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFFB2",
     borderRadius: 20,
     marginBottom: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 10,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
   },
   pickerText: { flex: 1, fontSize: 16 },
   icon: { width: 24, height: 24, marginRight: 10 },
@@ -265,9 +308,10 @@ const styles = StyleSheet.create({
     padding: 15,
     alignItems: "center",
     borderRadius: 8,
-    marginTop: 20,
+    marginTop: 30,
   },
   submitText: { color: "#fff", fontSize: 18, fontWeight: "bold" },
+  disabledButton: { backgroundColor: "#c1c1c1" },
 });
 
 export default ActivityCalendar;
