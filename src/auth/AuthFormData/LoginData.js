@@ -835,6 +835,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   strengthText: {
+
+
+
+    
     color: "#fff",
     fontSize: 12,
     textAlign: "center",
