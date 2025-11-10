@@ -1,0 +1,13 @@
+export const ImagesAssets = {
+  appLogo: require("../../assets/images/icon.png"),
+  selectedHome: require("../../assets/images/selectedHome.png"),
+  unselectedHome: require("../../assets/images/unselectedHome.png"),
+  selectedHealth: require("../../assets/images/selectedHealth.png"),
+  unselectedHealth: require("../../assets/images/unselectedHealth.png"),
+  selectedHelpline: require("../../assets/images/selectedHelpline.png"),
+  unselectedHelpline: require("../../assets/images/unselectedHelpline.png"),
+  selectedShiplife: require("../../assets/images/selectedShiplife.png"),
+  unselectedShiplife: require("../../assets/images/unselectedShiplife.png"),
+  splashHeadingImage: require("../../assets/images/SplashHeadingImage.png"),
+  splashCaptainImage: require("../../assets/images/SplashCaptainImage.png"),
+};
