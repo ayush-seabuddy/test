@@ -1,4 +1,6 @@
+import { t } from "i18next";
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Modal,
   View,
@@ -14,7 +16,7 @@ const { width } = Dimensions.get("window");
 
 const ReportModal = ({ visible, onClose, onSubmit }) => {
   const [reason, setReason] = useState("");
-
+  const { t } = useTranslation();
   const handleCancel = () => {
     setReason(""); // Clear input field on cancel
     onClose();
@@ -22,7 +24,7 @@ const ReportModal = ({ visible, onClose, onSubmit }) => {
 
   const handleSubmit = () => {
     if (reason.trim().length === 0) {
-      alert("Please provide a reason for reporting.");
+      alert(t('pleaseprovideReason'));
       return;
     }
     onSubmit(reason);
@@ -36,13 +38,13 @@ const ReportModal = ({ visible, onClose, onSubmit }) => {
         <StatusBar backgroundColor={"rgba(0, 0, 0, 0.7)"} />
 
         <View style={styles.modalContainer}>
-          <Text style={styles.titleText}>Report Post</Text>
+          <Text style={styles.titleText}>{t('reportpost')}</Text>
           <Text style={styles.descriptionText}>
-            Please provide a reason for reporting this post.
+            {t('reportpost_description')}
           </Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter your reason..."
+            placeholder={t('enteryourreason')}
             placeholderTextColor="#888"
             multiline
             value={reason}
@@ -53,13 +55,13 @@ const ReportModal = ({ visible, onClose, onSubmit }) => {
               style={[styles.button, styles.cancelButton]}
               onPress={handleCancel}
             >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text style={styles.cancelButtonText}>{t('cancel')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.button, styles.submitButton]}
               onPress={handleSubmit}
             >
-              <Text style={styles.submitButtonText}>Submit</Text>
+              <Text style={styles.submitButtonText}>{t('submit')}</Text>
             </TouchableOpacity>
           </View>
         </View>

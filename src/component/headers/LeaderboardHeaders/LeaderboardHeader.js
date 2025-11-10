@@ -9,8 +9,10 @@ import {
   Image,
 } from "react-native";
 import { ImagesAssets } from "../../../assets/ImagesAssets";
+import { useTranslation } from "react-i18next";
 
 const LeaderboardHeader = ({ navigation }) => {
+  const { t } = useTranslation();
   return (
     <View style={styles.container}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
@@ -24,7 +26,7 @@ const LeaderboardHeader = ({ navigation }) => {
             <Image source={ImagesAssets.backArrow} style={styles.headerIcon} />
           </View>
         </TouchableOpacity>
-        <Text style={styles.health}>Leaderboard</Text>
+        <Text style={styles.health}>{t('leaderboard')}</Text>
       </View>
       <View style={styles.headerButtonsContainer}>
         {/* <TouchableOpacity onPress={() => { navigation.replace('Search') }} style={styles.headerButton}>

@@ -4,9 +4,6 @@ import Colors from "../colors/Colors";
 import FocusAwareStatusBar from "../statusbar/FocusAwareStatusBar";
 
 import CrewListHeader from "../component/headers/CrewListHeader";
-import Summary from "../component/ActivityLogComponents/Summary";
-import Completed from "../component/ActivityLogComponents/Completed";
-import Achievements from "../component/ActivityLogComponents/Achievements";
 import All from "../component/CrewListComponents/All";
 import Deck from "../component/CrewListComponents/Deck";
 import Engine from "../component/CrewListComponents/Engine";

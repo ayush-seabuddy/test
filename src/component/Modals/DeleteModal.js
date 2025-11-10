@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   Modal,
   View,
@@ -10,8 +11,8 @@ import {
 } from "react-native";
 
 const { width } = Dimensions.get("window");
-
-const DeleteModal = ({ visible, onClose, onDelete, title = 'Would you like to delete your post?' }) => {
+const DeleteModal = ({ visible, onClose, onDelete, title}) => {
+const { t } = useTranslation();
   const handleNo = () => {
     onClose();
   };
@@ -22,22 +23,22 @@ const DeleteModal = ({ visible, onClose, onDelete, title = 'Would you like to de
         <StatusBar backgroundColor={"rgba(0, 0, 0, 0.7)"} />
 
         <View style={styles.modalContainer}>
-          <Text style={styles.titleText}>Delete</Text>
+          <Text style={styles.titleText}>{t('delete')}</Text>
           <Text style={styles.descriptionText}>
-            {title}
+            {t('wouldyouliketodeleteyourpost')}
           </Text>
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.button, styles.noButton]}
               onPress={handleNo}
             >
-              <Text style={styles.noButtonText}>NO</Text>
+              <Text style={styles.noButtonText}>{t('no')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.button, styles.yesButton]}
               onPress={onDelete}
             >
-              <Text style={styles.yesButtonText}>YES</Text>
+              <Text style={styles.yesButtonText}>{t('yes')}</Text>
             </TouchableOpacity>
           </View>
         </View>

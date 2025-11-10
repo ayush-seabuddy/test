@@ -29,6 +29,7 @@ import Loader from "../../component/Loader";
 import FastImage from "react-native-fast-image";
 import PersonalityResultInfoPopup from "../PersonalityMapInfoPopup";
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import { useTranslation } from "react-i18next";
 
 const { width, height } = Dimensions.get("window");
 
@@ -49,7 +50,7 @@ const Leaderboard = ({ navigation }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [limit, setLimit] = useState(50);
   const [isSailorsVisible, setIsSailorsVisible] = useState(false);
-
+  const { t } = useTranslation();
   const clearFilter = () => {
     setSelectedFavourite([]);
   };
@@ -119,9 +120,6 @@ const Leaderboard = ({ navigation }) => {
       }
 
       if (response.data.responseCode === 200) {
-        console.log('====================================');
-        console.log(response.data.result);
-        console.log('====================================');
         const filteredTopEmployees = response.data.result.topEmployees.filter(
           (employee) => Number(employee.rewardPoints) > 0
         );
@@ -295,7 +293,7 @@ const Leaderboard = ({ navigation }) => {
               <BlurView style={StyleSheet.absoluteFill} blurType="light" blurAmount={30} reducedTransparencyFallbackColor="white" />
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <Text style={{ fontSize: 22, fontFamily: "WhyteInktrap-Bold", color: "black", lineHeight: 27 }}>
-                  Overall Crew Ranking
+                  {t('overallcrewranking')}
                 </Text>
                 <View style={{ display: "flex", flexDirection: "row", gap: 10, alignItems: "center" }}>
                   <TouchableOpacity onPress={() => setModalVisible(true)}>
@@ -307,7 +305,7 @@ const Leaderboard = ({ navigation }) => {
                 </View>
               </View>
               <Text style={{ color: "gray", fontSize: 10, fontFamily: "Poppins-Regular", width: "85%", marginTop: 10 }}>
-                All-time rank based on BuddyUp event miles. Recognising crew who stay active, social and engaged.
+                {t('overallcrewranking_description')}
               </Text>
             </View>
           </>
@@ -326,8 +324,8 @@ const Leaderboard = ({ navigation }) => {
         ListFooterComponent={<View style={{ marginVertical: 15 }}>{isLoading ? <Loader /> : <></>}</View>}
         ListEmptyComponent={
           <View style={styles.noEmployeeContainer}>
-            <Image source={ImagesAssets.NoDataFound} style={styles.nodatafoundImage}/>
-            <Text style={styles.noEmployeeText}>No Employee Found</Text>
+            <Image source={ImagesAssets.NoDataFound} style={styles.nodatafoundImage} />
+            <Text style={styles.noEmployeeText}>{t('nocrewfound')}</Text>
           </View>
         }
       />
@@ -343,7 +341,7 @@ const Leaderboard = ({ navigation }) => {
         <View style={styles.sheetContent}>
           <View style={{ marginVertical: 10, width: "100%" }}>
             <DropdownFieldIOS
-              placeholder="Select Role"
+              placeholder={t('selectRole')}
               options={designationDropDown}
               selectedValue={selectedDesignation}
               onValueChange={(itemValue) => setSelectedDesignation(itemValue)}
@@ -351,7 +349,7 @@ const Leaderboard = ({ navigation }) => {
           </View>
           <View style={{ width: "100%" }}>
             <DropdownFieldIOS
-              placeholder="Select Ship"
+              placeholder={t('selectShip')}
               options={shipDropdown}
               selectedValue={selectedShip}
               onValueChange={(itemValue) => setSelectedShip(itemValue)}
@@ -359,10 +357,10 @@ const Leaderboard = ({ navigation }) => {
           </View>
           <View style={{ width: "100%", alignItems: "center", display: "flex", flexDirection: "row", justifyContent: "center", gap: 10 }}>
             <TouchableOpacity style={[styles.clearButton, { backgroundColor: Colors.secondary }]} onPress={applyFilter}>
-              <Text style={styles.buttonText}>Apply Filter</Text>
+              <Text style={styles.buttonText}>{t('applyFilter')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.clearButton} onPress={clearFilterdate}>
-              <Text style={[styles.buttonText, { color: "black" }]}>Clear Filter</Text>
+              <Text style={[styles.buttonText, { color: "black" }]}>{t('clearFilter')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -378,34 +376,34 @@ const Leaderboard = ({ navigation }) => {
           <View style={styles.overlay}>
             <View style={styles.leaderboardPopover}>
               <View style={styles.popoverContent}>
-                <Text style={styles.popupTitle}>How Miles Work</Text>
+                <Text style={styles.popupTitle}>{t('howmileswork')}</Text>
                 <Text style={styles.popupText}>
-                  Join or host BuddyUp events to earn miles, climb the leaderboard, and get recognised by your crew and company.
+                  {t('howmileswork_description1')}
                 </Text>
                 <Text style={styles.popupText}>
-                  Your participation adds up — unlock badges, earn visibility, and become a recognised name in your fleet.
+                  {t('howmileswork_description2')}
                 </Text>
-                <Text style={styles.popupTitle}>Badge Milestones</Text>
+                <Text style={styles.popupTitle}>{t('badgemilestones')}</Text>
                 <View style={styles.table}>
                   <View style={styles.row}>
-                    <Text style={styles.cellHeader}>Miles</Text>
-                    <Text style={styles.cellHeader}>Badge</Text>
+                    <Text style={styles.cellHeader}>{t('miles')}</Text>
+                    <Text style={styles.cellHeader}>{t('badge')}</Text>
                   </View>
                   <View style={styles.row}>
-                    <Text style={styles.cell}>500</Text>
-                    <Text style={styles.cell}>Beacon</Text>
+                    <Text style={styles.cell}>{t('fivehundred')}</Text>
+                    <Text style={styles.cell}>{t('beacon')}</Text>
                   </View>
                   <View style={styles.row}>
-                    <Text style={styles.cell}>1000</Text>
-                    <Text style={styles.cell}>Harbour</Text>
+                    <Text style={styles.cell}>{t('onethousand')}</Text>
+                    <Text style={styles.cell}>{t('harbour')}</Text>
                   </View>
                   <View style={styles.row}>
-                    <Text style={styles.cell}>2000+</Text>
-                    <Text style={styles.cell}>Chief Anchor</Text>
+                    <Text style={styles.cell}>{t('twothousand')}</Text>
+                    <Text style={styles.cell}>{t('chief_anchor')}</Text>
                   </View>
                 </View>
                 <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
-                  <Text style={styles.buttonText}>Close</Text>
+                  <Text style={styles.buttonText}>{t('close')}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -526,18 +524,18 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: height * 0.2, 
+    marginTop: height * 0.2,
   },
   noEmployeeText: {
     fontSize: 18,
     fontFamily: 'Poppins-Regular',
     color: '#454545',
     textAlign: 'center',
-    marginTop:20,
+    marginTop: 20,
   },
-  nodatafoundImage:{
-    height:150,
-    width:150
+  nodatafoundImage: {
+    height: 150,
+    width: 150
   }
 });
 

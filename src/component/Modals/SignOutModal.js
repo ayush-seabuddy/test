@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   Modal,
   View,
@@ -12,6 +13,7 @@ import {
 const { width } = Dimensions.get("window");
 
 const SignOutModal = ({ visible, onClose, onDelete }) => {
+  const { t } = useTranslation();
   const handleNo = () => {
     onClose();
   };
@@ -22,22 +24,22 @@ const SignOutModal = ({ visible, onClose, onDelete }) => {
         <StatusBar backgroundColor={"rgba(0, 0, 0, 0.7)"} />
 
         <View style={styles.modalContainer}>
-          <Text style={styles.titleText}>Log Out</Text>
+          <Text style={styles.titleText}>{t('log_out')}</Text>
           <Text style={styles.descriptionText}>
-            Are you sure you want to log out?
+            {t('areyousurewanttologout')}
           </Text>
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.button, styles.noButton]}
               onPress={handleNo}
             >
-              <Text style={styles.noButtonText}>NO</Text>
+              <Text style={styles.noButtonText}>{t('no')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.button, styles.yesButton]}
               onPress={onDelete}
             >
-              <Text style={styles.yesButtonText}>YES</Text>
+              <Text style={styles.yesButtonText}>{t('yes')}</Text>
             </TouchableOpacity>
           </View>
         </View>

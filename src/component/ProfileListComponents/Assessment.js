@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Dimensions,
   Image,
@@ -14,6 +14,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiCallWithToken, apiServerUrl } from "../../Api";
 import axios from "axios";
 import { useFocusEffect } from "@react-navigation/native";
+import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 
 const { height, width } = Dimensions.get("screen");
 const isProMax = height >= 926;
@@ -22,7 +24,24 @@ const Assessment = ({ navigation }) => {
   const [TestData, setTestData] = useState(null);
   const [ApiData, setApiData] = useState(null);
   const [profiledetails, setProfiledetails] = useState();
+  const [locale, setlocale] = useState('');
+  const { t } = useTranslation();
+  let initialLng = "en";
+  const loadPersistedLanguage = async () => {
+    try {
+      const saved = await AsyncStorage.getItem("userLanguage");
+      if (saved === "en" || saved === "zh") {
+        initialLng = saved;
+        setlocale(initialLng);
+        return;
+      }
+    } catch (e) {
+      console.warn("Failed to load saved language", e);
+    }
 
+    const device = Localization.getLocales()[0]?.languageTag || "en";
+    initialLng = device.startsWith("zh") ? "zh" : "en";
+  };
   const ViewProfiledetails = async () => {
     const dbResult = await AsyncStorage.getItem("userDetails");
     const userDetails = JSON.parse(dbResult);
@@ -52,7 +71,10 @@ const Assessment = ({ navigation }) => {
   };
 
   const currentDate = new Date();
-  const currentMonth = currentDate.toLocaleString("en-US", { month: "long" });
+  const currentMonth = useMemo(
+    () => currentDate.toLocaleString(locale || "en", { month: "long" }),
+    [currentDate, locale]
+  );
   // Utility for proper ordinal suffix
   const getOrdinalSuffix = (day) => {
     if (day > 3 && day < 21) return "th"; // Handles 11th, 12th, 13th
@@ -76,6 +98,10 @@ const Assessment = ({ navigation }) => {
   ).getDate();
 
   const ordinalSuffix = getOrdinalSuffix(lastDayOfMonth);
+
+  useFocusEffect(() => {
+    loadPersistedLanguage();
+  })
 
   useEffect(() => {
     ViewProfiledetails();
@@ -296,7 +322,7 @@ const Assessment = ({ navigation }) => {
                     },
                   ]}
                 >
-                  Monthly Happiness Index
+                  {t('monthlyhappinessindex')}
                 </Text>
                 <View style={[styles.musicWrapper, styles.frameGroupFlexBox]}>
                   <Text
@@ -305,8 +331,7 @@ const Assessment = ({ navigation }) => {
                       { color: "#444444", fontSize: 9, lineHeight: 14 },
                     ]}
                   >
-                    Contribute to global insights that shape a better future for all
-                    seafarers.
+                    {t('monthlyhappinessindex_description')}
                   </Text>
                 </View>
                 <View style={[styles.frameView, styles.frameFlexBox]}>
@@ -347,7 +372,7 @@ const Assessment = ({ navigation }) => {
                             },
                           ]}
                         >
-                          Submit before {currentMonth} 15th
+                          {t("submitbefore", { currentMonth: currentMonth })}
                         </Text>
                       </View>
                     </Pressable>
@@ -400,7 +425,7 @@ const Assessment = ({ navigation }) => {
                     },
                   ]}
                 >
-                  Monthly Wellbeing Pulse
+                  {t('monthlywellbeingpulse')}
                 </Text>
                 <View style={[styles.musicWrapper]}>
                   <Text
@@ -414,7 +439,7 @@ const Assessment = ({ navigation }) => {
                       },
                     ]}
                   >
-                    Your monthly self check-in
+                    {t('monthlywellbeingpulse_description')}
                   </Text>
                 </View>
                 {testArray && testArray[1]?.open && (

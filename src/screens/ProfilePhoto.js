@@ -22,6 +22,7 @@ import { apiServerUrl } from "../Api";
 import Toast from "react-native-simple-toast";
 import FastImage from "react-native-fast-image";
 import api from "../CustomAxios";
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get("screen");
 
@@ -29,6 +30,7 @@ const ProfilePhoto = React.memo(({ navigation }) => {
   const refRBSheet = useRef(null);
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   // Request Camera Permission (Android Only)
   const requestCameraPermission = useCallback(async () => {
@@ -37,11 +39,11 @@ const ProfilePhoto = React.memo(({ navigation }) => {
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.CAMERA,
         {
-          title: "Camera Permission",
-          message: "App needs access to your camera to take photos.",
-          buttonNeutral: "Ask Me Later",
-          buttonNegative: "Cancel",
-          buttonPositive: "OK",
+          title: t('camerapermission'),
+          message: t('camerapermission_description'),
+          buttonNeutral: t('askmelater'),
+          buttonNegative: t('cancel'),
+          buttonPositive: t('ok'),
         }
       );
       return granted === PermissionsAndroid.RESULTS.GRANTED;
@@ -89,7 +91,7 @@ const ProfilePhoto = React.memo(({ navigation }) => {
       await new Promise((resolve) => setTimeout(resolve, 300));
       const hasPermission = type === "camera" ? await requestCameraPermission() : true;
       if (!hasPermission) {
-        Alert.alert("Permission Denied", "Camera permission is required.");
+        Alert.alert(t('permissiondenied'), t('camerapermissionrequired'));
         return;
       }
 
@@ -136,7 +138,7 @@ const ProfilePhoto = React.memo(({ navigation }) => {
       }
     } catch (error) {
       console.error("Error uploading image:", error);
-      Toast.show("Failed to upload image", Toast.LONG);
+      Toast.show(t('failedtouploadimage'), Toast.LONG);
     } finally {
       setLoading(false);
     }
@@ -159,7 +161,7 @@ const ProfilePhoto = React.memo(({ navigation }) => {
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
-      Toast.show("Failed to fetch profile", Toast.LONG);
+      Toast.show(t('failedtofetchdata'), Toast.LONG);
     } finally {
       setLoading(false);
     }
@@ -184,14 +186,14 @@ const ProfilePhoto = React.memo(({ navigation }) => {
       );
 
       if (response.data.responseCode === 200) {
-        Toast.show("Profile updated successfully", Toast.LONG);
+        Toast.show(t('profileupdatedsuccessfully'), Toast.LONG);
         setProfilePhoto(photoUri);
         const updatedUserDetails = { ...userDetails, profileUrl: photoUri };
         await AsyncStorage.setItem("userDetails", JSON.stringify(updatedUserDetails));
       }
     } catch (error) {
       console.error("Update Profile Error:", error);
-      Toast.show("Failed to update profile", Toast.LONG);
+      Toast.show(t('errorwhileupdatingprofile'), Toast.LONG);
     } finally {
       setLoading(false);
     }
@@ -212,7 +214,7 @@ const ProfilePhoto = React.memo(({ navigation }) => {
 
   return (
     <>
-      <ProfileSettingHeader navigation={navigation} title="Profile Photo" />
+      <ProfileSettingHeader navigation={navigation} title={t('profile_photo')} />
       <SafeAreaView style={styles.container}>
         <View style={styles.profilePhotoContainer}>
           <FastImage source={profileImageSource} style={styles.profilePhoto} />
@@ -230,7 +232,7 @@ const ProfilePhoto = React.memo(({ navigation }) => {
           onPress={() => refRBSheet.current.open()}
         >
           <Text style={styles.replaceButtonText}>
-            {profilePhoto ? "Replace" : "Update"}
+            {profilePhoto ? t('replace') : t('update')}
           </Text>
         </TouchableOpacity>
 
@@ -247,20 +249,20 @@ const ProfilePhoto = React.memo(({ navigation }) => {
           }}
         >
           <View style={styles.sheetContent}>
-            <Text style={styles.modalTitle}>Add Profile Photo</Text>
+            <Text style={styles.modalTitle}>{t('addprofilephoto')}</Text>
             <TouchableOpacity
               style={styles.modalButton}
               onPress={() => openImagePicker("camera")}
             >
               <Image source={ImagesAssets.CameraIcon} style={styles.headerIcon} />
-              <Text style={styles.modalButtonText}>Take a Photo</Text>
+              <Text style={styles.modalButtonText}>{t('takephoto')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.modalButton}
               onPress={() => openImagePicker("library")}
             >
               <Image source={ImagesAssets.GalleryIcon} style={styles.headerIcon} />
-              <Text style={styles.modalButtonText}>Upload from Photos</Text>
+              <Text style={styles.modalButtonText}>{t('choosefromgallery')}</Text>
             </TouchableOpacity>
           </View>
         </RBSheet>
@@ -277,7 +279,7 @@ const styles = StyleSheet.create({
   },
   profilePhotoContainer: {
     justifyContent: "center",
-    marginBottom:100,
+    marginBottom: 100,
     alignItems: "center",
   },
   profilePhoto: {

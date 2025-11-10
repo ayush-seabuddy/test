@@ -2,11 +2,13 @@ import * as React from "react";
 import { Image, StyleSheet, Text, View, Pressable, Dimensions } from "react-native";
 import { ImagesAssets } from "../../../assets/ImagesAssets";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 
 const { width, height } = Dimensions.get("window");
 const isProMax = height >= 926;
 const AssessmentTestCard = ({ navigation, data, ApiData , testArray }) => {
-  
+  const { t } = useTranslation();
   return (
     <Pressable
       style={styles.frameParent}
@@ -28,8 +30,8 @@ const AssessmentTestCard = ({ navigation, data, ApiData , testArray }) => {
         />
         <View style={[styles.frameContainer, styles.frameFlexBox]}>
           <View style={styles.personalityMapParent}>
-            <Text style={[styles.personalityMap,{color: data === false ? '#06361f' : 'grey'}]}>Personality Map</Text>
-            <Text style={[styles.music, { color: "#444444", fontSize: 10, lineHeight: 16 }]}>Discover your working style and strengths at sea</Text>
+            <Text style={[styles.personalityMap,{color: data === false ? '#06361f' : 'grey'}]}>{t('personalitymap')}</Text>
+            <Text style={[styles.music, { color: "#444444", fontSize: 10, lineHeight: 16 }]}>{t('personalitymap_description')}</Text>
             {ApiData?.insights?.maritime_title &&
               <View style={[styles.frameView, styles.frameFlexBox]}>
                 <View style={[styles.musicWrapper, styles.frameGroupFlexBox]}>

@@ -21,10 +21,12 @@ import { BlurView } from "@react-native-community/blur";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiCallWithToken, apiServerUrl } from "../../../Api";
 import { useFocusEffect } from "@react-navigation/native";
+import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 
 const HelpLineCard = ({ navigation, setModalVisible, showConversations }) => {
   const [data, setData] = useState(null);
-
+  const { t } = useTranslation();
   const fetchUserList = async () => {
     try {
       const dbResult = await AsyncStorage.getItem("userDetails");
@@ -55,7 +57,24 @@ const HelpLineCard = ({ navigation, setModalVisible, showConversations }) => {
     }, [])
   );
 
+  const helplineKeyMap = {
+    "Marpol - Whistle Blower": {
+      title: "marpoltitle",
+      desc: "marpol_description"
+    },
+    "Sexual Harassment & Bullying": {
+      title: "sexualharassmenttitle",
+      desc: "sexualharassment_description"
+    },
+    "MLC": {
+      title: "mlctitle",
+      desc: "mlc_description"
+    }
+  };
+
   const renderItem = ({ item }) => {
+    const keySet = helplineKeyMap[item.helplineName];
+
     return (
       <TouchableOpacity
         style={[styles.baseIconsGroup, styles.baseFlexBox]}
@@ -66,23 +85,50 @@ const HelpLineCard = ({ navigation, setModalVisible, showConversations }) => {
           });
         }}
       >
-        <Image
-          style={styles.baseIcons}
-          resizeMode="cover"
-          source={{ uri: item?.iconUrl }}
-        />
+        <Image style={styles.baseIcons} resizeMode="cover" source={{ uri: item?.iconUrl }} />
         <View style={{ flex: 1 }}>
           <Text style={[styles.mlc, styles.mlcLayout]}>
-            {item?.helplineName}
+            {keySet ? t(keySet.title) : item.helplineName}
           </Text>
           <Text style={styles.loremIpsum}>
-            {item?.helplineDescription}
+            {keySet ? t(keySet.desc) : item.helplineDescription}
           </Text>
         </View>
-
       </TouchableOpacity>
     );
   };
+
+
+
+  // const renderItem = ({ item }) => {
+  //   return (
+  //     <TouchableOpacity
+  //       style={[styles.baseIconsGroup, styles.baseFlexBox]}
+  //       onPress={() => {
+  //         navigation.navigate("HelpLineForm", {
+  //           dataType: item?.id,
+  //           name: item.helplineName,
+  //         });
+  //       }}
+  //     >
+  //       <Image
+  //         style={styles.baseIcons}
+  //         resizeMode="cover"
+  //         source={{ uri: item?.iconUrl }}
+  //       />
+  //       <View style={{ flex: 1 }}>
+  //         <Text style={[styles.mlc, styles.mlcLayout]}>
+  //           {item?.helplineName}
+  //         </Text>
+  //         <Text style={styles.loremIpsum}>
+  //           {item?.helplineDescription}
+  //         </Text>
+  //       </View>
+
+  //     </TouchableOpacity>
+  //   );
+  // };
+
 
   return (
     <View style={styles.weStillNeedCopyInHereParent}>
@@ -92,7 +138,7 @@ const HelpLineCard = ({ navigation, setModalVisible, showConversations }) => {
         blurAmount={15}
         reducedTransparencyFallbackColor="white"
       />
-  
+
       <View style={styles.frameParent}>
 
         <View style={styles.frameGroup}>
@@ -108,9 +154,9 @@ const HelpLineCard = ({ navigation, setModalVisible, showConversations }) => {
             />
             <View>
               <Text style={[styles.emergencyText, styles.mlcLayout]}>
-                Emergency / SOS
+                {t('emergencyandsos')}
               </Text>
-              <Text style={styles.loremIpsum}>Immediate response for onboard crises or life-threatening situations </Text>
+              <Text style={styles.loremIpsum}>{t('emergencyandsos_description')}</Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity
@@ -124,9 +170,9 @@ const HelpLineCard = ({ navigation, setModalVisible, showConversations }) => {
             />
             <View style={{ flex: 1 }}>
               <Text style={[styles.mlc, styles.mlcLayout]}>
-                Sailors’ Society Live
+                {t('sailorssocietylive')}
               </Text>
-              <Text style={styles.loremIpsum}>Trusted worldwide for 200+ years - 24/7 emotional and spiritual support from trained maritime chaplains and counsellors </Text>
+              <Text style={styles.loremIpsum}>{t('sailorssocietylive_description')}</Text>
 
             </View>
           </TouchableOpacity>

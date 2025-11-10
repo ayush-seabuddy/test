@@ -15,11 +15,14 @@ import { ImagesAssets } from "../assets/ImagesAssets";
 import AiJoliCard from "../component/Cards/AiJoliCard";
 import CustomLottie from "../component/CustomLottie";
 import Octicons from 'react-native-vector-icons/Octicons'
+import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 const { width, height } = Dimensions.get("window");
 
 const Ai = ({ navigation, route }) => {
   const mode = route.params?.mode || "both";
   const [isOn, setIsOn] = useState(true);
+  const { t } = useTranslation();
 
   const handleToggle = () => {
     setIsOn(!isOn);
@@ -91,7 +94,9 @@ const Ai = ({ navigation, route }) => {
               color: "#262626",
               fontWeight: "500",
               fontFamily: "WhyteInktrap-Medium"
-            }}>Helplines</Text>
+            }}>
+              {t('helplines')}
+            </Text>
           </View>
         </View>
 

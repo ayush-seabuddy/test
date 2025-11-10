@@ -1,11 +1,10 @@
-// components/HomeHangoutCardPost.js
-import React, { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import {
     Animated,
     Dimensions,
     FlatList,
     Image,
     KeyboardAvoidingView,
+    RefreshControl,
     Keyboard,
     StyleSheet,
     Text,
@@ -13,18 +12,19 @@ import {
     TouchableOpacity,
     TouchableWithoutFeedback,
     View,
-    Platform,
-    useColorScheme,
+    Pressable,
     ScrollView,
+    Platform,
 } from "react-native";
-import TimeAgo from 'javascript-time-ago';
+import React, { useCallback, useEffect, useRef, useState, useMemo, useTransition } from "react";
 import ReactTimeAgo from 'react-time-ago';
-import en from 'javascript-time-ago/locale/en';
+import TimeAgo from 'javascript-time-ago'
+import en from 'javascript-time-ago/locale/en.json'
+import zh from 'javascript-time-ago/locale/zh.json'
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { apiCallWithToken, apiServerUrl, checkConnected, formatShipName } from "../Api";
-import { Pencil, Trash, Reply, AlertTriangle, MoreVertical, SendHorizonal } from 'lucide-react-native';
+import { apiCallWithToken, apiServerUrl, checkConnected, formatShipName, getApiLevel } from "../Api";
 import { ImagesAssets } from "../assets/ImagesAssets";
-import { Heart, MessageCircle, TrendingUp } from "lucide-react-native";
+import { Heart, MessageCircle, Pencil, Reply, SendHorizonal, Trash, TrendingUp } from "lucide-react-native";
 import Orientation from "react-native-orientation-locker";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { ActivityIndicator, Menu, Modal } from "react-native-paper";
@@ -32,7 +32,6 @@ import Colors from "../colors/Colors";
 import SimpleToast from "react-native-simple-toast";
 import { useNavigation } from "@react-navigation/native";
 import NetInfo from "@react-native-community/netinfo";
-import { downloadImages } from "../CommonApi";
 import Loader from "../component/Loader";
 import axios from "axios";
 import ReportModal from "../component/Modals/ReasonModal";
@@ -40,50 +39,51 @@ import DeleteModal from "../component/Modals/DeleteModal";
 import Video from "react-native-video";
 import RBSheet from "react-native-raw-bottom-sheet";
 import FastImage from "react-native-fast-image";
-import MediaPreviewModalForPosts from "../component/Modals/MediaPreviewModalForPosts";``
+import MediaPreviewModalForPosts from "../component/Modals/MediaPreviewModalForPosts";
+import { useTranslation } from "react-i18next";
+import { t } from "i18next";
 
-TimeAgo.addDefaultLocale(en);
+// Register locales
+TimeAgo.addDefaultLocale(en)
+TimeAgo.addLocale(zh)
 
 const { width, height } = Dimensions.get("screen");
 const DEFAULT_IMAGE_PROFILE = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png";
-
-// Theme configuration
-const getTheme = (colorScheme) => ({
-    background: colorScheme === 'dark' ? '#FFFFFF' : '#FFFFFF',
-    cardBackground: colorScheme === 'dark' ? '#1A1A1A' : '#FFFFFF',
-    border: colorScheme === 'dark' ? '#333333' : '#E5E7EB',
-    shadow: colorScheme === 'dark' ? '#000000' : '#000',
-    textPrimary: colorScheme === 'dark' ? '#F9FAFB' : '#1F2937',
-    textSecondary: colorScheme === 'dark' ? '#D1D5DB' : '#374151',
-    textTertiary: colorScheme === 'dark' ? '#9CA3AF' : '#6B7280',
-    avatarBg: colorScheme === 'dark' ? '#333333' : '#D1D5DB',
-    menuButtonBg: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.2)',
-    menuContentBg: colorScheme === 'dark' ? '#1A1A1A' : '#FFFFFF',
-    tagBg: '#FBCF21',
-    tagSecondaryBg: colorScheme === 'dark' ? '#4B5563' : Colors.secondary,
-    tagText: colorScheme === 'dark' ? '#FFFFFF' : '#000000',
-    iconColor: colorScheme === 'dark' ? '#E5E7EB' : '#4B5563',
-    additionalUsersBg: colorScheme === 'dark' ? '#333333' : '#D1D5DB',
-    contentTextColor: colorScheme === 'dark' ? '#FFFFFF' : '#374151',
-    inputBg: colorScheme === 'dark' ? '#2D2D2D' : '#F3F4F6',
-    inputBorder: colorScheme === 'dark' ? '#404040' : '#ddd',
-    inputText: colorScheme === 'dark' ? '#FFFFFF' : '#000000',
-    sheetBg: colorScheme === 'dark' ? '#1A1A1A' : '#ededed',
-    commentBg: colorScheme === 'dark' ? '#2D2D2D' : '#f3f3f3',
-    likeColor: '#8DAF02',
-    deleteColor: '#EF4444',
-});
-
-// Unified toast function
-const showToast = (message, type = 'success') => {
-    const duration = type === 'success' ? SimpleToast.LONG : SimpleToast.SHORT;
-    SimpleToast.show(message, duration, SimpleToast.TOP);
-};
-
-// Memoized helper function
+const DEFAULT_IMAGE = "https://raw.githubusercontent.com/Prince26lmp/assets/main/placeholderseabuddy.png";
 const isVideo = (uri) => uri?.match(/\.(mp4|mov|avi)$/i);
 
-// Memoized sub-components (unchanged from original)
+const Time = ({ date, verboseDate, tooltip, children, ...rest }) => {
+    return <Text {...rest}>{children}</Text>;
+};
+
+const ExpandableCaption = ({ caption, isExpanded, onToggle, maxLines = 1 }) => {
+    const [fullLines, setFullLines] = useState(0);
+    const needsTruncation = fullLines > maxLines;
+    return (
+        <View style={[styles.captionContainer, { marginBottom: 0 }]}>
+            <Text
+                numberOfLines={isExpanded ? undefined : maxLines}
+                style={styles.caption}
+            >
+                {caption}
+            </Text>
+            <Text
+                style={[styles.caption, { position: 'absolute', opacity: 0, width: '100%' }]}
+                onTextLayout={(e) => setFullLines(e.nativeEvent.lines.length)}
+            >
+                {caption}
+            </Text>
+            {needsTruncation && (
+                <TouchableOpacity onPress={onToggle}>
+                    <Text style={styles.seeMoreText}>
+                        {isExpanded ? t('seeless') : t('seemore')}
+                    </Text>
+                </TouchableOpacity>
+            )}
+        </View>
+    );
+};
+
 const ShowCommentList = React.memo(({
     item: commentItem,
     isReply = false,
@@ -130,37 +130,38 @@ const ShowCommentList = React.memo(({
     }, [commentItem, handleReply]);
 
     return (
-        <View style={[isReply ? themedStyles(theme).replyContainer : themedStyles(theme).commentContainer]}>
+        <View style={[isReply ? styles.replyContainer : styles.commentContainer]}>
             <TouchableOpacity onPress={handleUserPress}>
                 <View style={{ position: 'relative' }}>
                     <Image
                         source={require('../assets/images/AnotherImage/Man.png')}
-                        style={[isReply ? themedStyles(theme).replyImage : themedStyles(theme).commentImage, { position: 'absolute' }]}
+                        style={[isReply ? styles.replyImage : styles.commentImage, { position: 'absolute' }]}
                     />
                     <FastImage
                         source={commentItem?.commentUser?.profileUrl ? { uri: commentItem?.commentUser?.profileUrl, priority: FastImage.priority.normal } : null}
-                        style={isReply ? themedStyles(theme).replyImage : themedStyles(theme).commentImage}
+                        style={isReply ? styles.replyImage : styles.commentImage}
                         resizeMode={FastImage.resizeMode.cover}
                     />
                 </View>
             </TouchableOpacity>
-            <View style={[isReply ? themedStyles(theme).replyContent : themedStyles(theme).commentContent]}>
-                <View style={themedStyles(theme).commentHeader}>
-                    <Text style={themedStyles(theme).userName}>{commentItem?.commentUser?.fullName}</Text>
+            <View style={[isReply ? styles.replyContent : styles.commentContent]}>
+                <View style={styles.commentHeader}>
+                    <Text style={styles.userName}>{commentItem?.commentUser?.fullName}</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        {commentItem.isEdited && <Text style={themedStyles(theme).editText}> (Edited)</Text>}
+                        {commentItem.isEdited && <Text style={styles.editText}>{t('edited')}</Text>}
                     </View>
                 </View>
                 <View style={{ flex: 1, flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' }}>
                     {commentItem.replyTo && isReply ? (
                         <>
-                            <TouchableOpacity onPress={() => { if (typeof closeCommentSheet === 'function') closeCommentSheet(); handleCardPress(commentItem?.replyUser); }}>
-                                <Text style={[themedStyles(theme).replyToText, { color: 'green' }]}>@{commentItem.replyTo} </Text>
+                            <TouchableOpacity
+                                onPress={() => { if (typeof closeCommentSheet === 'function') closeCommentSheet(); handleCardPress(commentItem?.replyUser); }}>
+                                <Text style={[styles.replyToText, { color: 'green', marginBottom: 5 }]}>@{commentItem.replyTo} </Text>
                             </TouchableOpacity>
-                            <Text style={themedStyles(theme).commentText}>{commentItem.comment}</Text>
+                            <Text style={styles.commentText}>{commentItem.comment}</Text>
                         </>
                     ) : (
-                        <Text style={themedStyles(theme).commentText}>{commentItem.comment}</Text>
+                        <Text style={styles.commentText}>{commentItem.comment}</Text>
                     )}
                 </View>
                 <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 5, gap: 10 }}>
@@ -168,22 +169,22 @@ const ShowCommentList = React.memo(({
                         <>
                             <TouchableOpacity onPress={handleEdit}>
                                 <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
-                                    <Pencil size={12} color={theme.iconColor} strokeWidth={1.7} />
-                                    <Text style={themedStyles(theme).actionText}>Edit</Text>
+                                    <Pencil size={12} color='black' strokeWidth={1.7} />
+                                    <Text style={styles.actionText}>{t('edit')}</Text>
                                 </View>
                             </TouchableOpacity>
                             <TouchableOpacity onPress={handleDelete}>
                                 <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
-                                    <Trash size={12} color={theme.iconColor} strokeWidth={1.7} />
-                                    <Text style={themedStyles(theme).actionText}>Delete</Text>
+                                    <Trash size={11} color='black' strokeWidth={1.7} />
+                                    <Text style={styles.actionText}>{t('delete')}</Text>
                                 </View>
                             </TouchableOpacity>
                         </>
                     ) : (
                         <TouchableOpacity onPress={handleReplyPress}>
                             <View style={{ flexDirection: 'row', gap: 5, alignItems: 'center' }}>
-                                <Reply size={12} color={theme.iconColor} strokeWidth={1.7} />
-                                <Text style={themedStyles(theme).replyText}>Reply</Text>
+                                <Reply size={12} color='black' strokeWidth={1.7} />
+                                <Text style={styles.replyText}>{t('reply')}</Text>
                             </View>
                         </TouchableOpacity>
                     )}
@@ -212,1147 +213,935 @@ const ShowCommentList = React.memo(({
 });
 
 const PostHeader = React.memo(({
-    theme,
     item,
-    finalUri,
     handleCardPress,
-    yourActivity,
-    visible1,
+    finalUri,
+    taggedUsersDisplay,
     openMenu,
+    visible1,
     closeMenu,
-    navigation,
+    yourActivity,
     setModalVisible,
     setReportModalVisible,
-    taggedUsersDisplay,
-}) => (
-    <View style={themedStyles(theme).header}>
-        <TouchableOpacity onPress={() => handleCardPress(item?.userDetails)}>
-            <FastImage
-                style={themedStyles(theme).avatar}
-                source={{ uri: finalUri, priority: FastImage.priority.normal, cache: FastImage.cacheControl.immutable }}
-                resizeMode={FastImage.resizeMode.cover}
-            />
-        </TouchableOpacity>
-        <View style={themedStyles(theme).userInfo}>
-            <TouchableOpacity onPress={() => handleCardPress(item?.userDetails)}>
-                <Text style={themedStyles(theme).username}>
-                    {item?.userDetails?.fullName ? item.userDetails.fullName.charAt(0).toUpperCase() + item.userDetails.fullName.slice(1) : ""}
-                </Text>
-            </TouchableOpacity>
-            <Text style={themedStyles(theme).timestamp}>{item?.userDetails?.designation}</Text>
-            {item?.taggedUsers?.length > 0 && (
-                <View style={themedStyles(theme).taggedUsersContainer}>{taggedUsersDisplay}</View>
-            )}
-        </View>
-        <TouchableOpacity style={themedStyles(theme).menuButton} onPress={openMenu}>
-            <Menu
-                visible={visible1}
-                onDismiss={closeMenu}
-                anchor={
-                    <TouchableOpacity style={themedStyles(theme).baseIconsWrapper} onPress={openMenu}>
-                        <MoreVertical size={20} color={theme.background === '#FFFFFF' ? '#FFFFFF' : theme.iconColor} strokeWidth={1.7} />
-                    </TouchableOpacity>
-                }
-                contentStyle={themedStyles(theme).menuContent}
-                {...(Platform.OS === 'android' ? { anchorPosition: 'bottom', style: visible1 ? { paddingTop: 15 } : {} } : {})}
-            >
-                {yourActivity ? (
-                    <View style={themedStyles(theme).menuItems}>
-                        <Menu.Item
-                            style={themedStyles(theme).menuItem}
-                            onPress={() => {
-                                closeMenu();
-                                navigation.navigate("NewPost", {
-                                    mediaFiles: item.imageUrls,
-                                    caption: item.caption,
-                                    taggedUsers: item.taggedUsers,
-                                    hashtags: item.hashtags,
-                                    postId: item.id,
-                                });
-                            }}
-                            title="Edit"
-                            titleStyle={themedStyles(theme).menuItemText}
-                            leadingIcon={() => <Pencil size={20} color={theme.iconColor} strokeWidth={1.7} />}
-                        />
-                        <Menu.Item
-                            style={themedStyles(theme).menuItem}
-                            onPress={() => setModalVisible(true)}
-                            title="Delete"
-                            titleStyle={[themedStyles(theme).menuItemText, { color: theme.deleteColor }]}
-                            leadingIcon={() => <Trash size={22} color={theme.deleteColor} strokeWidth={1.7} />}
-                        />
-                    </View>
-                ) : (
-                    <Menu.Item
-                        style={themedStyles(theme).menuItem}
-                        onPress={() => setReportModalVisible(true)}
-                        title="Report"
-                        titleStyle={[themedStyles(theme).menuItemText, { color: theme.deleteColor }]}
-                        leadingIcon={() => <AlertTriangle size={22} color={theme.deleteColor} strokeWidth={1.7} />}
-                    />
-                )}
-            </Menu>
-        </TouchableOpacity>
-    </View>
-));
-
-const PostMedia = React.memo(({
-    item,
-    theme,
-    images,
-    hasMedia,
-    currentIndex,
-    handleMediaPress,
-    imageLoading,
-    setImageLoading,
-    viewabilityConfigCallbackPairs,
+    navigation,
+    isMediaPost = false
 }) => {
-    if (!hasMedia) return null;
-
-    const imageResizeMode = item?.imageresizeMode || 'contain';
-    const videoResizeMode = item?.videoresizeMode || 'contain';
-
-    const renderItem = useCallback(({ item: imageItem, index }) => (
-        <TouchableOpacity onPress={() => handleMediaPress(imageItem.uri, index)}>
-            <View style={themedStyles(theme).imageContainer}>
-                {isVideo(imageItem.uri) ? (
-                    <>
-                        <Video
-                            source={{ uri: imageItem.uri }}
-                            style={themedStyles(theme).imageStyle}
-                            resizeMode={videoResizeMode === 'contain' ? 'contain' : 'cover'}
-                            muted
-                            repeat
-                            paused={currentIndex !== index}
-                            playInBackground={false}
-                            playWhenInactive={false}
-                            ignoreSilentSwitch="obey"
-                            onLoadStart={() => console.log('Video loading started')}
-                            onLoad={() => console.log('Video loaded')}
-                            onError={(e) => console.warn('Video error', e)}
-                            onReadyForDisplay={() => console.log('Video ready')}
-                            controls={false}
-                            poster={imageItem.thumbnailUri || undefined}
-                        />
-                        <View style={themedStyles(theme).playIconContainer}>
-                            <Image
-                                source={ImagesAssets.vedioPlaybutton}
-                                style={themedStyles(theme).playIcon}
-                                resizeMode="contain"
+    return (
+        <Pressable style={[styles.postHeaderContainer, isMediaPost && styles.mediaPostHeader]}>
+            <Pressable style={{ flexDirection: "row", justifyContent: "flex-start", alignItems: "center", gap: 10 }}>
+                <TouchableOpacity onPress={() => handleCardPress(item?.userDetails)}>
+                    <FastImage
+                        style={[styles.avatar, isMediaPost && styles.mediaAvatar]}
+                        source={{ uri: finalUri, priority: FastImage.priority.normal, cache: FastImage.cacheControl.immutable }}
+                        resizeMode={FastImage.resizeMode.cover}
+                    />
+                </TouchableOpacity>
+                <View style={{ flexDirection: "column", width: '65%' }}>
+                    <TouchableOpacity onPress={() => handleCardPress(item?.userDetails)}>
+                        <Text style={[styles.userName, isMediaPost && styles.mediaUserName]}>
+                            {item?.userDetails?.fullName
+                                ? item.userDetails.fullName.charAt(0).toUpperCase() + item.userDetails.fullName.slice(1)
+                                : ""}
+                        </Text>
+                    </TouchableOpacity>
+                    <Text style={[styles.userDesignation, isMediaPost && styles.mediaUserDesignation]}>
+                        {item?.userDetails?.designation}
+                    </Text>
+                    {taggedUsersDisplay}
+                </View>
+            </Pressable>
+            <TouchableOpacity style={[styles.menuButton, isMediaPost && styles.mediaMenuButton]} onPress={openMenu}>
+                <Menu
+                    visible={visible1}
+                    onDismiss={closeMenu}
+                    anchor={
+                        <TouchableOpacity style={[styles.baseIconsWrapper, styles.crewParentFlexBox]} onPress={openMenu}>
+                            <Image style={[styles.baseIcons, isMediaPost && { tintColor: '#fff' }]} source={ImagesAssets.dots} />
+                        </TouchableOpacity>
+                    }
+                    style={[Platform.OS === 'android' && visible1 ? { paddingTop: 15 } : {}]}
+                    contentStyle={{ backgroundColor: '#fff' }}
+                    {...(Platform.OS === 'android' ? { anchorPosition: 'bottom' } : {})}
+                >
+                    {yourActivity ? (
+                        <View style={{ flexDirection: "column", gap: 10 }}>
+                            <Menu.Item
+                                style={{ height: 35, width: 40 }}
+                                onPress={() => {
+                                    closeMenu();
+                                    navigation.navigate("NewPost", {
+                                        mediaFiles: item.imageUrls,
+                                        caption: item.caption,
+                                        taggedUsers: item.taggedUsers,
+                                        hashtags: item.hashtags,
+                                        postId: item.id,
+                                    });
+                                }}
+                                title={t('edit')}
+                                titleStyle={{ color: "black" }}
+                                leadingIcon={() => <Ionicons name="create-outline" size={20} color="black" />}
+                            />
+                            <Menu.Item
+                                style={{ height: 35, marginRight: -30 }}
+                                onPress={() => setModalVisible(true)}
+                                title={t('delete')}
+                                titleStyle={{ color: "red" }}
+                                leadingIcon={() => <Ionicons name="trash-outline" size={22} color="red" />}
                             />
                         </View>
-                    </>
-                ) : (
-                    <View>
-                        {imageLoading[imageItem.uri] && (
-                            <ActivityIndicator style={StyleSheet.absoluteFill} size="small" color={Colors.secondary} />
-                        )}
-                        <FastImage
-                            style={themedStyles(theme).imageStyle}
-                            source={{ uri: imageItem.uri, priority: FastImage.priority.high, cache: FastImage.cacheControl.immutable }}
-                            resizeMode={imageResizeMode === 'contain' ? FastImage.resizeMode.contain : FastImage.resizeMode.cover}
-                            onLoadStart={() => setImageLoading((prev) => ({ ...prev, [imageItem.uri]: true }))}
-                            onLoadEnd={() => setImageLoading((prev) => ({ ...prev, [imageItem.uri]: false }))}
-                            onError={() => {
-                                setImageLoading((prev) => ({ ...prev, [imageItem.uri]: false }));
-                                console.log(`Failed to load image: ${imageItem.uri}`);
-                            }}
+                    ) : (
+                        <Menu.Item
+                            style={{ height: 35, marginRight: -30 }}
+                            onPress={() => setReportModalVisible(true)}
+                            title={t('report')}
+                            titleStyle={{ color: "red", fontSize: 16 }}
+                            leadingIcon={() => <Ionicons name="warning-outline" size={22} color="red" />}
                         />
-                    </View>
-                )}
-            </View>
-        </TouchableOpacity>
-    ), [theme, handleMediaPress, imageLoading, setImageLoading, currentIndex, imageResizeMode, videoResizeMode]);
-
-    return (
-        <View>
-            <FlatList
-                data={images}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={renderItem}
-                viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
-                nestedScrollEnabled
-            />
-        </View>
+                    )}
+                </Menu>
+            </TouchableOpacity>
+        </Pressable>
     );
 });
 
-const PostContent = React.memo(({
-    theme,
-    item,
-    expandedIndex,
-    index,
-    toggleExpand,
-    hashtagsDisplay,
-    images,
-    hasMedia,
-    currentIndex,
-    fullLines,
-    setFullLines,
-}) => {
-    const needsTruncation = hasMedia && fullLines > 1;
-    const isExpanded = expandedIndex === index;
-    const effectiveNumberOfLines = hasMedia ? (isExpanded ? undefined : needsTruncation ? 1 : undefined) : undefined;
-    const effectiveEllipsizeMode = hasMedia && !isExpanded && needsTruncation ? "tail" : undefined;
-
-    return (
-        <View style={themedStyles(theme).contentContainer}>
-            {hasMedia && images.length > 1 && (
-                <View style={themedStyles(theme).pagination}>
-                    {images.map((_, idx) => (
-                        <View
-                            key={idx}
-                            style={{
-                                width: 8,
-                                height: 8,
-                                borderRadius: 4,
-                                backgroundColor: currentIndex === idx ? theme.likeColor : theme.textTertiary,
-                                marginHorizontal: 4,
-                            }}
-                        />
-                    ))}
-                </View>
-            )}
-            <View style={themedStyles(theme).captionContainer}>
-                <Text
-                    numberOfLines={effectiveNumberOfLines}
-                    ellipsizeMode={effectiveEllipsizeMode}
-                    style={themedStyles(theme).content}
-                >
-                    {item.caption}
-                </Text>
-                <Text
-                    style={[themedStyles(theme).content, { position: 'absolute', opacity: 0, width: '100%' }]}
-                    onTextLayout={(e) => setFullLines(e.nativeEvent.lines.length)}
-                >
-                    {item.caption}
-                </Text>
-                {hasMedia && needsTruncation && (
-                    <TouchableOpacity onPress={() => toggleExpand(index)} style={themedStyles(theme).toggleButton}>
-                        <Text style={themedStyles(theme).toggleText}>{isExpanded ? 'See less' : 'See more'}</Text>
-                    </TouchableOpacity>
-                )}
-            </View>
-            {item.createdAt && (
-                <Text style={themedStyles(theme).postTimestamp}>
-                    <ReactTimeAgo
-                        date={item?.createdTime ? new Date(Number(item.createdTime)) : item.createdAt ? new Date(item.createdAt) : null}
-                        locale="en-US"
-                        component={({ date, verboseDate, tooltip, children, ...rest }) => <Text {...rest}>{children}</Text>}
-                        timeStyle="short"
-                    />
-                </Text>
-            )}
-            {hashtagsDisplay}
-        </View>
-    );
-});
-
-const PostFooter = React.memo(({
-    theme,
-    item,
-    isLiked,
-    likesCount,
-    handleLikeToggle,
-    isLikeLoading,
-    openLikesSheet,
-    openCommentSheet,
-}) => (
-    <View style={themedStyles(theme).footer}>
-        <TouchableOpacity style={themedStyles(theme).button} onPress={handleLikeToggle} disabled={isLikeLoading}>
-            <Heart size={24} color={isLiked ? theme.likeColor : theme.iconColor} fill={isLiked ? theme.likeColor : 'none'} strokeWidth={1.7} />
-            {likesCount > 0 && (
-                <TouchableOpacity onPress={openLikesSheet} style={{ width: 30, marginLeft: 3 }}>
-                    <Text style={themedStyles(theme).buttonText}>{likesCount}</Text>
-                </TouchableOpacity>
-            )}
-        </TouchableOpacity>
-        <TouchableOpacity style={themedStyles(theme).button} onPress={() => openCommentSheet(item)}>
-            <MessageCircle size={22} color={theme.iconColor} strokeWidth={1.7} />
-            {item?.totalComments > 0 && <Text style={themedStyles(theme).buttonText}>{item?.totalComments}</Text>}
-        </TouchableOpacity>
-        <View style={themedStyles(theme).button}>
-            <TrendingUp size={22} color={theme.iconColor} strokeWidth={1.7} />
-            {item?.viewCount > 0 && <Text style={themedStyles(theme).buttonText}>{item.viewCount}</Text>}
-        </View>
-    </View>
-));
-
-const HomeHangoutCardPost = React.memo(({ item, index, setHandOut, refreshPost, updatePost, setDisplayedPosts }) => {
+const HomeHangoutCardPost = React.memo(({ item, index, setHandOut, refreshPost, updatePost, setDisplayedPosts, locale }) => {
     const navigation = useNavigation();
-    const colorScheme = useColorScheme();
-    const theme = getTheme(colorScheme);
-
-    const [postState, setPostState] = useState({
-        loading: false,
-        operationLoading: false,
-        isLiked: item?.isLiked || false,
-        likesCount: item?.likeUser?.length || 0,
-        isOnline: true,
-        visible1: false,
-        reportModalVisible: false,
-        yourActivity: false,
-        modalVisible: false,
-        currentIndex: 0,
-        expandedIndex: null,
-        commentSheetVisible: false,
-        pageNumber: 1,
-        commentText: "",
-        showComment: [],
-        postingComment: false,
-        hasMore: true,
-        refreshing: false,
-        myUserId: null,
-        myUserDetails: null,
-        editTo: null,
-        replyTo: null,
-        editingCommentId: null,
-        isEditingReply: false,
-        isDeleteModalVisible: false,
-        commentToDelete: null,
-        isDeletingReply: false,
-        parentCommentId: null,
-        imageLoading: {},
-        isLikeLoading: false,
-        mediaModalVisible: false,
-        selectedMedia: null,
-        fullLines: 0,
-        sheetContent: { type: null, data: [] }, // Added sheetContent to postState
-    });
-
-    const scrollX = useRef(new Animated.Value(0)).current;
+    const [loading, setLoading] = useState(false);
+    const [operationLoading, setOperationLoading] = useState(false);
+    const [isLiked, setIsLiked] = useState(item?.isLiked || false);
+    const [likesCount, setLikesCount] = useState(item?.likeUser?.length || 0);
+    const [isOnline, setIsOnline] = useState(true);
+    const [visible1, setVisible1] = useState(false);
+    const [reportModalVisible, setReportModalVisible] = useState(false);
+    const [yourActivity, setYourActivity] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [sheetContent, setSheetContent] = useState({ type: null, data: [] });
+    const [commentSheetVisible, setCommentSheetVisible] = useState(false);
+    const [pageNumber, setPageNumber] = useState(1);
+    const [commentText, setCommentText] = useState("");
+    const [showComment, setShowComment] = useState([]);
+    const [postingComment, setPostingComment] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [myUserId, setMyUserId] = useState(null);
+    const [myUserDetails, setMyUserDetails] = useState(null);
+    const [editTo, setEditTo] = useState(null);
+    const [replyTo, setReplyTo] = useState(null);
+    const [editingCommentId, setEditingCommentId] = useState(null);
+    const [isEditingReply, setIsEditingReply] = useState(false);
+    const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [commentToDelete, setCommentToDelete] = useState(null);
+    const [isDeletingReply, setIsDeletingReply] = useState(false);
+    const [parentCommentId, setParentCommentId] = useState(null);
+    const [imageLoading, setImageLoading] = useState({});
+    const [isLikeLoading, setIsLikeLoading] = useState(false);
+    const [mediaModalVisible, setMediaModalVisible] = useState(false);
+    const [selectedMedia, setSelectedMedia] = useState(null);
+    const [isCaptionExpanded, setIsCaptionExpanded] = useState(false);
+    const { t } = useTranslation();
     const bottomSheetRef = useRef(null);
     const commentSheetRef = useRef(null);
     const textInputRef = useRef(null);
+    const [isCommentSheetOpen, setIsCommentSheetOpen] = useState(false);
 
-    // Memoized calculations
+    const showToast = (message, type = 'success') => {
+        const duration = type === 'success' ? SimpleToast.LONG : SimpleToast.SHORT;
+        SimpleToast.show(message, duration, SimpleToast.TOP, 1, 50, type === 'error' ? SimpleToast.BACKGROUND_COLOR : SimpleToast.DEFAULT_BACKGROUND_COLOR);
+    };
+
     const PostUri = useMemo(() => item?.imageUrls ?? [], [item?.imageUrls]);
     const downloadedPostUri = useMemo(() =>
-        item?.downloadedImageUrls ? item.downloadedImageUrls.map((url) => `file://${url}`) : [], [item?.downloadedImageUrls]
+        item?.downloadedImageUrls ? item.downloadedImageUrls.map(url => `file://${url}`) : [], [item?.downloadedImageUrls]
     );
-    const hasMedia = useMemo(() => (PostUri.length > 0) || (downloadedPostUri.length > 0), [PostUri, downloadedPostUri]);
+    const hasImages = useMemo(() => (PostUri.length > 0) || downloadedPostUri.length > 0, [PostUri, downloadedPostUri]);
     const images = useMemo(() => {
-        if (!hasMedia) return [];
-        const uris = PostUri.length > 0 ? PostUri : downloadedPostUri;
-        return uris.map((uri) => ({ uri, type: isVideo(uri) ? "video" : "image", caption: item.caption }));
-    }, [PostUri, downloadedPostUri, item.caption, hasMedia]);
+        if (!hasImages) return [];
+        const uris = PostUri.length > 0 ? PostUri : downloadedPostUri.length > 0 ? downloadedPostUri : [DEFAULT_IMAGE];
+        return uris.map(uri => ({ uri, type: isVideo(uri) ? "video" : "image", caption: item.caption }));
+    }, [hasImages, PostUri, downloadedPostUri, item.caption]);
+
     const finalUri = useMemo(() => {
         const profileUri = item?.userDetails?.profileUrl;
         const downloadedUri = item?.downloadedProfileUrl ? `file://${item.downloadedProfileUrl}` : null;
         return profileUri?.trim() ? profileUri : downloadedUri?.trim() ? downloadedUri : DEFAULT_IMAGE_PROFILE;
     }, [item?.userDetails?.profileUrl, item?.downloadedProfileUrl]);
 
-    // Network effect
     useEffect(() => {
-        const unsubscribe = NetInfo.addEventListener((state) => setPostState((prev) => ({ ...prev, isOnline: state.isConnected })));
+        const unsubscribe = NetInfo.addEventListener(state => setIsOnline({isOnline:state.isConnected}));
         return () => unsubscribe();
     }, []);
 
-    // User details effect
     useEffect(() => {
         const fetchUserId = async () => {
             const user = await AsyncStorage.getItem("userDetails");
             if (user) {
                 const parsed = JSON.parse(user);
-                setPostState((prev) => ({ ...prev, myUserId: parsed?.id, myUserDetails: parsed }));
+                setMyUserId(parsed?.id);
+                setMyUserDetails(parsed);
             }
         };
         fetchUserId();
     }, []);
 
-    // Orientation effect
-    useEffect(() => {
-        Orientation.lockToPortrait();
-    }, []);
+    useEffect(() => { Orientation.lockToPortrait(); }, []);
 
-    // Preload images effect
     useEffect(() => {
-        if (hasMedia) {
+        if (hasImages) {
             const preloadImages = async () => {
-                const imagePromises = images
-                    .filter((item) => item.type === "image")
-                    .slice(0, 3)
-                    .map((item) => FastImage.preload([{ uri: item.uri, priority: FastImage.priority.high }]));
+                const imagePromises = images.filter(i => i.type === "image").map(i => FastImage.preloaded([{ uri: i.uri, priority: FastImage.priority.high }]));
                 await Promise.all(imagePromises);
             };
             preloadImages();
         }
-    }, [images, hasMedia]);
+    }, [images, hasImages]);
 
-    // Activity check effect
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const dbResult = await AsyncStorage.getItem("userDetails");
                 const userDetails = JSON.parse(dbResult);
-                if (userDetails.id === item.userDetails.id) {
-                    setPostState((prev) => ({ ...prev, yourActivity: true }));
-                }
-            } catch (error) {
-                console.error("Error fetching data from AsyncStorage:", error);
-            }
+                if (userDetails.id === item.userDetails.id) setYourActivity(true);
+            } catch (error) { console.error("Error fetching data:", error); }
         };
         fetchData();
     }, [item.userDetails.id]);
 
-    // Handlers
-    const closeSheet = useCallback(() => {
-        bottomSheetRef.current?.close();
-        setPostState((prev) => ({ ...prev, sheetContent: { type: null, data: [] } }));
+    const openSheet = useCallback((type, data) => {
+        setSheetContent({ type, data });
+        bottomSheetRef.current?.open();
     }, []);
 
-    const openSheet = useCallback((type, data) => {
-        try {
-            setPostState((prev) => ({ ...prev, sheetContent: { type, data } }));
-            bottomSheetRef.current?.open();
-        } catch (error) {
-            console.error("Error opening bottom sheet:", error);
-            showToast("Something went wrong, please try again", 'error');
-        }
+    const closeSheet = useCallback(() => {
+        bottomSheetRef.current?.close();
+        setSheetContent({ type: null, data: [] });
     }, []);
 
     const openLikesSheet = useCallback(() => openSheet('likes', item?.likeUser || []), [item?.likeUser, openSheet]);
     const openTaggedUsersSheet = useCallback(() => openSheet('taggedUsers', item?.taggedUsers || []), [item?.taggedUsers, openSheet]);
 
     const getComment = useCallback(async (page = 1) => {
-        if (postState.loading || (!postState.hasMore && page !== 1)) return;
-
-        setPostState((prev) => ({ ...prev, loading: true }));
+        if (loading || (!hasMore && page !== 1)) return;
+        setLoading(true);
         try {
             const authToken = await AsyncStorage.getItem("authToken");
-            if (!authToken) throw new Error("No auth token found");
-
             const queryParams = new URLSearchParams({ hangoutId: item.id, page, limit: 20 }).toString();
-            const response = await apiCallWithToken(`${apiServerUrl}/user/getAllHangoutPostComments?${queryParams}`, "GET", null, authToken);
+            const url = `${apiServerUrl}/user/getAllHangoutPostComments?${queryParams}`;
+            const response = await apiCallWithToken(url, "GET", null, authToken);
             const newComments = response?.result?.comments || [];
-
-            const commentsWithId = newComments.map((comment, index) => ({
-                ...comment,
-                id: comment.commentId || `api-${page}-${index}-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
-                isEdited: comment.isEdited || false,
-                reply: comment.reply?.map((rep, repIndex) => ({
-                    ...rep,
-                    id: rep.replyCommentId || `reply-${page}-${index}-${repIndex}-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
-                    isEdited: rep.isEdited || false,
-                    commentedAt: rep.commentedAt || new Date().toISOString(),
+            const commentsWithId = newComments.map((c, i) => ({
+                ...c,
+                id: c.commentId || `api-${page}-${i}-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+                isEdited: c.isEdited || false,
+                reply: c.reply?.map((r, ri) => ({
+                    ...r,
+                    id: r.replyCommentId || `reply-${page}-${i}-${ri}-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
+                    isEdited: r.isEdited || false,
+                    commentedAt: r.commentedAt || new Date().toISOString(),
                 })) || [],
             }));
-
-            setPostState((prev) => ({
-                ...prev,
-                showComment: page === 1 ? commentsWithId : [...prev.showComment, ...commentsWithId],
-                hasMore: newComments.length === 20,
-            }));
+            setShowComment(page === 1 ? commentsWithId : prev => [...prev, ...commentsWithId]);
+            setHasMore(newComments.length === 20);
         } catch (error) {
-            console.error("Error fetching comments:", error);
-            showToast("Something went wrong, please try again", 'error');
+            showToast(t('failedtoloadcomments'), 'error');
         } finally {
-            setPostState((prev) => ({ ...prev, loading: false, refreshing: false }));
+            setLoading(false);
+            setRefreshing(false);
         }
-    }, [item.id, postState.loading, postState.hasMore]);
+    }, [loading, hasMore, item.id]);
 
     const openCommentSheet = useCallback(() => {
-        setPostState((prev) => ({
-            ...prev,
-            commentSheetVisible: true,
-            pageNumber: 1,
-            hasMore: true,
-            showComment: [],
-        }));
-        commentSheetRef.current?.open();
-        setTimeout(() => getComment(1), 100);
-    }, [getComment]);
+        if (isCommentSheetOpen) return;
+        setCommentSheetVisible(true);
+        setIsCommentSheetOpen(true);
+        setTimeout(() => {
+            commentSheetRef.current?.open();
+        }, 50);
+        getComment(1);
+    }, [isCommentSheetOpen, getComment]);
 
     const closeCommentSheet = useCallback(() => {
-        setTimeout(() => {
-            setPostState((prev) => ({
-                ...prev,
-                commentSheetVisible: false,
-                commentText: "",
-                replyTo: null,
-                editTo: null,
-                editingCommentId: null,
-                isEditingReply: false,
-                isDeleteModalVisible: false,
-                parentCommentId: null,
-                showComment: [],
-            }));
-        }, 300);
+        setCommentSheetVisible(false);
+        setIsCommentSheetOpen(false);
+        commentSheetRef.current?.close();
+        setCommentText("");
+        setReplyTo(null);
+        setEditTo(null);
+        setEditingCommentId(null);
+        setIsEditingReply(false);
+        setDeleteModalVisible(false);
+        setParentCommentId(null);
+        Keyboard.dismiss();
+    }, []);
+
+    const handleCommentSheetOpen = useCallback(() => {
+        setIsCommentSheetOpen(true);
+        setCommentSheetVisible(true);
+    }, []);
+
+    const handleCommentSheetClose = useCallback(() => {
+        setIsCommentSheetOpen(false);
+        setCommentSheetVisible(false);
+        setCommentText("");
+        setReplyTo(null);
+        setEditTo(null);
+        setEditingCommentId(null);
+        setIsEditingReply(false);
+        setParentCommentId(null);
     }, []);
 
     const handleCommentEndReached = useCallback(() => {
-        if (!postState.loading && postState.hasMore && !postState.refreshing) {
-            const nextPage = postState.pageNumber + 1;
-            setPostState((prev) => ({ ...prev, pageNumber: nextPage }));
-            getComment(nextPage);
-        }
-    }, [postState.loading, postState.hasMore, postState.refreshing, postState.pageNumber, getComment]);
+        if (!loading && hasMore && !refreshing) setPageNumber(prev => prev + 1);
+    }, [loading, hasMore, refreshing]);
 
     const handleCommentRefresh = useCallback(() => {
-        setPostState((prev) => ({ ...prev, refreshing: true, pageNumber: 1, hasMore: true }));
+        setRefreshing(true);
+        setPageNumber(1);
+        setHasMore(true);
         getComment(1);
     }, [getComment]);
 
+    // PATCHED: Always update totalComments on new comment/reply
     const handlePostComment = useCallback(async () => {
-        if (!postState.commentText.trim()) return;
-
+        if (!commentText.trim()) return;
         const authToken = await AsyncStorage.getItem("authToken");
         const body = {
-            likeComments: [
-                {
-                    hangoutId: item.id,
-                    comment: postState.commentText,
-                    ...(postState.replyTo && {
-                        commentId: postState.replyTo.id,
-                        type: "REPLY",
-                        replyTo: postState.replyTo.userName,
-                        userId: postState.replyTo.userId,
-                    }),
-                    ...(postState.editingCommentId && {
-                        [postState.isEditingReply ? "replyCommentId" : "commentId"]: postState.editingCommentId,
-                        ...(postState.isEditingReply && postState.parentCommentId ? { commentId: postState.parentCommentId } : {}),
-                        type: postState.isEditingReply ? "EDITREPLY" : "UPDATE",
-                    }),
-                },
-            ],
+            likeComments: [{
+                hangoutId: item.id,
+                comment: commentText,
+                ...(replyTo && { commentId: replyTo.id, type: "REPLY", replyTo: replyTo.userName, userId: replyTo.userId }),
+                ...(editingCommentId && {
+                    [isEditingReply ? "replyCommentId" : "commentId"]: editingCommentId,
+                    ...(isEditingReply && parentCommentId ? { commentId: parentCommentId } : {}),
+                    type: isEditingReply ? "EDITREPLY" : "UPDATE",
+                }),
+            }],
         };
-
-        setPostState((prev) => ({ ...prev, postingComment: true }));
-        const previousComments = [...postState.showComment];
-
+        setPostingComment(true);
+        let previousComments = [...showComment];
         try {
             const userData = await AsyncStorage.getItem("userDetails");
             const user = userData ? JSON.parse(userData) : {};
             const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
             const newComment = {
                 id: tempId,
-                comment: postState.commentText,
+                comment: commentText,
                 commentedAt: new Date().toISOString(),
-                commentUser: {
-                    id: user.id,
-                    fullName: user.fullName || "Anonymous",
-                    profileUrl: user.profileUrl || ImagesAssets.defaultProfile,
-                },
-                ...(postState.replyTo && {
-                    commentId: postState.replyTo.id,
-                    replyTo: postState.replyTo.userName,
-                    userId: postState.replyTo.userId,
-                }),
+                commentUser: { id: user.id, fullName: user.fullName || "Anonymous", profileUrl: user.profileUrl || ImagesAssets.defaultProfile },
+                ...(replyTo && { commentId: replyTo.id, replyTo: replyTo.userName, userId: replyTo.userId }),
                 isEdited: false,
                 reply: [],
             };
 
-            setPostState((prev) => ({
-                ...prev,
-                showComment: postState.editingCommentId
-                    ? prev.showComment.map((comment) => ({
-                        ...comment,
-                        ...(comment.id === postState.editingCommentId && { comment: postState.commentText, isEdited: true }),
-                        reply: comment.reply.map((rep) =>
-                            rep.id === postState.editingCommentId ? { ...rep, comment: postState.commentText, isEdited: true } : rep
-                        ),
-                    }))
-                    : postState.replyTo
-                        ? prev.showComment.map((comment) =>
-                            comment.id === postState.replyTo.id
-                                ? { ...comment, reply: [...comment.reply, { ...newComment, commentUser: { id: user.id, fullName: user.fullName || "Anonymous", profileUrl: user.profileUrl || ImagesAssets.defaultProfile } }] }
-                                : comment
-                        )
-                        : [newComment, ...prev.showComment],
-                commentText: "",
-            }));
-
-            const response = await apiCallWithToken(`${apiServerUrl}/user/likeCommentHangoutPost`, "PUT", body, authToken);
-            setPostState((prev) => ({
-                ...prev,
-                showComment: prev.showComment.map((comment) =>
-                    comment.id === tempId ? { ...comment, id: response.result?.commentId || tempId } : comment
-                ),
-            }));
-
-            if (updatePost && !postState.replyTo && !postState.editingCommentId) {
-                const newCommentCount = (item.comments?.length || 0) + 1;
-                updatePost(item.id, { comments: { ...item.comments, length: newCommentCount }, totalComments: (item.totalComments || 0) + 1 });
+            if (editingCommentId) {
+                setShowComment(prev => prev.map(c => ({
+                    ...c,
+                    ...(c.id === editingCommentId && { comment: commentText, isEdited: true }),
+                    reply: c.reply.map(r => r.id === editingCommentId ? { ...r, comment: commentText, isEdited: true } : r)
+                })));
+            } else if (replyTo) {
+                setShowComment(prev => prev.map(c => c.id === replyTo.id ? { ...c, reply: [...c.reply, newComment] } : c));
+            } else {
+                setShowComment(prev => [newComment, ...prev]);
             }
 
-            showToast(
-                postState.editingCommentId ? "Comment updated successfully" : postState.replyTo ? "Reply posted successfully" : "Comment posted successfully",
-                'success'
-            );
+            setCommentText("");
+            const response = await apiCallWithToken(`${apiServerUrl}/user/likeCommentHangoutPost`, "PUT", body, authToken);
+            setShowComment(prev => prev.map(c => c.id === tempId ? { ...c, id: response.result?.commentId || tempId } : c));
+
+            // PATCHED: Always increment totalComments for new comment/reply
+            if (updatePost && !editingCommentId) {
+                updatePost(item.id, {
+                    totalComments: (item.totalComments || 0) + 1,
+                });
+            }
+
+            showToast(editingCommentId ? t('commentUpdated') : replyTo ? t('replyoncomment') : t('commentadded'), 'success');
         } catch (error) {
-            console.error("Error posting/editing/replying comment:", error);
-            setPostState((prev) => ({ ...prev, showComment: previousComments }));
-            showToast("Something went wrong, please try again", 'error');
+            setShowComment(previousComments);
+            showToast("Failed", 'error');
         } finally {
-            setPostState((prev) => ({
-                ...prev,
-                postingComment: false,
-                commentText: "",
-                replyTo: null,
-                editTo: null,
-                editingCommentId: null,
-                isEditingReply: false,
-                parentCommentId: null,
-            }));
+            setPostingComment(false);
+            setCommentText("");
+            setReplyTo(null);
+            setEditTo(null);
+            setEditingCommentId(null);
+            setIsEditingReply(false);
+            setParentCommentId(null);
         }
-    }, [postState.commentText, item.id, postState.replyTo, postState.editingCommentId, postState.isEditingReply, postState.parentCommentId, postState.showComment, updatePost, item.comments]);
+    }, [commentText, item.id, replyTo, editingCommentId, isEditingReply, parentCommentId, showComment, updatePost, item.totalComments]);
+
+    const handleDeleteComment = useCallback(async () => {
+        if (!commentToDelete) return;
+        setLoading(true);
+        setDeleteModalVisible(false);
+        try {
+            const authToken = await AsyncStorage.getItem("authToken");
+            const body = {
+                likeComments: [{
+                    hangoutId: item.id,
+                    comment: "true",
+                    [isDeletingReply ? "replyCommentId" : "commentId"]: commentToDelete,
+                    ...(isDeletingReply && parentCommentId ? { commentId: parentCommentId } : {}),
+                    type: isDeletingReply ? "DELETEREPLY" : "DELETE",
+                }],
+            };
+            await apiCallWithToken(`${apiServerUrl}/user/likeCommentHangoutPost`, "PUT", body, authToken);
+            setShowComment(prev => prev
+                .map(c => ({ ...c, reply: c.reply.filter(r => r.id !== commentToDelete) }))
+                .filter(c => c.id !== commentToDelete)
+            );
+
+            // PATCHED: Decrement totalComments
+            if (updatePost) {
+                updatePost(item.id, {
+                    totalComments: Math.max((item.totalComments || 0) - 1, 0),
+                });
+            }
+
+            showToast(t('commentdeleted'), 'success');
+        } catch (error) {
+            showToast("Failed", 'error');
+        } finally {
+            setLoading(false);
+            setCommentToDelete(null);
+            setIsDeletingReply(false);
+            setParentCommentId(null);
+        }
+    }, [commentToDelete, item.id, isDeletingReply, parentCommentId, updatePost, item.totalComments]);
 
     const handleEditComment = useCallback((comment, commentId, isReply = false) => {
-        setPostState((prev) => ({
-            ...prev,
-            commentText: comment,
-            editTo: { id: commentId, comment },
-            editingCommentId: commentId,
-            isEditingReply: isReply,
-            replyTo: null,
-            isDeleteModalVisible: false,
-            parentCommentId: isReply ? prev.showComment.find((c) => c.reply.some((r) => r.id === commentId))?.id || null : null,
-        }));
+        setCommentText(comment);
+        setEditTo({ id: commentId, comment });
+        setEditingCommentId(commentId);
+        setIsEditingReply(isReply);
+        setReplyTo(null);
+        if (isReply) {
+            const parent = showComment.find(c => c.reply.some(r => r.id === commentId));
+            setParentCommentId(parent?.id || null);
+        } else {
+            setParentCommentId(null);
+        }
         textInputRef.current?.focus();
-    }, [postState.showComment]);
+    }, [showComment]);
 
     const cancelEditOrReply = useCallback(() => {
-        setPostState((prev) => ({
-            ...prev,
-            replyTo: null,
-            editTo: null,
-            editingCommentId: null,
-            isEditingReply: false,
-            commentText: "",
-            isDeleteModalVisible: false,
-            parentCommentId: null,
-        }));
+        setReplyTo(null);
+        setEditTo(null);
+        setEditingCommentId(null);
+        setIsEditingReply(false);
+        setCommentText("");
+        setDeleteModalVisible(false);
+        setParentCommentId(null);
         textInputRef.current?.focus();
     }, []);
 
     const showDeleteConfirmation = useCallback((commentId, isReply = false) => {
-        setPostState((prev) => ({
-            ...prev,
-            commentToDelete: commentId,
-            isDeletingReply: isReply,
-            replyTo: null,
-            editTo: null,
-            editingCommentId: null,
-            commentText: "",
-            isDeleteModalVisible: true,
-            parentCommentId: isReply ? prev.showComment.find((c) => c.reply.some((r) => r.id === commentId))?.id || null : null,
-        }));
-    }, [postState.showComment]);
-
-    const handleDeleteComment = useCallback(async () => {
-        if (!postState.commentToDelete) return;
-
-        setPostState((prev) => ({ ...prev, loading: true, isDeleteModalVisible: false }));
-        try {
-            const authToken = await AsyncStorage.getItem("authToken");
-            const body = {
-                likeComments: [
-                    {
-                        hangoutId: item.id,
-                        comment: "true",
-                        [postState.isDeletingReply ? "replyCommentId" : "commentId"]: postState.commentToDelete,
-                        ...(postState.isDeletingReply && postState.parentCommentId ? { commentId: postState.parentCommentId } : {}),
-                        type: postState.isDeletingReply ? "DELETEREPLY" : "DELETE",
-                    },
-                ],
-            };
-
-            await apiCallWithToken(`${apiServerUrl}/user/likeCommentHangoutPost`, "PUT", body, authToken);
-            setPostState((prev) => ({
-                ...prev,
-                showComment: prev.showComment
-                    .map((comment) => ({
-                        ...comment,
-                        reply: comment.reply.filter((rep) => rep.id !== postState.commentToDelete),
-                    }))
-                    .filter((comment) => comment.id !== postState.commentToDelete),
-            }));
-
-            if (updatePost && !postState.isDeletingReply) {
-                const newCommentCount = Math.max((item.comments?.length || 0) - 1, 0);
-                updatePost(item.id, { comments: { ...item.comments, length: newCommentCount }, totalComments: (item.totalComments || 0) - 1 });
-            }
-
-            showToast("Comment deleted successfully", 'success');
-        } catch (error) {
-            console.error("Error deleting comment:", error);
-            showToast("Something went wrong, please try again", 'error');
-        } finally {
-            setPostState((prev) => ({
-                ...prev,
-                loading: false,
-                commentToDelete: null,
-                isDeletingReply: false,
-                parentCommentId: null,
-            }));
+        setCommentToDelete(commentId);
+        setIsDeletingReply(isReply);
+        setReplyTo(null);
+        setEditTo(null);
+        setEditingCommentId(null);
+        setCommentText("");
+        if (isReply) {
+            const parent = showComment.find(c => c.reply.some(r => r.id === commentId));
+            setParentCommentId(parent?.id || null);
+        } else {
+            setParentCommentId(null);
         }
-    }, [postState.commentToDelete, item.id, postState.isDeletingReply, postState.parentCommentId, updatePost, item.comments]);
+        setDeleteModalVisible(true);
+    }, [showComment]);
 
     const handleReply = useCallback((commentId, userName, userId) => {
-        setPostState((prev) => ({
-            ...prev,
-            replyTo: { id: commentId, userName, userId },
-            editTo: null,
-            editingCommentId: null,
-            isEditingReply: false,
-            commentText: "",
-            isDeleteModalVisible: false,
-            parentCommentId: commentId,
-        }));
+        setReplyTo({ id: commentId, userName, userId });
+        setEditTo(null);
+        setEditingCommentId(null);
+        setIsEditingReply(false);
+        setCommentText("");
+        setDeleteModalVisible(false);
+        setParentCommentId(commentId);
         textInputRef.current?.focus();
     }, []);
 
     const handleLikeApi = useCallback(async (likeState) => {
-        const previousLiked = postState.isLiked;
-        const previousCount = postState.likesCount;
+        const previousLiked = isLiked;
+        const previousCount = likesCount;
         const previousLikeUser = [...(item.likeUser || [])];
-
-        setPostState((prev) => ({
-            ...prev,
-            isLiked: likeState,
-            likesCount: likeState ? previousCount + 1 : Math.max(previousCount - 1, 0),
-            isLikeLoading: true,
-        }));
-
+        setIsLiked(likeState);
+        setLikesCount(likeState ? previousCount + 1 : Math.max(previousCount - 1, 0));
         let updatedLikeUser = [...previousLikeUser];
-        const currentUser = {
-            id: postState.myUserId,
-            fullName: postState.myUserDetails?.fullName || 'You',
-            profileUrl: postState.myUserDetails?.profileUrl || '',
-        };
-
+        const currentUser = { id: myUserId, fullName: myUserDetails?.fullName || 'You', profileUrl: myUserDetails?.profileUrl || '' };
         if (likeState) {
-            if (!updatedLikeUser.some((u) => u.id === postState.myUserId)) {
-                updatedLikeUser.push(currentUser);
-            }
+            if (!updatedLikeUser.some(u => u.id === myUserId)) updatedLikeUser.push(currentUser);
         } else {
-            updatedLikeUser = updatedLikeUser.filter((u) => u.id !== postState.myUserId);
+            updatedLikeUser = updatedLikeUser.filter(u => u.id !== myUserId);
         }
-
-        if (updatePost) {
-            updatePost(item.id, { isLiked: likeState, likeUser: updatedLikeUser });
-        }
-
+        if (updatePost) updatePost(item.id, { isLiked: likeState, likeUser: updatedLikeUser });
+        setIsLikeLoading(true);
         try {
             const authToken = await AsyncStorage.getItem("authToken");
-            // if (await checkConnected()) {
-                if (!authToken) throw new Error("No auth token found");
+            if (await checkConnected()) {
                 const body = { likeComments: [{ hangoutId: item.id, isLiked: likeState }] };
-                const response = await axios({
-                    method: "PUT",
-                    url: apiServerUrl + "/user/likeCommentHangoutPost",
-                    data: body,
-                    headers: { authToken },
-                });
-                if (response.data.responseCode !== 200) {
-                    throw new Error(`Unexpected response code: ${response.data.responseCode}`);
-                }
-            // } else {
-            //     throw new Error("No internet connection");
-            // }
+                const response = await axios({ method: "PUT", url: apiServerUrl + "/user/likeCommentHangoutPost", data: body, headers: { authToken } });
+                if (response.data.responseCode !== 200) throw new Error("Failed");
+            } else throw new Error("No internet");
         } catch (error) {
-            setPostState((prev) => ({ ...prev, isLiked: previousLiked, likesCount: previousCount }));
-            if (updatePost) {
-                updatePost(item.id, { isLiked: previousLiked, likeUser: previousLikeUser });
-            }
-            console.error("Error toggling like:", error);
-            showToast("Something went wrong, please try again", 'error');
+            setIsLiked(previousLiked);
+            setLikesCount(previousCount);
+            if (updatePost) updatePost(item.id, { isLiked: previousLiked, likeUser: previousLikeUser });
+            showToast("Failed", 'error');
         } finally {
-            setPostState((prev) => ({ ...prev, isLikeLoading: false }));
+            setIsLikeLoading(false);
         }
-    }, [postState.isLiked, postState.likesCount, item.likeUser, item.id, postState.myUserId, postState.myUserDetails, updatePost]);
+    }, [isLiked, likesCount, item.likeUser, item.id, myUserId, myUserDetails, updatePost]);
 
     const handleLikeToggle = useCallback(() => {
-        if (postState.isLikeLoading) return;
-        handleLikeApi(!postState.isLiked);
-    }, [postState.isLikeLoading, postState.isLiked, handleLikeApi]);
+        if (isLikeLoading) return;
+        handleLikeApi(!isLiked);
+    }, [isLikeLoading, isLiked, handleLikeApi]);
 
     const onViewableItemsChanged = useCallback(({ viewableItems }) => {
-        if (viewableItems.length > 0) {
-            setPostState((prev) => ({ ...prev, currentIndex: viewableItems[0].index || 0 }));
-        }
+        if (viewableItems.length > 0) setCurrentIndex(viewableItems[0].index || 0);
     }, []);
 
     const viewabilityConfigCallbackPairs = useRef([{ viewabilityConfig: { viewAreaCoveragePercentThreshold: 50 }, onViewableItemsChanged }]);
 
-    const handleDelete = useCallback(async () => {
-        setPostState((prev) => ({ ...prev, modalVisible: false }));
-        await handleDeleteGroup();
-    }, []);
-
     const handleDeleteGroup = useCallback(async () => {
-        setPostState((prev) => ({ ...prev, operationLoading: true }));
+        setOperationLoading(true);
         try {
             const dbResult = await AsyncStorage.getItem("userDetails");
             const userDetails = JSON.parse(dbResult);
-
-            setHandOut((prev) => prev.filter((post) => post.id !== item.id));
-            setDisplayedPosts((prev) => prev.filter((post) => post.id !== item.id));
-
+            setHandOut(prev => prev.filter(p => p.id !== item.id));
+            setDisplayedPosts(prev => prev.filter(p => p.id !== item.id));
             const res = await axios({
                 method: "PUT",
                 url: `${apiServerUrl}/user/updateHangoutPost`,
                 data: { hangouts: [{ hangoutId: item.id, status: "DELETE" }] },
                 headers: { authToken: userDetails.authToken },
             });
-
             if (res?.data?.responseCode === 200) {
-                setPostState((prev) => ({ ...prev, visible1: false }));
-                showToast("Post deleted successfully", 'success');
-            } else {
-                setHandOut((prev) => [...prev, item]);
-                setDisplayedPosts((prev) => [...prev, item]);
-                throw new Error("Failed to delete post");
-            }
+                setVisible1(false);
+                showToast(t('postdeleted'), 'success');
+            } else throw new Error("Failed");
         } catch (error) {
-            console.log("Error in deleting group activity", error.response?.data);
-            setHandOut((prev) => [...prev, item]);
-            setDisplayedPosts((prev) => [...prev, item]);
-            showToast("Something went wrong, please try again", 'error');
+            setHandOut(prev => [...prev, item]);
+            setDisplayedPosts(prev => [...prev, item]);
+            showToast("Failed", 'error');
         } finally {
-            setPostState((prev) => ({ ...prev, operationLoading: false }));
+            setOperationLoading(false);
         }
-    }, [item, setHandOut, setDisplayedPosts]);
+    }, [item.id, setHandOut, setDisplayedPosts]);
 
     const handleReportGroup = useCallback(async (reasonString) => {
-        setPostState((prev) => ({ ...prev, operationLoading: true }));
+        setOperationLoading(true);
         try {
             const dbResult = await AsyncStorage.getItem("userDetails");
             const userDetails = JSON.parse(dbResult);
-
-            setHandOut((prev) => prev.filter((post) => post.id !== item.id));
-            setDisplayedPosts((prev) => prev.filter((post) => post.id !== item.id));
-
+            setHandOut(prev => prev.filter(p => p.id !== item.id));
+            setDisplayedPosts(prev => prev.filter(p => p.id !== item.id));
             const res = await axios({
                 method: "PUT",
                 url: `${apiServerUrl}/user/updateHangoutPost`,
                 data: { hangouts: [{ hangoutId: item.id, reason: reasonString, status: "REPORTED" }] },
                 headers: { authToken: userDetails.authToken },
             });
-
             if (res?.data?.responseCode === 200) {
-                setPostState((prev) => ({ ...prev, visible1: false }));
-                showToast("Post reported successfully", 'success');
-            } else {
-                setHandOut((prev) => [...prev, item]);
-                setDisplayedPosts((prev) => [...prev, item]);
-                throw new Error("Failed to report post");
-            }
+                setVisible1(false);
+                showToast(t('reportsubmitted'), 'success');
+            } else throw new Error("Failed");
         } catch (error) {
-            console.log("Error in reporting group activity", error?.response?.data);
-            setHandOut((prev) => [...prev, item]);
-            setDisplayedPosts((prev) => [...prev, item]);
-            showToast("Something went wrong, please try again", 'error');
+            setHandOut(prev => [...prev, item]);
+            setDisplayedPosts(prev => [...prev, item]);
+            showToast("Failed", 'error');
         } finally {
-            setPostState((prev) => ({ ...prev, operationLoading: false }));
+            setOperationLoading(false);
         }
-    }, [item, setHandOut, setDisplayedPosts]);
+    }, [item.id, setHandOut, setDisplayedPosts]);
 
     const handleReportSubmit = useCallback(async (reason) => {
-        setPostState((prev) => ({ ...prev, reportModalVisible: false }));
+        setReportModalVisible(false);
         await handleReportGroup(reason);
     }, [handleReportGroup]);
 
     const handleMediaPress = useCallback((uri, index) => {
-        setPostState((prev) => ({ ...prev, selectedMedia: { mediaItems: images, initialIndex: index }, mediaModalVisible: true }));
+        setSelectedMedia({ mediaItems: images, initialIndex: index });
+        setMediaModalVisible(true);
     }, [images]);
 
     const handleCardPress = useCallback((user) => {
         navigation.navigate("CrewProfile", { item: user, source: "hangout" });
     }, [navigation]);
 
-    const openMenu = useCallback(() => setPostState((prev) => ({ ...prev, visible1: true })), []);
-    const closeMenu = useCallback(() => setPostState((prev) => ({ ...prev, visible1: false })), []);
-
-    const toggleExpand = useCallback((index) => {
-        setPostState((prev) => ({ ...prev, expandedIndex: prev.expandedIndex === index ? null : index }));
-    }, []);
+    const openMenu = useCallback(() => setVisible1(true), []);
+    const closeMenu = useCallback(() => setVisible1(false), []);
 
     const hashtagsDisplay = useMemo(() => (
-        <View style={themedStyles(theme).hashtagsContainer}>
-            {item.groupActivityId && (
-                <View style={[themedStyles(theme).tag, { backgroundColor: theme.tagBg }]}>
-                    <Text style={[themedStyles(theme).tagText, { color: '#06361F' }]}>buddyUp Events</Text>
+        <View style={{ flexDirection: 'row', gap: 5, flexWrap: 'wrap' }}>
+            {(item.groupActivityId) && (
+                <View style={{ backgroundColor: "#FBCF21", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 5, alignSelf: "flex-start" }}>
+                    <Text style={{ color: "black", fontSize: 9, textTransform: "capitalize" }}>{t('buddyupevents')}</Text>
                 </View>
             )}
             {(formatShipName(item?.userDetails?.ship?.shipName || item?.userDetails?.associatedShip?.shipName)) && (
-                <View style={[themedStyles(theme).tag, { backgroundColor: theme.tagSecondaryBg }]}>
-                    <Text style={[themedStyles(theme).tagText, { color: theme.tagText }]}>
+                <View style={{ backgroundColor: Colors.secondary, borderRadius: 20, paddingHorizontal: 8, paddingVertical: 5, alignSelf: "flex-start" }}>
+                    <Text style={{ color: "black", fontSize: 9 }}>
                         {formatShipName(item?.userDetails?.ship?.shipName || item?.userDetails?.associatedShip?.shipName || '')}
                     </Text>
                 </View>
             )}
             {item.hashtags.slice(0, 2).map((hashtag, index) => (
-                <View key={index} style={[themedStyles(theme).tag, { backgroundColor: theme.tagBg }]}>
-                    <Text style={[themedStyles(theme).tagText, { color: '#06361F' }]}>
+                <View key={index} style={{ backgroundColor: "#FBCF21", borderRadius: 20, paddingHorizontal: 8, paddingVertical: 5, alignSelf: "flex-start" }}>
+                    <Text style={{ color: "#06361F", fontSize: 9 }}>
                         {hashtag ? hashtag.charAt(0).toUpperCase() + hashtag.slice(1) : ""}
                     </Text>
                 </View>
             ))}
         </View>
-    ), [item.groupActivityId, item?.userDetails?.ship, item?.userDetails?.associatedShip, item.hashtags, theme]);
+    ), [item.groupActivityId, item?.userDetails?.ship, item?.userDetails?.associatedShip, item.hashtags]);
 
     const taggedUsersDisplay = useMemo(() => (
         <TouchableOpacity onPress={openTaggedUsersSheet}>
-            <View style={themedStyles(theme).avatarRow}>
+            <View style={styles.avatarRow}>
                 {item?.taggedUsers.slice(0, 3).map((user, index) => (
                     <FastImage
                         key={user.id}
-                        style={[themedStyles(theme).avatar1, { marginLeft: index > 0 ? -15 : 0 }]}
+                        style={[styles.avatar1, { marginLeft: index > 0 ? -15 : 0 }]}
                         source={{ uri: user?.profileUrl || DEFAULT_IMAGE_PROFILE, priority: FastImage.priority.normal, cache: FastImage.cacheControl.immutable }}
                         resizeMode={FastImage.resizeMode.cover}
                     />
                 ))}
                 {item?.taggedUsers?.length > 3 && (
-                    <View style={themedStyles(theme).additionalUsers}>
-                        <Text style={themedStyles(theme).additionalUsersText}>+{item?.taggedUsers?.length - 3}</Text>
+                    <View style={styles.additionalUsers}>
+                        <Text style={styles.additionalUsersText}>+{item?.taggedUsers?.length - 3}</Text>
                     </View>
                 )}
             </View>
         </TouchableOpacity>
-    ), [item?.taggedUsers, openTaggedUsersSheet, theme]);
+    ), [item?.taggedUsers, openTaggedUsersSheet]);
+
+    const renderCaption = useCallback(() => {
+        return (
+            <ExpandableCaption
+                caption={item.caption}
+                isExpanded={isCaptionExpanded}
+                onToggle={() => setIsCaptionExpanded(!isCaptionExpanded)}
+                maxLines={1}
+            />
+        );
+    }, [item.caption, isCaptionExpanded]);
+
+    const renderItem = useCallback(({ item: imageItem, index }) => (
+        <TouchableOpacity onPress={() => handleMediaPress(imageItem.uri, index)}>
+            <View style={styles.imageContainer}>
+                {isVideo(imageItem.uri) ? (
+                    <>
+                        <Video
+                            source={{ uri: imageItem.uri }}
+                            style={styles.imageStyle}
+                            resizeMode='cover'
+                            muted
+                            repeat
+                            paused={currentIndex !== index}
+                            playInBackground={false}
+                            playWhenInactive={false}
+                            ignoreSilentSwitch="obey"
+                            controls={false}
+                        />
+                        <View style={styles.playIconContainer}>
+                            <Image source={ImagesAssets.vedioPlaybutton} style={styles.playIcon} resizeMode="contain" />
+                        </View>
+                    </>
+                ) : (
+                    <View>
+                        {imageLoading[imageItem.uri] && <ActivityIndicator style={StyleSheet.absoluteFill} size="small" color={Colors.secondary} />}
+                        <FastImage
+                            style={styles.imageStyle}
+                            source={{ uri: imageItem.uri || DEFAULT_IMAGE, priority: FastImage.priority.high, cache: FastImage.cacheControl.immutable }}
+                            resizeMode={FastImage.resizeMode.cover}
+                            onLoadStart={() => setImageLoading(prev => ({ ...prev, [imageItem.uri]: true }))}
+                            onLoadEnd={() => setImageLoading(prev => ({ ...prev, [imageItem.uri]: false }))}
+                        />
+                    </View>
+                )}
+            </View>
+        </TouchableOpacity>
+    ), [handleMediaPress, imageLoading, currentIndex]);
+
+    const renderPostContent = () => {
+        const showImages = hasImages;
+        const isTextPost = !showImages;
+        return (
+            <>
+                <PostHeader
+                    item={item}
+                    handleCardPress={handleCardPress}
+                    finalUri={finalUri}
+                    taggedUsersDisplay={taggedUsersDisplay}
+                    openMenu={openMenu}
+                    visible1={visible1}
+                    closeMenu={closeMenu}
+                    yourActivity={yourActivity}
+                    setModalVisible={setModalVisible}
+                    setReportModalVisible={setReportModalVisible}
+                    navigation={navigation}
+                    isMediaPost={showImages}
+                />
+                {showImages && (
+                    <FlatList
+                        data={images}
+                        horizontal
+                        pagingEnabled
+                        showsHorizontalScrollIndicator={false}
+                        keyExtractor={(item, index) => index.toString()}
+                        renderItem={renderItem}
+                        viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
+                    />
+                )}
+                <View style={[
+                    styles.bottomContent,
+                    showImages ? styles.mediaBottomContent : styles.textPostContainer
+                ]}>
+                    {isTextPost ? (
+                        <>
+                            <View style={styles.captionContainer}>
+                                <Text style={styles.caption}>{item.caption}</Text>
+                            </View>
+                            <View style={styles.metaContainer}>
+                                {hashtagsDisplay}
+                            </View>
+                            {item.createdAt && (
+                                <Text style={styles.timestamp}>
+                                    <ReactTimeAgo
+                                        date={item?.createdTime ? new Date(Number(item.createdTime)) : new Date(item.createdAt)}
+                                        locale={locale}
+                                        component={Time}
+                                        timeStyle="short"
+                                    />
+                                </Text>
+                            )}
+                        </>
+                    ) : (
+                        <>
+                            <View style={styles.metaContainer}>
+                                {hasImages && images.length > 1 && (
+                                    <View style={styles.pagination}>
+                                        {images.map((_, i) => (
+                                            <View key={i} style={{
+                                                width: 8, height: 8, borderRadius: 4,
+                                                backgroundColor: currentIndex === i ? '#8DAF02' : '#bbb',
+                                                marginHorizontal: 4,
+                                            }} />
+                                        ))}
+                                    </View>
+                                )}
+                                {item.createdAt && (
+                                    <Text style={styles.timestamp}>
+                                        <ReactTimeAgo
+                                            date={item?.createdTime ? new Date(Number(item.createdTime)) : new Date(item.createdAt)}
+                                            locale={locale}
+                                            component={Time}
+                                            timeStyle="short"
+                                        />
+                                    </Text>
+                                )}
+                                {hashtagsDisplay}
+                            </View>
+                            {renderCaption()}
+                        </>
+                    )}
+                    <View style={styles.interactionButtons}>
+                        <View style={styles.iconRow}>
+                            <TouchableOpacity style={styles.iconButton} onPress={handleLikeToggle} disabled={isLikeLoading}>
+                                <Heart size={24} color={isLiked ? '#8DAF02' : 'black'} fill={isLiked ? '#8DAF02' : 'none'} strokeWidth={1.7} />
+                                {likesCount > 0 && (
+                                    <TouchableOpacity onPress={openLikesSheet} style={{ width: 30, marginLeft: 5 }}>
+                                        <Text style={styles.likesCountText}>{likesCount}</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.iconButton} onPress={openCommentSheet}>
+                                <View style={styles.iconContainer}>
+                                    <MessageCircle size={22} color="black" strokeWidth={1.7} />
+                                    {/* PATCHED: Use item.totalComments */}
+                                    {item?.totalComments > 0 && <Text style={styles.likesCountText}>{item.totalComments}</Text>}
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.iconButton}>
+                                <View style={styles.iconContainer}>
+                                    <TrendingUp size={22} color="black" strokeWidth={1.7} />
+                                    {item?.viewCount > 0 && <Text style={styles.likesCountText}>{item.viewCount}</Text>}
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </>
+        );
+    };
 
     return (
         <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-            <View style={themedStyles(theme).ListContainer}>
-                {postState.operationLoading && (
-                    <View style={themedStyles(theme).operationLoadingOverlay}>
+            <View style={[
+                styles.ListContainer,
+                !hasImages && styles.textPostOuterContainer
+            ]}>
+                {operationLoading && (
+                    <View style={styles.operationLoadingOverlay}>
                         <ActivityIndicator size="small" color={Colors.secondary} />
                     </View>
                 )}
-                <PostHeader
-                    theme={theme}
-                    item={item}
-                    finalUri={finalUri}
-                    handleCardPress={handleCardPress}
-                    yourActivity={postState.yourActivity}
-                    visible1={postState.visible1}
-                    openMenu={openMenu}
-                    closeMenu={closeMenu}
-                    navigation={navigation}
-                    setModalVisible={() => setPostState((prev) => ({ ...prev, modalVisible: true }))}
-                    setReportModalVisible={() => setPostState((prev) => ({ ...prev, reportModalVisible: true }))}
-                    taggedUsersDisplay={taggedUsersDisplay}
-                />
-                <PostMedia
-                    item={item}
-                    theme={theme}
-                    images={images}
-                    hasMedia={hasMedia}
-                    currentIndex={postState.currentIndex}
-                    handleMediaPress={handleMediaPress}
-                    imageLoading={postState.imageLoading}
-                    setImageLoading={(fn) => setPostState((prev) => ({ ...prev, imageLoading: typeof fn === 'function' ? fn(prev.imageLoading) : fn }))}
-                    viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs}
-                />
-                <Loader isLoading={postState.loading} />
-                <PostContent
-                    theme={theme}
-                    item={item}
-                    expandedIndex={postState.expandedIndex}
-                    index={index}
-                    toggleExpand={toggleExpand}
-                    hashtagsDisplay={hashtagsDisplay}
-                    images={images}
-                    hasMedia={hasMedia}
-                    currentIndex={postState.currentIndex}
-                    fullLines={postState.fullLines}
-                    setFullLines={(lines) => setPostState((prev) => ({ ...prev, fullLines: lines }))}
-                />
-                <PostFooter
-                    theme={theme}
-                    item={item}
-                    isLiked={postState.isLiked}
-                    likesCount={postState.likesCount}
-                    handleLikeToggle={handleLikeToggle}
-                    isLikeLoading={postState.isLikeLoading}
-                    openLikesSheet={openLikesSheet}
-                    openCommentSheet={openCommentSheet}
-                />
-                <ReportModal
-                    visible={postState.reportModalVisible}
-                    onClose={() => setPostState((prev) => ({ ...prev, reportModalVisible: false }))}
-                    onSubmit={handleReportSubmit}
-                />
-                <DeleteModal
-                    visible={postState.modalVisible}
-                    onClose={() => setPostState((prev) => ({ ...prev, modalVisible: false }))}
-                    onDelete={handleDelete}
-                />
-                {postState.selectedMedia && (
+                {renderPostContent()}
+                <Loader isLoading={loading} />
+                <ReportModal visible={reportModalVisible} onClose={() => setReportModalVisible(false)} onSubmit={handleReportSubmit} />
+                <DeleteModal visible={modalVisible} onClose={() => setModalVisible(false)} onDelete={handleDeleteGroup} />
+                {selectedMedia && (
                     <MediaPreviewModalForPosts
-                        visible={postState.mediaModalVisible}
-                        onClose={() => setPostState((prev) => ({ ...prev, mediaModalVisible: false }))}
-                        mediaItems={postState.selectedMedia.mediaItems}
-                        initialIndex={postState.selectedMedia.initialIndex}
+                        visible={mediaModalVisible}
+                        onClose={() => setMediaModalVisible(false)}
+                        mediaItems={selectedMedia.mediaItems}
+                        initialIndex={selectedMedia.initialIndex}
                         canSend={false}
                         uploadImageToCloudinary={() => { }}
                     />
                 )}
-                <RBSheet
-                    ref={bottomSheetRef}
-                    closeOnDragDown={true}
-                    closeOnPressMask={true}
-                    height={height * 0.5}
-                    customStyles={{
-                        container: { borderTopLeftRadius: 20, borderTopRightRadius: 20, backgroundColor: theme.sheetBg },
-                        draggableIcon: { display: "none" },
-                    }}
-                >
-                    <View style={themedStyles(theme).sheetContent}>
-                        <Text style={themedStyles(theme).sheetTitle}>
-                            {postState.sheetContent.type === 'likes' ? 'Likes' : 'Tagged Users'}
-                        </Text>
-                        <ScrollView contentContainerStyle={{ paddingBottom: 50 }}>
-                            {postState.sheetContent.data.length > 0 ? (
-                                postState.sheetContent.data.map((user) => (
-                                    <TouchableOpacity
-                                        key={user.id}
-                                        onPress={() => {
-                                            closeSheet();
-                                            navigation.navigate("CrewProfile", { item: user, source: "hangout" });
-                                        }}
-                                    >
-                                        <View style={themedStyles(theme).userItemContainer}>
-                                            <View style={{ position: "relative" }}>
-                                                <Image
-                                                    source={require("../assets/images/AnotherImage/Man.png")}
-                                                    style={[themedStyles(theme).userImage, { position: "absolute" }]}
-                                                />
-                                                <FastImage
-                                                    style={themedStyles(theme).userImage}
-                                                    source={user.profileUrl ? { uri: user.profileUrl } : null}
-                                                    resizeMode={FastImage.resizeMode.cover}
-                                                />
-                                            </View>
-                                            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", flex: 1 }}>
-                                                <Text style={themedStyles(theme).userItem}>{user.fullName}</Text>
-                                                <TouchableOpacity onPress={() => { closeSheet(); navigation.navigate("CrewProfile", { item: user, source: "hangout" }); }}>
-                                                    <Image style={themedStyles(theme).baseIcons} source={ImagesAssets.eye_icon} />
-                                                </TouchableOpacity>
-                                            </View>
+                <RBSheet ref={bottomSheetRef} closeOnDragDown closeOnPressMask height={height * 0.5}
+                    customStyles={{ container: { borderTopLeftRadius: 20, borderTopRightRadius: 20, backgroundColor: "white" }, draggableIcon: { display: "none" } }}>
+                    <View style={styles.sheetContent}>
+                        <Text style={[styles.sheetTitle, { marginBottom: 10 }]}>{sheetContent.type === 'likes' ? t('likedUsers') : t('taggedUsers')}</Text>
+                        <ScrollView contentContainerStyle={{ paddingBottom: 30 }}>
+                            {sheetContent.data.length > 0 ? sheetContent.data.map(user => (
+                                <TouchableOpacity key={user.id} onPress={() => { closeSheet(); navigation.navigate("CrewProfile", { item: user, source: "hangout" }); }}>
+                                    <View style={styles.userItemContainer}>
+                                        <View style={{ position: "relative" }}>
+                                            <Image source={require("../assets/images/AnotherImage/Man.png")} style={[styles.userImage, { position: "absolute" }]} />
+                                            <FastImage style={styles.userImage} source={user.profileUrl ? { uri: user.profileUrl } : null} resizeMode={FastImage.resizeMode.cover} />
                                         </View>
-                                    </TouchableOpacity>
-                                ))
-                            ) : (
-                                <Text style={themedStyles(theme).noLikesText}>
-                                    {postState.sheetContent.type === 'likes' ? 'No likes yet' : 'No tagged users'}
-                                </Text>
+                                        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", flex: 1 }}>
+                                            <Text style={styles.userItem}>{user.fullName}</Text>
+                                            <TouchableOpacity onPress={() => { closeSheet(); navigation.navigate("CrewProfile", { item: user, source: "hangout" }); }}>
+                                                <Image style={[styles.baseIcons, { color: 'black' }]} source={ImagesAssets.eye_icon} />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                            )) : (
+                                <Text style={styles.noLikesText}>{sheetContent.type === 'likes' ? t('nolikesyet') : t('notaggedusers')}</Text>
                             )}
                         </ScrollView>
                     </View>
                 </RBSheet>
                 <RBSheet
                     ref={commentSheetRef}
-                    closeOnDragDown={true}
-                    closeOnPressMask={true}
-                    closeOnPressBack={true}
+                    closeOnDragDown
+                    closeOnPressMask
+                    closeOnPressBack
+                    draggable
                     height={height * 0.6}
-                    onClose={closeCommentSheet}
+                    onOpen={handleCommentSheetOpen}
+                    onClose={handleCommentSheetClose}
                     customStyles={{
-                        container: { borderTopLeftRadius: 20, borderTopRightRadius: 20, backgroundColor: theme.sheetBg, paddingBottom: 20 },
-                        draggableIcon: { backgroundColor: theme.textTertiary, width: 40, height: 2, borderRadius: 2.5, marginVertical: 10 },
-                    }}
-                >
+                        container: {
+                            borderTopLeftRadius: 20,
+                            borderTopRightRadius: 20,
+                            backgroundColor: "#ededed",
+                            paddingBottom: 20
+                        },
+                        draggableIcon: {
+                            backgroundColor: "#888",
+                            width: 40,
+                            height: 2,
+                            borderRadius: 2.5,
+                            marginVertical: 10
+                        },
+                    }}>
                     <KeyboardAvoidingView
                         style={{ flex: 1 }}
-                        behavior={Platform.OS === "ios" ? "padding" : "height"}
-                        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 30}
-                    >
+                        behavior={Platform.OS === "ios" || getApiLevel() > 34 ? "padding" : "padding"}
+                        keyboardVerticalOffset={getApiLevel() > 34 ? 60 : 30}>
                         <View style={{ flex: 1 }}>
-                            <View style={themedStyles(theme).commentSheetHeader}>
-                                <Text style={themedStyles(theme).sheetTitle}>Comments</Text>
+                            <View style={styles.commentSheetHeader}>
+                                <Text style={styles.sheetTitle}>{t('comments')}</Text>
                             </View>
                             <FlatList
-                                data={postState.showComment}
+                                data={showComment}
                                 renderItem={({ item }) => (
                                     <ShowCommentList
                                         item={item}
-                                        myUserId={postState.myUserId}
+                                        myUserId={myUserId}
                                         handleCardPress={handleCardPress}
                                         handleEditComment={handleEditComment}
                                         showDeleteConfirmation={showDeleteConfirmation}
                                         handleReply={handleReply}
-                                        theme={theme}
-                                        closeCommentSheet={closeCommentSheet}
                                     />
                                 )}
-                                keyExtractor={(item) => item.id}
+                                keyExtractor={item => item.id}
                                 onEndReached={handleCommentEndReached}
                                 onEndReachedThreshold={0.5}
                                 keyboardShouldPersistTaps="handled"
                                 contentContainerStyle={{ paddingBottom: 80 }}
-                                ListEmptyComponent={<Text style={themedStyles(theme).emptyText}>No comments yet</Text>}
+                                refreshControl={
+                                    <RefreshControl
+                                        refreshing={refreshing}
+                                        onRefresh={handleCommentRefresh}
+                                    />
+                                }
+                                ListEmptyComponent={
+                                    <Text style={styles.emptyText}>{t('nocommentsyet')}</Text>
+                                }
                                 initialNumToRender={10}
                                 windowSize={5}
-                                nestedScrollEnabled={true}
                             />
                             <Modal
-                                visible={postState.isDeleteModalVisible}
-                                onDismiss={() => setPostState((prev) => ({ ...prev, isDeleteModalVisible: false }))}
-                                contentContainerStyle={themedStyles(theme).modalContent}
-                            >
-                                <Text style={themedStyles(theme).modalTitle}>Delete Comment</Text>
-                                <Text style={themedStyles(theme).modalText}>Are you sure you want to delete this comment?</Text>
-                                <View style={themedStyles(theme).modalButtons}>
+                                visible={isDeleteModalVisible}
+                                onDismiss={() => setDeleteModalVisible(false)}
+                                contentContainerStyle={styles.modalContent}>
+                                <Text style={styles.modalTitle}>{t('deletecomment')}</Text>
+                                <Text style={styles.modalText}>{t('areyousure')}</Text>
+                                <View style={styles.modalButtons}>
                                     <TouchableOpacity
-                                        style={[themedStyles(theme).modalButton, themedStyles(theme).cancelButton]}
-                                        onPress={() => setPostState((prev) => ({ ...prev, isDeleteModalVisible: false }))}
-                                    >
-                                        <Text style={themedStyles(theme).buttonTextModal}>Cancel</Text>
+                                        style={[styles.modalButton, styles.cancelButton]}
+                                        onPress={() => setDeleteModalVisible(false)}>
+                                        <Text style={styles.buttonText}>{t('cancel')}</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
-                                        style={[themedStyles(theme).modalButton, themedStyles(theme).deleteButton]}
-                                        onPress={handleDeleteComment}
-                                    >
-                                        <Text style={[themedStyles(theme).buttonTextModal, { color: "#fff" }]}>Delete</Text>
+                                        style={[styles.modalButton, styles.deleteButton]}
+                                        onPress={handleDeleteComment}>
+                                        <Text style={[styles.buttonText, { color: "#fff" }]}>{t('delete')}</Text>
                                     </TouchableOpacity>
                                 </View>
                             </Modal>
                             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                                <View style={themedStyles(theme).inputContainer}>
-                                    {postState.editTo && (
-                                        <View style={themedStyles(theme).editHeader}>
-                                            <Text style={themedStyles(theme).editToText}>
-                                                Editing {postState.editTo.comment.length > 20 ? `${postState.editTo.comment.slice(0, 20)}...` : postState.editTo.comment}
-                                            </Text>
+                                <View style={styles.inputContainer}>
+                                    {editTo && (
+                                        <View style={styles.editHeader}>
+                                            <Text style={styles.editToText}>{t('editing')}</Text>
                                             <TouchableOpacity onPress={cancelEditOrReply}>
-                                                <Ionicons name="close" size={20} color={theme.textTertiary} />
+                                                <Ionicons name="close" size={20} color="#888" />
                                             </TouchableOpacity>
                                         </View>
                                     )}
-                                    {postState.replyTo && !postState.editTo && (
-                                        <View style={themedStyles(theme).replyHeader}>
-                                            <Text style={themedStyles(theme).replyToTextInput}>Replying to {postState.replyTo.userName}</Text>
+                                    {replyTo && !editTo && (
+                                        <View style={styles.replyHeader}>
+                                            <Text style={styles.replyToText}>{t('replyingTo')} {replyTo.userName}</Text>
                                             <TouchableOpacity onPress={cancelEditOrReply}>
-                                                <Ionicons name="close" size={20} color={theme.textTertiary} />
+                                                <Ionicons name="close" size={20} color="#888" />
                                             </TouchableOpacity>
                                         </View>
                                     )}
-                                    <View style={themedStyles(theme).inputWrapper}>
+                                    <View style={styles.inputWrapper}>
                                         <TextInput
                                             ref={textInputRef}
-                                            placeholder={
-                                                postState.editTo
-                                                    ? `Editing ${postState.editTo.comment.length > 20 ? `${postState.editTo.comment.slice(0, 20)}...` : postState.editTo.comment}`
-                                                    : postState.replyTo
-                                                        ? "Write a reply..."
-                                                        : "Write your comment"
-                                            }
-                                            placeholderTextColor={theme.textTertiary}
-                                            style={themedStyles(theme).textInput}
-                                            value={postState.commentText}
-                                            onChangeText={(text) => setPostState((prev) => ({ ...prev, commentText: text }))}
+                                            placeholder={editTo ? "Editing..." : replyTo ? t('writearreply') : t('writeyourcomment')}
+                                            style={styles.textInput}
+                                            value={commentText}
+                                            onChangeText={setCommentText}
                                             multiline
-                                            editable={!postState.postingComment}
+                                            editable={!postingComment}
                                         />
                                         <TouchableOpacity
-                                            style={themedStyles(theme).sendButton}
+                                            style={styles.sendButton}
                                             onPress={handlePostComment}
-                                            disabled={!postState.commentText.trim() || postState.postingComment}
+                                            disabled={!commentText.trim() || postingComment}
                                         >
                                             <SendHorizonal size={20} strokeWidth={1.5} color={Colors.white} />
                                         </TouchableOpacity>
@@ -1367,438 +1156,122 @@ const HomeHangoutCardPost = React.memo(({ item, index, setHandOut, refreshPost, 
     );
 });
 
-export default HomeHangoutCardPost;
-
-// Themed styles (unchanged from original)
-const themedStyles = (theme) => StyleSheet.create({
+const styles = StyleSheet.create({
     ListContainer: {
-        backgroundColor: theme.cardBackground,
-        borderRadius: 12,
-        padding: 16,
-        marginVertical: 8,
-        marginHorizontal: 16,
-        shadowColor: theme.shadow,
+        flex: 1,
+        marginVertical: 10,
+        marginHorizontal: 14,
+        overflow: 'hidden',
+        borderRadius: 10,
+        position: 'relative',
+        backgroundColor: 'white',
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-        borderWidth: 1,
-        borderColor: theme.border,
+        shadowRadius: 3.84,
+        elevation: 5,
     },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 12,
-    },
-    avatar: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
-        backgroundColor: theme.avatarBg,
-        marginRight: 12,
-    },
-    userInfo: {
-        flex: 1,
-        justifyContent: 'center',
-    },
-    username: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: theme.textPrimary,
-        fontFamily: 'Poppins-SemiBold',
-    },
-    timestamp: {
-        fontSize: 12,
-        color: theme.textTertiary,
-        fontFamily: 'Poppins-Regular',
-        marginBottom: 5,
-    },
-    imageContainer: {
-        overflow: "hidden",
-        borderRadius: 8,
-        width: width - 66,
-        height: 250,
-        marginBottom: 8,
-        borderWidth: 1,
-        borderColor: theme.border,
-    },
-    imageStyle: {
-        width: width - 66,
-        height: 250,
-    },
-    playIconContainer: {
-        position: "absolute",
-        top: "50%",
-        left: "50%",
-        transform: [{ translateX: -20 }, { translateY: -20 }],
-        justifyContent: "center",
-        alignItems: "center",
-        zIndex: 1,
-    },
-    playIcon: {
-        width: 40,
-        height: 40,
-        tintColor: "#fff",
-    },
-    contentContainer: {
-        marginBottom: 2,
-    },
-    captionContainer: {
-        marginBottom: 5,
-    },
-    content: {
-        fontSize: 15,
-        fontFamily: 'Poppins-Regular',
-        color: theme.contentTextColor,
-        lineHeight: 22,
-    },
-    toggleButton: {
-        alignSelf: 'flex-start',
-    },
-    toggleText: {
-        color: theme.likeColor,
-        fontFamily: 'Poppins-SemiBold',
-        fontSize: 15,
-    },
-    postTimestamp: {
-        fontSize: 11,
-        color: theme.textTertiary,
-        marginBottom: 10,
-        fontFamily: 'Poppins-Regular',
-    },
-    hashtagsContainer: {
-        flexDirection: 'row',
-        gap: 5,
-        borderRadius: 10,
-        marginBottom: 12,
-        flexWrap: 'wrap',
-    },
-    tag: {
-        borderRadius: 50,
-        paddingHorizontal: 12,
-        paddingVertical: 5,
-        alignSelf: 'flex-start',
-    },
-    tagText: {
-        fontSize: 9,
-        textTransform: 'capitalize',
-    },
-    footer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        borderTopWidth: 1,
-        borderTopColor: theme.border,
-        paddingTop: 12,
-        alignItems: 'center',
-    },
-    button: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    buttonText: {
-        fontSize: 14,
-        color: theme.iconColor,
-        marginLeft: 4,
-        marginTop: Platform.OS === 'android' ? 3 : 0,
-        fontFamily: 'Poppins-Regular',
-    },
-    menuButton: {
-        backgroundColor: theme.menuButtonBg,
-        height: 32,
-        width: 32,
-        alignItems: 'center',
-        justifyContent: 'center',
+    textPostOuterContainer: {
         borderRadius: 10,
     },
-    baseIconsWrapper: {
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    baseIcons: {
-        width: 20,
-        height: 20,
-    },
-    menuContent: {
-        backgroundColor: theme.menuContentBg,
-        paddingTop: 10,
-    },
-    menuItems: {
-        flexDirection: 'column',
-        gap: 10,
-    },
-    menuItem: {
-        height: 35,
-        marginRight: -30,
-    },
-    menuItemText: {
-        color: theme.textPrimary,
-    },
-    taggedUsersContainer: {
-        height: 30,
-        marginTop: 3,
-    },
-    avatarRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    avatar1: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        borderWidth: 1,
-        borderColor: theme.border,
-    },
-    additionalUsers: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        backgroundColor: theme.additionalUsersBg,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginLeft: -15,
-    },
-    additionalUsersText: {
-        fontSize: 12,
-        color: theme.textSecondary,
-        fontWeight: '600',
-    },
-    pagination: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        marginBottom: 8,
-    },
-    commentContainer: {
-        flexDirection: "row",
-        padding: 10,
-        paddingVertical: 12,
-        marginTop: 10,
-        backgroundColor: theme.commentBg,
-        borderRadius: 8,
-        marginHorizontal: 10,
-    },
-    commentImage: {
-        width: 40,
-        height: 40,
-        borderRadius: 50,
-    },
-    replyImage: {
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-    },
-    commentContent: {
-        flex: 1,
-        marginLeft: 8,
-    },
-    replyContent: {
-        marginLeft: 10,
-        width: '85%',
-        marginRight: 40,
-    },
-    commentHeader: {
+    postHeaderContainer: {
         flexDirection: "row",
         justifyContent: "space-between",
-        alignItems: "center",
+        padding: 16,
+        alignItems: 'center',
+        backgroundColor: "white",
+        borderTopLeftRadius: 10,
+        borderTopRightRadius: 10,
     },
-    userName: {
-        fontWeight: "600",
-        fontSize: 12,
-        fontFamily: 'Poppins-SemiBold',
-        color: theme.textPrimary,
+    mediaPostHeader: {
+        position: "absolute",
+        width: "100%",
+        top: 0,
+        left: 0,
+        backgroundColor: 'transparent',
+        right: 0,
+        zIndex: 2,
+        alignItems: 'center',
     },
-    timeText: {
-        color: theme.textTertiary,
-        fontSize: 10,
-        fontFamily: 'Poppins-Regular',
-    },
-    editText: {
-        color: theme.textTertiary,
-        fontSize: 10,
-        marginLeft: 5,
-        fontFamily: 'Poppins-Regular',
-    },
-    commentText: {
-        fontSize: 12,
-        lineHeight: 20,
-        fontFamily: 'Poppins-Regular',
-        color: theme.textSecondary,
-    },
-    replyToText: {
-        fontSize: 12,
-        fontFamily: 'Poppins-Regular',
-    },
-    replyText: {
+    avatar: { height: 40, width: 40, borderRadius: 100, borderWidth: 2, borderColor: "#FFFFFF66" },
+    mediaAvatar: { borderColor: "rgba(255, 255, 255, 0.6)" },
+    userName: { lineHeight: 20, fontSize: 14, fontWeight: "bold", color: "#000", fontFamily: "Poppins-SemiBold" },
+    mediaUserName: { color: "#FFFFFF" },
+    userDesignation: { fontSize: 12, lineHeight: 15, color: "#666", marginTop: 3, fontFamily: "Poppins-Regular" },
+    mediaUserDesignation: { color: "#FFFFFF" },
+    menuButton: { backgroundColor: "rgba(0, 0, 0, 0.2)", height: 32, width: 32, alignItems: "center", justifyContent: "center", borderRadius: 10 },
+    mediaMenuButton: { backgroundColor: "rgba(0, 0, 0, 0.2)" },
+    imageContainer: { overflow: "hidden", borderTopLeftRadius: 10, borderTopRightRadius: 10, height: 400, width: width - 28 },
+    imageStyle: { width: width - 28, height: 400 },
+    playIconContainer: { position: "absolute", top: "50%", left: "50%", transform: [{ translateX: -30 }, { translateY: -30 }], justifyContent: "center", alignItems: "center", zIndex: 1 },
+    playIcon: { width: 40, height: 40, tintColor: "#fff" },
+    bottomContent: { padding: 16, paddingTop: 10, backgroundColor: 'white' },
+    mediaBottomContent: { borderBottomLeftRadius: 10, borderBottomRightRadius: 10 },
+    textPostContainer: { borderBottomLeftRadius: 10, borderBottomRightRadius: 10 },
+    metaContainer: { marginBottom: 10 },
+    timestamp: { fontSize: 10, lineHeight: 15, color: "#666", fontFamily: "Poppins-Regular", marginBottom: 5 },
+    captionContainer: { marginBottom: 10 },
+    caption: { fontSize: 14, lineHeight: 18, fontFamily: 'Poppins-Regular', color: 'black' },
+    seeMoreText: {
         fontSize: 14,
-        fontFamily: 'Poppins-Regular',
-        color: theme.textSecondary,
+        color: '#8DAF02',
+        fontFamily: 'Poppins-SemiBold',
+        marginTop: 4,
     },
+    interactionButtons: { flexDirection: "column", marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#f0f0f0' },
+    iconRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+    iconContainer: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+    iconButton: { flexDirection: 'row', alignItems: 'center' },
+    likesCountText: { color: "black", fontSize: 16, lineHeight: 25, marginTop: 3, textAlignVertical: 'center', fontFamily: "Poppins-Regular", marginLeft: 5 },
+    commentContainer: { flexDirection: "row", padding: 10, paddingVertical: 12, marginBottom: 7, backgroundColor: 'white', marginHorizontal: 10, borderRadius: 10 },
+    commentImage: { width: 50, height: 50, borderRadius: 50 },
+    replyImage: { width: 40, height: 40, borderRadius: 50 },
+    commentContent: { flex: 1, marginLeft: 12 },
+    replyContent: { marginLeft: 8, width: '84%' },
+    commentHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+    timeText: { color: "#666", fontSize: 10, fontFamily: 'Poppins-Regular' },
+    editText: { color: "#666", fontSize: 10, marginLeft: 5, fontFamily: 'Poppins-Regular' },
+    commentText: { fontSize: 12, lineHeight: 20, fontFamily: 'Poppins-Regular' },
+    replyToText: { color: "black", fontWeight: "500", fontSize: 12 },
+    replyText: { fontSize: 12, fontFamily: 'Poppins-Regular', color: 'black' },
     actionText: {
         fontSize: 12,
         fontFamily: 'Poppins-Regular',
-        color: theme.textSecondary,
+        color: 'black',
     },
-    inputContainer: {
-        padding: 10,
-        backgroundColor: theme.sheetBg,
-        borderTopWidth: 1,
-        borderColor: theme.border,
-    },
-    replyHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingHorizontal: 10,
-        paddingBottom: 5,
-    },
-    editHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingHorizontal: 10,
-        paddingBottom: 5,
-    },
-    replyToTextInput: {
-        fontSize: 14,
-        color: theme.textSecondary,
-        fontFamily: 'Poppins-Regular',
-    },
-    editToText: {
-        fontSize: 14,
-        color: theme.textSecondary,
-        fontFamily: 'Poppins-Regular',
-    },
-    inputWrapper: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
-    textInput: {
-        flex: 1,
-        borderWidth: 1,
-        borderColor: theme.inputBorder,
-        borderRadius: 20,
-        paddingHorizontal: 15,
-        paddingVertical: Platform.OS === 'ios' ? 10 : 8,
-        fontSize: 15,
-        maxHeight: 100,
-        backgroundColor: theme.inputBg,
-        color: theme.inputText,
-    },
-    sendButton: {
-        marginLeft: 10,
-        backgroundColor: "#82934b",
-        padding: 8,
-        borderRadius: 50,
-    },
-    emptyText: {
-        textAlign: "center",
-        marginTop: 20,
-        color: theme.textTertiary,
-        fontSize: 16,
-        fontFamily: 'Poppins-Regular',
-    },
-    modalContent: {
-        backgroundColor: theme.cardBackground,
-        padding: 20,
-        marginHorizontal: 20,
-        borderRadius: 10,
-        alignItems: "center",
-    },
-    modalTitle: {
-        fontSize: 18,
-        fontWeight: "bold",
-        marginBottom: 10,
-        textAlign: "center",
-        color: theme.textPrimary,
-        fontFamily: 'Poppins-SemiBold',
-    },
-    modalText: {
-        fontSize: 16,
-        color: theme.textSecondary,
-        marginBottom: 20,
-        textAlign: "center",
-        fontFamily: 'Poppins-Regular',
-    },
-    modalButtons: {
-        flexDirection: "row",
-        justifyContent: "space-around",
-        width: "100%",
-    },
-    modalButton: {
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 5,
-        minWidth: 100,
-        alignItems: "center",
-    },
-    cancelButton: {
-        backgroundColor: theme.border,
-    },
-    deleteButton: {
-        backgroundColor: theme.deleteColor,
-    },
-    buttonTextModal: {
-        fontSize: 16,
-        fontWeight: "600",
-        color: theme.textPrimary,
-        fontFamily: 'Poppins-SemiBold',
-    },
-    sheetContent: {
-        paddingVertical: 20,
-        zIndex: 1001,
-    },
-    sheetTitle: {
-        fontSize: 14,
-        fontFamily: "Poppins-Regular",
-        color: theme.textPrimary,
-        textAlign: "center",
-    },
-    userItemContainer: {
-        borderColor: theme.border,
-        backgroundColor: theme.commentBg,
-        flexDirection: "row",
-        paddingHorizontal: 20,
-        paddingVertical: 5,
-        alignItems: "center",
-        marginTop: 10,
-        marginHorizontal: 10,
-        borderRadius: 8,
-    },
-    userItem: {
-        paddingVertical: 8,
-        fontSize: 14,
-        fontFamily: "Poppins-Regular",
-        color: theme.textPrimary,
-    },
-    userImage: {
-        height: 40,
-        width: 40,
-        borderRadius: 20,
-        marginRight: 20,
-    },
-    noLikesText: {
-        fontSize: 16,
-        color: theme.textPrimary,
-        textAlign: "center",
-        paddingVertical: 20,
-        fontFamily: 'Poppins-Regular',
-    },
-    commentSheetHeader: {
-        justifyContent: 'center',
-        marginTop: 20,
-    },
-    replyContainer: {
-        flexDirection: 'row',
-        marginTop: 5,
-        paddingVertical: 12,
-        marginBottom: 10,
-        borderRadius: 8,
-    },
-    operationLoadingOverlay: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 1000,
-    },
+    replyList: { marginTop: 16 },
+    inputContainer: { padding: 10, backgroundColor: "#ededed", borderTopWidth: 1, borderColor: "#eee" },
+    replyHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10, paddingBottom: 5 },
+    editHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 10, paddingBottom: 5 },
+    inputWrapper: { flexDirection: "row", alignItems: "center" },
+    textInput: { flex: 1, borderWidth: 1, borderColor: "#ddd", borderRadius: 20, paddingHorizontal: 15, paddingVertical: 8, fontSize: 15, maxHeight: 100 },
+    sendButton: { marginLeft: 10, padding: 8, backgroundColor: '#82934b', borderRadius: 50 },
+    emptyText: { textAlign: "center", marginTop: 20, color: "#666", fontSize: 16 },
+    modalContent: { backgroundColor: "#fff", padding: 20, marginHorizontal: 20, borderRadius: 10, alignItems: "center" },
+    modalTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 10, textAlign: "center" },
+    modalText: { fontSize: 16, color: "#333", marginBottom: 20, textAlign: "center" },
+    modalButtons: { flexDirection: "row", justifyContent: "space-around", width: "100%" },
+    modalButton: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 5, minWidth: 100, alignItems: "center" },
+    cancelButton: { backgroundColor: "#f0f0f0" },
+    deleteButton: { backgroundColor: "#ff4d4d" },
+    buttonText: { fontSize: 16, fontWeight: "600", color: "#333" },
+    avatarRow: { marginTop: 3, flexDirection: "row", alignItems: "center" },
+    avatar1: { width: 32, height: 32, borderRadius: 35, borderWidth: 2, borderColor: "rgba(255, 255, 255, 0.4)" },
+    additionalUsers: { height: 32, width: 32, borderRadius: 20, backgroundColor: "#000", justifyContent: "center", alignItems: "center", marginLeft: -15 },
+    additionalUsersText: { color: "#fff", fontWeight: "bold" },
+    baseIcons: { width: 20, height: 20 },
+    baseIconsWrapper: { alignItems: "center", justifyContent: "center" },
+    crewParentFlexBox: { alignItems: "center", justifyContent: "center" },
+    pagination: { flexDirection: "row", alignItems: 'center', justifyContent: "center" },
+    userItemContainer: { borderColor: "gray", backgroundColor: "#f3f3f3", flexDirection: "row", paddingHorizontal: 20, paddingVertical: 5, alignItems: "center", marginBottom: 10 },
+    userItem: { paddingVertical: 8, fontSize: 14, fontFamily: "Poppins-Regular", color: "black" },
+    userImage: { height: 40, width: 40, borderRadius: 20, marginRight: 20 },
+    noLikesText: { fontSize: 16, color: "black", textAlign: "center", paddingVertical: 20 },
+    sheetContent: { paddingVertical: 20, zIndex: 1001 },
+    sheetTitle: { fontSize: 14, fontFamily: "Poppins-Regular", color: "black", textAlign: "center" },
+    commentSheetHeader: { alignItems: "center", justifyContent: 'center', marginBottom: 10 },
+    replyContainer: { marginTop: 5, flexDirection: 'row' },
+    operationLoadingOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
 });
+
+export default HomeHangoutCardPost;

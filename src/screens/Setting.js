@@ -14,10 +14,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiCallWithToken, apiServerUrl } from "../Api";
 import SignOutModal from "../component/Modals/SignOutModal";
 import DeleteModal from "../component/Modals/DeleteModal";
+import { useTranslation } from "react-i18next";
 
 const { width, height } = Dimensions.get("screen");
 
 const Setting = ({ navigation }) => {
+  const { t } = useTranslation(); // <--- Localization hook
   const [modalVisible, setModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
@@ -62,9 +64,9 @@ const Setting = ({ navigation }) => {
     }
   };
 
-  const renderSettingItem = (label, onPress, value = null, isVerified = false) => (
+  const renderSettingItem = (labelKey, onPress, value = null, isVerified = false) => (
     <TouchableOpacity style={styles.itemContainer} onPress={onPress}>
-      <Text style={styles.itemText}>{label}</Text>
+      <Text style={styles.itemText}>{t(labelKey)}</Text>
       {value ? (
         <>
           <Text style={styles.itemValue}>{value}</Text>
@@ -72,7 +74,7 @@ const Setting = ({ navigation }) => {
         </>
       ) : (
         <View style={styles.iconContainer}>
-          {isVerified && <Text style={styles.verifiedText}>Verified </Text>}
+          {isVerified && <Text style={styles.verifiedText}>{t("verified")}</Text>}
           <Image source={ImagesAssets.CircleRightArrow} style={styles.headerIcon} />
         </View>
       )}
@@ -81,36 +83,38 @@ const Setting = ({ navigation }) => {
 
   return (
     <>
-      <ProfleSettingHeader navigation={navigation} title="Settings" />
+      <ProfleSettingHeader navigation={navigation} title={t("settings")} />
       <View style={{ flex: 1 }}>
         <ScrollView style={styles.container}>
           {/* Profile Information */}
-          <Text style={styles.sectionTitle}>Profile Information</Text>
+          <Text style={styles.sectionTitle}>{t("profile_information")}</Text>
           <View style={styles.section}>
-            {renderSettingItem("Name, Nationality, Contact Details", () =>
+            {renderSettingItem("name_nationality_contact", () =>
               navigation.navigate("EditProfile", { screen: "Setting" })
             )}
-            {renderSettingItem("Profile Photo", () => navigation.navigate("ProfilePhoto"))}
-            {renderSettingItem("Shipboard Experience", () => navigation.navigate("WorkExperienceScreen"))}
-            {renderSettingItem("Social Media", () => navigation.navigate("SocialMediaLinks"))}
-            {renderSettingItem("Certifications", () => navigation.navigate("Certifications"))}
+            {renderSettingItem("profile_photo", () => navigation.navigate("ProfilePhoto"))}
+            {renderSettingItem("shipboard_experience", () => navigation.navigate("WorkExperienceScreen"))}
+            {renderSettingItem("social_media", () => navigation.navigate("SocialMediaLinks"))}
+            {renderSettingItem("certifications", () => navigation.navigate("Certifications"))}
+            {renderSettingItem("change_language", () => navigation.navigate("ChangeLanguage"))}
           </View>
 
           {/* Account */}
-          <Text style={styles.sectionTitle}>Account</Text>
+          <Text style={styles.sectionTitle}>{t("account")}</Text>
           <View style={styles.section1}>
-            {renderSettingItem("Change Password", () =>
+            {renderSettingItem("change_password", () =>
               navigation.navigate("ChangePasswordScreen")
             )}
-            {renderSettingItem("Log Out", () => setModalVisible(true))}
+            {renderSettingItem("log_out", () => setModalVisible(true))}
           </View>
         </ScrollView>
 
+        {/* Modals */}
         <DeleteModal
           visible={deleteModalVisible}
           onClose={() => setDeleteModalVisible(false)}
           onDelete={handleAccountDelete}
-          title="Are you sure you want to delete your account?"
+          title={t("delete_account_confirm")}
         />
 
         <SignOutModal
@@ -159,12 +163,12 @@ const styles = StyleSheet.create({
   itemText: {
     fontSize: 12,
     fontWeight: "500",
-    fontFamily:'Poppins-Regular',
+    fontFamily: "Poppins-Regular",
     color: "#949494",
   },
   itemValue: {
     fontSize: 14,
-    fontFamily:'Poppins-Regular',
+    fontFamily: "Poppins-Regular",
     color: "#666",
   },
   iconContainer: {

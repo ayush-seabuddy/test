@@ -27,11 +27,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import PDFModal from "../component/Modals/PDFModal";
 import { useFocusEffect } from "@react-navigation/native";
 import messaging from "@react-native-firebase/messaging";
+import { useTranslation } from "react-i18next";
 
 const { width, height } = Dimensions.get("window");
 const isProMax = Platform.OS === "ios" && height >= 926;
-
 const HelperLanding = ({ navigation }) => {
+  const { t } = useTranslation();
   const [isOn, setIsOn] = useState(true);
   const [exitModalVisible, setExitModalVisible] = useState(false);
   const [companyLogo, setCompanyLogo] = useState("");
@@ -89,48 +90,48 @@ const HelperLanding = ({ navigation }) => {
     setPdfUrl("");
     setPdfTitle("App Guide");
   };
-    const [isNotificationModalVisible, setIsNotificationModalVisible] = useState(false);
+  const [isNotificationModalVisible, setIsNotificationModalVisible] = useState(false);
 
-    const checkNotificationPermission = async () => {
-      try {
-        const authStatus = await messaging().hasPermission();
-        console.log("Notification permission status:", authStatus);
-  
-        if (authStatus === messaging.AuthorizationStatus.NOT_DETERMINED) {
-          console.log("Requesting notification permission...");
-          const permission = await messaging().requestPermission();
-          console.log("Permission result:", permission);
-          if (permission === messaging.AuthorizationStatus.DENIED) {
-            console.log("Permission denied, showing modal");
-            setIsNotificationModalVisible(true);
-          }
-        } else if (authStatus === messaging.AuthorizationStatus.DENIED) {
-          console.log("Permission already denied, showing modal");
+  const checkNotificationPermission = async () => {
+    try {
+      const authStatus = await messaging().hasPermission();
+      console.log("Notification permission status:", authStatus);
+
+      if (authStatus === messaging.AuthorizationStatus.NOT_DETERMINED) {
+        console.log("Requesting notification permission...");
+        const permission = await messaging().requestPermission();
+        console.log("Permission result:", permission);
+        if (permission === messaging.AuthorizationStatus.DENIED) {
+          console.log("Permission denied, showing modal");
           setIsNotificationModalVisible(true);
-        } else {
-          console.log("Notifications authorized or provisional, no modal needed");
         }
-      } catch (error) {
-        console.error("Error checking notification permission:", error);
-        setIsNotificationModalVisible(true); // Show modal on error
+      } else if (authStatus === messaging.AuthorizationStatus.DENIED) {
+        console.log("Permission already denied, showing modal");
+        setIsNotificationModalVisible(true);
+      } else {
+        console.log("Notifications authorized or provisional, no modal needed");
       }
-    };
-  
-    const handleOpenSettings = async () => {
-      try {
-        await Linking.openSettings();
-        setIsNotificationModalVisible(false);
-      } catch (error) {
-        console.error("Error opening settings:", error);
-      }
-    };
+    } catch (error) {
+      console.error("Error checking notification permission:", error);
+      setIsNotificationModalVisible(true); // Show modal on error
+    }
+  };
 
-    useFocusEffect(
-      useCallback(() => {
-        checkNotificationPermission();
-      }, [])
-    );
-  
+  const handleOpenSettings = async () => {
+    try {
+      await Linking.openSettings();
+      setIsNotificationModalVisible(false);
+    } catch (error) {
+      console.error("Error opening settings:", error);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      checkNotificationPermission();
+    }, [])
+  );
+
 
   return (
     <View style={styles.container}>
@@ -158,7 +159,7 @@ const HelperLanding = ({ navigation }) => {
           </View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 5, marginRight: 30 }}>
             <Text style={{ color: "gray", fontFamily: "Poppins-Regular", fontSize: 9 }}>
-              In partnership with
+              {t('inpartnershipwith')}
             </Text>
             <Image
               style={{ width: 55, height: 55 }}
@@ -192,37 +193,37 @@ const HelperLanding = ({ navigation }) => {
         <View style={styles.modalOverlay}>
           <StatusBar backgroundColor={"rgba(0, 0, 0, 0.6)"} />
           <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Exit App</Text>
-            <Text style={styles.modalMessage}>Are you sure you want to exit the app?</Text>
+            <Text style={styles.modalTitle}>{t('exitApp')}</Text>
+            <Text style={styles.modalMessage}>{t('exitAppDescription')}</Text>
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={styles.cancelButton} onPress={handleCloseModal}>
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={styles.cancelButtonText}>{t('cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.exitButton} onPress={handleExitApp}>
-                <Text style={styles.exitButtonText}>Exit</Text>
+                <Text style={styles.exitButtonText}>{t('exit')}</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
 
-       <Modal
+      <Modal
         animationType="fade"
         transparent={true}
         visible={isNotificationModalVisible}
-        onRequestClose={()=>setIsNotificationModalVisible(false)}
+        onRequestClose={() => setIsNotificationModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
           <StatusBar backgroundColor={"rgba(0, 0, 0, 0.6)"} />
           <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Enable Notifications</Text>
-            <Text style={styles.modalMessage}>Please enable notifications to receive important updates and alerts.</Text>
+            <Text style={styles.modalTitle}>{t('enable_notifications')}</Text>
+            <Text style={styles.modalMessage}>{t('enable_notifications_description')}</Text>
             <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.cancelButton} onPress={()=>{setIsNotificationModalVisible(false)}}>
-                <Text style={[styles.cancelButtonText,,{fontSize:14}]}>Skip</Text>
+              <TouchableOpacity style={styles.cancelButton} onPress={() => { setIsNotificationModalVisible(false) }}>
+                <Text style={[styles.cancelButtonText, , { fontSize: 14 }]}>{t('skip')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.button, styles.yesButton]} onPress={handleOpenSettings}>
-                <Text style={styles.yesButtonText}>Go to settings</Text>
+                <Text style={styles.yesButtonText}>{t('gotosettings')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -335,18 +336,18 @@ const styles = StyleSheet.create({
     color: "#ffffff",
   },
   button: {
-      paddingVertical: 10,
-      paddingHorizontal: 20,
-      borderRadius: 8,
-    },
-    yesButton: {
-      backgroundColor: Colors.secondary,
-    },
-    yesButtonText: {
-      color: Colors.white,
-      fontSize: 16,
-      fontFamily: "Poppins-Regular",
-    },
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  yesButton: {
+    backgroundColor: Colors.secondary,
+  },
+  yesButtonText: {
+    color: Colors.white,
+    fontSize: 16,
+    fontFamily: "Poppins-Regular",
+  },
 });
 
 export default HelperLanding;

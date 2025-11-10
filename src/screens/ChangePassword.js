@@ -14,6 +14,7 @@ import CustomLottie from "../component/CustomLottie";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { apiServerUrl } from "../Api";
+import { useTranslation } from "react-i18next";
 
 const { height, width } = Dimensions.get("screen");
 
@@ -26,7 +27,7 @@ const ChangePasswordScreen = ({ navigation }) => {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-
+  const { t } = useTranslation();
   const [errors, setErrors] = useState({
     currentPassword: "",
     newPassword: "",
@@ -37,12 +38,12 @@ const ChangePasswordScreen = ({ navigation }) => {
   const validateField = (field, value) => {
     switch (field) {
       case "currentPassword":
-        return value ? "" : "Current password is required.";
+        return value ? "" : t('current_password_required');
       case "newPassword":
-        if (!value) return "New password is required.";
-        return value.length >= 6 ? "" : "New password must be at least 6 characters.";
+        if (!value) return t('new_password_required');
+        return value.length >= 6 ? "" : t('password_min_length');
       case "confirmPassword":
-        return value === newPassword ? "" : "Passwords do not match.";
+        return value === newPassword ? "" : t('passwords_do_not_match');
       default:
         return "";
     }
@@ -107,7 +108,7 @@ const ChangePasswordScreen = ({ navigation }) => {
       if (response.data.responseCode === 200) {
         Toast.show({
           type: "success",
-          text1: "Success",
+          text1: t('success'),
           text2: response.data.responseMessage,
           autoHide: true,
           visibilityTime: 2000,
@@ -132,7 +133,7 @@ const ChangePasswordScreen = ({ navigation }) => {
       } else {
         Toast.show({
           type: "error",
-          text1: "Error",
+          text1: t('error'),
           text2: response.data.responseMessage,
           autoHide: true,
           visibilityTime: 2000,
@@ -141,7 +142,7 @@ const ChangePasswordScreen = ({ navigation }) => {
     } catch (error) {
       Toast.show({
         type: "error",
-        text1: "Error changing password",
+        text1: t('error_changing_password'),
         text2: error.response?.data?.responseMessage || error.message,
         autoHide: true,
         visibilityTime: 2000,
@@ -153,12 +154,12 @@ const ChangePasswordScreen = ({ navigation }) => {
 
   return (
     <>
-      <ProfileSettingHeader navigation={navigation} title="Change Password" />
+      <ProfileSettingHeader navigation={navigation} title={t('change_password')} />
       {loading && <Loader />}
       <View style={{ flex: 1, padding: 14 }}>
         {/* Current Password */}
         <TextInput
-          label="Current Password"
+          label={t('current_password')}
           value={currentPassword}
           onChangeText={handleCurrentPasswordChange}
           secureTextEntry={!showCurrent}
@@ -177,7 +178,7 @@ const ChangePasswordScreen = ({ navigation }) => {
 
         {/* New Password */}
         <TextInput
-          label="New Password"
+          label={t('new_password')}
           value={newPassword}
           onChangeText={handleNewPasswordChange}
           secureTextEntry={!showNew}
@@ -196,7 +197,7 @@ const ChangePasswordScreen = ({ navigation }) => {
 
         {/* Confirm Password */}
         <TextInput
-          label="Confirm Password"
+          label={t('confirm_password')}
           value={confirmPassword}
           onChangeText={handleConfirmPasswordChange}
           secureTextEntry={!showConfirm}
@@ -215,7 +216,7 @@ const ChangePasswordScreen = ({ navigation }) => {
 
         {/* Submit */}
         <TouchableOpacity onPress={handleChangePassword} style={styles.button}>
-          <Text style={styles.buttonText}>Change Password</Text>
+          <Text style={styles.buttonText}>{t('change_password')}</Text>
         </TouchableOpacity>
       </View>
 

@@ -25,6 +25,8 @@ import axios from "axios";
 import UnifiedContentCard from "../component/Cards/CommonScrollCard";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { ImagesAssets } from "../assets/ImagesAssets";
+import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 
 const { width, height } = Dimensions.get("window");
 const isProMax = height >= 926;
@@ -39,7 +41,24 @@ const Health = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [profileDetails, setProfileDetails] = useState(null);
   const [apiData, setApiData] = useState(null);
+  const [locale, setlocale] = useState('');
+  const { t } = useTranslation();
+  let initialLng = "en";
+  const loadPersistedLanguage = async () => {
+    try {
+      const saved = await AsyncStorage.getItem("userLanguage");
+      if (saved === "en" || saved === "zh") {
+        initialLng = saved;
+        setlocale(initialLng);
+        return;
+      }
+    } catch (e) {
+      console.warn("Failed to load saved language", e);
+    }
 
+    const device = Localization.getLocales()[0]?.languageTag || "en";
+    initialLng = device.startsWith("zh") ? "zh" : "en";
+  };
   const toggleAssessments = useCallback(() => {
     setShowAllAssessments((prev) => !prev);
     setVisibleCards((prev) => (prev[0] ? [false, false, false, false] : [true, true, true, true]));
@@ -287,6 +306,7 @@ const Health = ({ navigation }) => {
 
   useFocusEffect(
     useCallback(() => {
+      loadPersistedLanguage();
       viewProfileDetails();
       getAssessment();
       fetchCategory();
@@ -305,8 +325,8 @@ const Health = ({ navigation }) => {
 
   const currentDate = useMemo(() => new Date(), []);
   const currentMonth = useMemo(
-    () => currentDate.toLocaleString("en-US", { month: "long" }),
-    [currentDate]
+    () => currentDate.toLocaleString(locale || "en", { month: "long" }),
+    [currentDate, locale]
   );
   const getOrdinalSuffix = (day) => {
     if (day > 3 && day < 21) return 'th'; // covers 11th–13th
@@ -384,7 +404,7 @@ const Health = ({ navigation }) => {
           >
             <View style={styles.rowBetween}>
               <View style={[styles.row, { alignItems: "center" }]}>
-                <Text style={styles.sectionTitle}>My Assessments</Text>
+                <Text style={styles.sectionTitle}>{t('myassessments')}</Text>
                 {(profileDetails?.isPOMSAssessment || profileDetails?.isHappinessIndex) && (
                   <Image
                     style={[styles.frameItem, { tintColor: "red", marginLeft: 15, marginBottom: 5, width: 14, height: 14 }]}
@@ -400,18 +420,18 @@ const Health = ({ navigation }) => {
             </View>
 
             <Text style={styles.subText}>
-              Confidential and private check-ins designed to help you reflect, build resilience, and make life at sea safer and happier for everyone.
+              {t('myassessments_description')}
             </Text>
 
             <View style={styles.tagContainer}>
               <View style={styles.tag}>
                 <Text style={[styles.tagText, testArray && testArray[0]?.open ? { color: "red" } : {}]}>
-                  Monthly Happiness Index
+                  {t('monthlyhappinessindex')}
                 </Text>
               </View>
               <View style={styles.tag}>
                 <Text style={[styles.tagText, testArray && testArray[1]?.open ? { color: "red" } : {}]}>
-                  Monthly Wellbeing Pulse
+                  {t('monthlywellbeingpulse')}
                 </Text>
               </View>
             </View>
@@ -436,13 +456,13 @@ const Health = ({ navigation }) => {
                         <Text
                           style={[styles.personalityMap, { color: testArray && testArray[0]?.open ? '#06361f' : 'grey' }]}
                         >
-                          Monthly Happiness Index
+                          {t('monthlyhappinessindex')}
                         </Text>
                       </View>
 
                       <View style={[styles.musicWrapper, styles.frameGroupFlexBox]}>
                         <Text style={[styles.music, { color: "#444444", fontSize: 10, lineHeight: 16 }]}>
-                          Contribute to global insights that shape a better future for all seafarers.
+                          {t('monthlyhappinessindex_description')}
                         </Text>
                       </View>
 
@@ -451,7 +471,7 @@ const Health = ({ navigation }) => {
                           <View style={[styles.tag, { flexDirection: "row", alignItems: "center" }]}>
                             <Image style={[styles.frameItem, { tintColor: "#f45050" }]} resizeMode="cover" source={ImagesAssets.warningImage} />
                             <Text style={[styles.music, { color: "#f45050", fontSize: 10, lineHeight: 15, paddingHorizontal: 8 }]}>
-                              Submit before {currentMonth} 15th
+                              {t("submitbefore", { currentMonth: currentMonth })}
                             </Text>
                           </View>
                         </Pressable>
@@ -477,13 +497,13 @@ const Health = ({ navigation }) => {
                         <Text
                           style={[styles.personalityMap, { color: testArray && testArray[1]?.open ? '#06361f' : 'grey' }]}
                         >
-                          Monthly Wellbeing Pulse
+                          {t('monthlywellbeingpulse')}
                         </Text>
                       </View>
 
                       <View style={styles.musicWrapper}>
                         <Text style={[styles.music, { color: "#444444", fontSize: 10, lineHeight: 16, width: "100%" }]}>
-                          Your monthly self check-in
+                          {t('monthlywellbeingpulse_description')}
                         </Text>
                       </View>
 

@@ -30,6 +30,7 @@ import axios from "axios";
 import moment from "moment";
 import CustomDropdown from "../CommonApi";
 import Loader from "../component/Loader";
+import { useTranslation } from "react-i18next";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import Toast from "react-native-toast-message";
 import FastImage from "react-native-fast-image";
@@ -67,6 +68,7 @@ const CreateGroupActivity = ({ navigation, route }) => {
   const [SelectedCategory, setSelectedCategory] = useState("");
   const [previousCategory, setPreviousCategory] = useState("");
   const [validationError, setValidationError] = useState('');
+  const { t } = useTranslation();
 
   const isDisabled =
     !(DetailEvent || "").trim() ||
@@ -78,7 +80,7 @@ const CreateGroupActivity = ({ navigation, route }) => {
 
   const handleCategoryNameChange = (text) => {
     if (text.length > 20) {
-      setValidationError("Maximum 20 characters allowed");
+      setValidationError(t('maximum20charactersallowed'));
     } else {
       setValidationError("");
     }
@@ -153,13 +155,13 @@ const CreateGroupActivity = ({ navigation, route }) => {
       );
 
       const formattedData = [
-        { label: "Select a BuddyUp", value: "", image: null },
+        { label: t('selectabuddyup'), value: "", image: null },
         ...response.result.groupActivityCategoriesList.map((item) => ({
           label: item.categoryName,
           image: item.categoryImage,
           value: item.id,
         })),
-        { label: "Create Your Own", value: "create-your-own", image: null },
+        { label: t('createyourown'), value: "create-your-own", image: null },
       ];
 
       setActivityCategory(formattedData);
@@ -216,11 +218,11 @@ const CreateGroupActivity = ({ navigation, route }) => {
         const granted = await PermissionsAndroid.request(
           PermissionsAndroid.PERMISSIONS.CAMERA,
           {
-            title: "Camera Permission",
-            message: "App needs access to your camera to take photos.",
-            buttonNeutral: "Ask Me Later",
-            buttonNegative: "Cancel",
-            buttonPositive: "OK",
+            title: t('camerapermission'),
+            message: t('camerapermission_description'),
+            buttonNeutral: t('askmelater'),
+            buttonNegative: t('cancel'),
+            buttonPositive: t('ok'),
           }
         );
         return granted === PermissionsAndroid.RESULTS.GRANTED;
@@ -237,7 +239,7 @@ const CreateGroupActivity = ({ navigation, route }) => {
       hasPermission = await requestCameraPermission();
     }
     if (!hasPermission) {
-      Alert.alert("Permission Denied", "Camera permission is required.");
+      Alert.alert(t('permissiondenied'), t('camerapermissionrequired'));
       return;
     }
 
@@ -354,10 +356,10 @@ const CreateGroupActivity = ({ navigation, route }) => {
           setIsCustomImage(true);
         }
       } else {
-        Alert.alert("Error", "Failed to upload image.");
+        Alert.alert(t('error'), t('failedtouploadimage'));
       }
     } catch (error) {
-      Alert.alert("Error", "Failed to upload image to server.");
+      Alert.alert(t('error'), t('failedtouploadimagetoserver'));
     } finally {
       setPhotoLoading(false);
     }
@@ -367,8 +369,8 @@ const CreateGroupActivity = ({ navigation, route }) => {
     if (!customCategoryName.trim()) {
       Toast.show({
         type: "error",
-        text1: "Error",
-        text2: "Please enter a category name",
+        text1: t('error'),
+        text2: t('pleaseentercategoryname')
       });
       return;
     }
@@ -376,8 +378,8 @@ const CreateGroupActivity = ({ navigation, route }) => {
     if (!customCategoryImage) {
       Toast.show({
         type: "error",
-        text1: "Error",
-        text2: "Please upload a category image",
+        text1: t('error'),
+        text2: t('pleaseuploadcategoryimage')
       });
       return;
     }
@@ -420,16 +422,16 @@ const CreateGroupActivity = ({ navigation, route }) => {
 
         Toast.show({
           type: "success",
-          text1: "Success",
-          text2: "Category created successfully",
+          text1: t('success'),
+          text2: t('categorycreatedsuccessfully'),
         });
 
       } else if (response.responseCode === 409) {
         // Conflict: Category already exists
         Toast.show({
           type: "error",
-          text1: "Error",
-          text2: response.responseMessage || "Category already exists",
+          text1: t('error'),
+          text2: response.responseMessage || t('categoryalreadyexists'),
         });
 
       } else {
@@ -437,12 +439,12 @@ const CreateGroupActivity = ({ navigation, route }) => {
         Toast.show({
           type: "error",
           text1: "Error",
-          text2: response.responseMessage || "Failed to create category",
+          text2: response.responseMessage || t('failedtocreatecategory'),
         });
       }
     } catch (error) {
       // If apiCallWithToken throws an HTTP error, try to extract server message
-      let message = "Something went wrong";
+      let message = t('somethingwentwrong');
 
       if (error?.response) {
         try {
@@ -723,23 +725,23 @@ const CreateGroupActivity = ({ navigation, route }) => {
       if (response.responseCode === 200) {
         Toast.show({
           type: "success",
-          text1: "Success",
-          text2: eventId ? "Activity updated successfully!" : "Activity created successfully!",
+          text1: t('success'),
+          text2: eventId ? t('activityupdatedsuccessfully') : t('activitycreatedsuccessfully'),
         });
         navigation.replace("Home", { screen: "Huddle" });
       } else {
         Toast.show({
           type: "error",
-          text1: "Error",
-          text2: response.message || (eventId ? "Failed to update activity." : "Failed to create activity."),
+          text1: t('error'),
+          text2: response.message || (eventId ? t('failedtoupdateactivity') : t('failedtocreateactivity')),
         });
       }
     } catch (error) {
       console.error("❌ Error in PostGroupActivity:", error.message, error.stack);
       Toast.show({
         type: "error",
-        text1: "Error",
-        text2: error.message || (eventId ? "Failed to update activity." : "Failed to create activity."),
+        text1: t('error'),
+        text2: error.message || (eventId ? t('failedtoupdateactivity') : t('failedtocreateactivity')),
       });
     } finally {
       setisLoading(false);
@@ -747,21 +749,21 @@ const CreateGroupActivity = ({ navigation, route }) => {
   };
 
   const Locationdata = [
-    { label: "Select Location", value: "" },
-    { label: "Officer’s smoke room", value: "Officer’s smoke room" },
-    { label: "Crew smoke room", value: "Crew smoke room" },
-    { label: "Gymnasium", value: "Gymnasium" },
-    { label: "Poop Deck", value: "Poop Deck" },
-    { label: "Pool", value: "Pool" },
-    { label: "Crew Messroom", value: "Crew Messroom" },
-    { label: "Officer Messroom", value: "Officer Messroom" },
-    { label: "Activity Deck", value: "Activity Deck" },
+    { label: t('selectlocation'), value: "" },
+    { label: t('officers_smoke_room'), value: "Officer’s smoke room" },
+    { label: t('crew_smoke_room'), value: "Crew smoke room" },
+    { label: t('gymnasium'), value: "Gymnasium" },
+    { label: t('poop_deck'), value: "Poop Deck" },
+    { label: t('pool'), value: "Pool" },
+    { label: t('crew_messroom'), value: "Crew Messroom" },
+    { label: t('officer_messroom'), value: "Officer Messroom" },
+    { label: t('activity_deck'), value: "Activity Deck" },
   ];
 
   const Privacydata = [
-    { label: "Select Event Type", value: "" },
-    { label: "Public (All Crew)", value: "Public (All Crew)" },
-    { label: "Invite Buddy", value: "Invite Buddy" },
+    { label: t('selecteventtype'), value: "" },
+    { label: t('public_all_crew'), value: "Public (All Crew)" },
+    { label: t('invite_buddy'), value: "Invite Buddy" },
   ];
 
   return (
@@ -779,50 +781,50 @@ const CreateGroupActivity = ({ navigation, route }) => {
           />
           <BackIconHeader
             navigation={navigation}
-            title="Create your BuddyUp event"
+            title={t('createyourbuddyup')}
           />
           <View style={styles.container}>
             {isLoading && <Loader isLoading={isLoading} />}
             {isPhotoLoading && <Loader isLoading={isPhotoLoading} />}
             <View>
-                <FlatList
-                  data={uploadedImages}
-                  horizontal
-                  keyExtractor={(item, index) => index.toString()}
-                  renderItem={({ item }) => (
-                    <>
-                      <FastImage
-                        source={{ uri: item }}
-                        style={styles.selectedPhoto}
-                        resizeMode={FastImage.resizeMode.contain}
+              <FlatList
+                data={uploadedImages}
+                horizontal
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item }) => (
+                  <>
+                    <FastImage
+                      source={{ uri: item }}
+                      style={styles.selectedPhoto}
+                      resizeMode={FastImage.resizeMode.contain}
+                    />
+                    <TouchableOpacity
+                      style={{
+                        position: "absolute",
+                        right: 20,
+                        bottom: 45,
+                        borderWidth: 0.4,
+                        borderColor: 'grey',
+                        backgroundColor: "#fff",
+                        padding: 5,
+                        borderRadius: 5,
+                      }}
+                      onPress={() => {
+                        setShowPickerModal(true);
+                        setIsImagePickerFromCategory(false);
+                      }}
+                    >
+                      <Image
+                        source={ImagesAssets.editActivityIcon}
+                        style={[styles.headerIcon]}
                       />
-                      <TouchableOpacity
-                        style={{
-                          position: "absolute",
-                          right: 20,
-                          bottom: 45,
-                          borderWidth: 0.4,
-                          borderColor: 'grey',
-                          backgroundColor: "#fff",
-                          padding: 5,
-                          borderRadius: 5,
-                        }}
-                        onPress={() => {
-                          setShowPickerModal(true);
-                          setIsImagePickerFromCategory(false);
-                        }}
-                      >
-                        <Image
-                          source={ImagesAssets.editActivityIcon}
-                          style={[styles.headerIcon]}
-                        />
-                      </TouchableOpacity>
-                    </>
-                  )}
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.selectedPhotosContainer}
-                />
-             
+                    </TouchableOpacity>
+                  </>
+                )}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.selectedPhotosContainer}
+              />
+
             </View>
             <View style={{ backgroundColor: 'grey', height: 0.2, marginTop: 10 }}></View>
             <ScrollView
@@ -832,10 +834,10 @@ const CreateGroupActivity = ({ navigation, route }) => {
             >
               <View style={styles.postOptions}>
                 <Text style={{ fontFamily: "Poppins-Regular", fontSize: 12, marginHorizontal: 8 }}>
-                  📅 Host an event → Earn <Text style={{ fontFamily: "Poppins-SemiBold" }}>25 miles</Text>
+                  {t('hostanevent')} <Text style={{ fontFamily: "Poppins-SemiBold" }}>{t('25miles')}</Text>
                 </Text>
                 <Text style={{ fontFamily: "Poppins-Regular", fontSize: 12, marginHorizontal: 8 }}>
-                  Your participation unlocks badges, boosts visibility, and earns you recognition.
+                  {t('hostanevent_description')}
                 </Text>
                 <View style={styles.postOption}>
                   <View style={styles.TextInputText}>
@@ -858,7 +860,7 @@ const CreateGroupActivity = ({ navigation, route }) => {
                           }
                         }
                       }}
-                      placeholder="Select a BuddyUp"
+                      placeholder={'selectabuddyup'}
                     />
                   </View>
                 </View>
@@ -879,7 +881,7 @@ const CreateGroupActivity = ({ navigation, route }) => {
                         }}
                         value={DetailEvent}
                         onChangeText={(value) => setDetailEvent(value)}
-                        placeholder="Add Event Description"
+                        placeholder={t('addeventdescription')}
                         placeholderTextColor="#c1c1c1"
                         maxLength={600}
                       />
@@ -896,7 +898,7 @@ const CreateGroupActivity = ({ navigation, route }) => {
                       data={Locationdata}
                       value={eventLocation}
                       onChange={setEventLocation}
-                      placeholder="Select location"
+                      placeholder={t('selectlocation')}
                     />
                   </View>
                 </View>
@@ -925,7 +927,7 @@ const CreateGroupActivity = ({ navigation, route }) => {
                           ? `${startDateTimeObj.date} - ${endDateTimeObj.date}`
                           : Data && startDateTimeObj
                             ? startDateTimeObj.date
-                            : "Date"}
+                            : t('date')}
                       </Text>
                     </View>
                     <Image
@@ -972,7 +974,7 @@ const CreateGroupActivity = ({ navigation, route }) => {
                         setPrivacy(value);
                         setPrivacyError("");
                       }}
-                      placeholder="Select Event Type"
+                      placeholder={t('selecteventtype')}
                     />
                   </View>
                 </View>
@@ -994,7 +996,7 @@ const CreateGroupActivity = ({ navigation, route }) => {
                           color: "#c1c1c1",
                         }}
                       >
-                        Add Participants
+                        {t('addparticipants')}
                       </Text>
                     </View>
                     {selectedItems.slice(0, 3).map((item, index) => (
@@ -1032,7 +1034,7 @@ const CreateGroupActivity = ({ navigation, route }) => {
                     <Image source={ImagesAssets.hastag} style={styles.headerIcon} />
                     <TextInput
                       style={styles.postOptionLeftAdd}
-                      placeholder="Add hashtags"
+                      placeholder={t('addhashtags')}
                       placeholderTextColor="#c1c1c1"
                       value={input}
                       maxLength={20}
@@ -1086,12 +1088,12 @@ const CreateGroupActivity = ({ navigation, route }) => {
                   ))}
                 </View>
                 <TouchableOpacity
-                  accessibilityLabel={eventId ? "Update Activity" : "Create Activity"}
+                  accessibilityLabel={eventId ? t('updateActivity') : t('createActivity')}
                   style={[styles.shareButton, isDisabled && styles.disabledButton]}
                   onPress={PostGroupActivity}
                   disabled={isDisabled}
                 >
-                  <Text style={styles.shareButtonText}>{eventId ? "Update Activity" : "Create Activity"}</Text>
+                  <Text style={styles.shareButtonText}>{eventId ? t('updateActivity') : t('createActivity')}</Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
@@ -1116,13 +1118,13 @@ const CreateGroupActivity = ({ navigation, route }) => {
                     fontSize: 11,
                   }}
                 >
-                  Close
+                  {t('close')}
                 </Text>
               </Badge>
               {CrewList.length === 0 && (
                 <View style={styles.userModal}>
                   <Text style={{ fontSize: 17 }}>
-                    No users have boarded your ship yet.
+                    {t('nousersboarded')}
                   </Text>
                 </View>
               )}
@@ -1153,7 +1155,7 @@ const CreateGroupActivity = ({ navigation, route }) => {
               >
                 <View style={styles.modalOverlayPhoto}>
                   <View style={styles.containerPhoto}>
-                    <Text style={styles.titlePhoto}>Select Image</Text>
+                    <Text style={styles.titlePhoto}>{t('selectImage')}</Text>
                     <TouchableOpacity
                       style={styles.buttonPhoto}
                       onPress={() => {
@@ -1162,7 +1164,7 @@ const CreateGroupActivity = ({ navigation, route }) => {
                         openImagePicker("camera", isImagePickerFromCategory);
                       }}
                     >
-                      <Text style={styles.buttonTextPhoto}>Take Photo</Text>
+                      <Text style={styles.buttonTextPhoto}>{t('takephoto')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.buttonPhoto}
@@ -1172,7 +1174,7 @@ const CreateGroupActivity = ({ navigation, route }) => {
                         openImagePicker("library", isImagePickerFromCategory);
                       }}
                     >
-                      <Text style={styles.buttonTextPhoto}>Choose from Gallery</Text>
+                      <Text style={styles.buttonTextPhoto}>{t('choosefromgallery')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => {
@@ -1182,7 +1184,7 @@ const CreateGroupActivity = ({ navigation, route }) => {
                         }
                       }}
                     >
-                      <Text style={styles.cancelTextPhoto}>Cancel</Text>
+                      <Text style={styles.cancelTextPhoto}>{t('cancel')}</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -1196,11 +1198,11 @@ const CreateGroupActivity = ({ navigation, route }) => {
             >
               <View style={styles.modalOverlay}>
                 <View style={containerStyleCustomCategoryModal}>
-                  <Text style={styles.titlePhoto}>Create New Category</Text>
-                  <Text style={styles.subTitlePhoto}>Enter Category Name*</Text>
+                  <Text style={styles.titlePhoto}>{t('createnewcategory')}</Text>
+                  <Text style={styles.subTitlePhoto}>{t('entercategoryname')}</Text>
                   <TextInput
                     style={styles.textInput}
-                    placeholder="Category Name"
+                    placeholder={t('categoryName')}
                     placeholderTextColor="#c1c1c1"
                     value={customCategoryName}
                     onChangeText={handleCategoryNameChange}
@@ -1215,7 +1217,7 @@ const CreateGroupActivity = ({ navigation, route }) => {
                     <Text style={styles.requiredText}></Text>
                   )}
 
-                  <Text style={styles.subTitlePhoto}>Choose Category Image*</Text>
+                  <Text style={styles.subTitlePhoto}>{t('choosecategoryimage')}</Text>
                   {customCategoryImage ? (
                     <View style={styles.imagePreviewContainer}>
                       <FastImage
@@ -1230,7 +1232,7 @@ const CreateGroupActivity = ({ navigation, route }) => {
                           setIsImagePickerFromCategory(true);
                         }}
                       >
-                        <Text style={styles.buttonTextPhoto}>Change Image</Text>
+                        <Text style={styles.buttonTextPhoto}>{t('changeImage')}</Text>
                       </TouchableOpacity>
                     </View>
                   ) : (
@@ -1242,7 +1244,7 @@ const CreateGroupActivity = ({ navigation, route }) => {
                         setIsImagePickerFromCategory(true);
                       }}
                     >
-                      <Text style={styles.buttonTextPhoto}>Select Image</Text>
+                      <Text style={styles.buttonTextPhoto}>{t('selectImage')}</Text>
                     </TouchableOpacity>
                   )}
                   <View style={styles.buttonContainer}>
@@ -1255,13 +1257,13 @@ const CreateGroupActivity = ({ navigation, route }) => {
                         setSelectedCategory(previousCategory);
                       }}
                     >
-                      <Text style={styles.buttonTextPhoto}>Cancel</Text>
+                      <Text style={styles.buttonTextPhoto}>{t('cancel')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={[styles.buttonPhoto, styles.createButton]}
                       onPress={createCustomCategory}
                     >
-                      <Text style={[styles.buttonTextPhoto, { color: "#fff" }]}>Create</Text>
+                      <Text style={[styles.buttonTextPhoto, { color: "#fff" }]}>{t('create')}</Text>
                     </TouchableOpacity>
                   </View>
                 </View>

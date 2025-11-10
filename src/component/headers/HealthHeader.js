@@ -12,8 +12,10 @@ import { ImagesAssets } from "../../assets/ImagesAssets";
 import Colors from "../../colors/Colors";
 import Octicons from 'react-native-vector-icons/Octicons'
 import EmergencyModal from "../Modals/EmergencyModal";
+import { useTranslation } from "react-i18next";
 
 const HealthHeader = ({ navigation }) => {
+  const { t } = useTranslation();
   const [modalVisible, setModalVisible] = useState(false);
   return (
     <View style={styles.container}>
@@ -22,7 +24,7 @@ const HealthHeader = ({ navigation }) => {
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
       />
-      <Text style={styles.health}>Health</Text>
+      <Text style={styles.health}>{t('health')}</Text>
       <View style={styles.headerButtonsContainer}>
         <TouchableOpacity
           onPress={() => setModalVisible((prev) => !prev)}

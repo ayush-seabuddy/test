@@ -23,6 +23,7 @@ import LottieView from "lottie-react-native";
 import CustomLottie from "../component/CustomLottie";
 import CustomDateTimePicker from "../component/Modals/CustomDateTimePicker";
 import api from "../CustomAxios";
+import { useTranslation } from "react-i18next";
 
 const { height, width } = Dimensions.get("screen");
 
@@ -39,7 +40,7 @@ const WorkExperienceScreen = ({ navigation }) => {
   const [editId, setEditID] = useState("");
   const [isUpdate, setIsUpdate] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-
+  const { t } = useTranslation();
 
   const convertToISOString = (dateString) => {
     const [day, month, year] = dateString.split("/");
@@ -110,7 +111,7 @@ const WorkExperienceScreen = ({ navigation }) => {
         getProfileDetails();
         Toast.show({
           type: "success",
-          text1: "Working Experience deleted.",
+          text1: t('workingexperiencedeleted'),
           text2: response.responseMessage,
           autoHide: true,
           visibilityTime: 2000,
@@ -157,15 +158,15 @@ const WorkExperienceScreen = ({ navigation }) => {
   // Validate Inputs on Submit
   const validateInputs = () => {
     const newErrors = {
-      jobTitle: jobTitle.trim() ? "" : "Job Title is required",
-      company: company.trim() ? "" : "Company Name is required",
-      startDate: startDate ? "" : "Start Date is required",
-      endDate: endDate ? "" : "End Date is required",
+      jobTitle: jobTitle.trim() ? "" : t('jobTitleRequired'),
+      company: company.trim() ? "" : t('companyRequired'),
+      startDate: startDate ? "" : t('startDateRequired'),
+      endDate: endDate ? "" : t('endDateRequired'),
     };
 
     if (startDate && endDate && startDate > endDate) {
-      newErrors.startDate = "Start Date cannot be later than End Date";
-      newErrors.endDate = "End Date cannot be earlier than Start Date";
+      newErrors.startDate = t('startAfterEnd');
+      newErrors.endDate = t('endBeforeStart');
     }
 
     setErrors(newErrors);
@@ -251,7 +252,7 @@ const WorkExperienceScreen = ({ navigation }) => {
         }
         Toast.show({
           type: "success",
-          text1: "Working experience added successfully.",
+          text1: t('workingexperienceaddedsuccessfully'),
         });
       } else {
         console.error("Error updating profile:", response.data);
@@ -296,67 +297,73 @@ const WorkExperienceScreen = ({ navigation }) => {
     <>
       <ProfileSettingHeader
         navigation={navigation}
-        title="Ship Board Experience"
+        title={t('shipboard_experience')}
       />
       {loading && <Loader />}
       <View style={{ flex: 1, padding: 14 }}>
-        <TextInput
-          label="Job Title"
-          value={jobTitle}
-          onChangeText={handleJobTitleChange}
-          mode="outlined"
-          autoCapitalize="none"
-          autoCorrect={false}
-          style={{
-            marginBottom: 10,
-            fontFamily: "Poppins-Regular",
-            fontSize: 16,
-            backgroundColor: "#fff",
-            color: "#000",
-          }}
-        />
-        {errors.jobTitle && (
-          <Text style={{ color: "red" }}>{errors.jobTitle}</Text>
-        )}
-
-        <TextInput
-          label="Company Name"
-          value={company}
-          onChangeText={handleCompanyChange}
-          mode="outlined"
-          autoCapitalize="none"
-          autoCorrect={false}
-          style={{
-            color: "#000",
-            marginBottom: 10,
-            fontFamily: "Poppins-Regular",
-            fontSize: 16,
-            backgroundColor: "#fff",
-          }}
-        />
-        {errors.company && (
-          <Text style={{ color: "red" }}>{errors.company}</Text>
-        )}
-
-        <Pressable onPress={() => setShowStartDatePicker(true)}>
+        <View style={{ marginBottom: 5 }}>
           <TextInput
-            label="Start Date"
-            value={startDate ? new Date(startDate).toLocaleDateString() : ""}
+            label={t('jobtitle')}
+            value={jobTitle}
+            onChangeText={handleJobTitleChange}
             mode="outlined"
-            editable={false}
-            pointerEvents="none" // ⬅️ Important
+            autoCapitalize="none"
+            autoCorrect={false}
             style={{
-              marginBottom: 10,
+              fontFamily: "Poppins-Regular",
+              fontSize: 16,
+              backgroundColor: "#fff",
+              color: "#000",
+            }}
+          />
+          {errors.jobTitle && (
+            <Text style={{ color: "red" }}>{errors.jobTitle}</Text>
+          )}
+        </View>
+
+        <View style={{ marginBottom: 5 }}>
+          <TextInput
+            label={t('companyname')}
+            value={company}
+            onChangeText={handleCompanyChange}
+            mode="outlined"
+            autoCapitalize="none"
+            autoCorrect={false}
+            style={{
+              color: "#000",
               fontFamily: "Poppins-Regular",
               fontSize: 16,
               backgroundColor: "#fff",
             }}
           />
-        </Pressable>
+          {errors.company && (
+            <Text style={{ color: "red" }}>{errors.company}</Text>
+          )}
 
-        {errors.startDate && (
-          <Text style={{ color: "red" }}>{errors.startDate}</Text>
-        )}
+        </View>
+        <View style={{ marginBottom: 5 }}>
+          <Pressable onPress={() => setShowStartDatePicker(true)}>
+            <TextInput
+              label={t('startdate')}
+              value={startDate ? new Date(startDate).toLocaleDateString() : ""}
+              mode="outlined"
+              editable={false}
+              pointerEvents="none" // ⬅️ Important
+              style={{
+                fontFamily: "Poppins-Regular",
+                fontSize: 16,
+                backgroundColor: "#fff",
+              }}
+            />
+          </Pressable>
+
+          {errors.startDate && (
+            <Text style={{ color: "red" }}>{errors.startDate}</Text>
+          )}
+
+
+        </View>
+
 
         {showStartDatePicker && (
           <CustomDateTimePicker
@@ -385,13 +392,12 @@ const WorkExperienceScreen = ({ navigation }) => {
 
         <Pressable onPress={() => setShowEndDatePicker(true)}>
           <TextInput
-            label="End Date"
+            label={t('enddate')}
             value={endDate ? new Date(endDate).toLocaleDateString() : ""}
             mode="outlined"
             editable={false}
             pointerEvents="none" // ⬅️ Important
             style={{
-              marginBottom: 10,
               fontFamily: "Poppins-Regular",
               fontSize: 16,
               backgroundColor: "#fff",
@@ -448,7 +454,7 @@ const WorkExperienceScreen = ({ navigation }) => {
                 fontSize: 18,
               }}
             >
-              Add Experience
+              {t('addexperience')}
             </Text>
           </TouchableOpacity>
         ) : (
@@ -472,7 +478,7 @@ const WorkExperienceScreen = ({ navigation }) => {
                 fontSize: 18,
               }}
             >
-              Edit Experience
+              {t('editexperience')}
             </Text>
           </TouchableOpacity>
         )}
@@ -573,7 +579,7 @@ const WorkExperienceScreen = ({ navigation }) => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalText}>
-              Are you sure you want to delete this working experience?
+              {t('deleteexperiencetitle')}
             </Text>
             <View style={styles.modalActions}>
               <TouchableOpacity
@@ -583,13 +589,13 @@ const WorkExperienceScreen = ({ navigation }) => {
                 }}
                 style={styles.cancelButton}
               >
-                <Text style={styles.cancelButtonText}>No</Text>
+                <Text style={styles.cancelButtonText}>{t('no')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => handleDelete()}
                 style={styles.deleteButton}
               >
-                <Text style={styles.deleteButtonText}>Yes</Text>
+                <Text style={styles.deleteButtonText}>{t('yes')}</Text>
               </TouchableOpacity>
             </View>
           </View>

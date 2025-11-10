@@ -3,7 +3,7 @@ import { Platform } from "react-native";
 import { io } from "socket.io-client";
 import NetInfo from "@react-native-community/netinfo";
 
-// export const apiServerUrl = "http://192.168.0.235:2193/api/v1"; // office
+// export const apiServerUrl = "http://192.168.1.83:2193/api/v1"; // office
 
 // export const apiServerUrl = "https://6f58fd9614ff.ngrok-free.app/api/v1"; // production
 export const apiServerUrl = "https://seabuddyapi.seekware.in/api/v1";

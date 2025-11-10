@@ -5,6 +5,8 @@ import {
   Dimensions,
   TouchableOpacity,
   StyleSheet,
+  Image,
+  Alert,
 } from "react-native";
 import { TextInput, Button, Card, Text } from "react-native-paper";
 import ProfileSettingHeader from "../component/headers/ProfileHeader/ProfleSettingHeader";
@@ -13,9 +15,12 @@ import axios from "axios";
 import { apiServerUrl } from "../Api";
 import Loader from "../component/Loader";
 import Toast from "react-native-toast-message";
-import LottieView from "lottie-react-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
 import CustomLottie from "../component/CustomLottie";
 import api from "../CustomAxios";
+import { useTranslation } from "react-i18next";
+import { ImagesAssets } from "../assets/ImagesAssets";
+
 const { height, width } = Dimensions.get("screen");
 
 const SocialMediaLinks = ({ navigation }) => {
@@ -27,6 +32,8 @@ const SocialMediaLinks = ({ navigation }) => {
   });
   const [savedLinks, setSavedLinks] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [editingPlatform, setEditingPlatform] = useState(null); // Track which one is being edited
+  const { t } = useTranslation();
 
   useEffect(() => {
     getProfileDetails();
@@ -49,18 +56,25 @@ const SocialMediaLinks = ({ navigation }) => {
         const fetchedLinks = response.data.result.SocialMediaLinks || [];
         setSavedLinks(fetchedLinks);
 
-        // Convert array to an object to pre-fill input fields
-        const mappedLinks = fetchedLinks.reduce((acc, { platform, link }) => {
-          acc[platform.toLowerCase()] = link;
-          return acc;
-        }, {});
-
-        setLinks((prev) => ({
-          ...prev,
-          ...mappedLinks,
-        }));
-      } else {
-        console.error("Error fetching profile data:", response.data);
+        // Pre-fill form if editing one
+        if (editingPlatform) {
+          const editingLink = fetchedLinks.find(
+            (item) => item.platform.toLowerCase() === editingPlatform
+          );
+          if (editingLink) {
+            setLinks((prev) => ({
+              ...prev,
+              [editingPlatform]: editingLink.link,
+            }));
+          }
+        } else {
+          // Normal load: map saved links to input fields
+          const mappedLinks = fetchedLinks.reduce((acc, { platform, link }) => {
+            acc[platform.toLowerCase()] = link;
+            return acc;
+          }, {});
+          setLinks((prev) => ({ ...prev, ...mappedLinks }));
+        }
       }
     } catch (error) {
       console.error("Error:", error);
@@ -89,21 +103,12 @@ const SocialMediaLinks = ({ navigation }) => {
 
       const userDetails = JSON.parse(dbResult);
 
-      // Merge new links while replacing existing ones
-      const updatedLinks = [...savedLinks];
+      // Replace or add new links
+      const updatedLinks = savedLinks.filter(
+        (item) => !validLinks.some((newLink) => newLink.platform === item.platform)
+      );
 
-      validLinks.forEach((newLink) => {
-        const index = updatedLinks.findIndex(
-          (item) =>
-            item.platform.toLowerCase() === newLink.platform.toLowerCase()
-        );
-
-        if (index !== -1) {
-          updatedLinks[index] = newLink; // Replace existing link
-        } else {
-          updatedLinks.push(newLink); // Add new link
-        }
-      });
+      updatedLinks.push(...validLinks);
 
       const body = {
         userId: userDetails.id,
@@ -123,204 +128,227 @@ const SocialMediaLinks = ({ navigation }) => {
 
       if (response.status === 200 && response.data.responseCode === 200) {
         setSavedLinks(updatedLinks);
+        setEditingPlatform(null);
         setLinks({ linkedin: "", instagram: "", facebook: "", telegram: "" });
 
         Toast.show({
           type: "success",
-          text1: "Social Media Links updated successfully",
+          text1: t('socialmediaaddedsuccessfully') || "Links saved successfully!",
         });
-      } else {
-        console.error("Error updating profile:", response.data);
       }
     } catch (error) {
-      console.error("Update Profile Error:", error.message || error);
+      console.error("Update Error:", error.message || error);
+      Toast.show({
+        type: "error",
+        text1: "Failed to save links",
+      });
     } finally {
       setLoading(false);
     }
   };
 
+  // Handle Edit
+  const handleEdit = (platform, link) => {
+    setEditingPlatform(platform.toLowerCase());
+    setLinks((prev) => ({
+      ...prev,
+      [platform.toLowerCase()]: link,
+    }));
+    // Scroll to top or focus input if needed
+  };
+
+  // Handle Delete
+  const handleDelete = (platformToDelete) => {
+    Alert.alert(
+      t('deletelink'),
+      `${t('remove')} ${platformToDelete}?`,
+      [
+        { text: t('cancel'), style: "cancel" },
+        {
+          text: t('delete'),
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setLoading(true);
+              const dbResult = await AsyncStorage.getItem("userDetails");
+              const userDetails = JSON.parse(dbResult);
+
+              const updatedLinks = savedLinks.filter(
+                (item) => item.platform.toLowerCase() !== platformToDelete.toLowerCase()
+              );
+
+              const response = await axios.put(
+                `${apiServerUrl}/user/updateProfile`,
+                {
+                  userId: userDetails.id,
+                  SocialMediaLinks: updatedLinks,
+                },
+                {
+                  headers: {
+                    authToken: userDetails.authToken,
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+
+              if (response.data.responseCode === 200) {
+                setSavedLinks(updatedLinks);
+                setLinks((prev) => ({ ...prev, [platformToDelete.toLowerCase()]: "" }));
+                Toast.show({
+                  type: "success",
+                  text1: "Link deleted successfully",
+                });
+              }
+            } catch (error) {
+              Toast.show({
+                type: "error",
+                text1: "Failed to delete link",
+              });
+            } finally {
+              setLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <>
-      <ProfileSettingHeader navigation={navigation} title="Social Media" />
+      <ProfileSettingHeader navigation={navigation} title={t('social_media')} />
       {loading && <Loader />}
+
       <View style={{ flex: 1, padding: 14 }}>
-        <Text style={{ fontFamily: "Poppins-SemiBold", fontSize: 14 }}>
-          LinkedIn
-        </Text>
+        {/* Input Fields */}
+        <Text style={{ fontFamily: "Poppins-SemiBold", fontSize: 14 }}>{t('linkedin')}</Text>
         <TextInput
-          label="Enter LinkedIn Link"
+          label={t('enterlinkedinlink')}
           value={links.linkedin}
           onChangeText={(text) => setLinks({ ...links, linkedin: text })}
           mode="outlined"
           keyboardType="url"
           autoCapitalize="none"
-          autoCorrect={false}
-          returnKeyType="done"
-          style={{
-            marginBottom: 10,
-            fontFamily: "Poppins-Regular",
-            fontSize: 16,
-          }}
+          style={{ marginBottom: 10 }}
         />
-        <Text style={{ fontFamily: "Poppins-SemiBold", fontSize: 14 }}>
-          Instagram
-        </Text>
+
+        <Text style={{ fontFamily: "Poppins-SemiBold", fontSize: 14 }}>{t('instagram')}</Text>
         <TextInput
-          label="Enter Instagram Link"
+          label={t('enterinstagramlink')}
           value={links.instagram}
           onChangeText={(text) => setLinks({ ...links, instagram: text })}
           mode="outlined"
           keyboardType="url"
           autoCapitalize="none"
-          autoCorrect={false}
-          returnKeyType="done"
-          style={{
-            marginBottom: 10,
-            fontFamily: "Poppins-Regular",
-            fontSize: 16,
-          }}
+          style={{ marginBottom: 10 }}
         />
-        <Text style={{ fontFamily: "Poppins-SemiBold", fontSize: 14 }}>
-          Facebook
-        </Text>
+
+        <Text style={{ fontFamily: "Poppins-SemiBold", fontSize: 14 }}>{t('facebook')}</Text>
         <TextInput
-          label="Enter Facebook Link"
+          label={t('enterfacebooklink')}
           value={links.facebook}
           onChangeText={(text) => setLinks({ ...links, facebook: text })}
           mode="outlined"
           keyboardType="url"
           autoCapitalize="none"
-          autoCorrect={false}
-          returnKeyType="done"
-          style={{
-            marginBottom: 10,
-            fontFamily: "Poppins-Regular",
-            fontSize: 16,
-          }}
+          style={{ marginBottom: 10 }}
         />
-        <Text style={{ fontFamily: "Poppins-SemiBold", fontSize: 14 }}>
-          Telegram
-        </Text>
+
+        <Text style={{ fontFamily: "Poppins-SemiBold", fontSize: 14 }}>{t('telegram')}</Text>
         <TextInput
-          label="Enter Telegram Link"
+          label={t('entertelegramlink')}
           value={links.telegram}
           onChangeText={(text) => setLinks({ ...links, telegram: text })}
           mode="outlined"
           keyboardType="url"
           autoCapitalize="none"
-          autoCorrect={false}
-          returnKeyType="done"
-          style={{
-            marginBottom: 10,
-            fontFamily: "Poppins-Regular",
-            fontSize: 16,
-          }}
+          style={{ marginBottom: 20 }}
         />
 
         <TouchableOpacity
           onPress={updateSocialMediaLinks}
           style={{
             borderRadius: 8,
-            marginVertical: 20,
             height: 50,
             alignItems: "center",
             justifyContent: "center",
             backgroundColor: "#000",
+            marginBottom: 20,
           }}
         >
-          <Text
-            style={{
-              color: "#fff",
-              lineHeight: 27,
-              fontFamily: "WhyteInktrap-Medium",
-              fontWeight: "500",
-              fontSize: 18,
-            }}
-          >
-            Save Social Media Links
+          <Text style={{ color: "#fff", fontFamily: "WhyteInktrap-Medium", fontSize: 18 }}>
+            {editingPlatform ? "Update Link" : t('savesocialmedialinks') || "Save Links"}
           </Text>
         </TouchableOpacity>
 
+        {/* Saved Links List */}
         {savedLinks.length > 0 && (
           <FlatList
             data={savedLinks}
-            showsVerticalScrollIndicator={false}
-            keyExtractor={(item, index) => index.toString()}
+            keyExtractor={(item) => item.platform}
             renderItem={({ item }) => (
               <View
                 style={{
                   flexDirection: "row",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  borderRadius: 8,
+                  backgroundColor: "rgba(255,255,255,0.9)",
+                  padding: 12,
+                  borderRadius: 12,
                   marginBottom: 10,
-                  padding: 10,
-                  backgroundColor: "rgba(255, 255, 255, 0.8)",
+                  elevation: 2,
                 }}
               >
                 <View>
-                  <Text style={{ fontFamily: "Poppins-SemiBold", fontSize: 12 }}>
-                    {item.platform.charAt(0).toUpperCase() +
-                      item.platform.slice(1)}
+                  <Text style={{ fontFamily: "Poppins-SemiBold", fontSize: 14 }}>
+                    {item.platform.charAt(0).toUpperCase() + item.platform.slice(1)}
                   </Text>
-                  <Text style={{ fontFamily: "Poppins-Regular", fontSize: 10 }}>
+                  <Text style={{ fontFamily: "Poppins-Regular", fontSize: 12, color: "#555" }}>
                     {item.link}
                   </Text>
                 </View>
 
-                <View
-                  style={{
-                    flexDirection: "column",
-                    alignItems: "center",
-                    gap: 10,
-                  }}
-                >
+                <View style={{ flexDirection: "row", gap: 16 }}>
+                  {/* Edit Icon */}
+                  <TouchableOpacity
+                    onPress={() => handleEdit(item.platform, item.link)}
+                  >
+                    <Image
+                      source={ImagesAssets.editIcon}
+                      style={{ width: 20, height: 20 }}
+                    />
+                  </TouchableOpacity>
+
+                  {/* Delete Icon */}
+                  <TouchableOpacity
+                    onPress={() => handleDelete(item.platform)}
+                  >
+                    <Ionicons name="trash-outline" size={22} color="#e74c3c" />
+                  </TouchableOpacity>
                 </View>
               </View>
-
-
-
-
-
             )}
           />
         )}
       </View>
+
+      {/* Background Lottie */}
       <View
         style={{
-          // flex: 1,
+          position: "absolute",
+          bottom: 0,
+          height: "50%",
+          width: "100%",
           backgroundColor: "#c1c1c1",
           overflow: "hidden",
-          height: "50%",
           borderTopLeftRadius: 32,
           borderTopRightRadius: 32,
           zIndex: -1,
-          // flexBasis: 200,
-          position: "absolute",
-          bottom: 0,
         }}
       >
-        {/* <LottieView
-          source={require("../assets/Background.json")}
-          autoPlay
-          loop
-          resizeMode="cover"
-          style={styles.lottieBackground}
-        /> */}
         <CustomLottie />
       </View>
     </>
   );
 };
 
-const styles = StyleSheet.create({
-  lottieBackground: {
-    width: width * 1,
-    height: height * 0.68,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    // position: "absolute",
-    // bottom: 0,
-  },
-});
 export default SocialMediaLinks;

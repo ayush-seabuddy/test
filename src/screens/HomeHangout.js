@@ -4,7 +4,6 @@ import {
   Dimensions,
   FlatList,
   Image,
-  InteractionManager,
   RefreshControl,
   StyleSheet,
   Text,
@@ -37,18 +36,35 @@ const HomeHangout = React.memo(({ singlePostData }) => {
 
   const [handOut, setHandOut] = useState([]);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [announcement, setAnnouncement] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [displayedPosts, setDisplayedPosts] = useState([]);
   const [isHeaderReady, setIsHeaderReady] = useState(false);
-  const [isEmpty, setIsEmpty] = useState(false);
+  const [isEmpty, setIsEmpty] = useState(true);
+  const [locale, setlocale] = useState('');
+  const [isError, setIsError] = useState(false)
 
   const flatListRef = useRef(null);
   const ITEMS_PER_PAGE = 10;
   const HEADER_HEIGHT = 177;
+  let initialLng = "en";
+  const loadPersistedLanguage = async () => {
+    try {
+      const saved = await AsyncStorage.getItem("userLanguage");
+      if (saved === "en" || saved === "zh") {
+        initialLng = saved;
+        setlocale(initialLng);
+        return;
+      }
+    } catch (e) {
+      console.warn("Failed to load saved language", e);
+    }
 
+    const device = Localization.getLocales()[0]?.languageTag || "en";
+    initialLng = device.startsWith("zh") ? "zh" : "en";
+  };
   const getItemLayout = useCallback(
     (data, index) => ({
       length: 520,
@@ -62,6 +78,7 @@ const HomeHangout = React.memo(({ singlePostData }) => {
   const getDataFromApi = useCallback(
     async (pageNumber, append = false) => {
       try {
+        if (isError) return
         const authToken = await AsyncStorage.getItem("authToken");
         if (!authToken) throw new Error("No auth token found");
 
@@ -88,6 +105,7 @@ const HomeHangout = React.memo(({ singlePostData }) => {
         );
 
         if (response.responseCode === 200) {
+          setIsError(false)
           let newData = response?.result?.hangoutsList || [];
           if (singlePostData) {
             newData = newData.filter((item) => item.id !== singlePostData.id);
@@ -111,10 +129,12 @@ const HomeHangout = React.memo(({ singlePostData }) => {
           setHasMore(response.result.totalPages > pageNumber);
           setPage(pageNumber + 1);
         } else {
+          setIsError(true)
           // ✅ API failed but connected
           SimpleToast.show("Something went wrong, please try again");
         }
       } catch (error) {
+        setIsError(true)
         console.error("Error fetching data: 2", error);
         setHasMore(false)
         const isConnected = await checkConnected();
@@ -218,6 +238,7 @@ const HomeHangout = React.memo(({ singlePostData }) => {
 
   // ✅ Pull-to-refresh
   const handleRefresh = useCallback(() => {
+    setIsError(false)
     setRefreshing(true);
     setPage(1);
     setIsHeaderReady(false);
@@ -229,7 +250,7 @@ const HomeHangout = React.memo(({ singlePostData }) => {
 
   // ✅ Infinite scroll
   const handleLoadMore = useCallback(() => {
-    if (!loading && hasMore) {
+    if (!loading && hasMore && !isError) {
       getDataFromApi(page, true);
     }
   }, [loading, hasMore, page, getDataFromApi]);
@@ -250,6 +271,7 @@ const HomeHangout = React.memo(({ singlePostData }) => {
         refreshPost={refreshPost}
         updatePost={updatePost}
         setDisplayedPosts={setDisplayedPosts}
+        locale={locale}
       />
     ),
     [refreshPost, updatePost]
@@ -323,17 +345,16 @@ const HomeHangout = React.memo(({ singlePostData }) => {
 
   // ✅ Scroll to top
   useEffect(() => {
-    if (!isHeaderReady) return;
-
-    InteractionManager.runAfterInteractions(() => {
-      if (flatListRef.current) {
-        flatListRef.current.scrollToOffset({
-          offset: 0,
-          animated: true,
-        });
-      }
-    });
+    if (isHeaderReady && flatListRef.current) {
+      setTimeout(() => {
+        flatListRef.current.scrollToOffset({ offset: 0, animated: true });
+      }, 100);
+    }
   }, [isHeaderReady]);
+
+  useFocusEffect(() => {
+    loadPersistedLanguage();
+  })
 
   // ✅ Offline detection on app start
 
@@ -446,11 +467,7 @@ const HomeHangout = React.memo(({ singlePostData }) => {
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor="#8DAF02"
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#8DAF02" />
         }
         ListHeaderComponent={HeaderComponent}
         ListEmptyComponent={EmptyComponent}
@@ -460,9 +477,9 @@ const HomeHangout = React.memo(({ singlePostData }) => {
           mainStyles.contentContainer,
           displayedPosts.length === 0 && !loading && mainStyles.emptyList,
         ]}
-        initialNumToRender={5}
+        initialNumToRender={10}
         maxToRenderPerBatch={10}
-        windowSize={10}
+        windowSize={21}
         removeClippedSubviews={true}
         getItemLayout={getItemLayout}
         maintainVisibleContentPosition={{ minIndexForVisible: 0 }}

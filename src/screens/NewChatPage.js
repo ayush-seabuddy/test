@@ -8,6 +8,8 @@ import FastImage from "react-native-fast-image";
 import { ImagesAssets } from "../assets/ImagesAssets";
 import { FontFamily } from "../GlobalStyle";
 import socketService from "../Socket/Socket";
+import { t } from "i18next";
+import { useTranslation } from "react-i18next";
 
 // Memoize child components to prevent unnecessary re-renders
 const MemoizedVesselChat = React.memo(VesselChat);
@@ -17,7 +19,7 @@ const NewChatPage = ({ navigation }) => {
   const [showVesselChat, setShowVesselChat] = useState(true);
   const [showFleetChat, setShowFleetChat] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-
+  const { t } = useTranslation();
   useEffect(() => {
     // Initialize socket only once on mount
     socketService.initilizeSocket();
@@ -71,8 +73,8 @@ const NewChatPage = ({ navigation }) => {
             source={ImagesAssets.shipIcon}
           />
           <View style={styles.textContainer}>
-            <Text style={styles.sectionTitle}>Ship Lounge</Text>
-            <Text style={styles.sectionSubTitle}>For all crew on the vessel</Text>
+            <Text style={styles.sectionTitle}>{t('shiplounge')}</Text>
+            <Text style={styles.sectionSubTitle}>{t('shiplounge_description')}</Text>
           </View>
         </View>
         {showVesselChat && <MemoizedVesselChat refreshing={refreshing} />}
@@ -87,8 +89,8 @@ const NewChatPage = ({ navigation }) => {
             source={ImagesAssets.fleetIcon}
           />
           <View style={styles.textContainer}>
-            <Text style={styles.sectionTitle}>Fleet Lounge</Text>
-            <Text style={styles.sectionSubTitle}>One Company - One Conversation</Text>
+            <Text style={styles.sectionTitle}>{t('fleetlounge')}</Text>
+            <Text style={styles.sectionSubTitle}>{t('fleetlounge_description')}</Text>
           </View>
         </View>
         {showFleetChat && <MemoizedFleetChat refreshing={refreshing} />}
@@ -100,6 +102,7 @@ const NewChatPage = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    marginBottom:60,
   },
   contentContainer: {
     flexGrow: 1,

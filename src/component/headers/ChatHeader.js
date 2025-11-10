@@ -7,10 +7,12 @@ import { ImagesAssets } from "../../assets/ImagesAssets";
 import { useFocusEffect } from "@react-navigation/native";
 import { apiCallWithToken, apiServerUrl } from "../../Api";
 import { Badge } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 
 const ChatHeader = ({ navigation }) => {
   const [profile, setProfile] = useState({});
   const [unreadNotification, setUnreadNotification] = useState(0);
+  const { t } = useTranslation();
   console.log("unreadNotification: ", unreadNotification);
 
   useEffect(() => {
@@ -54,7 +56,7 @@ const ChatHeader = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <Text style={styles.chatroom}>
-        <Text style={styles.chat}>Chat Room </Text>
+        <Text style={styles.chat}>{t('chatRoom')}</Text>
       </Text>
 
       <View style={styles.headerButtonsContainer}>

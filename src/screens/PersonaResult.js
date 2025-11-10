@@ -36,6 +36,7 @@ import axios from "axios";
 import Toast from "react-native-toast-message";
 import RNHTMLtoPDF from "react-native-html-to-pdf";
 import { generateHtmlContent } from "../utils/PersonaPdfhtml";
+import { useTranslation } from "react-i18next";
 
 const { width, height } = Dimensions.get("window");
 
@@ -47,7 +48,7 @@ const PersonaResult = ({ navigation, route }) => {
   const [userName, setUserName] = useState("");
   const [pdfFilePath, setPdfFilePath] = useState(null);
   const [pdfLoader, setPdfLoader] = useState(false);
-
+  const { t } = useTranslation();
   // Fetch PDF URL
   const fetchPDFURL = async () => {
     setPdfLoader(true);
@@ -94,20 +95,20 @@ const PersonaResult = ({ navigation, route }) => {
   // Share PDF
   const sharePDF = async () => {
     if (!pdfFilePath) {
-      Alert.alert("No PDF", "Please generate a PDF first.");
+      Alert.alert(t('noPdf'), t('pleasegenerateapdffirst'));
       return;
     }
 
     const hasPermission = await requestStoragePermissions();
     if (!hasPermission) {
-      Alert.alert("Permission Required", "Storage access is required to share the PDF.");
+      Alert.alert(t('permissionrequired'), t('storagepermissionisrequired'));
       return;
     }
 
     try {
       const fileExists = await RNFS.exists(pdfFilePath);
       if (!fileExists) {
-        Alert.alert("File Missing", "PDF not found. Please regenerate.");
+        Alert.alert(t('filemissing'), t('pdfnotfoundregenrate'));
         return;
       }
 
@@ -123,15 +124,15 @@ const PersonaResult = ({ navigation, route }) => {
       await RNFS.copyFile(pdfFilePath, shareablePath);
 
       await Share.open({
-        title: "Persona Result",
+        title: t('personaresult'),
         url: `file://${shareablePath}`,
         type: "application/pdf",
-        message: "Here is your Persona Result.",
+        message: t('hereisyourpersonaresult'),
         failOnCancel: false,
       });
     } catch (error) {
       console.error("PDF Share Error:", error);
-      Alert.alert("Error", "Failed to share PDF. Please try again.");
+      Alert.alert(t('error'), t('failedtosharepdf'));
     }
   };
 
@@ -183,17 +184,17 @@ const PersonaResult = ({ navigation, route }) => {
         } else {
           Toast.show({
             type: "error",
-            text1: "Error",
-            text2: result?.responseMessage || "Something went wrong.",
+            text1: t('error'),
+            text2: result?.responseMessage || t('somethingwentwrong'),
           });
         }
       } else {
         const snapshot = await firestore().collection("assessmentResults").doc(token).get();
         if (snapshot.exists) {
           setApiData(snapshot.data().result);
-          Toast.show({ text1: "Offline", text2: "Data loaded from local storage." });
+          Toast.show({ text1: t('offline'), text2: t('dataloadedfromlocal') });
         } else {
-          Toast.show({ text1: "Offline", text2: "No local data found." });
+          Toast.show({ text1: t('offline'), text2: t('nolocaldatafound') });
           await firestore()
             .collection("assessmentResults")
             .doc(token)
@@ -204,8 +205,8 @@ const PersonaResult = ({ navigation, route }) => {
       console.error("getAssessment error:", err);
       Toast.show({
         type: "error",
-        text1: "Error",
-        text2: err?.response?.data?.responseMessage || "Something went wrong.",
+        text1: t('error'),
+        text2: err?.response?.data?.responseMessage || t('somethingwentwrong'),
       });
     } finally {
       setIsLoading(false);
@@ -231,7 +232,7 @@ const PersonaResult = ({ navigation, route }) => {
             .collection("assessmentResults")
             .doc(token)
             .update({ result: res.data.result.data, flag: 1 });
-          Toast.show({ text1: "Synced", text2: "Offline data updated." });
+          Toast.show({ text1: t('synced'), text2: t('offlinedataupdated') });
         }
       } catch (error) {
         console.error("Sync failed:", error);
@@ -271,8 +272,7 @@ const PersonaResult = ({ navigation, route }) => {
       <View style={styles.contentContainer}>
         <View style={styles.headerContainer}>
           <View style={styles.titleContainer}>
-            <Text style={styles.titleText}>Persona </Text>
-            <Text style={styles.subtitleText}>Result</Text>
+            <Text style={styles.titleText}>{t('personaresult')}</Text>
           </View>
           <TouchableOpacity onPress={sharePDF} style={styles.emailButton}>
             <Image style={{ height: 14, width: 14, padding: 8 }} source={ImagesAssets.shear_icon} />
@@ -313,7 +313,7 @@ const PersonaResult = ({ navigation, route }) => {
 
       <TouchableOpacity style={styles.submitButton} onPress={goNext}>
         <Text style={styles.submitButtonText}>
-          {from === "HelthScreen" ? "Go Back" : "Continue"}
+          {from === "HelthScreen" ? t('goback') : t('continue')}
         </Text>
       </TouchableOpacity>
 

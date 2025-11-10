@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 import { ImagesAssets } from "../../assets/ImagesAssets";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import NetInfo from "@react-native-community/netinfo";
 import Colors from "../../colors/Colors";
 import {
@@ -95,7 +95,7 @@ const WeeklyMeetingCard = ({ announcement = [], keyId, showSurvey = false }) => 
         setSurveyData(null);
       }
     } catch (error) {
-      console.log("Full Survey API Error:", JSON.stringify(error, Object.getOwnPropertyNames(error)));  
+      console.log("Full Survey API Error:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
 
 
       const isConnected = await checkConnected();
@@ -111,15 +111,18 @@ const WeeklyMeetingCard = ({ announcement = [], keyId, showSurvey = false }) => 
   }, []);
 
   // Trigger fetch only when showSurvey is true
-  useEffect(() => {
-    if (showSurvey) {
-      fetchSurveyData();
-    }
-  }, [showSurvey, fetchSurveyData]);
+  useFocusEffect(
+    useCallback(() => {
+      if (showSurvey) {
+        fetchSurveyData();
+      }
+    }, [showSurvey, fetchSurveyData])
+  );
+
 
   // Handle Announcement Card Press
   // const handleCardPress = (item) => {
-    
+
   //   const screenMap = {
   //     VIDEO: "VideosDetails",
   //     ARTICLE: "ArticlesDetails",

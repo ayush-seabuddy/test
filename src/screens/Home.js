@@ -26,6 +26,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { apiCallWithToken, apiServerUrl } from "../Api";
 import socketService from "../Socket/Socket";
+import { useTranslation } from "react-i18next";
 
 const { width, height } = Dimensions.get("window");
 
@@ -35,6 +36,8 @@ const Home = ({ navigation, route }) => {
   const [singlePostData, setSinglePostData] = useState(null);
   const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [unSeenCount, setUnSeenCount] = useState(0);
+
+  const { t } = useTranslation();
 
   const scaleValue = useRef(new Animated.Value(1)).current;
   const componentOpacity = useRef(new Animated.Value(1)).current;
@@ -55,17 +58,21 @@ const Home = ({ navigation, route }) => {
     try {
       const authToken = await AsyncStorage.getItem("authToken");
       if (!authToken) return;
+
       const response = await apiCallWithToken(
         `${apiServerUrl}/user/getUnreadMessageCount`,
         "GET",
         null,
         authToken
       );
+
       if (response.responseCode) {
         setUnreadMessageCount(response.result.unReadCount);
         setUnSeenCount(response.result.unSeenCount);
       }
-    } catch (error) {}
+    } catch (error) {
+      // Silent in production
+    }
   };
 
   useFocusEffect(
@@ -74,6 +81,7 @@ const Home = ({ navigation, route }) => {
     }, [])
   );
 
+  // Tab Persistence + Param Clearing
   useFocusEffect(
     useCallback(() => {
       const initializeTab = async () => {
@@ -106,78 +114,94 @@ const Home = ({ navigation, route }) => {
       case "hangout":
         return <HomeHangout singlePostData={singlePostData} />;
       case "Chat":
-        return <NewChatPage />;
+        return <NewChatPage />; // No onBackToHangout
       default:
         return null;
     }
   };
 
   const renderHeader = () => {
-    return activeComponent === "Chat" ? <ChatHeader navigation={navigation} /> : <HomeHeader navigation={navigation} />;
+    return activeComponent === "Chat" ? (
+      <ChatHeader navigation={navigation} />
+    ) : (
+      <HomeHeader navigation={navigation} />
+    );
   };
 
-  const renderButton = (component, label) => {
-    const count = label === "Chat" ? unreadMessageCount : label === "Hangout" ? unSeenCount : 0;
+  const renderButton = (component, labelKey) => {
+    const count = component === "Chat" ? unreadMessageCount : unSeenCount;
 
     return (
       <TouchableOpacity
         style={[styles.button, activeComponent === component && styles.activeButton]}
         onPress={() => transitionComponent(component)}
       >
-        <Text style={[styles.buttonText, activeComponent !== component && styles.inactiveButtonText]}>
-          {label}
+        <Text
+          style={[
+            styles.buttonText,
+            activeComponent !== component && styles.inactiveButtonText,
+          ]}
+        >
+          {t(labelKey)}
         </Text>
         {count > 0 && (
           <View style={styles.customBadge}>
-            <Text style={styles.customBadgeText}>{count > 9 ? "9+" : count}</Text>
+            <Text style={styles.customBadgeText}>
+              {count > 9 ? "9+" : count}
+            </Text>
           </View>
         )}
       </TouchableOpacity>
     );
   };
 
+  // Mood Tracker Modal Logic
   useFocusEffect(
     useCallback(() => {
-      const fetchData = async () => {
+      const checkMoodTracker = async () => {
         const dbResult = await AsyncStorage.getItem("userDetails");
-        const Data = JSON.parse(dbResult);
-        const date = new Date();
-        const todayDate = `${date.getFullYear()}-${(date.getMonth() + 1)
+        const userData = JSON.parse(dbResult);
+        const today = `${new Date().getFullYear()}-${(new Date().getMonth() + 1)
           .toString()
-          .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
-        const lastMoodDate = Data.lastCloseMoodDate;
+          .padStart(2, "0")}-${new Date().getDate().toString().padStart(2, "0")}`;
 
-        if (lastMoodDate !== todayDate && !Data.isMoodTracker && !Data.isMoodTrackerClose) {
+        if (
+          userData.lastCloseMoodDate !== today &&
+          !userData.isMoodTracker &&
+          !userData.isMoodTrackerClose
+        ) {
           setModalVisible(true);
         } else {
           setModalVisible(false);
         }
-        Data.isMoodTrackerClose = true;
-        Data.lastCloseMoodDate = todayDate;
-        await AsyncStorage.setItem("userDetails", JSON.stringify(Data));
+
+        userData.isMoodTrackerClose = true;
+        userData.lastCloseMoodDate = today;
+        await AsyncStorage.setItem("userDetails", JSON.stringify(userData));
       };
-      fetchData();
+
+      checkMoodTracker();
     }, [])
   );
 
   const handleMoodTrackerClose = async () => {
-    const date = new Date();
-    const todayDate = `${date.getFullYear()}-${(date.getMonth() + 1)
+    const today = `${new Date().getFullYear()}-${(new Date().getMonth() + 1)
       .toString()
-      .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
-    const userDetailsString = await AsyncStorage.getItem("userDetails");
-    const userDetails = JSON.parse(userDetailsString);
+      .padStart(2, "0")}-${new Date().getDate().toString().padStart(2, "0")}`;
+    const userDetails = JSON.parse(await AsyncStorage.getItem("userDetails"));
+
     userDetails.isMoodTrackerClose = true;
-    userDetails.lastCloseMoodDate = todayDate;
+    userDetails.lastCloseMoodDate = today;
     await AsyncStorage.setItem("userDetails", JSON.stringify(userDetails));
     setModalVisible(false);
   };
 
-  const getChatRoom = async () => {
+  // Socket Setup
+  const setupSocket = async () => {
     try {
-      const storedUser = await AsyncStorage.getItem("userDetails");
-      const user = JSON.parse(storedUser);
+      const user = JSON.parse(await AsyncStorage.getItem("userDetails"));
       const payload = { userId: user.id };
+
       socketService.emit("getUnreadMessageCount", payload);
       socketService.on("unreadMessageCount", (data) => {
         setUnreadMessageCount(data?.unReadCount);
@@ -190,22 +214,32 @@ const Home = ({ navigation, route }) => {
   };
 
   useEffect(() => {
-    getChatRoom();
+    setupSocket();
     socketService.initilizeSocket();
   }, []);
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={0}
+    >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
           <AiModal visible={modalVisible} onClose={handleMoodTrackerClose} />
-          <FocusAwareStatusBar barStyle="light-content" backgroundColor={Colors.white} />
+
+          <FocusAwareStatusBar
+            barStyle="light-content"
+            backgroundColor={Colors.white}
+            hidden={false}
+          />
 
           {renderHeader()}
+
           <View style={styles.buttonGroup}>
             <View style={styles.buttonContainer}>
-              {renderButton("hangout", "Hangout")}
-              {renderButton("Chat", "Chat")}
+              {renderButton("hangout", "hangout")}
+              {renderButton("Chat", "chat")}
             </View>
           </View>
 
@@ -222,7 +256,11 @@ const Home = ({ navigation, route }) => {
               onPressIn={() => animatePress(0.9)}
               onPressOut={() => animatePress(1)}
             >
-              <Image style={{ width: 18, height: 18 }} source={ImagesAssets.plus} resizeMode="cover" />
+              <Image
+                style={{ width: 18, height: 18 }}
+                source={ImagesAssets.plus}
+                resizeMode="cover"
+              />
             </TouchableOpacity>
           )}
         </View>
@@ -276,7 +314,9 @@ const styles = StyleSheet.create({
     fontFamily: "WhyteInktrap-Bold",
     lineHeight: 15,
   },
-  inactiveButtonText: { color: Colors.white },
+  inactiveButtonText: {
+    color: Colors.white,
+  },
   customBadge: {
     position: "absolute",
     top: -8,

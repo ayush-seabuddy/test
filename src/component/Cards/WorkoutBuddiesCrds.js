@@ -20,6 +20,7 @@ import moment from "moment";
 import DefaultActivity from "../ProfileListComponents/DefaultActivity";
 import { apiServerUrl } from "../../Api";
 import { Color, FontSize, Gap, Padding, Border, FontFamily } from "../../GlobalStyle";
+import { useTranslation } from "react-i18next";
 
 const { width, height } = Dimensions.get("window");
 
@@ -51,7 +52,7 @@ const WorkoutBuddiesCrds = ({
 
   const openMenu = () => setState((prev) => ({ ...prev, visible: !prev.visible }));
   const closeMenu = () => setState((prev) => ({ ...prev, visible: false }));
-
+  const { t } = useTranslation();
   const fetchUserDetails = async () => {
     try {
       const dbResult = await AsyncStorage.getItem("userDetails");
@@ -167,7 +168,7 @@ const WorkoutBuddiesCrds = ({
   useFocusEffect(
     useCallback(() => {
       fetchUserDetails().then(getDetails);
-      return () => {};
+      return () => { };
     }, [])
   );
 
@@ -221,7 +222,7 @@ const WorkoutBuddiesCrds = ({
                         closeMenu();
                         navigation.navigate("NewGroupActivityPost", { peopleDetails });
                       }}
-                      title="Share as a post"
+                      title={t('shareasapost')}
                     />
                   </Menu>
                 )
@@ -241,18 +242,18 @@ const WorkoutBuddiesCrds = ({
                     style={{ height: 35 }}
                     titleStyle={{ color: "red" }}
                     onPress={handleLeaveEvent}
-                    title="Leave from event"
+                    title={t('leaveaevent')}
                   />
                 </Menu>
               ) : null}
             </View>
             <View style={styles.organizerContainer}>
               <Text style={styles.organizerText}>
-                Organized by {isCreatedByMe ? "You" : activity?.activityUser?.fullName || "Unknown"}
+                {t('organizedBy')} {isCreatedByMe ? t('you') : activity?.activityUser?.fullName || "Unknown"}
               </Text>
               <View style={styles.pointsBadge}>
                 <Text style={styles.pointsText}>
-                  {activity?.groupActivityCategory?.points || "10"} Points
+                  {activity?.groupActivityCategory?.points || "10"} {t('points')}
                 </Text>
               </View>
             </View>
@@ -261,24 +262,24 @@ const WorkoutBuddiesCrds = ({
           {/* Schedule and Description Section */}
           <View style={styles.scheduleContainer}>
             <BlurView style={StyleSheet.absoluteFill} blurType="light" blurAmount={30} />
-            <Text style={styles.sectionTitle}>Schedule</Text>
+            <Text style={styles.sectionTitle}>{t('schedule')}</Text>
             <View style={styles.container1}>
               <View style={styles.card}>
                 <View style={styles.row}>
-                  <Text style={styles.label}>Start Time:</Text>
+                  <Text style={styles.label}>{t('starttime')}</Text>
                   <Text style={styles.time}>
                     {peopleDetails && moment(peopleDetails.startDateTime).format("D MMM YYYY, h:mm A")}
                   </Text>
                 </View>
                 <View style={styles.row}>
-                  <Text style={styles.label}>End Time:</Text>
+                  <Text style={styles.label}>{t('endtime')}</Text>
                   <Text style={styles.time}>
                     {peopleDetails && moment(peopleDetails.endDateTime).format("D MMM YYYY, h:mm A")}
                   </Text>
                 </View>
               </View>
             </View>
-            <Text style={styles.sectionTitle}>Description</Text>
+            <Text style={styles.sectionTitle}>{t('description')}</Text>
             <View style={styles.container1}>
               <View style={styles.card}>
                 <Text style={styles.label}>{peopleDetails?.description}</Text>
@@ -289,10 +290,10 @@ const WorkoutBuddiesCrds = ({
           {/* Joined Buddies Section */}
           <View style={styles.joinedBuddiesContainer}>
             <BlurView style={StyleSheet.absoluteFill} blurType="light" blurAmount={30} />
-            <Text style={styles.compatibleCrewMates}>Joined Buddies</Text>
+            <Text style={styles.compatibleCrewMates}>{t('joinedbuddies')}</Text>
             <View style={styles.joinedBuddiesList}>
               {joinedPeople.length === 0 ? (
-                <Text style={styles.noParticipantsText}>No participants have joined yet.</Text>
+                <Text style={styles.noParticipantsText}>{t('noparticipantsjoined')}</Text>
               ) : (
                 joinedPeople.slice(0, 10).map((person, index) => (
                   <TouchableOpacity key={person?.id || index} onPress={() => handleCardPress(person)}>
@@ -323,7 +324,7 @@ const WorkoutBuddiesCrds = ({
           {completionImages?.length > 0 && (
             <View style={styles.uploadedContentContainer}>
               <BlurView style={StyleSheet.absoluteFill} blurType="light" blurAmount={30} />
-              <Text style={styles.compatibleCrewMates}>Uploaded Content</Text>
+              <Text style={styles.compatibleCrewMates}>{t('uploadedcontent')}</Text>
               <Text style={styles.compatibleDescription}>{peopleDetails?.completionDescription}</Text>
               <FlatList
                 data={completionImages}

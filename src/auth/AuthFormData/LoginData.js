@@ -34,6 +34,7 @@ import {
 import CustomLottie from "../../component/CustomLottie";
 import { Checkbox } from "react-native-paper";
 import { getFcmToken } from "../../PushNotification/NotificationListner";
+import { useTranslation } from "react-i18next";
 
 const { width, height } = Dimensions.get("window");
 
@@ -41,7 +42,7 @@ const LoginData = (props) => {
   const [email, setEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [password, setPassword] = useState("");
-
+  const { t } = useTranslation();
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [checked, setChecked] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(true);
@@ -57,7 +58,7 @@ const LoginData = (props) => {
   const handleEmailChange = (input) => {
     setEmail(input);
     if (!validateEmail(input)) {
-      setErrorMessage("Please enter a valid email address.");
+      setErrorMessage(t('emailvalidation'));
     } else {
       setErrorMessage("");
     }
@@ -393,7 +394,7 @@ const LoginData = (props) => {
                       paddingTop: Platform.OS === "android" ? 0 : 10,
                     }}
                   >
-                    Welcome!
+                    {t('welcome')}
                   </Text>
                   <Text
                     style={{
@@ -403,7 +404,7 @@ const LoginData = (props) => {
                       marginTop: 12,
                     }}
                   >
-                    Login to your account
+                    {t('logintoyouraccount')}
                   </Text>
                 </View>
               </View>
@@ -427,7 +428,7 @@ const LoginData = (props) => {
 
                     <TextInput
                       style={styles.textInput}
-                      placeholder="Input your email"
+                      placeholder={t('inputyouremail')}
                       placeholderTextColor="#B7B7B7"
                       value={email}
                       onChangeText={handleEmailChange}
@@ -457,9 +458,9 @@ const LoginData = (props) => {
                     />
                     <TextInput
                       style={styles.textInput}
-                      placeholder="Input password"
+                      placeholder={t('inputpassword')}
                       placeholderTextColor="#B7B7B7"
-                      secureTextEntry={!isPasswordVisible} // Toggle password visibility
+                      secureTextEntry={!isPasswordVisible}
                       value={password}
                       onChangeText={(value) => setPassword(value)}
                     />
@@ -484,7 +485,7 @@ const LoginData = (props) => {
                         // { marginTop: 10 },
                       ]}
                     >
-                      Password should be at least 8 characters long.
+                      {t('passwordshould8charlong')}
                     </Text>
                   </>
                 ) : null}
@@ -577,7 +578,7 @@ const LoginData = (props) => {
                         fontFamily: "Poppins-Regular",
                       }}
                     >
-                      I accept the
+                      {t('iacceptthe')}
                     </Text>
                   </View>
                   <View>
@@ -597,7 +598,7 @@ const LoginData = (props) => {
                           textDecorationLine: "underline",
                         }}
                       >
-                        Terms and Conditions
+                        {t('termsandconditions')}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -690,7 +691,7 @@ const LoginData = (props) => {
                         color: "#fff",
                       }}
                     >
-                      Login
+                      {t('login')}
                     </Text>
                   </TouchableOpacity>
                 ) : (
@@ -715,7 +716,7 @@ const LoginData = (props) => {
                         color: "#fff",
                       }}
                     >
-                      Login
+                     {t('login')}
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -742,7 +743,7 @@ const LoginData = (props) => {
                       // marginRight: 5,
                     }}
                   >
-                    Forgot Password?
+                   {t('forgotPassword')}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -834,6 +835,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   strengthText: {
+
+
+
+    
     color: "#fff",
     fontSize: 12,
     textAlign: "center",
