@@ -515,5 +515,14 @@
   "forgotpasswordDescription": "别担心，请输入您注册的电子邮件地址，我们将向您发送重置说明。",
   "alreadyhaveanaccount": "已有账号？",
   "loginNow": "立即登录",
-  "sendresetlink": "发送重置链接"
+  "sendresetlink": "发送重置链接",
+  "register": "登记",
+  "createyouraccount": "创建您的帐户",
+  "enteryourname": "输入你的名字",
+  "confirmPassword": "确认密码",
+  "enteryourphonenumber": "输入您的电话号码",
+  "passwordvalidationerror": "使用 8 个以上字符，包含大写字母、小写字母、数字和符号。",
+  "emailverification": "电子邮件验证",
+  "wehavesentthecodedescription": "我们已向 {{email}} 发送了验证码",
+  "clickheretoresend": "点击此处重新发送"
 }

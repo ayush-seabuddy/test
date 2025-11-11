@@ -18,7 +18,7 @@ export default function Index() {
       await initI18n();
 
       setTimeout(() => {
-        router.replace("/auth/Login");
+        router.replace("/auth/Signup");
       }, 2500);
     };
 
