@@ -1,4 +1,3 @@
-// src/components/common/GlobalButton.tsx
 import React from "react";
 import {
   TouchableOpacity,
@@ -6,6 +5,8 @@ import {
   StyleSheet,
   ActivityIndicator,
   TouchableOpacityProps,
+  ViewStyle,
+  TextStyle,
 } from "react-native";
 import Colors from "../utils/Colors";
 
@@ -13,29 +14,25 @@ interface GlobalButtonProps extends TouchableOpacityProps {
   title: string;
   loading?: boolean;
   disabled?: boolean;
+  buttonStyle?: ViewStyle;
+  textStyle?: TextStyle;
 }
 
 const GlobalButton: React.FC<GlobalButtonProps> = ({
   title,
   loading = false,
   disabled = false,
-  style,
+  buttonStyle,
+  textStyle,
   ...rest
 }) => {
-  const buttonStyle = [
-    styles.button,
-    disabled && styles.buttonDisabled,
-    style,
-  ];
-
-  const textStyle = [
-    styles.buttonText,
-    disabled && styles.buttonTextDisabled,
-  ];
-
   return (
     <TouchableOpacity
-      style={buttonStyle}
+      style={[
+        styles.button,
+        disabled && styles.buttonDisabled,
+        buttonStyle,
+      ]}
       disabled={disabled || loading}
       activeOpacity={0.8}
       {...rest}
@@ -43,7 +40,15 @@ const GlobalButton: React.FC<GlobalButtonProps> = ({
       {loading ? (
         <ActivityIndicator color={Colors.white} size="small" />
       ) : (
-        <Text style={textStyle}>{title}</Text>
+        <Text
+          style={[
+            styles.buttonText,
+            disabled && styles.buttonTextDisabled,
+            textStyle, 
+          ]}
+        >
+          {title}
+        </Text>
       )}
     </TouchableOpacity>
   );
@@ -55,10 +60,11 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: Colors.primary,
     height: 50,
+    width: "90%",
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
-    marginHorizontal: 20,
+    alignSelf: "center",
     marginVertical: 10,
   },
   buttonDisabled: {

@@ -516,5 +516,14 @@
     "forgotpasswordDescription":"No worries, please enter your registered email address, we’ll send you reset instructions.",
     "alreadyhaveanaccount":"Already have an account?",
     "loginNow":"Login Now",
-    "sendresetlink":"Send Reset Link"
+    "sendresetlink":"Send Reset Link",
+    "register":"Register",
+    "createyouraccount":"Create your account",
+    "enteryourname":"Enter your name",
+    "confirmPassword":"Confirm password",
+    "enteryourphonenumber":"Enter your phone number",
+    "passwordvalidationerror":"Use 8+ chars with uppercase, lowercase, number & symbol.",
+    "emailverification":"Email Verification",
+    "wehavesentthecodedescription":"We sent a code to {{email}}",
+    "clickheretoresend":"Click here to resend"
 }

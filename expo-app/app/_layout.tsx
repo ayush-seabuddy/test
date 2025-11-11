@@ -5,11 +5,12 @@ import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { Slot } from "expo-router";
 import Colors from "@/src/utils/Colors";
+import KeyboardWrapper from "../src/components/KeyboardWrapper";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
+  const [loaded] = useFonts({
     "Poppins-Regular": require("../assets/fonts/Poppins-Regular.ttf"),
     "Poppins-Medium": require("../assets/fonts/Poppins-Medium.ttf"),
     "Poppins-SemiBold": require("../assets/fonts/Poppins-SemiBold.ttf"),
@@ -34,9 +35,13 @@ export default function RootLayout() {
           barStyle="dark-content"
           backgroundColor='#000'
         />
-        <Slot />
+       
+   
+    <KeyboardWrapper>
+      <Slot />
+    </KeyboardWrapper>
       </SafeAreaView>
-    </SafeAreaProvider>
+     </SafeAreaProvider>
   );
 }
 

@@ -32,7 +32,7 @@ export default function Index() {
     AsyncStorage.setItem("userDetails", JSON.stringify(data?.data?.result));
     await AsyncStorage.setItem("authToken", data?.data?.result.authToken);
       
-      router.replace("/home")
+      router.replace("/auth/Signup");
     },3000)
     };
 
