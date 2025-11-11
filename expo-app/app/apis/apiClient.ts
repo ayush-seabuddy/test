@@ -1,11 +1,9 @@
 import { checkNetwork } from '@/src/hooks/useNetworkStatus';
 import axios from 'axios';
-import { BASE_URL } from './endpoints';
 
 
 // ✅ Create an axios instance (our custom API caller)
 const apiClient = axios.create({
-  baseURL: BASE_URL,          // All API requests will start with this URL
   timeout: 10000,             // If API takes more than 10 seconds → stop it
   headers: {
     'Content-Type': 'application/json',   // We send data in JSON format
@@ -13,30 +11,23 @@ const apiClient = axios.create({
 });
 
 
-// ✅ Request Interceptor 
-// 👉 This runs before sending every API call
+
 apiClient.interceptors.request.use(
   async (config) => {
-    // ✅ Check internet connection before calling API
     const isOnline = await checkNetwork();
-
-    // ❌ If no internet → stop the request and return error
     if (!isOnline) {
       return Promise.reject({
         status: null,
         message: "NO_INTERNET",
       });
     }
-
-    // ✅ If everything good, continue request
     return config;
   },
   (error) => Promise.reject(error)
 );
 
 
-// ✅ Response Interceptor
-// 👉 This runs after getting API response
+
 apiClient.interceptors.response.use(
   response => response, // ✅ If response success → return it
   (error) => {

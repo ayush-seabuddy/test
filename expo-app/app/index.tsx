@@ -51,3 +51,4 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   splashOverlay: { position: "absolute", zIndex: 5, top: 0 },
 });
+
