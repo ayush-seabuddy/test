@@ -1,14 +1,11 @@
-import CaptainAnimatedLayout from '@/src/screens/auth/CaptainAnimatedLayout';
+
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 const HelplineScreen = () => {
   return (
     <View style={{flex:1 , justifyContent:"center", alignItems:"center"}}>
-       <CaptainAnimatedLayout>
-        <Text style={{color:"red"}}>I am Rishabh</Text>
-        </CaptainAnimatedLayout>
-      <Text>HelplineScreen</Text>
+     
     </View>
   )
 }

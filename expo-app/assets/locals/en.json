@@ -155,8 +155,8 @@
   "termsandconditions": "Terms and Conditions",
   "login": "Login",
   "forgotPassword": "Forgot Password?",
-  "inputyouremail": "Input your email",
-  "inputpassword": "Input password",
+  "enteryouremail": "Enter your email",
+  "enterpassword": "Enter your password",
   "back": "< Back",
   "termstitle": "SeaBuddy App – Terms and CondiPosttions",
   "lastUpdated": "Last updated: June 6, 2025",
@@ -512,5 +512,9 @@
     "synced":"Synced",
     "offlinedataupdated":"Offline data updated.",
     "goback":"Go Back",
-    "continue":"Continue"
+    "continue":"Continue",
+    "forgotpasswordDescription":"No worries, please enter your registered email address, we’ll send you reset instructions.",
+    "alreadyhaveanaccount":"Already have an account?",
+    "loginNow":"Login Now",
+    "sendresetlink":"Send Reset Link"
 }

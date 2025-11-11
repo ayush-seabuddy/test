@@ -1,66 +1,53 @@
-import AppContainer from '@/src/components/AppContainer';
-import Splash from '@/src/screens/Splash';
-import Colors from '@/src/utils/Colors';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useEffect } from "react";
+import { StatusBar, Platform, StyleSheet, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { I18nextProvider } from "react-i18next";
 import { useRouter } from "expo-router";
-import { Platform, StatusBar, StyleSheet, View } from "react-native";
+import i18next from "i18next";
 
+import AppContainer from "@/src/components/AppContainer";
+import Splash from "@/src/screens/Splash";
+import Colors from "@/src/utils/Colors";
+import { initI18n } from "@/src/localization/i18n";
 
 export default function Index() {
-  const router = useRouter()
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-    },
-    splashOverlay: {
-      position: "absolute",
-      zIndex: 5,
-      top: 0,
-    },
-    logoView: {
-      flex: 1,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 7,
-    },
-    logoImage: {
-      width: 55,
-      height: 55,
-      resizeMode: "contain",
-    },
-    title: {
-      width: 200,
-      height: 100,
-      resizeMode: "contain",
-    },
-  });
+  const router = useRouter();
 
-  // useEffect(()=>{
-  //   setTimeout(()=>{
-  //     router.push("/auth/Login")
-  //   },3000)
+  useEffect(() => {
+    const init = async () => {
+      await initI18n();
 
-  // })
+      setTimeout(() => {
+        router.replace("/auth/Login");
+      }, 2500);
+    };
 
+    init();
+  }, []);
 
   return (
-    <AppContainer>
-      <StatusBar
-        barStyle={Platform.OS === "ios" ? "light-content" : "light-content"}
-        backgroundColor={Colors.white}
-        hidden={false}
-      />
-      <LinearGradient
-        colors={[Colors.white, "#06361F"]} // White and yellow colors
-        style={styles.container}
-        locations={[0.65, 1]} // 65% white, 35% yellow
-      >
-        <View style={styles.splashOverlay}>
-          <Splash />
-        </View>
+    <I18nextProvider i18n={i18next}>
+      <AppContainer>
+        <StatusBar
+          barStyle={Platform.OS === "ios" ? "light-content" : "light-content"}
+          backgroundColor={Colors.white}
+        />
 
-      </LinearGradient>
-    </AppContainer>
+        <LinearGradient
+          colors={[Colors.white, "#06361F"]}
+          style={styles.container}
+          locations={[0.65, 1]}
+        >
+          <View style={styles.splashOverlay}>
+            <Splash />
+          </View>
+        </LinearGradient>
+      </AppContainer>
+    </I18nextProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  splashOverlay: { position: "absolute", zIndex: 5, top: 0 },
+});
