@@ -10,4 +10,6 @@ export const ImagesAssets = {
   unselectedShiplife: require("../../assets/images/unselectedShiplife.png"),
   splashHeadingImage: require("../../assets/images/SplashHeadingImage.png"),
   splashCaptainImage: require("../../assets/images/SplashCaptainImage.png"),
+  sailorsocietyimage: require("../../assets/images/sailorsocietyimage.png"),
+  homePageJollie: require("../../assets/images/JollieImages/homePageJollie.png"),
 };

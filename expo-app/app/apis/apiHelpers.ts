@@ -14,14 +14,14 @@ interface ApiRequestParams {
   headers?: Record<string, string>;
 }
 
-// Define success response type
+
 interface ApiSuccessResponse<T = any> {
   success: true;
   status: number;
   data: T;
 }
 
-// Define error response type
+
 interface ApiErrorResponse {
   success: false;
   status?: number;
@@ -29,19 +29,17 @@ interface ApiErrorResponse {
   data: any | null;
 }
 
-// Union type for API response
+
 type ApiResponse<T = any> = ApiSuccessResponse<T> | ApiErrorResponse;
 
-// ✅ This function will be used to make ANY API request (GET, POST, PUT, DELETE)
 export const apiRequest = async <T = any>({
-  method,
+  method = 'GET',
   url,
   params,
   data,
   headers,
 }: ApiRequestParams): Promise<ApiResponse<T>> => {
   try {
-    // ✅ Send API request using our apiClient
     const response: AxiosResponse<T> = await apiClient({
       method,
       url,
@@ -50,7 +48,6 @@ export const apiRequest = async <T = any>({
       headers,
     } as AxiosRequestConfig);
 
-    // ✅ If API success, return formatted response
     return {
       success: true,
       status: response.status,
@@ -59,7 +56,7 @@ export const apiRequest = async <T = any>({
   } catch (err) {
     const error = err as AxiosError;
 
-    console.error(error);
+    // console.error(error);
 
     return {
       success: false,
