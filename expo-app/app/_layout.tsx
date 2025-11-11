@@ -1,7 +1,10 @@
+import React, { useEffect } from "react";
+import { StatusBar, StyleSheet } from "react-native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
 import { Slot } from "expo-router";
+import Colors from "@/src/utils/Colors";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -24,5 +27,22 @@ export default function RootLayout() {
 
   if (!loaded) return null;
 
-  return <Slot />;
+  return (
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor='#000'
+        />
+        <Slot />
+      </SafeAreaView>
+    </SafeAreaProvider>
+  );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: Colors?.white || "#fff",
+  },
+});

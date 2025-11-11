@@ -9,17 +9,31 @@ import AppContainer from "@/src/components/AppContainer";
 import Splash from "@/src/screens/Splash";
 import Colors from "@/src/utils/Colors";
 import { initI18n } from "@/src/localization/i18n";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { login } from "./apis/authService";
+import CustomStatusBar from "@/src/components/CustomStatusBar";
 
 export default function Index() {
   const router = useRouter();
+
+
+  
 
   useEffect(() => {
     const init = async () => {
       await initI18n();
 
-      setTimeout(() => {
-        router.replace("/auth/Login");
-      }, 2500);
+      // setTimeout(() => {
+      //   router.replace("/auth/Login");
+      // }, 2500);
+       setTimeout(async()=>{
+      // console.log("hello");
+    let data  =await login("rishabhmaurya186@gmail.com","Seekware@123")
+    AsyncStorage.setItem("userDetails", JSON.stringify(data?.data?.result));
+    await AsyncStorage.setItem("authToken", data?.data?.result.authToken);
+      
+      router.replace("/home")
+    },3000)
     };
 
     init();
@@ -28,10 +42,7 @@ export default function Index() {
   return (
     <I18nextProvider i18n={i18next}>
       <AppContainer>
-        <StatusBar
-          barStyle={Platform.OS === "ios" ? "light-content" : "light-content"}
-          backgroundColor={Colors.white}
-        />
+        <CustomStatusBar />
 
         <LinearGradient
           colors={[Colors.white, "#06361F"]}

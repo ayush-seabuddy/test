@@ -12,4 +12,16 @@ export const ImagesAssets = {
   splashCaptainImage: require("../../assets/images/SplashCaptainImage.png"),
   sailorsocietyimage: require("../../assets/images/sailorsocietyimage.png"),
   homePageJollie: require("../../assets/images/JollieImages/homePageJollie.png"),
+
+
+
+  // Home Screen Images
+
+  ChatLogo: require("../../assets/images/Home/Chat.png"),
+  GlobeLogo: require("../../assets/images/Home/Globe.png"),
+  MusicLogo: require("../../assets/images/Home/Music.png"),
+  NotebookLogo: require("../../assets/images/Home/Notebook.png"),
+  ShipAnchorLogo: require("../../assets/images/Home/ShipAnchor.png"),
+  UsersLogo: require("../../assets/images/Home/Users.png"),
+  
 };
