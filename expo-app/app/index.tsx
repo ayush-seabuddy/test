@@ -1,9 +1,9 @@
+import AppContainer from '@/src/components/AppContainer';
+import Splash from '@/src/screens/Splash';
+import Colors from '@/src/utils/Colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from "expo-router";
 import { Platform, StatusBar, StyleSheet, View } from "react-native";
-import AppContainer from "../components/AppContainer";
-import Splash from "../screens/Splash";
-import Colors from "../utils/Colors";
 
 
 export default function Index() {
