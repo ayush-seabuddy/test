@@ -12,4 +12,5 @@ export const ImagesAssets = {
   splashCaptainImage: require("../../assets/images/SplashCaptainImage.png"),
   sailorsocietyimage: require("../../assets/images/sailorsocietyimage.png"),
   homePageJollie: require("../../assets/images/JollieImages/homePageJollie.png"),
+  personalityMapJollie: require("../../assets/images/JollieImages/PersonalityMapJollie.png"),
 };

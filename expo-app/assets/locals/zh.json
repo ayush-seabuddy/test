@@ -524,5 +524,14 @@
   "passwordvalidationerror": "使用 8 个以上字符，包含大写字母、小写字母、数字和符号。",
   "emailverification": "电子邮件验证",
   "wehavesentthecodedescription": "我们已向 {{email}} 发送了验证码",
-  "clickheretoresend": "点击此处重新发送"
+  "clickheretoresend": "点击此处重新发送",
+  "resetPassword": "重置密码",
+  "setnewpassword": "设置新密码！",
+  "mustbeatleast8characters": "必须至少包含 8 个字符",
+  "info_popup_text": "这个快速测试帮助我了解你的思维、感受和连接方式——这样我能更好地指导你。你会发现大多数人一生都不知道的自我认知。相信我——当你了解自己时，生活（和船员生活）会更有意义。",
+  "heading": "好吧，在开始之前，让我们先了解真正驱动你的是什么！",
+  "benefit_1": "发现你的独特特质如何塑造你的思考、感受和工作方式！",
+  "benefit_2": "了解你的个性类型如何影响生活的许多领域。",
+  "benefit_3": "你的回答是私密的，仅用于支持你的健康。",
+  "start_button": "开始吧！"
 }

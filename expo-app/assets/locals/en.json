@@ -525,5 +525,14 @@
     "passwordvalidationerror":"Use 8+ chars with uppercase, lowercase, number & symbol.",
     "emailverification":"Email Verification",
     "wehavesentthecodedescription":"We sent a code to {{email}}",
-    "clickheretoresend":"Click here to resend"
+    "clickheretoresend":"Click here to resend",
+    "resetPassword":"Reset Password",
+    "setnewpassword":"Set New Password!",
+    "mustbeatleast8characters":"Must be at least 8 characters",
+  "info_popup_text": "This quick test helps me understand how you think, feel, and connect — so I can guide you better on board. You’ll learn things about yourself most people go their whole lives not knowing. And trust me — when you do know, life (and crew life) just makes a whole lot more sense.",
+  "heading": "Alright, before we dive in, let's figure out what really drives you!",
+  "benefit_1": "Discover how your unique traits shape the way you think, feel and work!",
+  "benefit_2": "Learn how your personality type influences many areas of your life.",
+  "benefit_3": "Your responses are private and used only to support your well-being.",
+  "start_button": "Let's begin!"
 }

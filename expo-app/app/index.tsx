@@ -18,7 +18,7 @@ export default function Index() {
       await initI18n();
 
       setTimeout(() => {
-        router.replace("/auth/Signup");
+        router.replace("/personalitymap");
       }, 2500);
     };
 
