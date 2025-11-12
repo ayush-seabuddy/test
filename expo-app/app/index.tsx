@@ -10,7 +10,7 @@ import Splash from "@/src/screens/Splash";
 import Colors from "@/src/utils/Colors";
 import { initI18n } from "@/src/localization/i18n";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { login } from "./apis/authService";
+import { login } from "./apis/apiService";
 import CustomStatusBar from "@/src/components/CustomStatusBar";
 
 export default function Index() {
@@ -32,7 +32,7 @@ export default function Index() {
     AsyncStorage.setItem("userDetails", JSON.stringify(data?.data?.result));
     await AsyncStorage.setItem("authToken", data?.data?.result.authToken);
       
-      router.replace("/auth/Signup");
+      router.replace("/home");
     },3000)
     };
 

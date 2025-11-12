@@ -17,4 +17,6 @@ export const BASE_URL = API_URL;
 export const ENDPOINTS = {
   LOGIN: `${BASE_URL}/user/login`,
   REGISTER: `${BASE_URL}/user/register`, // Example
+
+  GetAllSocialPost: `${BASE_URL}/user/getAllHangoutPost`,
 };

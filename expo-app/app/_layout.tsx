@@ -35,13 +35,11 @@ export default function RootLayout() {
           barStyle="dark-content"
           backgroundColor='#000'
         />
-       
-   
-    <KeyboardWrapper>
-      <Slot />
-    </KeyboardWrapper>
+        <KeyboardWrapper>
+          <Slot />
+        </KeyboardWrapper>
       </SafeAreaView>
-     </SafeAreaProvider>
+    </SafeAreaProvider>
   );
 }
 

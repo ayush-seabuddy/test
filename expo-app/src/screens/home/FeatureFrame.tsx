@@ -13,6 +13,7 @@ import { BlurView } from 'expo-blur';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTranslation } from "react-i18next";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { router } from "expo-router";
 
 const { height, width } = Dimensions.get("screen");
 const isProMax = height >= 926;
@@ -89,7 +90,7 @@ const FeatureFrame: React.FC<HelperFrameProps> = ({ onOpenPDF }) => {
             icon: ImagesAssets.GlobeLogo,
             title: t("social"),
             description: t("social_description"),
-            onPress: () => console.log("Social Pressed"),
+            onPress: () => router.push("/(bottomtab)/community/social"),
         },
         {
             icon: ImagesAssets.UsersLogo,

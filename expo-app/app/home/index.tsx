@@ -88,7 +88,7 @@ return (
       </View>
     </View>
 
-    <NotificationPermissionModal />
+    {/* <NotificationPermissionModal /> */}
 
     <PDFModal
       visible={pdfModalVisible}

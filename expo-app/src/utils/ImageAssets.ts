@@ -23,5 +23,17 @@ export const ImagesAssets = {
   NotebookLogo: require("../../assets/images/Home/Notebook.png"),
   ShipAnchorLogo: require("../../assets/images/Home/ShipAnchor.png"),
   UsersLogo: require("../../assets/images/Home/Users.png"),
+
+
+  // Social page Images
+
+  appTitleLogo: require("../../assets/images/Header/appTitle.png"),
+  notificationBell: require("../../assets/images/Header/notificationBell.png"),
+  companyLibraryLogo: require("../../assets/images/Header/companyLibraryLogo.png"),
+  searchLogo: require("../../assets/images/Header/search.png"),
+  // facebookLogo: require("../../assets/images/Social/facebookLogo.png"),
+  // instagramLogo: require("../../assets/images/Social/instagramLogo.png"),
+  // twitterLogo: require("../../assets/images/Social/twitterLogo.png"),
+  // youtubeLogo: require("../../assets/images/Social/youtubeLogo.png"),
   
 };
