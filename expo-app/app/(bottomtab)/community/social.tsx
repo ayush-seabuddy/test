@@ -1,10 +1,9 @@
 // HomeTab.tsx
 import { getAllSocialPost } from '@/app/apis/apiService';
-import SurveyCard from '@/src/components/SurveyCard';
 import PostCard from '@/src/screens/community/PostCard';
 import Colors from '@/src/utils/Colors';
 import React, { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 
 
 

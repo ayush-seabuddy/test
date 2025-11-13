@@ -7,6 +7,7 @@ import {
   Animated,
   Platform,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { Mail, Lock, CheckSquare, Square } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
@@ -15,6 +16,7 @@ import { ImagesAssets } from "@/src/utils/ImageAssets";
 import GlobalButton from "@/src/components/GlobalButton";
 import { router } from "expo-router";
 import GlobalTextInput from "@/src/components/GlobalTextInput";
+import { login } from "../apis/apiService";
 
 const { height } = Dimensions.get("window");
 
@@ -47,15 +49,21 @@ const LoginScreen = () => {
     else setEmailError("");
   };
 
-  const handleLogin = () => {
-    setLoading(true);
-    setTimeout(() => {
-      console.log("Login Request: ", { email, password });
-      setLoading(false);
-    }, 1500);
-  };
-
   const isFormValid = email && validateEmail(email) && password.length >= 8 && termsAccepted;
+
+  const handleLogin = async () => {
+    setLoading(true);
+    const apiResponse = await login(email, password);
+    if (apiResponse.status === 200) {
+      setLoading(false);
+      console.log(apiResponse.data);
+      router.push('/home')
+    } else {
+      setLoading(false);
+      console.log(apiResponse)
+      // Alert.alert("Login Failed", apiResponse|| "Try again");
+    }
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.background }}>
@@ -75,7 +83,6 @@ const LoginScreen = () => {
               <Text style={styles.subtitle}>{t("logintoyouraccount")}</Text>
             </View>
 
-            {/* Email Input */}
             <GlobalTextInput
               placeholder={t("enteryouremail")}
               value={email}
@@ -86,7 +93,6 @@ const LoginScreen = () => {
               error={email && emailError}
             />
 
-            {/* Password Input */}
             <GlobalTextInput
               placeholder={t("enterpassword")}
               value={password}
@@ -96,7 +102,6 @@ const LoginScreen = () => {
               error={password && password.length < 8 ? t("passwordshould8charlong") : ""}
             />
 
-            {/* Terms & Conditions */}
             <View style={styles.termsRow}>
               <TouchableOpacity onPress={() => setTermsAccepted(!termsAccepted)}>
                 {termsAccepted ? (

@@ -48,6 +48,9 @@ export const apiRequest = async <T = any>({
       headers,
     } as AxiosRequestConfig);
 
+    console.log(response ,"DSfdsfjsdkl");
+    
+
     return {
       success: true,
       status: response.status,

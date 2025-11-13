@@ -12,6 +12,7 @@ export const ImagesAssets = {
   splashCaptainImage: require("../../assets/images/SplashCaptainImage.png"),
   sailorsocietyimage: require("../../assets/images/sailorsocietyimage.png"),
   homePageJollie: require("../../assets/images/JollieImages/homePageJollie.png"),
+  personalityMapJollie: require("../../assets/images/JollieImages/PersonalityMapJollie.png"),
 
 
 
@@ -31,9 +32,4 @@ export const ImagesAssets = {
   notificationBell: require("../../assets/images/Header/notificationBell.png"),
   companyLibraryLogo: require("../../assets/images/Header/companyLibraryLogo.png"),
   searchLogo: require("../../assets/images/Header/search.png"),
-  // facebookLogo: require("../../assets/images/Social/facebookLogo.png"),
-  // instagramLogo: require("../../assets/images/Social/instagramLogo.png"),
-  // twitterLogo: require("../../assets/images/Social/twitterLogo.png"),
-  // youtubeLogo: require("../../assets/images/Social/youtubeLogo.png"),
-  
 };

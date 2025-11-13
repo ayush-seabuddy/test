@@ -93,12 +93,14 @@ const Signup = () => {
           <ScrollView showsVerticalScrollIndicator={false}>
             <GlobalTextInput
               value={name}
+               placeholder={t("enteryourname")}
               editable={false}
               leftIcon={<User color="#888" size={20} />}
             />
 
             <GlobalTextInput
               value={email}
+              placeholder={t("enteryouremail")}
               editable={false}
               leftIcon={<Mail color="#888" size={20} />}
             />

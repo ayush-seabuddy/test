@@ -88,10 +88,11 @@ const ForgotPasswordScreen = () => {
 
             {/* Submit Button */}
             <GlobalButton
+
               title={t("sendresetlink")}
               onPress={handleSubmit}
               disabled={!isValid}
-              style={isValid ? styles.activeButton : styles.disabledButton}
+              buttonStyle={{ width: '90%', backgroundColor: isValid ? "#02130B" : "#808080" }}
             />
 
             {/* Login Navigation */}
@@ -148,16 +149,6 @@ const styles = StyleSheet.create({
     marginTop: 13,
     paddingHorizontal: 20,
     textAlign: "center",
-  },
-  activeButton: {
-    backgroundColor: "#02130B",
-    marginHorizontal: 22,
-    marginTop: 30,
-  },
-  disabledButton: {
-    backgroundColor: "#808080",
-    marginHorizontal: 22,
-    marginTop: 30,
   },
   loginLinkContainer: {
     flexDirection: "row",

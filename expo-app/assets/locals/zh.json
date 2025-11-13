@@ -72,6 +72,7 @@
   "myassessments": "我的评估",
   "myassessments_description": "保密且私密的报到服务，旨在帮助您反思、增强韧性，并让海上生活对每个人来说都更安全、更快乐",
   "monthlyhappinessindex": "每月幸福指数",
+  "happinessindex": "幸福指数",
   "monthlyhappinessindex_description": "为全球洞察贡献力量，共同塑造全体海员更美好的未来。",
   "monthlywellbeingpulse": "每月健康脉动",
   "monthlywellbeingpulse_description": "您的每月自我检查",
@@ -524,5 +525,28 @@
   "passwordvalidationerror": "使用 8 个以上字符，包含大写字母、小写字母、数字和符号。",
   "emailverification": "电子邮件验证",
   "wehavesentthecodedescription": "我们已向 {{email}} 发送了验证码",
-  "clickheretoresend": "点击此处重新发送"
+  "clickheretoresend": "点击此处重新发送",
+  "resetPassword": "重置密码",
+  "setnewpassword": "设置新密码！",
+  "mustbeatleast8characters": "必须至少包含 8 个字符",
+  "info_popup_text": "这个快速测试帮助我了解你的思维、感受和连接方式——这样我能更好地指导你。你会发现大多数人一生都不知道的自我认知。相信我——当你了解自己时，生活（和船员生活）会更有意义。",
+  "heading": "好吧，在开始之前，让我们先了解真正驱动你的是什么！",
+  "benefit_1": "发现你的独特特质如何塑造你的思考、感受和工作方式！",
+  "benefit_2": "了解你的个性类型如何影响生活的许多领域。",
+  "benefit_3": "你的回答是私密的，仅用于支持你的健康。",
+  "start_button": "开始吧！",
+  "happinessindexdescription": "基于行业标准的海员幸福指数",
+  "survey": {
+    "intro": "这份简短的调查将帮助我们了解你在海上工作、人际关系、休息和社交方面的感受。你的反馈将用于改进支持、系统和船上文化，为你的真实需求量身定制。",
+    "anonymous": "🔹 匿名且保密：你的回答仅用于改善，不会用于评估",
+    "impactful": "🔹 有影响力：真实的反馈会带来实际改变"
+  },
+  "undertenminutes": "⏰ 10分钟以内",
+  "happinessindexdisclaimer": "* 本次调查为私人调查，严格保密，仅用于支持船员福祉，不用于绩效考核或雇佣决定。",
+  "happinessindexunder10min": "⏰ 10 分钟 · 行业标准",
+  "happinessindexmessage": "立即填写海员幸福指数，为塑造所有海员更美好未来的全球洞察做出贡献。",
+  "startSurvey": "开始调查",
+  "personalitymapdesc": "这张性格地图可以帮助你了解你独特的性格特征、行为方式和思维模式。",
+  "mandatorydesc": "性格测评现已成为必考项目。该测评并非用于分析候选人性格或影响其就业能力。",
+  "mandatoryindays": "性格测评将在${{diffDays}}天内成为强制性测试。此测试并非用于分析候选人性格或影响其就业能力。"
 }

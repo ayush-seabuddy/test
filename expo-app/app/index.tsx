@@ -1,17 +1,17 @@
-import { useEffect } from "react";
-import { StatusBar, Platform, StyleSheet, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { I18nextProvider } from "react-i18next";
 import { useRouter } from "expo-router";
 import i18next from "i18next";
+import { useEffect } from "react";
+import { I18nextProvider } from "react-i18next";
+import { StyleSheet, View } from "react-native";
 
 import AppContainer from "@/src/components/AppContainer";
+import CustomStatusBar from "@/src/components/CustomStatusBar";
+import { initI18n } from "@/src/localization/i18n";
 import Splash from "@/src/screens/Splash";
 import Colors from "@/src/utils/Colors";
-import { initI18n } from "@/src/localization/i18n";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { login } from "./apis/apiService";
-import CustomStatusBar from "@/src/components/CustomStatusBar";
 
 export default function Index() {
   const router = useRouter();

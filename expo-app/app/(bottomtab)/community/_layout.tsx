@@ -1,39 +1,11 @@
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import { Tabs } from "expo-router";
-import Colors from "@/src/utils/Colors";
 import SocialHeader from "@/src/screens/community/SocialHeader";
+import Colors from "@/src/utils/Colors";
+import { Tabs } from "expo-router";
+import React from "react";
+import { Text, TouchableOpacity, View } from "react-native";
 
 export default function CommunityLayout() {
   const unreadCount = 5;
-
-  // ✅ Custom header component
-  const Header = () => (
-    <View
-      style={{
-        backgroundColor: Colors.lightGreen,
-        paddingVertical: 15,
-        paddingHorizontal: 20,
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-      }}
-    >
-      <Text
-        style={{
-          color: "#fff",
-          fontSize: 20,
-          fontWeight: "700",
-        }}
-      >
-        Community
-      </Text>
-
-      <TouchableOpacity>
-        <Text style={{ color: "#fff", fontWeight: "600" }}>☰</Text>
-      </TouchableOpacity>
-    </View>
-  );
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.white }}>
