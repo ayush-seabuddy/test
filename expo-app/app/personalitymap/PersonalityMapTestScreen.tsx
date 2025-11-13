@@ -1,153 +1,195 @@
-import React, { useState } from "react";
-import {
-  View,
-  Image,
-  Text,
-  StyleSheet,
-  Dimensions,
-  Platform,
-  TouchableOpacity,
-} from "react-native";
-import Colors from "@/src/utils/Colors";
-import { ImagesAssets } from "@/src/utils/ImageAssets";
-import { useRouter } from "expo-router";
-import { useTranslation } from "react-i18next";
-import GlobalButton from "@/src/components/GlobalButton";
-import { Info } from "lucide-react-native";
+import { StyleSheet, Text, View, Pressable } from 'react-native';
+import React from 'react';
+import Colors from '@/src/utils/Colors';
+import * as Progress from 'react-native-progress';
+import { useTranslation } from 'react-i18next';
+import { ChevronRight } from 'lucide-react-native';
 
-
-
-const { width, height } = Dimensions.get("window");
-
-const PersonalityMapIntroScreen = () => {
-  const router = useRouter();
+const PersonalityMapTestScreen = () => {
   const { t } = useTranslation();
-  const [modalVisible, setModalVisible] = useState(false);
+  const [selected, setSelected] = React.useState<number | null>(null);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{t("personality_map")}</Text>
-
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Info size={22} color={Colors.textPrimary} />
-        </TouchableOpacity>
-      </View>
-
-      <Image
-        style={styles.heroImage}
-        resizeMode="contain"
-        source={ImagesAssets.personalityMapJollie}
-      />
-
-      <View style={styles.overlay} />
-
-      <View style={styles.content}>
-        <Text style={styles.heading}>{t("heading")}</Text>
-
-        <View style={styles.benefitCard}>
-          <Text style={styles.benefitText}>{t("benefit_1")}</Text>
-        </View>
-        <View style={styles.benefitCard}>
-          <Text style={styles.benefitText}>{t("benefit_2")}</Text>
-        </View>
-        <View style={styles.benefitCard}>
-          <Text style={styles.benefitText}>{t("benefit_3")}</Text>
+    <View style={styles.main}>
+      <View style={styles.outerView}>
+        <View style={styles.innerView}>
+          <Text style={styles.personalitymaptext}>{t('personalitymap')}</Text>
+          <View style={styles.skipView}>
+            <Text style={styles.skip}>{t('skip')}</Text>
+            <ChevronRight size={20} color={Colors.textSecondary} />
+          </View>
         </View>
 
-        <GlobalButton
-          title={t("start_button")}
-          onPress={() =>
-          {
-            
-          }
-          }
-          buttonStyle={styles.customButton}
-          textStyle={styles.customButtonText}
+        <Text style={styles.personalitymapdesc}>{t('personalitymapdesc')}</Text>
+
+        <Progress.Bar
+          progress={0.6}
+          color={"rgba(132, 164, 2, 1)"}
+          height={7}
+          unfilledColor={Colors.iconColor}
+          borderWidth={0}
+          width={null}
+          style={styles.progressbar}
         />
+
+        <Text style={styles.progresspercentage}>80%</Text>
+        <Text style={styles.mandatoryText}>{t('mandatorydesc')}</Text>
       </View>
 
-      {/* Info Popup */}
-      {/* <PersonalityResultInfoPopup
-        visible={modalVisible}
-        setModalVisible={setModalVisible}
-        text={t("info_popup_text")}
-      /> */}
+      <View style={styles.testView}>
+        <View style={styles.centerline} />
+        <Text style={styles.totalquestions}>3/5</Text>
+
+        <View style={styles.questionContainer}>
+          <Text style={styles.questionText}>
+            Love To Read Challenging Material
+          </Text>
+
+          {/* Radio Buttons */}
+          <View style={styles.radioRow}>
+            {[0, 1, 2, 3, 4].map((item) => (
+              <Pressable
+                key={item}
+                style={[
+                  styles.radioOuter,
+                  selected === item && styles.radioOuterActive,
+                ]}
+                onPress={() => setSelected(item)}
+              >
+                {selected === item && <View style={styles.radioInner} />}
+              </Pressable>
+            ))}
+          </View>
+
+          {/* Labels under first & last */}
+          <View style={styles.radioLabelRow}>
+            <Text style={styles.radioLabelText}>Disaggree</Text>
+            <Text style={styles.radioLabelText}>Agree</Text>
+          </View>
+        </View>
+
+      </View>
     </View>
   );
 };
 
+export default PersonalityMapTestScreen;
+
 const styles = StyleSheet.create({
-  container: {
+  main: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: Colors.captainanimatedlayoutbg,
   },
-  header: {
-    position: "absolute",
-    top: height * 0.06,
-    left: 20,
-    right: 20,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    zIndex: 10,
+  outerView: {
+    margin: 16,
+    gap: 10,
   },
-  title: {
+  innerView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  personalitymaptext: {
     fontSize: 20,
+    lineHeight: 22,
+    color: "#161616",
     fontFamily: "WhyteInktrap-Bold",
-    color: Colors.textPrimary,
   },
-  heroImage: {
-    position: "absolute",
-    top: height * 0.1,
-    left: width * 0.15,
-    width: width * 0.7,
-    height: height * 0.4,
+  personalitymapdesc: {
+    fontFamily: 'Poppins-Regular',
+    fontSize: 12,
+    color: 'black',
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    top: height * 0.45,
-    backgroundColor: "rgba(0, 0, 0, 0.77)",
-    borderTopLeftRadius: 48,
-    borderTopRightRadius: 48,
+  skip: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    fontFamily: "Poppins-Regular",
   },
-  content: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: width * 0.05,
-    paddingBottom: height * 0.05,
+  skipView: {
+    flexDirection: 'row',
+    gap: 5,
   },
-  heading: {
-    fontSize: 15,
-    fontFamily: "Poppins-SemiBold",
-    color: Colors.white,
-    textAlign: "center",
-    marginBottom: height * 0.03,
+  progressbar: {
+    marginTop: 10,
   },
-  benefitCard: {
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
-    padding: height * 0.02,
-    borderRadius: 16,
-    marginBottom: height * 0.015,
-  },
-  benefitText: {
+  progresspercentage: {
+    marginTop: 5,
+    textAlign: 'right',
+    color: "#161616",
     fontSize: 14,
     fontFamily: "Poppins-Regular",
-    color: Colors.white,
-    textAlign: "center",
   },
-  customButton: {
-    backgroundColor: Colors.buttonWhiteBg,
-    height: 50,
-    marginTop: height * 0.02,
+  mandatoryText: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 12,
+    color: "#808080",
   },
-  customButtonText: {
-    color: Colors.buttonWhiteText,
-    fontFamily: "Poppins-SemiBold",
+  testView: {
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    height: 500,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+  },
+  centerline: {
+    height: 3,
+    width: '28%',
+    backgroundColor: '#FFFFFF66',
+    alignSelf: 'center',
+    marginTop: 5,
+    borderRadius: 10,
+  },
+  totalquestions: {
+    textAlign: 'right',
+    color: '#fff',
     fontSize: 14,
+    marginRight: 20,
+    marginTop: 16,
+    fontFamily: 'WhyteInktrap-Medium',
+  },
+  questionContainer: {
+    margin: 16,
+    borderRadius: 20,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    padding: 24,
+  },
+  questionText: {
+    lineHeight: 19,
+    fontSize: 16,
+    textAlign: "left",
+    color: "#fff",
+    fontFamily: "WhyteInktrap-Bold",
+    textTransform: "capitalize",
+  },
+  radioRow: {
+    flexDirection: 'row',
+    justifyContent: "space-between",
+    marginVertical: 10,
+    // marginHorizontal:10,
+  },
+  radioOuter: {
+    width: 24,
+    height: 24,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: "#888",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  radioOuterActive: {
+    borderColor: "#84A402",
+  },
+  radioInner: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: "#84A402",
+  },
+  radioLabelRow: {
+    flexDirection: 'row',
+    justifyContent: "space-between",
+  },
+  radioLabelText: {
+    fontSize: 12,
+    color: "#fff",
+    fontFamily: "Poppins-Regular",
   },
 });
-
-export default PersonalityMapIntroScreen;

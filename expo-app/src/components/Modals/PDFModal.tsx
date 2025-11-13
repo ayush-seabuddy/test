@@ -9,10 +9,8 @@ import {
   Platform,
   Modal
 } from "react-native";
-// import Ionicons from "react-native-vector-icons/Ionicons";
-// import { FileText } from 'lucide-react-native';
+import { ChevronLeft, FileText } from 'lucide-react-native';
 import { useNavigation } from "@react-navigation/native";
-// import Pdf from "react-native-pdf";
 import { WebView } from "react-native-webview";
 
 const { height, width } = Dimensions.get("window");
@@ -44,7 +42,7 @@ const PDFModal:React.FC<PDFModalProps> = ({
     margin: 0,
   };
 
-  // WebView fallback source
+
   const webViewSource = {
     uri: `https://docs.google.com/viewer?url=${encodeURIComponent(
       pdfUrl
@@ -70,38 +68,14 @@ const PDFModal:React.FC<PDFModalProps> = ({
       <View style={styles.pdfModalContainer}>
         {pdfUrl ? (
           <>
-            {/* Header */}
             <View style={styles.headerContainer}>
               <TouchableOpacity onPress={handleBackPress} style={styles.headerButton}>
-                {/* <Ionicons name="arrow-back-outline" size={20} color="#808080" /> */}
-                {/* <FileText  size={48} /> */}
-                <Text style={{}}>Back</Text>
+                <ChevronLeft  size={20} />
               </TouchableOpacity>
               <Text style={styles.headerText}>{title}</Text>
               <View style={styles.headerButton} />
             </View>
 
-            {/* PDF Viewer */}
-            {/* {!useWebView ? (
-              <Pdf
-                source={
-                  useLocal
-                    ? Platform.OS === "android"
-                      ? { uri: `file:///android_asset/${pdfUrl}`, cache: true }
-                      : { uri: pdfUrl, cache: true }
-                    : { uri: pdfUrl, cache: true }
-                }
-                style={styles.pdfView}
-                onLoadComplete={(pages) =>
-                  console.log(`PDF loaded with ${pages} pages`)
-                }
-                onError={(error) => {
-                  console.warn("PDF load error:", error);
-                  setUseWebView(true); // fallback to WebView
-                }}
-                // activityIndicator={<ActivityIndicator size="large" color="#007AFF" />}
-              />
-            ) : ( */}
               <WebView
                 source={webViewSource}
                 style={styles.webView}
@@ -124,7 +98,6 @@ const PDFModal:React.FC<PDFModalProps> = ({
                   </View>
                 )}
               />
-            {/* )} */}
           </>
         ) : (
           <View style={styles.loadingContainer}>
@@ -157,7 +130,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingVertical: Platform.OS === "ios" ? 50 : 30,
+    paddingVertical: Platform.OS === "ios" ? 30 : 10,
     backgroundColor: "white",
   },
   headerButton: {
