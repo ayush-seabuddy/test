@@ -1,26 +1,56 @@
+// HomeTab.tsx
+import { getAllSocialPost } from '@/app/apis/apiService';
+import SurveyCard from '@/src/components/SurveyCard';
+import PostCard from '@/src/screens/community/PostCard';
+import Colors from '@/src/utils/Colors';
+import React, { useEffect, useState } from 'react';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 
-import { getAllSocialPost } from '@/app/apis/apiService'
-import Colors from '@/src/utils/Colors'
-import React, { useEffect } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+
 
 const HomeTab = () => {
 
-  useEffect(() => {
-   let getData = async () => {
-      let postData = await getAllSocialPost({page:6 , limit:1})
-    }
-    getData()
-    
-  }, [])
-  return (
-    <View style={{flex:1 , justifyContent:"center", alignItems:"center" , backgroundColor:Colors.white}}>
-        <Text>socialpost</Text>
-        
-    </View>
-  )
+  const [postData , setPostData] = useState([])
+  console.log("postData: ", postData);
+
+
+useEffect(() => {
+ async function getData() {
+  let data  = await getAllSocialPost({limit:3 , page :2})
+  console.log("data: ", data);
+  if(data?.data?.result){
+    setPostData(data?.data?.result?.hangoutsList)
+  }
 }
+  getData()
+},[])
+  const renderItem = ({ item , index }: { item: any , index : number}) => (
+    <PostCard item={item} index={index}
+    />
+  );
 
-export default HomeTab
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={postData}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+      />
+    </View>
+  );
+};
 
-const styles = StyleSheet.create({})
+export default HomeTab;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.white,
+  },
+  listContent: {
+    padding: 16,
+    paddingBottom: 20,
+  },
+});
