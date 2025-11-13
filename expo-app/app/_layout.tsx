@@ -4,6 +4,7 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { Slot } from "expo-router";
+import Toast from "react-native-toast-message";
 import Colors from "@/src/utils/Colors";
 import KeyboardWrapper from "../src/components/KeyboardWrapper";
 
@@ -30,14 +31,10 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-        <StatusBar
-          barStyle="dark-content"
-          backgroundColor='#000'
-        />
-        <KeyboardWrapper>
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        <StatusBar barStyle="dark-content" backgroundColor="#000" />
           <Slot />
-        </KeyboardWrapper>
+        <Toast />
       </SafeAreaView>
     </SafeAreaProvider>
   );

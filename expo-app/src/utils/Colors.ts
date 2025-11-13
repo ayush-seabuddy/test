@@ -1,5 +1,5 @@
 const Colors = {
-  lightGreen: '#B0DB02',
+  lightGreen: "#B0DB02",
   darkGreen: "#06361F",
   captainanimatedlayoutbg: "#CCCCCC",
   white: "#FFFFFF",
@@ -21,6 +21,9 @@ const Colors = {
   blueLink: "blue",
   buttonWhiteBg: "#FFFFFF",
   buttonWhiteText: "#06361F",
+  black: "#000000",
+  grayDark: "#4B5563",
+  success: "#22c55e",
 };
 
 export default Colors;

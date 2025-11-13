@@ -93,7 +93,7 @@ const Signup = () => {
           <ScrollView showsVerticalScrollIndicator={false}>
             <GlobalTextInput
               value={name}
-               placeholder={t("enteryourname")}
+              placeholder={t("enteryourname")}
               editable={false}
               leftIcon={<User color="#888" size={20} />}
             />
@@ -208,7 +208,7 @@ const Signup = () => {
 
             <View style={styles.loginRow}>
               <Text style={styles.loginText}>{t("alreadyhaveanaccount")}</Text>
-              <TouchableOpacity onPress={() => router.push("/auth/Login")}>
+              <TouchableOpacity onPress={() => router.replace("/auth/Login")}>
                 <Text style={styles.loginLink}>{t("loginNow")}</Text>
               </TouchableOpacity>
             </View>

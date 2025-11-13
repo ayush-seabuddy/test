@@ -125,6 +125,7 @@ export default function CommunityLayout() {
                   )}
           </View>
         )}
+        
       >
         {/* ✅ Each screen content below the custom header + tabs */}
         <Tabs.Screen

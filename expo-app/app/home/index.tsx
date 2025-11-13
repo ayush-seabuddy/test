@@ -31,8 +31,8 @@ const Home = ({ }) => {
 
   const getLogo = async () => {
     try {
-      const dbResult = await AsyncStorage.getItem("userDetails");
-      const userDetails = JSON.parse(dbResult ?? "");
+      const storedData = await AsyncStorage.getItem("userDetails");
+      const userDetails = JSON.parse(storedData ?? "");
       if (userDetails.companyLogo) setCompanyLogo(userDetails.companyLogo);
     } catch (error) {
       console.error("Error fetching logo:", error);
@@ -70,11 +70,10 @@ const Home = ({ }) => {
 
 return (
   <View style={styles.container}>
-    <CustomStatusBar />
     <HeaderBanner companyLogo={companyLogo} isProMax={isProMax} />
     <View style={styles.contentContainer}>
       <View style={styles.backgroundOverlay}>
-        <CustomLottie />
+        <CustomLottie isBlurView={false} />
       </View>
 
       <ExitAppModal

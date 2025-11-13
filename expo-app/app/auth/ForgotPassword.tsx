@@ -17,12 +17,16 @@ import { ImagesAssets } from "@/src/utils/ImageAssets";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import Colors from "@/src/utils/Colors";
+import { forgotpassword } from "../apis/apiService";
+import { showToast } from "@/src/components/GlobalToast";
+import KeyboardWrapper from "@/src/components/KeyboardWrapper";
 
 const { width, height } = Dimensions.get("window");
 
 const ForgotPasswordScreen = () => {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [loading, setloading] = useState(false);
   const { t } = useTranslation();
   const router = useRouter();
   const translateY = useRef(new Animated.Value(height)).current;
@@ -49,63 +53,93 @@ const ForgotPasswordScreen = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateEmail(email)) return;
-    console.log("Send Reset Link To:", email);
-    // Here call API if needed
+    setloading(true);
+    try {
+      const apiResponse = await forgotpassword(email);
+      setloading(false);
+      if (apiResponse.success && apiResponse.status === 200) {
+        showToast.success(
+          t('success'),
+          apiResponse.message,
+        )
+        router.push({
+          pathname: '/auth/OTPVerification',
+          params: { email },
+        });
+      }
+      else {
+        showToast.error(
+          t('oops'),
+          apiResponse.message,
+        )
+      }
+    }
+    catch (error) {
+      setloading(false);
+      showToast.error(
+        t('error'),
+        t('somethingwentwrong')
+      );
+    }
+
   };
 
   const isValid = email && validateEmail(email);
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.container}>
-        {/* Logo */}
-        <Animated.Image
-          source={ImagesAssets.splashCaptainImage}
-          style={[styles.logo, { transform: [{ translateY: translateY }] }]}
-        />
+    <KeyboardWrapper>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          {/* Logo */}
+          <Animated.Image
+            source={ImagesAssets.splashCaptainImage}
+            style={[styles.logo, { transform: [{ translateY: translateY }] }]}
+          />
 
-        {/* Bottom Card */}
-        <View style={styles.formCard}>
-          <View style={styles.formContent}>
-            <Text style={styles.title}>{t("forgotPassword")}</Text>
-            <Text style={styles.subtitle}>
-              {t("forgotpasswordDescription")}
-            </Text>
+          {/* Bottom Card */}
+          <View style={styles.formCard}>
+            <View style={styles.formContent}>
+              <Text style={styles.title}>{t("forgotPassword")}</Text>
+              <Text style={styles.subtitle}>
+                {t("forgotpasswordDescription")}
+              </Text>
 
-            {/* Email Input */}
-            <GlobalTextInput
-              placeholder={t("enteryouremail")}
-              value={email}
-              onChangeText={handleEmailChange}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              containerStyle={{ width: '90%', marginTop: 30 }}
-              leftIcon={<Mail size={20} color={Colors.iconMuted} />}
-              error={email && emailError}
-            />
+              {/* Email Input */}
+              <GlobalTextInput
+                placeholder={t("enteryouremail")}
+                value={email}
+                onChangeText={handleEmailChange}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                containerStyle={{ width: '90%', marginTop: 30 }}
+                leftIcon={<Mail size={20} color={Colors.iconMuted} />}
+                error={email && emailError}
+              />
 
-            {/* Submit Button */}
-            <GlobalButton
+              {/* Submit Button */}
+              <GlobalButton
+                title={t("sendresetlink")}
+                onPress={handleSubmit}
+                disabled={!isValid}
+                loading={loading}
+                buttonStyle={{ width: '90%', backgroundColor: isValid ? "#02130B" : "#808080" }}
+              />
 
-              title={t("sendresetlink")}
-              onPress={handleSubmit}
-              disabled={!isValid}
-              buttonStyle={{ width: '90%', backgroundColor: isValid ? "#02130B" : "#808080" }}
-            />
-
-            {/* Login Navigation */}
-            <View style={styles.loginLinkContainer}>
-              <Text style={styles.loginText}>{t("alreadyhaveanaccount")}</Text>
-              <TouchableOpacity onPress={() => router.back()}>
-                <Text style={styles.loginLink}>{t("loginNow")}</Text>
-              </TouchableOpacity>
+              {/* Login Navigation */}
+              <View style={styles.loginLinkContainer}>
+                <Text style={styles.loginText}>{t("alreadyhaveanaccount")}</Text>
+                <TouchableOpacity onPress={() => router.back()}>
+                  <Text style={styles.loginLink}>{t("loginNow")}</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </TouchableWithoutFeedback>
+      </TouchableWithoutFeedback>
+    </KeyboardWrapper>
+
   );
 };
 

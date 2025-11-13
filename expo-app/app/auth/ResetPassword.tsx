@@ -12,19 +12,23 @@ import {
 } from "react-native";
 import { Lock } from "lucide-react-native";
 import CustomLottie from "@/src/components/CustomLottie";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import Colors from "@/src/utils/Colors";
 import { useTranslation } from "react-i18next";
 import GlobalButton from "@/src/components/GlobalButton";
 import GlobalTextInput from "@/src/components/GlobalTextInput";
+import KeyboardWrapper from "@/src/components/KeyboardWrapper";
+import { resetpassword } from "../apis/apiService";
+import { showToast } from "@/src/components/GlobalToast";
 
-const { width, height } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 
 const ResetPassword = () => {
+  const { email } = useLocalSearchParams<{ email: string }>();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const translateY = useRef(new Animated.Value(height)).current;
   const { t } = useTranslation();
@@ -37,88 +41,101 @@ const ResetPassword = () => {
     }).start();
   }, []);
 
-  // Password validation
-  const isValidPassword = (pwd: string): boolean => {
-    return (
-      pwd.length >= 8 &&
-      /[A-Z]/.test(pwd) &&
-      /[a-z]/.test(pwd) &&
-      /\d/.test(pwd) &&
-      /[@$!%*?&]/.test(pwd)
-    );
-  };
+  const isValidPassword = (pwd: string) =>
+    pwd.length >= 8 &&
+    /[A-Z]/.test(pwd) &&
+    /[a-z]/.test(pwd) &&
+    /\d/.test(pwd) &&
+    /[@$!%*?&]/.test(pwd);
 
   const passwordError =
-    password.length > 0 && !isValidPassword(password)
+    password && !isValidPassword(password)
       ? t("passwordvalidationerror")
       : undefined;
 
   const confirmPasswordError =
-    confirmPassword.length > 0 && confirmPassword !== password
+    confirmPassword && confirmPassword !== password
       ? t("passwords_do_not_match")
       : undefined;
 
-  const isFormValid = isValidPassword(password) && password === confirmPassword && password.length > 0;
+  const isFormValid =
+    isValidPassword(password) && password === confirmPassword;
+
+  const handleResetPassword = async () => {
+    if (!isFormValid) return;
+    setLoading(true);
+    try {
+      const apiResponse = await resetpassword(email, password);
+      setLoading(false);
+      if (apiResponse.success && apiResponse.status === 200) {
+        showToast.success(t('success'), apiResponse.message);
+        router.replace("/auth/Login");
+      } else {
+        showToast.error(t('oops'), apiResponse.message);
+      }
+    } catch {
+      setLoading(false);
+      showToast.error(t("error"), t("somethingwentwrong"));
+    }
+  };
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.container}>
-        <CustomLottie isBlurView={false} componetHeight={height * 0.78} />
-        <View style={styles.topOverlay} />
-
-        <Animated.Image
-          source={ImagesAssets.splashCaptainImage}
-          style={[styles.logo, { transform: [{ translateY }] }]}
-        />
-
-        <View style={styles.bottomCard}>
-          <View style={styles.content}>
-            <Text style={styles.title}>{t("setnewpassword")}</Text>
-            <Text style={styles.subtitle}>{t("mustbeatleast8characters")}</Text>
-
-            <GlobalTextInput
-              placeholder={t("enterpassword")}
-              value={password}
-              onChangeText={setPassword}
-              secure
-              leftIcon={<Lock size={24} color={Colors.iconColor} />}
-              error={passwordError}
-              inputWrapperStyle={styles.inputWrapperStyle}
-              inputStyle={styles.globalInputText}
-              errorStyle={styles.globalErrorText}
-            />
-
-            <GlobalTextInput
-              placeholder={t("confirmPassword")}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secure
-              leftIcon={<Lock size={24} color={Colors.iconColor} />}
-              error={confirmPasswordError}
-              inputWrapperStyle={styles.inputWrapperStyle}
-              inputStyle={styles.globalInputText}
-              errorStyle={styles.globalErrorText}
-            />
-
-            <GlobalButton
-              title={t("resetPassword")}
-              buttonStyle={{
-                width: "100%",
-                backgroundColor: isFormValid ? "#02130B" : "#808080",
-                marginTop: 20,
-              }}
-            />
-
-            <View style={styles.loginLink}>
-              <Text style={styles.loginText}>{t("alreadyhaveanaccount")}</Text>
-              <TouchableOpacity onPress={() => router.push("/auth/Login")}>
-                <Text style={styles.loginLinkText}> {t("loginNow")}</Text>
-              </TouchableOpacity>
+    <KeyboardWrapper>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
+          <CustomLottie isBlurView={false} componetHeight={height * 0.78} />
+          <View style={styles.topOverlay} />
+          <Animated.Image
+            source={ImagesAssets.splashCaptainImage}
+            style={[styles.logo, { transform: [{ translateY }] }]}
+          />
+          <View style={styles.bottomCard}>
+            <View style={styles.content}>
+              <Text style={styles.title}>{t("setnewpassword")}</Text>
+              <Text style={styles.subtitle}>{t("mustbeatleast8characters")}</Text>
+              <GlobalTextInput
+                placeholder={t("enterpassword")}
+                value={password}
+                onChangeText={setPassword}
+                secure
+                leftIcon={<Lock size={24} color={Colors.iconColor} />}
+                error={passwordError}
+                inputWrapperStyle={styles.inputWrapperStyle}
+                inputStyle={styles.globalInputText}
+                errorStyle={styles.globalErrorText}
+              />
+              <GlobalTextInput
+                placeholder={t("confirmPassword")}
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secure
+                leftIcon={<Lock size={24} color={Colors.iconColor} />}
+                error={confirmPasswordError}
+                inputWrapperStyle={styles.inputWrapperStyle}
+                inputStyle={styles.globalInputText}
+                errorStyle={styles.globalErrorText}
+              />
+              <GlobalButton
+                title={t("resetPassword")}
+                onPress={handleResetPassword}
+                loading={loading}
+                buttonStyle={{
+                  width: "100%",
+                  backgroundColor: isFormValid ? "#02130B" : "#808080",
+                  marginTop: 20,
+                }}
+              />
+              <View style={styles.loginLink}>
+                <Text style={styles.loginText}>{t("alreadyhaveanaccount")}</Text>
+                <TouchableOpacity onPress={() => router.push("/auth/Login")}>
+                  <Text style={styles.loginLinkText}> {t("loginNow")}</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </TouchableWithoutFeedback>
+      </TouchableWithoutFeedback>
+    </KeyboardWrapper>
   );
 };
 
@@ -133,7 +150,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.8)",
     borderRadius: 10,
     height: 50,
-    paddingHorizontal: 16
+    paddingHorizontal: 16,
   },
   globalInputText: {
     fontSize: 15,
@@ -149,7 +166,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: height * 0.50,
+    height: height * 0.5,
     backgroundColor: Colors.captainanimatedlayoutbg,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
@@ -173,7 +190,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   content: {
-    marginTop: 30,
+    marginTop: 20,
     paddingHorizontal: 30,
   },
   title: {
@@ -188,37 +205,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.textPrimary,
     textAlign: "center",
-    marginVertical:14,
-  },
-  inputWrapper: {
-    marginTop: 15,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
-    width: "100%",
-    borderRadius: 10,
-    height: 50,
-  },
-  iconLeft: {
-    marginLeft: 15,
-    marginRight: 10,
-  },
-  iconRight: {
-    marginRight: 15,
-  },
-  textInput: {
-    flex: 1,
-    color: "#000",
-    fontFamily: "Poppins-Regular",
-    fontSize: 15,
-  },
-  errorText: {
-    color: "#F44336",
-    fontSize: 12,
-    fontFamily: "Poppins-Regular",
-   marginTop: 5,
+    marginVertical: 10,
   },
   loginLink: {
     flexDirection: "row",
