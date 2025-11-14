@@ -47,8 +47,6 @@ export const apiRequest = async <T = any>({
       data,
       headers,
     } as AxiosRequestConfig);
-
-    console.log(response ,"DSfdsfjsdkl");
     
 
     return {

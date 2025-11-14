@@ -10,13 +10,13 @@ import { FlatList, StyleSheet, View } from 'react-native';
 const HomeTab = () => {
 
   const [postData , setPostData] = useState([])
-  console.log("postData: ", postData);
+
 
 
 useEffect(() => {
  async function getData() {
   let data  = await getAllSocialPost({limit:3 , page :2})
-  console.log("data: ", data);
+  console.log("data: ", JSON.stringify(data?.data?.result?.hangoutsList[0]));
   if(data?.data?.result){
     setPostData(data?.data?.result?.hangoutsList)
   }

@@ -6,6 +6,9 @@ import * as SplashScreen from "expo-splash-screen";
 import { Slot } from "expo-router";
 import Colors from "@/src/utils/Colors";
 import KeyboardWrapper from "../src/components/KeyboardWrapper";
+import { PaperProvider } from "react-native-paper";
+import { I18nextProvider } from "react-i18next";
+import i18next from "i18next";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -36,7 +39,11 @@ export default function RootLayout() {
           backgroundColor='#000'
         />
         <KeyboardWrapper>
+          <PaperProvider>
+            <I18nextProvider i18n={i18next}>
           <Slot />
+          </I18nextProvider>
+          </PaperProvider>
         </KeyboardWrapper>
       </SafeAreaView>
     </SafeAreaProvider>

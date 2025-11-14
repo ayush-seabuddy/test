@@ -28,9 +28,14 @@ export default function Index() {
       // }, 2500);
        setTimeout(async()=>{
       // console.log("hello");
-    let data  =await login("rishabhmaurya186@gmail.com","Seekware@123")
+    let data  =await login("harsh@mailsac.com","Seekware@12")
+    if(data?.data?.result){
     AsyncStorage.setItem("userDetails", JSON.stringify(data?.data?.result));
-    await AsyncStorage.setItem("authToken", data?.data?.result.authToken);
+    AsyncStorage.setItem("authToken", data?.data?.result.authToken);
+    AsyncStorage.setItem("userId", data?.data?.result.id);
+    }
+
+
       
       router.replace("/home");
     },3000)
