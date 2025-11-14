@@ -57,7 +57,7 @@ const ForgotPasswordScreen = () => {
     if (!validateEmail(email)) return;
     setloading(true);
     try {
-      const apiResponse = await forgotpassword(email);
+      const apiResponse = await forgotpassword({email});
       setloading(false);
       if (apiResponse.success && apiResponse.status === 200) {
         showToast.success(

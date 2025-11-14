@@ -133,7 +133,7 @@ const OnboardingScreens = () => {
             setCurrentIndex((prevIndex) => prevIndex + 1);
         } else {
             await AsyncStorage.setItem("completedOnboarding", "true");
-            router.push("/auth/UpdateProfile");
+            router.push("/auth/UpdateProfilePhoto");
         }
     };
 
@@ -151,7 +151,7 @@ const OnboardingScreens = () => {
                     style={styles.skipButton}
                     onPress={async () => {
                         await AsyncStorage.setItem("completedOnboarding", "true");
-                        router.push("/auth/UpdateProfile");
+                        router.push("/auth/UpdateProfilePhoto");
                     }}
                 >
                     <Text style={styles.skipText}>{t("common.skip")}</Text>

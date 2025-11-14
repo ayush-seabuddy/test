@@ -1,325 +1,462 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-  Dimensions,
-  Alert,
-  FlatList,
-  Platform,
-} from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import * as ImageManipulator from "expo-image-manipulator";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BlurView } from "expo-blur";
-import { useTranslation } from "react-i18next";
-import { ImagesAssets } from "@/src/utils/ImageAssets";
-import Colors from "@/src/utils/Colors";
-import CustomLottie from "@/src/components/CustomLottie";
-import { Camera, ChevronLeft, ImageIcon } from "lucide-react-native";
-import { useRouter } from "expo-router";
-import GlobalHeader from "@/src/components/GlobalHeader";
+import { Dimensions, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ChevronLeft, Check } from 'lucide-react-native';
+import CustomLottie from '@/src/components/CustomLottie';
+import GlobalHeader from '@/src/components/GlobalHeader';
+import GlobalDropdown from '@/src/components/GlobalDropdown';
+import { useTranslation } from 'react-i18next';
+import GlobalButton from '@/src/components/GlobalButton';
+import { getallcountries } from '@/src/apis/apiService';
+import { showToast } from '@/src/components/GlobalToast';
+import Colors from '@/src/utils/Colors';
 
-const { width, height } = Dimensions.get("window");
+const UpdateProfile = () => {
+    const { profilePhoto } = useLocalSearchParams();
+    const profilePhotoStr = Array.isArray(profilePhoto) ? profilePhoto[0] : profilePhoto || "";
+    const router = useRouter();
+    const { t } = useTranslation();
+    const { height } = Dimensions.get('window');
 
-const UploadPhoto: React.FC = () => {
-  const { t } = useTranslation();
-  const router = useRouter();
-  const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+    // Form States
+    const [gender, setGender] = useState<string | null>(null);
+    const [yearsofexperience, setYearsOfExperience] = useState<string | null>(null);
+    const [nationality, setNationality] = useState<string | null>(null);
+    const [relationship, setRelationship] = useState<string | null>(null);
+    const [ethnicity, setEthnicity] = useState<string | null>(null);
+    const [religion, setReligion] = useState<string | null>(null);
+    const [healthconcers, setHealthConcers] = useState<string | null>(null);
+    const [smokingstatus, setSmokingStatus] = useState<string | null>(null);
+    const [alcoholstatus, setAlcoholStatus] = useState<string | null>(null);
+    const [activitystatus, setActivityStatus] = useState<string | null>(null);
+    const [socialstatus, setSocialStatus] = useState<string | null>(null);
+    const [hobbies, setHobbies] = useState<string[]>([]);
+    const [favactivity, setFavActivity] = useState<string[]>([]);
+    const [agree, setAgree] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const userData = await AsyncStorage.getItem("userDetails");
-      if (userData) JSON.parse(userData);
-    })();
-  }, []);
+    const [allcountries, setAllCountries] = useState<{ label: string; value: string }[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [currentStep, setCurrentStep] = useState(1);
 
-  const requestPermissions = async (type: "camera" | "library") => {
-    const permissionType =
-      type === "camera"
-        ? ImagePicker.requestCameraPermissionsAsync
-        : ImagePicker.requestMediaLibraryPermissionsAsync;
+    // Options
+    const GENDER = [
+        { label: t('genderOptions.male'), value: "Male" },
+        { label: t('genderOptions.female'), value: "Female" },
+        { label: t('genderOptions.other'), value: "Other" },
+    ];
 
-    const { status } = await permissionType();
-    if (status !== "granted") {
-      Alert.alert(
-        t("permissionDenied"),
-        t(
-          type === "camera"
-            ? "cameraPermissionRequired"
-            : "photoLibraryPermissionRequired"
-        )
-      );
-      return false;
-    }
-    return true;
-  };
+    const YEARSOFEXPRIENCE = [
+        { label: t("experienceOptions.0_1"), value: "0-1" },
+        { label: t("experienceOptions.2_5"), value: "2-5" },
+        { label: t("experienceOptions.5_plus"), value: "5+" },
+    ];
 
-  const openImagePicker = async (type: "camera" | "library") => {
-    const hasPermission = await requestPermissions(type);
-    if (!hasPermission) return;
+    const RELATIONSHIP = [
+        { label: t("relationshipOptions.single"), value: "Single" },
+        { label: t("relationshipOptions.married"), value: "Married" },
+        { label: t("relationshipOptions.divorced"), value: "Divorced" },
+        { label: t("relationshipOptions.widowed"), value: "Widowed" }
+    ];
 
-    try {
-      const imageResult =
-        type === "camera"
-          ? await ImagePicker.launchCameraAsync({
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.7,
-          })
-          : await ImagePicker.launchImageLibraryAsync({
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.7,
-          });
+    const ETHNICITY = [
+        { label: t("ethnicityOptions.asian"), value: "Asian" },
+        { label: t("ethnicityOptions.black"), value: "Black / African Descent" },
+        { label: t("ethnicityOptions.white"), value: "Caucasian / White" },
+        { label: t("ethnicityOptions.latino"), value: "Hispanic / Latino" },
+        { label: t("ethnicityOptions.mena"), value: "Middle Eastern / North African" },
+        { label: t("ethnicityOptions.native"), value: "Native American / Indigenous" },
+        { label: t("ethnicityOptions.pacific"), value: "Pacific Islander" },
+        { label: t("ethnicityOptions.mixed"), value: "Mixed / Multiracial" }
+    ];
 
-      if (imageResult.canceled || !imageResult.assets?.[0]?.uri) return;
+    const RELIGION = [
+        { label: t("religionOptions.buddhism"), value: "Buddhism" },
+        { label: t("religionOptions.christianity"), value: "Christianity" },
+        { label: t("religionOptions.hinduism"), value: "Hinduism" },
+        { label: t("religionOptions.islam"), value: "Islam" },
+        { label: t("religionOptions.judaism"), value: "Judaism" },
+        { label: t("religionOptions.sikhism"), value: "Sikhism" },
+        { label: t("religionOptions.jainism"), value: "Jainism" },
+        { label: t("religionOptions.zoroastrianism"), value: "Zoroastrianism" },
+        { label: t("religionOptions.taoism"), value: "Taoism" },
+        { label: t("religionOptions.shinto"), value: "Shinto" },
+        { label: t("religionOptions.other"), value: "Other" },
+        { label: t("religionOptions.none"), value: "No Religion" },
+    ];
 
-      const compressed = await ImageManipulator.manipulateAsync(
-        imageResult.assets[0].uri,
-        [{ resize: { width: 800 } }],
-        { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
-      );
+    const HEALTH_OPTIONS = [
+        { label: t("healthOptions.none"), value: "None" },
+        { label: t("healthOptions.hypertension"), value: "Hypertension" },
+        { label: t("healthOptions.diabetes"), value: "Diabetes" },
+        { label: t("healthOptions.anxiety"), value: "Anxiety" },
+        { label: t("healthOptions.depression"), value: "Depression" },
+        { label: t("healthOptions.other"), value: "Other (specify)" },
+        { label: t("healthOptions.prefer_no"), value: "Prefer not to say" },
+    ];
 
-      setSelectedPhotos([compressed.uri]);
-    } catch (err) {
-      console.log("Image Picker Error:", err);
-      Alert.alert(t("error"), t("imagePickFailed"));
-    }
-  };
+    const SMOKING_OPTIONS = [
+        { label: t("smokingOptions.no"), value: "No" },
+        { label: t("smokingOptions.occasional"), value: "Occasionally (e.g. social or stress-related)" },
+        { label: t("smokingOptions.regular"), value: "Regularly (daily or near-daily)" },
+        { label: t("smokingOptions.quit"), value: "Trying to quit" },
+        { label: t("smokingOptions.prefer_no"), value: "Prefer not to say" },
+    ];
 
-  const uploadImage = async () => {
-    if (selectedPhotos.length === 0) return;
-    try {
-      setIsLoading(true);
-      setTimeout(() => {
-        setIsLoading(false);
-        // router.push({
-        //   pathname: "/UpdateProfile",
-        //   params: { imageurl: selectedPhotos[0] },
-        // });
-      }, 1000);
-    } catch (error) {
-      console.log(error);
-      setIsLoading(false);
-    }
-  };
+    const ALCOHOL_OPTIONS = [
+        { label: t("alcoholOptions.no"), value: "I don’t drink" },
+        { label: t("alcoholOptions.occasional"), value: "Occasionally (e.g. social settings)" },
+        { label: t("alcoholOptions.regular"), value: "Regularly (e.g. weekly)" },
+        { label: t("alcoholOptions.avoid"), value: "Avoiding alcohol right now" },
+        { label: t("alcoholOptions.prefer_no"), value: "Prefer not to say" },
+    ];
 
-  return (
-    <View style={styles.container}>
-      <GlobalHeader
-        title={t('profile_photo')}
-        leftIcon={<ChevronLeft size={24} />}
-        onLeftPress={() => router.back()}
-      />
+    const ACTIVITY_OPTIONS = [
+        { label: t("activityOptions.inactive"), value: "inactive" },
+        { label: t("activityOptions.light_active"), value: "light_active" },
+        { label: t("activityOptions.moderate_active"), value: "moderate_active" },
+        { label: t("activityOptions.very_active"), value: "very_active" },
+        { label: t("activityOptions.prefer_no"), value: "prefer_no" },
+    ];
 
-      <View style={styles.bottomCard1}>
-        <CustomLottie isBlurView={false} />
-      </View>
+    const SOCIAL_OPTIONS = [
+        { label: t("socialOptions.connected"), value: "connected" },
+        { label: t("socialOptions.isolated"), value: "isolated" },
+        { label: t("socialOptions.alone"), value: "alone" }
+    ];
 
-      <View style={styles.overlay}>
+    const HOBBIES_OPTIONS = [
+        { label: t("hobbiesOptions.art"), value: "art" },
+        { label: t("hobbiesOptions.music"), value: "music" },
+        { label: t("hobbiesOptions.photo"), value: "photo" },
+        { label: t("hobbiesOptions.dance"), value: "dance" },
+        { label: t("hobbiesOptions.yoga"), value: "yoga" },
+        { label: t("hobbiesOptions.gym"), value: "gym" },
+        { label: t("hobbiesOptions.gaming"), value: "gaming" },
+        { label: t("hobbiesOptions.reading"), value: "reading" },
+        { label: t("hobbiesOptions.movies"), value: "movies" },
+        { label: t("hobbiesOptions.cooking"), value: "cooking" },
+        { label: t("hobbiesOptions.sports"), value: "sports" },
+        { label: t("hobbiesOptions.meditation"), value: "meditation" }
+    ];
 
-        <ScrollView contentContainerStyle={styles.scrollView}>
-          <Text style={styles.title}>{t('uploadProfilePhoto')}</Text>
-          <Text style={styles.description}>
-            {t("uploadPhotoDescription")}
-          </Text>
+    const FAV_ACTIVITY_OPTIONS = [
+        { label: t("fav_activityOptions.movie"), value: "movie" },
+        { label: t("fav_activityOptions.gym"), value: "gym" },
+        { label: t("fav_activityOptions.karaoke"), value: "karaoke" },
+        { label: t("fav_activityOptions.games"), value: "games" },
+        { label: t("fav_activityOptions.jam"), value: "jam" },
+        { label: t("fav_activityOptions.meditation"), value: "meditation" },
+        { label: t("fav_activityOptions.cook"), value: "cook" },
+        { label: t("fav_activityOptions.sports"), value: "sports" },
+        { label: t("fav_activityOptions.drinks"), value: "drinks" }
+    ];
 
-          <View style={styles.uploadSection}>
-            {selectedPhotos.length > 0 ? (
-              <FlatList
-                horizontal
-                data={selectedPhotos}
-                keyExtractor={(_, index) => index.toString()}
-                showsHorizontalScrollIndicator={false}
-                renderItem={({ item }) => (
-                  <View style={styles.photoWrapper}>
-                    <Image source={{ uri: item }} style={styles.selectedPhoto} />
-                    <View style={styles.replaceWrapper}>
-                      <Image
-                        source={{ uri: item }}
-                        style={styles.circlePreview}
-                      />
-                      <TouchableOpacity
-                        style={styles.replaceButton}
-                        onPress={() => openImagePicker("library")}
-                      >
-                        <Text style={styles.replaceText}>{t("replace")}</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                )}
-              />
-            ) : (
-              <TouchableOpacity
-                style={styles.uploadButton}
-                onPress={() => openImagePicker("library")}
-              >
-                <View style={styles.uploadContent}>
-                  <ImageIcon size={24} color={Colors.white} />
-                  <Text style={styles.uploadText}>{t("selectFile")}</Text>
-                </View>
-              </TouchableOpacity>
-            )}
-          </View>
+    // Fetch Countries
+    const getAllCountries = async () => {
+        setLoading(true);
+        try {
+            const apiResponse = await getallcountries();
+            setLoading(false);
+            if (apiResponse.success && apiResponse.status === 200) {
+                const countryData = apiResponse.data.map((country: any) => ({
+                    label: country.name,
+                    value: country.name,
+                }));
+                setAllCountries(countryData);
+            } else {
+                showToast.error(t('oops'), apiResponse.message);
+            }
+        } catch (error) {
+            setLoading(false);
+            showToast.error(t('oops'), t('somethingwentwrong'));
+        }
+    };
 
-          <Text style={styles.orText}>{t("or")}</Text>
+    useEffect(() => {
+        getAllCountries();
+    }, []);
 
-          <TouchableOpacity
-            style={styles.cameraButton}
-            onPress={() => openImagePicker("camera")}
-          >
-            <View style={styles.row}>
-              <Camera size={20} color={Colors.black} />
-              <Text style={styles.cameraText}>{t("openCamera")}</Text>
+    // Handle Multi-Select with Max 3
+    const handleMultiSelect = (
+        setter: React.Dispatch<React.SetStateAction<string[]>>,
+        selected: string[]
+    ) => {
+        if (selected.length > 3) {
+            showToast.error(t('error'), t('maxThreeItems'));
+            return;
+        }
+        setter(selected);
+    };
+
+    const handleNext = () => {
+        setCurrentStep((prev) => prev + 1);
+    };
+
+    return (
+        <View style={styles.main}>
+            <GlobalHeader
+                title='Profile Details'
+                leftIcon={<ChevronLeft size={20} color={Colors.white} />}
+                onLeftPress={() => router.back()}
+            />
+
+            <View style={styles.bottomCard1}>
+                <CustomLottie isBlurView={false} componetHeight={height * 0.85} />
             </View>
-          </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[
-              styles.submitButton,
-              { opacity: selectedPhotos.length === 1 ? 1 : 0.5 },
-            ]}
-            onPress={uploadImage}
-            disabled={selectedPhotos.length !== 1}
-          >
-            <Text style={styles.submitText}>{t("submit")}</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
-    </View>
-  );
+            <View style={styles.mainContent}>
+                <Text style={styles.title}>{t("updateyourprofiledetails")}</Text>
+                <Text style={styles.description}>{t("updateyourprofiledetails_description")}</Text>
+
+                {/* Step 1 */}
+                {currentStep === 1 && (
+                    <>
+                        <GlobalDropdown
+                            data={GENDER}
+                            value={gender}
+                            onChange={setGender}
+                            placeholder={t('selectgender')}
+                            labelField="label"
+                            valueField="value"
+                            containerStyle={{ marginTop: 40, marginBottom: 20 }}
+                        />
+                        <GlobalDropdown
+                            data={RELATIONSHIP}
+                            value={relationship}
+                            onChange={setRelationship}
+                            placeholder={t('selectrelationshipstatus')}
+                            labelField="label"
+                            valueField="value"
+                            containerStyle={{ marginBottom: 20 }}
+                        />
+                        <GlobalDropdown
+                            data={YEARSOFEXPRIENCE}
+                            value={yearsofexperience}
+                            onChange={setYearsOfExperience}
+                            placeholder={t('selectyearsofexperience')}
+                            labelField="label"
+                            valueField="value"
+                        />
+                    </>
+                )}
+
+                {/* Step 2 */}
+                {currentStep === 2 && (
+                    <>
+                        <GlobalDropdown
+                            data={allcountries}
+                            value={nationality}
+                            searchable
+                            onChange={setNationality}
+                            containerStyle={{ marginTop: 40, marginBottom: 20 }}
+                            placeholder={t('selectnationality')}
+                            labelField="label"
+                            valueField="value"
+                        />
+                        <GlobalDropdown
+                            data={ETHNICITY}
+                            value={ethnicity}
+                            onChange={setEthnicity}
+                            placeholder={t('selectethnicity')}
+                            labelField="label"
+                            valueField="value"
+                            containerStyle={{ marginBottom: 20 }}
+                        />
+                        <GlobalDropdown
+                            data={RELIGION}
+                            value={religion}
+                            onChange={setReligion}
+                            placeholder={t('selectreligion')}
+                            labelField="label"
+                            valueField="value"
+                            containerStyle={{ marginBottom: 20 }}
+                        />
+                    </>
+                )}
+
+                {/* Step 3 */}
+                {currentStep === 3 && (
+                    <>
+                        <GlobalDropdown
+                            data={HEALTH_OPTIONS}
+                            value={healthconcers}
+                            onChange={setHealthConcers}
+                            containerStyle={{ marginTop: 40, marginBottom: 20 }}
+                            placeholder={t("selectHealthCondition")}
+                            labelField="label"
+                            valueField="value"
+                        />
+                        <GlobalDropdown
+                            data={SMOKING_OPTIONS}
+                            value={smokingstatus}
+                            onChange={setSmokingStatus}
+                            containerStyle={{ marginBottom: 20 }}
+                            placeholder={t("selectSmokingStatus")}
+                            labelField="label"
+                            valueField="value"
+                        />
+                        <GlobalDropdown
+                            data={ALCOHOL_OPTIONS}
+                            value={alcoholstatus}
+                            onChange={setAlcoholStatus}
+                            placeholder={t("selectAlcoholStatus")}
+                            labelField="label"
+                            valueField="value"
+                        />
+                    </>
+                )}
+
+                {/* Step 4 */}
+                {currentStep === 4 && (
+                    <>
+                        <GlobalDropdown
+                            data={ACTIVITY_OPTIONS}
+                            value={activitystatus}
+                            onChange={setActivityStatus}
+                            containerStyle={{ marginTop: 40, marginBottom: 20 }}
+                            placeholder={t("selectActivityStatus")}
+                            labelField="label"
+                            valueField="value"
+                            
+                        />
+                        <GlobalDropdown
+                            data={SOCIAL_OPTIONS}
+                            value={socialstatus}
+                            onChange={setSocialStatus}
+                            containerStyle={{ marginBottom: 20 }}
+                            placeholder={t("selectSocialStatus")}
+                            labelField="label"
+                            valueField="value"
+                        />
+                    </>
+                )}
+
+                {/* Step 5 - Hobbies, Fav Activities + Agreement */}
+                {currentStep === 5 && (
+                    <>
+                        <GlobalDropdown
+                            data={HOBBIES_OPTIONS}
+                            multiple
+                            value={hobbies}
+                            onChange={(v) => handleMultiSelect(setHobbies, v)}
+                            containerStyle={{ marginVertical: 20 }}
+                            placeholder={t("selectHobbies")}
+                            labelField="label"
+                            valueField="value"
+                            
+                            
+                        />
+                        <GlobalDropdown
+                            data={FAV_ACTIVITY_OPTIONS}
+                            multiple
+                            value={favactivity}
+                            onChange={(v) => handleMultiSelect(setFavActivity, v)}
+                            placeholder={t("selectFavActivity")}
+                            labelField="label"
+                            valueField="value"
+                            containerStyle={{ marginBottom: 10 }}
+                        />
+
+                        {/* Agreement Checkbox with Lucide Check */}
+                        <TouchableOpacity
+                            style={styles.agreementRow}
+                            onPress={() => setAgree(!agree)}
+                            activeOpacity={0.7}
+                        >
+                            <View style={[styles.checkbox, agree && styles.checkboxChecked]}>
+                                {agree && <Check size={16} color={Colors.white} />}
+                            </View>
+                            <Text style={styles.agreementText}>
+                                {t('agreementText')}
+                            </Text>
+                        </TouchableOpacity>
+                    </>
+                )}
+            </View>
+
+            {/* Next Button */}
+            <View style={styles.bottomButtonWrapper}>
+                <GlobalButton
+                    title={t('common.next')}
+                    onPress={handleNext}
+                    disabled={
+                        (currentStep === 1 && (!gender || !relationship || !yearsofexperience)) ||
+                        (currentStep === 2 && (!nationality || !ethnicity || !religion)) ||
+                        (currentStep === 3 && (!healthconcers || !smokingstatus || !alcoholstatus)) ||
+                        (currentStep === 4 && (!activitystatus || !socialstatus)) ||
+                        (currentStep === 5 && (!hobbies.length || !favactivity.length || !agree))
+                    }
+                    buttonStyle={{ width: '100%' }}
+                />
+            </View>
+        </View>
+    );
 };
 
-export default UploadPhoto;
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255,255,255,0.6)",
-    top: "7.4%",
-  },
-  scrollView: { flexGrow: 1, padding: 20 },
-  title: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#262626",
-    marginBottom: 10,
-    fontFamily: "WhyteInktrap-Bold",
-  },
-  description: {
-    fontSize: 14,
-    color: "#636363",
-    lineHeight: 21,
-    marginBottom: 20,
-    fontFamily: "Poppins-Regular",
-  },
-  uploadSection: { alignItems: "center", marginVertical: 20 },
-  uploadButton: {
-    width: "100%",
-    height: height * 0.28,
-    borderRadius: 35,
-    backgroundColor: "rgba(180,180,180,0.8)",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 2,
-    borderColor: "rgba(180,180,180,0.4)",
-  },
-  uploadContent: { alignItems: "center", gap: 20 },
-  uploadText: { color: Colors.white, fontFamily: "Poppins-SemiBold" },
-  orText: {
-    textAlign: "center",
-    fontSize: 16,
-    color: Colors.white,
-    marginVertical: 10,
-    fontFamily: "Poppins-Regular",
-  },
-  cameraButton: {
-    width: "100%",
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: "#E6EBE9",
-    alignItems: "center",
-    marginTop: 20,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.5,
-    elevation: 5,
-  },
-  row: { flexDirection: "row", alignItems: "center", gap: 10 },
-  cameraText: {
-    fontSize: 14,
-    color: Colors.black,
-    fontFamily: "Poppins-SemiBold",
-  },
-  submitButton: {
-    width: "100%",
-    paddingVertical: 14,
-    borderRadius: 10,
-    backgroundColor: "#02130b",
-    alignItems: "center",
-    marginTop: 30,
-  },
-  submitText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "600",
-    fontFamily: "Poppins-SemiBold",
-  },
-  selectedPhoto: {
-    width: width - 40,
-    height: height * 0.28,
-    borderRadius: 30,
-    borderWidth: 2,
-    borderColor: "#B4B4B499",
-  },
-  photoWrapper: {
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-  },
-  replaceWrapper: {
-    position: "absolute",
-    alignItems: "center",
-    justifyContent: "center",
-    top: "20%",
-  },
-  circlePreview: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 2,
-    borderColor: "#B4B4B499",
-  },
-  replaceButton: {
-    marginTop: 20,
-    backgroundColor: "#E6EBE9",
-    borderRadius: 10,
-    width:'100%',
-    alignItems:'center',
-    paddingVertical: 10,
-  },
-  replaceText: {
-    fontSize: 14,
-    color: "#042013",
-    fontWeight: "600",
-  },
-  bottomCard1: {
-    width: "100%",
-    height: "100%",
-    position: "absolute",
-    bottom: "-20%",
-    alignItems: "center",
-    borderTopLeftRadius: 35,
-    borderTopRightRadius: 35,
-    overflow: "hidden",
-  },
+    main: {
+        flex: 1,
+    },
+    bottomButtonWrapper: {
+        position: 'absolute',
+        bottom: 50,
+        left: 20,
+        right: 20,
+    },
+    bottomCard1: {
+        width: "100%",
+        height: "100%",
+        position: "absolute",
+        bottom: "-20%",
+        alignItems: "center",
+        borderTopLeftRadius: 35,
+        borderTopRightRadius: 35,
+        overflow: "hidden",
+    },
+    mainContent: {
+        margin: 20,
+        flex: 1,
+    },
+    title: {
+        fontSize: 18,
+        fontWeight: "600",
+        color: "#262626",
+        marginBottom: 10,
+        fontFamily: "WhyteInktrap-Bold",
+    },
+    description: {
+        fontSize: 14,
+        color: "#636363",
+        lineHeight: 21,
+        marginBottom: 20,
+        fontFamily: "Poppins-Regular",
+    },
+    agreementRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+    },
+    checkbox: {
+        width: 24,
+        height: 24,
+        borderRadius: 6,
+        borderWidth: 2,
+        borderColor: '#ccc',
+        marginRight: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 4,
+    },
+    checkboxChecked: {
+        backgroundColor: Colors.lightGreen,
+        borderColor: Colors.lightGreen,
+    },
+    agreementText: {
+        flex: 1,
+        fontSize: 14,
+        color: Colors.white,
+        fontFamily: 'Poppins-Regular',
+        lineHeight: 20,
+    },
 });
+
+export default UpdateProfile;

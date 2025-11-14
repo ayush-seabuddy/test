@@ -30,6 +30,16 @@ apiClient.interceptors.request.use(
       config.headers["authToken"] = token;
     }
 
+    console.log(config.data instanceof FormData ,"config.data instanceof FormData");
+    
+    if (config.data instanceof FormData) {
+      // Let axios set the boundary
+       config.headers["Content-Type"] =  'multipart/form-data';
+    } else {
+      // Only set JSON for non-file requests
+      config.headers["Content-Type"] = "application/json";
+    }
+
     // 🟡 Log raw request URL + data
     console.log("📤 REQUEST URL:", config.url);
     console.log("📤 REQUEST DATA:", config.data);

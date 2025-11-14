@@ -59,7 +59,7 @@ const LoginScreen = () => {
     setLoading(true);
 
     try {
-      const apiResponse = await login(email, password);
+      const apiResponse = await login({ email, password });
       setLoading(false);
 
       if (apiResponse.success && apiResponse.status === 200) {
@@ -68,7 +68,11 @@ const LoginScreen = () => {
           t("welcomeback")
         );
         await AsyncStorage.setItem('userDetails', JSON.stringify(apiResponse.data));
+        await AsyncStorage.setItem('authToken', apiResponse.data.authToken);
+        await AsyncStorage.setItem('userId', apiResponse.data.id);
         const storedData = await AsyncStorage.getItem('userDetails');
+
+
         const user = JSON.parse(storedData ?? "");
 
         console.log("Stored user data:", storedData);

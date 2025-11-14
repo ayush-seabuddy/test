@@ -19,13 +19,14 @@ import { useTranslation } from "react-i18next";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import GlobalButton from "@/src/components/GlobalButton";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { forgotpassword, verifyotp } from "../../src/apis/apiService";
 import { showToast } from "@/src/components/GlobalToast";
+import { forgotpassword, verifyotp } from "@/src/apis/apiService";
 
 const { width, height } = Dimensions.get("window");
 
 const OTPVerification = () => {
   const { email } = useLocalSearchParams();
+  const emailStr = Array.isArray(email) ? email[0] : email || "";
   const [loading, setloading] = useState(false);
   const [otp, setOtp] = useState("");
   const translateY = useRef(new Animated.Value(height)).current;
@@ -42,7 +43,7 @@ const OTPVerification = () => {
   const verifyOTP = async () => {
     setloading(true);
     try {
-      const apiResponse = await verifyotp(email, otp);
+      const apiResponse = await verifyotp({ email: emailStr, otp });
       setloading(false);
       if (apiResponse.success && apiResponse.status === 200) {
         showToast.success(t('success'), apiResponse.message);
@@ -67,7 +68,7 @@ const OTPVerification = () => {
   const resendOTP = async () => {
     setloading(true);
     try {
-      const apiResponse = await forgotpassword(email);
+      const apiResponse = await forgotpassword({ email: emailStr });
       setloading(false);
       if (apiResponse.success && apiResponse.status === 200) {
         showToast.success(

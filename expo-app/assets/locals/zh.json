@@ -585,5 +585,123 @@
   "imagePickFailed": "选择或裁剪图像失败。",
   "selectFile": "选择要上传的文件",
   "or": "或者",
-  "openCamera": "打开相机"
+  "openCamera": "打开相机",
+  "updateyourprofiledetails": "更新您的个人资料详细信息",
+  "updateyourprofiledetails_description": "请确保您的个人资料保持最新，以保证信息的准确性和个性化。更新个人资料有助于他人更好地了解您，并提升您的整体体验。",
+  "selectanoption": "选择一个选项",
+  "selectnationality": "选择国籍",
+  "selectgender": "选择性别",
+  "genderOptions": {
+    "male": "男",
+    "female": "女",
+    "other": "其他"
+  },
+  "selectyearsofexperience": "选择工作年限",
+  "experienceOptions": {
+    "0_1": "0-1 年",
+    "2_5": "2-5 年",
+    "5_plus": "5 年以上"
+  },
+  "selectrelationshipstatus": "选择关系状态",
+  "relationshipOptions": {
+    "single": "单身",
+    "married": "已婚",
+    "divorced": "离异",
+    "widowed": "丧偶"
+  },
+  "selectHealthCondition": "任何持续存在的健康问题",
+  "selectSmokingStatus": "你多久抽一次烟",
+  "smokingOptions": {
+    "no": "不吸烟",
+    "occasional": "偶尔吸烟（例如社交或压力相关）",
+    "regular": "规律吸烟（每天或几乎每天）",
+    "quit": "正在戒烟",
+    "prefer_no": "不愿透露"
+  },
+  "healthOptions": {
+    "none": "无",
+    "hypertension": "高血压",
+    "diabetes": "糖尿病",
+    "anxiety": "焦虑",
+    "depression": "抑郁",
+    "other": "其他（请说明）",
+    "prefer_no": "不愿透露"
+  },
+  "selectActivityStatus": "你通常一周的活动量如何？",
+  "activityOptions": {
+    "inactive": "大多不活动（无运动）",
+    "light_active": "轻度活动（如散步）",
+    "moderate_active": "中度活动（每周运动 2-3 次）",
+    "very_active": "高度活跃（健身/运动/瑜伽）",
+    "prefer_no": "不愿透露"
+  },
+  "selectethnicity": "选择种族",
+  "ethnicityOptions": {
+    "asian": "亚洲人",
+    "black": "黑人 / 非洲裔",
+    "white": "白人",
+    "latino": "拉丁裔",
+    "mena": "中东 / 北非",
+    "native": "美洲原住民 / 原住民",
+    "pacific": "太平洋岛民",
+    "mixed": "混血"
+  },
+  "selectreligion": "选择宗教",
+  "religionOptions": {
+    "buddhism": "佛教",
+    "christianity": "基督教",
+    "hinduism": "印度教",
+    "islam": "伊斯兰教",
+    "judaism": "犹太教",
+    "sikhism": "锡克教",
+    "jainism": "耆那教",
+    "zoroastrianism": "祆教",
+    "taoism": "道教",
+    "shinto": "神道教",
+    "other": "其他",
+    "none": "无宗教信仰"
+  },
+  "selectHobbies": "选择你的爱好（多选）",
+  "hobbiesOptions": {
+    "art": "🎨 艺术 & 手工",
+    "music": "🎵 音乐",
+    "photo": "📸 摄影",
+    "dance": "💃 舞蹈",
+    "yoga": "🧘‍♀️ 瑜伽",
+    "gym": "🏋️‍♀️ 健身",
+    "gaming": "🎮 游戏",
+    "reading": "📖 阅读",
+    "movies": "🎬 电影",
+    "cooking": "🍳 烹饪",
+    "sports": "⚽ 运动",
+    "meditation": "🧘‍♂️ 冥想"
+  },
+  "selectFavActivity": "最喜欢的船上活动（多选）",
+  "fav_activityOptions": {
+    "movie": "电影之夜",
+    "gym": "健身课程",
+    "karaoke": "卡拉OK",
+    "games": "团队游戏（扑克牌、飞行棋等）",
+    "jam": "即兴演奏会",
+    "meditation": "冥想",
+    "cook": "烹饪挑战",
+    "sports": "体育比赛",
+    "drinks": "喝饮料聊天"
+  },
+  "selectSocialStatus": "你觉得在船上有社交联系吗？",
+  "socialOptions": {
+    "connected": "是的，我有良好的社交关系",
+    "isolated": "有些孤立",
+    "alone": "大多独自一人"
+  },
+  "selectAlcoholStatus": "你多久喝一次酒？",
+  "alcoholOptions": {
+    "no": "我不喝酒",
+    "occasional": "偶尔饮酒（例如社交场合）",
+    "regular": "规律饮酒（例如每周）",
+    "avoid": "目前避免饮酒",
+    "prefer_no": "不愿透露"
+  },
+  "maxThreeItems": "您最多只能选择 3 件商品。",
+  "agreementText": "我同意SeaBuddy收集并使用我的健康状况数据以提供个性化支持。我理解这些数据将严格保密，不会与我的雇主共享。"
 }

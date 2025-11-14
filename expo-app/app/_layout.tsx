@@ -43,13 +43,11 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
         <StatusBar barStyle="dark-content" backgroundColor="#000" />
-        <KeyboardWrapper>
           <PaperProvider>
             <I18nextProvider i18n={i18n}>
               <Slot />
             </I18nextProvider>
           </PaperProvider>
-        </KeyboardWrapper>
         <Toast />
       </SafeAreaView>
     </SafeAreaProvider>

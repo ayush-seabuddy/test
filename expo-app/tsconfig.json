@@ -13,5 +13,5 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
-, "src/utils/ImageAssets.ts", "src/utils/Colors.ts", "src/screens/Splash.tsx", "src/screens/home/FeatureFrame.tsx"  ]
+, "src/utils/ImageAssets.ts", "src/utils/Colors.ts", "src/screens/Splash.tsx", "src/screens/home/FeatureFrame.tsx", "src/apis/apiService.ts"  ]
 }

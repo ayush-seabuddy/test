@@ -65,7 +65,7 @@ const ResetPassword = () => {
     if (!isFormValid) return;
     setLoading(true);
     try {
-      const apiResponse = await resetpassword(email, password);
+      const apiResponse = await resetpassword({email, password});
       setLoading(false);
       if (apiResponse.success && apiResponse.status === 200) {
         showToast.success(t('success'), apiResponse.message);
