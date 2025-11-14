@@ -1,6 +1,7 @@
 // HomeTab.tsx
 import { getAllSocialPost } from '@/app/apis/apiService';
 import Colors from '@/src/utils/Colors';
+import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -15,9 +16,15 @@ const HomeTab = () => {
 useEffect(() => {
  async function getData() {
   let data  = await getAllSocialPost({limit:3 , page :2})
-  console.log("data: ", JSON.stringify(data?.data?.result?.hangoutsList[0]));
+  console.log("data: ", data.data?.hangoutsList);
+  if(data.data?.hangoutsList[0]){
+    router.push({
+      pathname: '/crewProfile',
+      params: { crewId: data.data?.hangoutsList[0].userId },
+    });
+  }
   if(data?.data?.result){
-    setPostData(data?.data?.result?.hangoutsList)
+    setPostData(data.data?.hangoutsList)
   }
 }
   getData()

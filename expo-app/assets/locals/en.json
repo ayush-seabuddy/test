@@ -586,5 +586,15 @@
     "imagePickFailed": "Failed to select or crop image.",
     "selectFile": "Select file to upload",
     "or": "Or",
-    "openCamera": "Open Camera"
+    "openCamera": "Open Camera",
+    "crew_profile": "Crew Profile",
+    "more_information": "More Information",
+  "onboard_interests": "Onboard interests",
+  "crew_ranking": "Crew Ranking",
+  "years_of_experience": "Years of Experience",
+  "onboard": "Onboard",
+  "onleave": "Onleave",
+  "na": "N/A",
+  "invalid_date": "Invalid date",
+  "url_error": "This URL ({url}) is wrong!"
 }

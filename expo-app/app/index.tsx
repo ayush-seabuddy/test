@@ -22,7 +22,7 @@ export default function Index() {
       await initI18n();
 
       setTimeout(() => {
-        router.replace("/auth/UpdateProfile");
+        router.replace("/home");
       }, 2500);
     //    setTimeout(async()=>{
     //   // console.log("hello");

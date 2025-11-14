@@ -10,6 +10,7 @@ import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import KeyboardWrapper from "../src/components/KeyboardWrapper";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -42,8 +43,10 @@ export default function RootLayout() {
         <KeyboardWrapper>
           <PaperProvider>
             <I18nextProvider i18n={i18next}>
-          <Slot />
-          </I18nextProvider>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <Slot />
+              </GestureHandlerRootView>
+            </I18nextProvider>
           </PaperProvider>
         </KeyboardWrapper>
         <Toast />

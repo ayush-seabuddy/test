@@ -20,6 +20,29 @@ export const formatShipName: (name: string) => string = (name) => {
 };
 
 
+ export const formatHobbies = (input: string[]) => {
+    if (!input || (Array.isArray(input) && input.length === 0)) {
+      return 'N/A';
+    }
+
+    const normalize = (text: string) =>
+      text
+        .replace(/_/g, ' ')
+        .toLowerCase()
+        .replace(/\b\w/g, char => char.toUpperCase());
+
+    if (Array.isArray(input)) {
+      return input.map(normalize).join(', ');
+    }
+
+    if (typeof input === 'string') {
+      return normalize(input);
+    }
+
+    return 'N/A';
+  };
+
+
 
 interface CreateTimeProps {
   createdTime: string;

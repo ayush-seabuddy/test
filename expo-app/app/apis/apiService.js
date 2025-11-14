@@ -49,3 +49,12 @@ export const getAllSocialPost = async (params) => {
     params
   });
 };
+
+
+export const viewProfile = async (params) => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.VIEW_PROFILE,
+    params
+  });
+};

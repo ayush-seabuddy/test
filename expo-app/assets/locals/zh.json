@@ -585,5 +585,15 @@
   "imagePickFailed": "选择或裁剪图像失败。",
   "selectFile": "选择要上传的文件",
   "or": "或者",
-  "openCamera": "打开相机"
+  "openCamera": "打开相机",
+  "crew_profile": "船员简介",
+   "more_information": "更多信息",
+  "onboard_interests": "船上兴趣",
+  "crew_ranking": "船员排名",
+  "years_of_experience": "多年经验",
+  "onboard": "机上",
+  "onleave": "昂莱夫",
+  "na": "不适用",
+  "invalid_date": "无效日期",
+  "url_error": "这个网址（{url}）是错误的！"
 }

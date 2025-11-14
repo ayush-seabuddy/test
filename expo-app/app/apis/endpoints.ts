@@ -22,4 +22,5 @@ export const ENDPOINTS = {
   RESETPASSWORD:`${BASE_URL}/user/resetPassword`,
   
   GetAllSocialPost: `${BASE_URL}/user/getAllHangoutPost`,
+  VIEW_PROFILE: `${BASE_URL}/user/viewUserProfile`,
 };
