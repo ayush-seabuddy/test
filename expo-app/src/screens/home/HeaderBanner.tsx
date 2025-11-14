@@ -88,6 +88,6 @@ const styles = StyleSheet.create({
   },
  illustrativeIcon: {
     width: "80%",
-    height: "85%",
+    height: "75%",
   },
 });

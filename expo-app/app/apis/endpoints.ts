@@ -17,6 +17,9 @@ export const BASE_URL = API_URL;
 export const ENDPOINTS = {
   LOGIN: `${BASE_URL}/user/login`,
   REGISTER: `${BASE_URL}/user/register`, // Example
-
+  FORGOTPASSWORD: `${BASE_URL}/user/resendOtp`,
+  VERIFYOTP:`${BASE_URL}/user/verifyOtp`,
+  RESETPASSWORD:`${BASE_URL}/user/resetPassword`,
+  
   GetAllSocialPost: `${BASE_URL}/user/getAllHangoutPost`,
 };

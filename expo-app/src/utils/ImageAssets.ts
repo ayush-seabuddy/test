@@ -13,6 +13,8 @@ export const ImagesAssets = {
   sailorsocietyimage: require("../../assets/images/sailorsocietyimage.png"),
   homePageJollie: require("../../assets/images/JollieImages/homePageJollie.png"),
   personalityMapJollie: require("../../assets/images/JollieImages/PersonalityMapJollie.png"),
+  selectedLine:require("../../assets/images/SelectedLine.png"),
+  unselectedLine:require("../../assets/images/UnselectedLine.png"),
 
 
 
@@ -32,4 +34,5 @@ export const ImagesAssets = {
   notificationBell: require("../../assets/images/Header/notificationBell.png"),
   companyLibraryLogo: require("../../assets/images/Header/companyLibraryLogo.png"),
   searchLogo: require("../../assets/images/Header/search.png"),
+  
 };

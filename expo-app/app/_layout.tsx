@@ -1,14 +1,15 @@
-import React, { useEffect } from "react";
-import { StatusBar, StyleSheet } from "react-native";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { useFonts } from "expo-font";
-import * as SplashScreen from "expo-splash-screen";
-import { Slot } from "expo-router";
 import Colors from "@/src/utils/Colors";
-import KeyboardWrapper from "../src/components/KeyboardWrapper";
-import { PaperProvider } from "react-native-paper";
-import { I18nextProvider } from "react-i18next";
+import { useFonts } from "expo-font";
+import { Slot } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import i18next from "i18next";
+import React, { useEffect } from "react";
+import { I18nextProvider } from "react-i18next";
+import { StatusBar, StyleSheet } from "react-native";
+import { PaperProvider } from "react-native-paper";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
+import KeyboardWrapper from "../src/components/KeyboardWrapper";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -45,6 +46,7 @@ export default function RootLayout() {
           </I18nextProvider>
           </PaperProvider>
         </KeyboardWrapper>
+        <Toast />
       </SafeAreaView>
     </SafeAreaProvider>
   );

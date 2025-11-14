@@ -1,11 +1,8 @@
-// ✅ Import our custom axios client
-import { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
-import apiClient from './apiClient';
+import { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
+import apiClient from "./apiClient";
 
-// Define method types
-type Method = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
-// Define the request parameters interface
 interface ApiRequestParams {
   method: Method;
   url: string;
@@ -14,13 +11,12 @@ interface ApiRequestParams {
   headers?: Record<string, string>;
 }
 
-
 interface ApiSuccessResponse<T = any> {
   success: true;
   status: number;
   data: T;
+  message: string;
 }
-
 
 interface ApiErrorResponse {
   success: false;
@@ -29,41 +25,62 @@ interface ApiErrorResponse {
   data: any | null;
 }
 
-
 type ApiResponse<T = any> = ApiSuccessResponse<T> | ApiErrorResponse;
 
 export const apiRequest = async <T = any>({
-  method = 'GET',
+  method,
   url,
   params,
   data,
   headers,
 }: ApiRequestParams): Promise<ApiResponse<T>> => {
   try {
-    const response: AxiosResponse<T> = await apiClient({
+    const response: AxiosResponse<any> = await apiClient({
       method,
       url,
       params,
       data,
       headers,
     } as AxiosRequestConfig);
-    
 
-    return {
-      success: true,
-      status: response.status,
-      data: response.data,
-    };
+    // 🔍 Extract keys according to your backend format
+    const { responseCode, responseMessage, result } = response.data || {};
+
+    // Treat backend responseCode as status indicator
+    const isSuccess = responseCode === 200;
+
+    if (isSuccess) {
+      return {
+        success: true,
+        status: responseCode || response.status,
+        data: result || response.data,
+        message: responseMessage || "Request successful",
+      };
+    } else {
+      return {
+        success: false,
+        status: responseCode || response.status,
+        message: responseMessage || "Request failed",
+        data: result || null,
+      };
+    }
   } catch (err) {
     const error = err as AxiosError;
+    const status = error.response?.status ?? 0;
+    const errorData = error.response?.data ?? null;
 
-    // console.error(error);
+    // handle message safely from backend or axios error
+    const message =
+      (errorData as any)?.responseMessage ||
+      (errorData as any)?.message ||
+      error.message ||
+      "Something went wrong. Please try again.";
 
     return {
       success: false,
-      status: error.response?.status,
-      message: error.message,
-      data: error.response?.data || null,
+      status,
+      message,
+      data: errorData,
     };
   }
 };

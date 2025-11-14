@@ -1,57 +1,61 @@
-import { checkNetwork } from '@/src/hooks/useNetworkStatus';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import { checkNetwork } from "@/src/hooks/useNetworkStatus";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { useTranslation } from "react-i18next";
+
+const { t } = useTranslation();
 
 // ✅ Create axios instance
 const apiClient = axios.create({
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-// ✅ Add request interceptor
+// ✅ Request interceptor
 apiClient.interceptors.request.use(
   async (config) => {
     const isOnline = await checkNetwork();
     if (!isOnline) {
       return Promise.reject({
         status: null,
-        message: 'NO_INTERNET',
+        message: t("nointernetconnection"),
       });
     }
 
-    // ✅ Get token from AsyncStorage
-    const token = await AsyncStorage.getItem('authToken');
+    // ✅ Add token if exists
+    const token = await AsyncStorage.getItem("authToken");
     if (token) {
-      config.headers['authToken'] = token;
+      config.headers["authToken"] = token;
     }
+
+    // 🟡 Log raw request URL + data
+    console.log("📤 REQUEST URL:", config.url);
+    console.log("📤 REQUEST DATA:", config.data);
 
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// ✅ Add response interceptor
+// ✅ Response interceptor
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // 🟢 Log full raw response
+    console.log("📥 RESPONSE URL:", response.config.url);
+    console.log("📥 RESPONSE STATUS:", response.status);
+    console.log("📥 RESPONSE DATA:", response.data);
+
+    return response;
+  },
   (error) => {
-    const status = error.response?.status;
-    let message =
-      error.response?.data?.responseMessage ||
-      'Something went wrong, Please try again later';
+    // 🔴 Log full raw error response
+    console.log("❌ ERROR URL:", error.config?.url);
+    console.log("❌ ERROR RESPONSE:", error.response?.data);
+    console.log("❌ ERROR MESSAGE:", error.message);
 
-    switch (status) {
-      case 400:
-      case 401:
-      case 403:
-      case 404:
-      case 500:
-        // message already set above
-        break;
-    }
-
-    return Promise.reject({ status, message });
+    return Promise.reject(error);
   }
 );
 

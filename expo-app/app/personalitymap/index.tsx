@@ -60,7 +60,7 @@ const PersonalityMapIntroScreen = () => {
                 <GlobalButton
                     title={t("start_button")}
                     onPress={() => {
-
+                        router.push('/personalitymap/PersonalityMapTestScreen');
                     }}
                     buttonStyle={styles.customButton}
                     textStyle={styles.customButtonText}

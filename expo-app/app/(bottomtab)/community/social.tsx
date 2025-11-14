@@ -1,9 +1,8 @@
 // HomeTab.tsx
 import { getAllSocialPost } from '@/app/apis/apiService';
-import PostCard from '@/src/screens/community/PostCard';
 import Colors from '@/src/utils/Colors';
 import React, { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 
 
@@ -23,20 +22,20 @@ useEffect(() => {
 }
   getData()
 },[])
-  const renderItem = ({ item , index }: { item: any , index : number}) => (
-    <PostCard item={item} index={index}
-    />
-  );
+  // const renderItem = ({ item , index }: { item: any , index : number}) => (
+  //   <PostCard item={item} index={index}
+  //   />
+  // );
 
   return (
     <View style={styles.container}>
-      <FlatList
+      {/* <FlatList
         data={postData}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-      />
+      /> */}
     </View>
   );
 };

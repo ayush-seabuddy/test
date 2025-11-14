@@ -7,7 +7,6 @@ import {
   Animated,
   Platform,
   TouchableOpacity,
-  Alert,
 } from "react-native";
 import { Mail, Lock, CheckSquare, Square } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
@@ -17,6 +16,9 @@ import GlobalButton from "@/src/components/GlobalButton";
 import { router } from "expo-router";
 import GlobalTextInput from "@/src/components/GlobalTextInput";
 import { login } from "../apis/apiService";
+import { showToast } from "@/src/components/GlobalToast";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import KeyboardWrapper from "@/src/components/KeyboardWrapper";
 
 const { height } = Dimensions.get("window");
 
@@ -49,91 +51,142 @@ const LoginScreen = () => {
     else setEmailError("");
   };
 
-  const isFormValid = email && validateEmail(email) && password.length >= 8 && termsAccepted;
+  const isFormValid =
+    email && validateEmail(email) && password.length >= 8 && termsAccepted;
 
   const handleLogin = async () => {
+    if (!isFormValid) return;
     setLoading(true);
-    const apiResponse = await login(email, password);
-    if (apiResponse.status === 200) {
+
+    try {
+      const apiResponse = await login(email, password);
       setLoading(false);
-      console.log(apiResponse.data);
-      router.push('/home')
-    } else {
+
+      if (apiResponse.success && apiResponse.status === 200) {
+        showToast.success(
+          t("loginsuccessful"),
+          t("welcomeback")
+        );
+        await AsyncStorage.setItem('userDetails', JSON.stringify(apiResponse.data));
+        const storedData = await AsyncStorage.getItem('userDetails');
+        const user = JSON.parse(storedData ?? "");
+
+        console.log("Stored user data:", storedData);
+
+        if (user.isProfileCompleted === true && user?.department === "Shore_Staff") {
+          router.push('/home');
+        } else if (
+          user.isPersonalityTestCompleted === true &&
+          user.isProfileCompleted === true
+        ) {
+          router.push('/home');
+        } else if (user.isProfileCompleted === true) {
+          router.push('/personalitymap')
+        } else {
+          router.push("/onboarding");
+        }
+      }
+
+      else {
+        showToast.error(
+          t('oops'),
+          apiResponse.message
+        );
+      }
+    } catch (error) {
       setLoading(false);
-      console.log(apiResponse)
-      // Alert.alert("Login Failed", apiResponse|| "Try again");
+      showToast.error(
+        t('error'),
+        t('somethingwentwrong')
+      );
     }
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: Colors.background }}>
-      <View style={styles.wrapper}>
-        <View style={styles.backgroundOverlay} />
-        <View style={styles.topSection} />
+    <KeyboardWrapper>
+      <View style={{ flex: 1, backgroundColor: Colors.background }}>
+        <View style={styles.wrapper}>
+          <View style={styles.backgroundOverlay} />
+          <View style={styles.topSection} />
 
-        <Animated.Image
-          source={ImagesAssets.splashCaptainImage}
-          style={[styles.logo, { transform: [{ translateY: logoTranslateY }] }]}
-        />
+          <Animated.Image
+            source={ImagesAssets.splashCaptainImage}
+            style={[styles.logo, { transform: [{ translateY: logoTranslateY }] }]}
+          />
 
-        <View style={styles.formCard}>
-          <View style={styles.formContent}>
-            <View style={styles.header}>
-              <Text style={styles.title}>{t("welcome")}</Text>
-              <Text style={styles.subtitle}>{t("logintoyouraccount")}</Text>
-            </View>
+          <View style={styles.formCard}>
+            <View style={styles.formContent}>
+              <View style={styles.header}>
+                <Text style={styles.title}>{t("welcome")}</Text>
+                <Text style={styles.subtitle}>{t("logintoyouraccount")}</Text>
+              </View>
 
-            <GlobalTextInput
-              placeholder={t("enteryouremail")}
-              value={email}
-              onChangeText={handleEmailChange}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              leftIcon={<Mail size={20} color={Colors.iconMuted} />}
-              error={email && emailError}
-            />
+              <GlobalTextInput
+                placeholder={t("enteryouremail")}
+                value={email}
+                onChangeText={handleEmailChange}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                leftIcon={<Mail size={20} color={Colors.iconMuted} />}
+                error={email && emailError}
+              />
 
-            <GlobalTextInput
-              placeholder={t("enterpassword")}
-              value={password}
-              onChangeText={setPassword}
-              secure
-              leftIcon={<Lock size={20} color={Colors.iconMuted} />}
-              error={password && password.length < 8 ? t("passwordshould8charlong") : ""}
-            />
+              <GlobalTextInput
+                placeholder={t("enterpassword")}
+                value={password}
+                onChangeText={setPassword}
+                secure
+                leftIcon={<Lock size={20} color={Colors.iconMuted} />}
+                error={
+                  password && password.length < 8
+                    ? t("passwordshould8charlong")
+                    : ""
+                }
+              />
 
-            <View style={styles.termsRow}>
-              <TouchableOpacity onPress={() => setTermsAccepted(!termsAccepted)}>
-                {termsAccepted ? (
-                  <CheckSquare size={20} color={Colors.primaryLight} />
-                ) : (
-                  <Square size={20} color={Colors.iconMuted} />
-                )}
+              <View style={styles.termsRow}>
+                <TouchableOpacity
+                  onPress={() => setTermsAccepted(!termsAccepted)}
+                >
+                  {termsAccepted ? (
+                    <CheckSquare size={20} color={Colors.primaryLight} />
+                  ) : (
+                    <Square size={20} color={Colors.iconMuted} />
+                  )}
+                </TouchableOpacity>
+
+                <Text style={styles.termsText}>{t("iacceptthe")}</Text>
+                <TouchableOpacity
+                  onPress={() => router.push("../termsandcondition")}
+                >
+                  <Text style={styles.termsLink}>
+                    {t("termsandconditions")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <GlobalButton
+                title={t("login")}
+                onPress={handleLogin}
+                buttonStyle={styles.loginButton}
+                loading={loading}
+                disabled={!isFormValid}
+              />
+
+              <TouchableOpacity
+                style={styles.forgotPassword}
+                onPress={() => router.push("/auth/ForgotPassword")}
+              >
+                <Text style={styles.forgotPasswordText}>
+                  {t("forgotPassword")}
+                </Text>
               </TouchableOpacity>
-
-              <Text style={styles.termsText}>{t("iacceptthe")}</Text>
-              <TouchableOpacity onPress={() => router.push("../termsandcondition")}>
-                <Text style={styles.termsLink}>{t("termsandconditions")}</Text>
-              </TouchableOpacity>
             </View>
-
-            <GlobalButton
-              title={t("login")}
-              onPress={handleLogin}
-              loading={loading}
-              disabled={!isFormValid}
-            />
-
-            <TouchableOpacity
-              style={styles.forgotPassword}
-              onPress={() => router.push("/auth/ForgotPassword")}
-            >
-              <Text style={styles.forgotPasswordText}>{t("forgotPassword")}</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </View>
-    </View>
+    </KeyboardWrapper>
+
   );
 };
 
@@ -213,5 +266,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textMuted,
     fontFamily: "Poppins-Regular",
-  },
+  }, loginButton: {
+    width: '100%'
+  }
 });

@@ -10,8 +10,6 @@ import CustomStatusBar from "@/src/components/CustomStatusBar";
 import { initI18n } from "@/src/localization/i18n";
 import Splash from "@/src/screens/Splash";
 import Colors from "@/src/utils/Colors";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { login } from "./apis/apiService";
 
 export default function Index() {
   const router = useRouter();
@@ -23,22 +21,17 @@ export default function Index() {
     const init = async () => {
       await initI18n();
 
-      // setTimeout(() => {
-      //   router.replace("/auth/Login");
-      // }, 2500);
-       setTimeout(async()=>{
-      // console.log("hello");
-    let data  =await login("harsh@mailsac.com","Seekware@12")
-    if(data?.data?.result){
-    AsyncStorage.setItem("userDetails", JSON.stringify(data?.data?.result));
-    AsyncStorage.setItem("authToken", data?.data?.result.authToken);
-    AsyncStorage.setItem("userId", data?.data?.result.id);
-    }
-
-
+      setTimeout(() => {
+        router.replace("/auth/UpdateProfile");
+      }, 2500);
+    //    setTimeout(async()=>{
+    //   // console.log("hello");
+    // let data  =await login("rishabhmaurya186@gmail.com","Seekware@123")
+    // AsyncStorage.setItem("userDetails", JSON.stringify(data?.data?.result));
+    // await AsyncStorage.setItem("authToken", data?.data?.result.authToken);
       
-      router.replace("/home");
-    },3000)
+    //   router.replace("/home");
+    // },3000)
     };
 
     init();
