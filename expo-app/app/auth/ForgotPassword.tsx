@@ -17,7 +17,7 @@ import { ImagesAssets } from "@/src/utils/ImageAssets";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import Colors from "@/src/utils/Colors";
-import { forgotpassword } from "../apis/apiService";
+import { forgotpassword } from "../../src/apis/apiService";
 import { showToast } from "@/src/components/GlobalToast";
 import KeyboardWrapper from "@/src/components/KeyboardWrapper";
 

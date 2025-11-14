@@ -19,7 +19,7 @@ import { useTranslation } from "react-i18next";
 import GlobalButton from "@/src/components/GlobalButton";
 import GlobalTextInput from "@/src/components/GlobalTextInput";
 import KeyboardWrapper from "@/src/components/KeyboardWrapper";
-import { resetpassword } from "../apis/apiService";
+import { resetpassword } from "../../src/apis/apiService";
 import { showToast } from "@/src/components/GlobalToast";
 
 const { height } = Dimensions.get("window");

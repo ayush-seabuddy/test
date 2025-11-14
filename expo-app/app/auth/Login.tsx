@@ -15,7 +15,7 @@ import { ImagesAssets } from "@/src/utils/ImageAssets";
 import GlobalButton from "@/src/components/GlobalButton";
 import { router } from "expo-router";
 import GlobalTextInput from "@/src/components/GlobalTextInput";
-import { login } from "../apis/apiService";
+import { login } from "../../src/apis/apiService";
 import { showToast } from "@/src/components/GlobalToast";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import KeyboardWrapper from "@/src/components/KeyboardWrapper";

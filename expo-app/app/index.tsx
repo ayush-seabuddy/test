@@ -8,15 +8,11 @@ import { StyleSheet, View } from "react-native";
 import AppContainer from "@/src/components/AppContainer";
 import CustomStatusBar from "@/src/components/CustomStatusBar";
 import { initI18n } from "@/src/localization/i18n";
-import Splash from "@/src/screens/Splash";
 import Colors from "@/src/utils/Colors";
+import Splash from "./onboarding/Splash";
 
 export default function Index() {
   const router = useRouter();
-
-
-  
-
   useEffect(() => {
     const init = async () => {
       await initI18n();
@@ -41,7 +37,6 @@ export default function Index() {
     <I18nextProvider i18n={i18next}>
       <AppContainer>
         <CustomStatusBar />
-
         <LinearGradient
           colors={[Colors.white, "#06361F"]}
           style={styles.container}

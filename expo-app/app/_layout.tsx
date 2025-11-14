@@ -2,19 +2,22 @@ import Colors from "@/src/utils/Colors";
 import { useFonts } from "expo-font";
 import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import i18next from "i18next";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { I18nextProvider } from "react-i18next";
-import { StatusBar, StyleSheet } from "react-native";
+import { StatusBar, StyleSheet, Text } from "react-native";
 import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import KeyboardWrapper from "../src/components/KeyboardWrapper";
+import { initI18n } from "@/src/localization/i18n";
+import i18n from "i18next";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [loaded] = useFonts({
+  const [appReady, setAppReady] = useState(false);
+
+  const [fontsLoaded] = useFonts({
     "Poppins-Regular": require("../assets/fonts/Poppins-Regular.ttf"),
     "Poppins-Medium": require("../assets/fonts/Poppins-Medium.ttf"),
     "Poppins-SemiBold": require("../assets/fonts/Poppins-SemiBold.ttf"),
@@ -25,25 +28,26 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if (loaded) {
+    async function prepare() {
+      await initI18n();
+      setAppReady(true);
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
 
-  if (!loaded) return null;
+    if (fontsLoaded) prepare();
+  }, [fontsLoaded]);
+
+  if (!appReady) return null;
 
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-        <StatusBar
-          barStyle="dark-content"
-          backgroundColor='#000'
-        />
+        <StatusBar barStyle="dark-content" backgroundColor="#000" />
         <KeyboardWrapper>
           <PaperProvider>
-            <I18nextProvider i18n={i18next}>
-          <Slot />
-          </I18nextProvider>
+            <I18nextProvider i18n={i18n}>
+              <Slot />
+            </I18nextProvider>
           </PaperProvider>
         </KeyboardWrapper>
         <Toast />

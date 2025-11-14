@@ -19,7 +19,7 @@ import { useTranslation } from "react-i18next";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import GlobalButton from "@/src/components/GlobalButton";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { forgotpassword, verifyotp } from "../apis/apiService";
+import { forgotpassword, verifyotp } from "../../src/apis/apiService";
 import { showToast } from "@/src/components/GlobalToast";
 
 const { width, height } = Dimensions.get("window");

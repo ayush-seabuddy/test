@@ -1,5 +1,5 @@
 // HomeTab.tsx
-import { getAllSocialPost } from '@/app/apis/apiService';
+import { getAllSocialPost } from '@/src/apis/apiService';
 import Colors from '@/src/utils/Colors';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
