@@ -716,5 +716,15 @@
   "onleave": "Onleave",
   "na": "N/A",
   "invalid_date": "Invalid date",
-  "url_error": "This URL ({url}) is wrong!"
+  "url_error": "This URL ({url}) is wrong!",
+  "incomplete":"Incomplete",
+  "pleaseanswerall":"Please answer all questions before submitting",
+  "noquestionsavailable":"No questions available",
+  "submitting":"Submitting...",
+  "congratulations":"Congratulations",
+  "resultpopup_description":"It's a great step towards understanding yourself better and gaining insights that can help you grow. Well done!",
+  "openresult":"Open Result",
+  "home":"Home",
+  "completedquestions":"Completed"
+
 }

@@ -707,7 +707,7 @@
   "optional": "选修的",
   "profileDetails": "个人资料详情",
   "crew_profile": "船员简介",
-   "more_information": "更多信息",
+  "more_information": "更多信息",
   "onboard_interests": "船上兴趣",
   "crew_ranking": "船员排名",
   "years_of_experience": "多年经验",
@@ -715,5 +715,14 @@
   "onleave": "昂莱夫",
   "na": "不适用",
   "invalid_date": "无效日期",
-  "url_error": "这个网址（{url}）是错误的！"
+  "url_error": "这个网址（{url}）是错误的！",
+  "incomplete": "不完整",
+  "pleaseanswerall": "请在提交前回答所有问题。",
+  "noquestionsavailable": "没有可用的问题",
+  "submitting": "正在提交...",
+  "congratulations": "恭喜你",
+  "resultpopup_description": "这是增进自我了解、获得有助于自身成长的洞见的重要一步。做得好！",
+  "openresult": "打开结果",
+  "home": "家",
+    "completedquestions":"完全的"
 }

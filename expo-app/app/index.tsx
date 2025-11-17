@@ -10,6 +10,8 @@ import CustomStatusBar from "@/src/components/CustomStatusBar";
 import { initI18n } from "@/src/localization/i18n";
 import Colors from "@/src/utils/Colors";
 import Splash from "./onboarding/Splash";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { login } from "@/src/apis/apiService";
 
 export default function Index() {
   const router = useRouter();
@@ -18,13 +20,13 @@ export default function Index() {
       await initI18n();
 
       setTimeout(() => {
-        router.replace("/auth/Login");
+        router.replace("/personalitymap/PersonalityMapResultScreen");
       }, 2500);
     //    setTimeout(async()=>{
     //   // console.log("hello");
-    // let data  =await login("rishabhmaurya186@gmail.com","Seekware@123")
-    // AsyncStorage.setItem("userDetails", JSON.stringify(data?.data?.result));
-    // await AsyncStorage.setItem("authToken", data?.data?.result.authToken);
+    // let data  =await login({email:"rishabhmaurya186@gmail.com",password:"Seekware@123"})
+    // AsyncStorage.setItem("userDetails", JSON.stringify(data?.data));
+    // await AsyncStorage.setItem("authToken", data?.data.authToken);
       
     //   router.replace("/home");
     // },3000)

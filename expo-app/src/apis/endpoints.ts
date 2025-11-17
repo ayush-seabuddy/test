@@ -24,6 +24,8 @@ export const ENDPOINTS = {
   UPLOADFILE: `${BASE_URL}/user/uploadFile`,
   GETALLCOUNTRIES:`${BASE_URL}/user/getAllCountries`,
   UPDATEPROFILE:`${BASE_URL}/user/updateProfile`,
+  GETALLASSESSMENTS:`${BASE_URL}/user/getAssessmentQuestions`,
+  SAVEASSESSMENTRESPONSE:`${BASE_URL}/user/saveAssessmentResponses`,
   GetAllSocialPost: `${BASE_URL}/user/getAllHangoutPost`,
   VIEW_PROFILE: `${BASE_URL}/user/viewUserProfile`,
 };

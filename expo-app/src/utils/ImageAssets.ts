@@ -15,6 +15,8 @@ export const ImagesAssets = {
   personalityMapJollie: require("../../assets/images/JollieImages/PersonalityMapJollie.png"),
   selectedLine:require("../../assets/images/SelectedLine.png"),
   unselectedLine:require("../../assets/images/UnselectedLine.png"),
+  personalitymapresultpopupjollie:require("../../assets/images/JollieImages/PersonalityMapResultPopup.png"),
+  personaresultbackground:require("../../assets/images/JollieImages/PersonaResultBackground.png"),
 
 
 
