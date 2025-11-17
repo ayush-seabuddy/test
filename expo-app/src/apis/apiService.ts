@@ -37,6 +37,10 @@ export interface SocialPostParams {
   [key: string]: any;
 }
 
+export interface ViewProfileParams {
+  userId?: string;
+}
+
 export interface ApiResponse<T = any> {
   success: boolean;
   status?: number;
@@ -199,5 +203,15 @@ export const getAllSocialPost = async (
     method: "GET",
     url: ENDPOINTS.GetAllSocialPost,
     params,
+  });
+};
+
+export const viewProfile = async (
+  params?: ViewProfileParams
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.VIEW_PROFILE,
+    params
   });
 };

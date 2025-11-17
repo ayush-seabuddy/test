@@ -11,6 +11,7 @@ import Toast from "react-native-toast-message";
 import KeyboardWrapper from "../src/components/KeyboardWrapper";
 import { initI18n } from "@/src/localization/i18n";
 import i18n from "i18next";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -45,7 +46,9 @@ export default function RootLayout() {
         <StatusBar barStyle="dark-content" backgroundColor="#000" />
           <PaperProvider>
             <I18nextProvider i18n={i18n}>
-              <Slot />
+                  <GestureHandlerRootView style={{ flex: 1 }}>
+                <Slot />
+                </GestureHandlerRootView>
             </I18nextProvider>
           </PaperProvider>
         <Toast />

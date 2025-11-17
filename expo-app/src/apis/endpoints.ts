@@ -25,4 +25,5 @@ export const ENDPOINTS = {
   GETALLCOUNTRIES:`${BASE_URL}/user/getAllCountries`,
   UPDATEPROFILE:`${BASE_URL}/user/updateProfile`,
   GetAllSocialPost: `${BASE_URL}/user/getAllHangoutPost`,
+  VIEW_PROFILE: `${BASE_URL}/user/viewUserProfile`,
 };
