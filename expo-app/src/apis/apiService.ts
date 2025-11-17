@@ -44,7 +44,66 @@ export interface ApiResponse<T = any> {
   data: T;
 }
 
+export interface UpdateProfileRequest {
+  userId?: string;
+  fullName?: string;
+  countryCode?: string;
+  mobileNumber?: string;
+  email?: string;
 
+  profileUrl?: string;
+  password?: string;
+  address?: string;
+
+  gender?: string;
+  rank?: string;
+  experience?: string;
+  relationshipStatus?: string;
+  nationality?: string;
+  ethnicity?: string;
+  religion?: string;
+  scriptures?: string;
+
+  hobbies?: string[];
+  favoriteActivity?: string[];
+  currentMood?: string;
+  socialInteraction?: string;
+
+  smoker?: string;
+  healthCondition?: string;
+  alcohol?: string;
+
+  bio?: string;
+  dob?: string;
+
+  workingExperience?: Array<{
+    id: string;
+    companyName: string;
+    role: string;
+    from: string;
+    to: string;
+    status: "DELETE";
+    createdAt: string;
+  }>;
+
+  SocialMediaLinks?: Array<{
+    platform: string;
+    link: string;
+  }>;
+
+  certifications?: Array<{
+    id: string;
+    certificateName: string;
+    from: string;
+    to: string;
+    organization: string;
+    status: "DELETE";
+    createdAt: string;
+  }>;
+
+  status?: string;
+  isProfileCompleted?: true;
+}
 export const login = async (
   payload: LoginRequest
 ): Promise<ApiResponse> => {
@@ -120,6 +179,16 @@ export const getallcountries = async (): Promise<ApiResponse> => {
   return await apiRequest({
     method: "GET",
     url: ENDPOINTS.GETALLCOUNTRIES,
+  });
+};
+
+export const updateprofile = async (
+  payload: UpdateProfileRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "PUT",
+    url: ENDPOINTS.UPDATEPROFILE,
+    data: payload,
   });
 };
 

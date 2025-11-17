@@ -563,19 +563,19 @@
     "welcome": "Welcome to {{companyName}} Family",
     "title1": "Crew-Centric Onboarding & Role-Fit Assessment",
     "cardTitle1": "Built for Seafarers, backed by Science.",
-    "cardDescription1": "Designed for maritime environment, our onboarding process evaluates psychological readiness, rank suitability, and well-being indicators.",
+    "cardDescription1": "Designed for maritime environment, our onboarding process evaluates psychological readiness, rank suitability, and well-being indicators to support crew from day one.",
     "title2": "Daily Check-ins and Progress Tracking",
     "cardTitle2": "Your Well-being, Visualized.",
-    "cardDescription2": "Track your emotional health and early signs of fatigue or isolation.",
+    "cardDescription2": "Spot changes in mood, energy, and stress with daily inputs — built to help seafarers track their emotional trajectory and early signs of fatigue, burnout, or isolation.",
     "title3": "Access to a Rich Resource Library",
     "cardTitle3": "Support that Sails with You",
-    "cardDescription3": "Expert-curated content to keep minds steady and spirits strong.",
+    "cardDescription3": "Access expert-curated content , built to keep minds steady and spirits strong, wherever you’re headed.",
     "title4": "Peer Support Community and Professional Help",
-    "cardTitle4": "Company Wide Social Feed. 24/7 Global Support.",
-    "cardDescription4": "Join onboard communities and reach out for wellness support anytime.",
+    "cardTitle4": "Company Wide Social Feed. 24/7 Global Support from Sailors’ Society.",
+    "cardDescription4": "Join your company’s onboard community, speak to wellness officers, or reach Sailors’ Society’s 24/7 support—all in one tap.",
     "title5": "Well-Being Challenges and Gamification",
     "cardTitle5": "Host. Hang Out. Hit the Leaderboard.",
-    "cardDescription5": "Participate, earn rewards, and strengthen your crew bond.",
+    "cardDescription5": "From karaoke nights to workout sessions, earn rewards for participating, organising, and reconnecting. Host or join onboard events, climb the leaderboard, and collect miles while bringing the crew back together—one laugh, one badge at a time.",
     "title6": "Let's Get Started!",
     "cardTitle6": "You're all set to sail.",
     "cardDescription6": "Start your wellness journey with your crew today."
@@ -620,7 +620,7 @@
     "other": "Other (specify)",
     "prefer_no": "Prefer not to say"
   },
-  "selectActivityStatus":"How active are you in a typical week",
+  "selectActivityStatus": "How active are you in a typical week",
   "activityOptions": {
     "inactive": "Mostly inactive (e.g. no intentional exercise)",
     "light_active": "Lightly active (e.g. walking, basic tasks)",
@@ -654,7 +654,7 @@
     "other": "Other",
     "none": "No Religion"
   },
-    "selectHobbies":"Pick your hobbies (Multi-Select)",
+  "selectHobbies": "Pick your hobbies (Multi-Select)",
   "hobbiesOptions": {
     "art": "🎨 Art & Craft",
     "music": "🎵 Music",
@@ -669,7 +669,7 @@
     "sports": "⚽ Sports",
     "meditation": "🧘‍♂️ Meditation"
   },
-  "selectFavActivity":"Favorite onboard activity (Multi-Select)",
+  "selectFavActivity": "Favorite onboard activity (Multi-Select)",
   "fav_activityOptions": {
     "movie": "Movie Night",
     "gym": "Gym Session",
@@ -689,13 +689,12 @@
     "quit": "Trying to quit",
     "prefer_no": "Prefer not to say"
   },
-  "selectSocialStatus":"Do you feel socially connected on board?",
+  "selectSocialStatus": "Do you feel socially connected on board?",
   "socialOptions": {
     "connected": "Yes, I have good connections",
     "isolated": "Somewhat isolated",
     "alone": "Mostly alone"
   },
-  
   "selectAlcoholStatus": "How often do you drink alcohol",
   "alcoholOptions": {
     "no": "I don’t drink",
@@ -705,5 +704,7 @@
     "prefer_no": "Prefer not to say"
   },
   "maxThreeItems": "You can select up to 3 items only.",
-  "agreementText": "I agree to SeaBuddy collecting and using my well-being data to personalize support. I understand this data will remain confidential and will not be shared with my employer."
+  "agreementText": "I agree to SeaBuddy collecting and using my well-being data to personalize support. I understand this data will remain confidential and will not be shared with my employer.",
+  "optional": "Optional",
+  "profileDetails": "Profile Details"
 }

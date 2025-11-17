@@ -23,5 +23,6 @@ export const ENDPOINTS = {
   RESETPASSWORD: `${BASE_URL}/user/resetPassword`,
   UPLOADFILE: `${BASE_URL}/user/uploadFile`,
   GETALLCOUNTRIES:`${BASE_URL}/user/getAllCountries`,
+  UPDATEPROFILE:`${BASE_URL}/user/updateProfile`,
   GetAllSocialPost: `${BASE_URL}/user/getAllHangoutPost`,
 };

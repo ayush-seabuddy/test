@@ -3,6 +3,7 @@ import ReactTimeAgo from 'react-time-ago';
 import TimeAgo from "javascript-time-ago";
 import en from "javascript-time-ago/locale/en.json";
 import zh from "javascript-time-ago/locale/zh.json";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 TimeAgo.addDefaultLocale(en);
 
@@ -49,3 +50,14 @@ export const CreateTime: React.FC<CreateTimeProps> = ({ createdTime, locale = "e
 
 
 export const isVideo = (uri:string) => uri?.match(/\.(mp4|mov|avi)$/i);
+
+export const getUserDetails = async () => {
+  try {
+    const jsonValue = await AsyncStorage.getItem("userDetails");
+    if (!jsonValue) return null;
+    return JSON.parse(jsonValue);
+  } catch (error) {
+    console.error("Error reading userDetails:", error);
+    return null;
+  }
+};

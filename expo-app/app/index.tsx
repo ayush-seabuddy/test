@@ -18,7 +18,7 @@ export default function Index() {
       await initI18n();
 
       setTimeout(() => {
-        router.replace("/auth/UpdateProfilePhoto");
+        router.replace("/auth/Login");
       }, 2500);
     //    setTimeout(async()=>{
     //   // console.log("hello");

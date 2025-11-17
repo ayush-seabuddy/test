@@ -1,9 +1,6 @@
 import { checkNetwork } from "@/src/hooks/useNetworkStatus";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import { useTranslation } from "react-i18next";
-
-const { t } = useTranslation();
 
 // ✅ Create axios instance
 const apiClient = axios.create({
@@ -20,7 +17,7 @@ apiClient.interceptors.request.use(
     if (!isOnline) {
       return Promise.reject({
         status: null,
-        message: t("nointernetconnection"),
+        message: 'No Internet Connection',
       });
     }
 
@@ -30,11 +27,9 @@ apiClient.interceptors.request.use(
       config.headers["authToken"] = token;
     }
 
-    console.log(config.data instanceof FormData ,"config.data instanceof FormData");
-    
     if (config.data instanceof FormData) {
       // Let axios set the boundary
-       config.headers["Content-Type"] =  'multipart/form-data';
+      config.headers["Content-Type"] = 'multipart/form-data';
     } else {
       // Only set JSON for non-file requests
       config.headers["Content-Type"] = "application/json";

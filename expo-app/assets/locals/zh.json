@@ -703,5 +703,7 @@
     "prefer_no": "不愿透露"
   },
   "maxThreeItems": "您最多只能选择 3 件商品。",
-  "agreementText": "我同意SeaBuddy收集并使用我的健康状况数据以提供个性化支持。我理解这些数据将严格保密，不会与我的雇主共享。"
+  "agreementText": "我同意SeaBuddy收集并使用我的健康状况数据以提供个性化支持。我理解这些数据将严格保密，不会与我的雇主共享。",
+  "optional": "选修的",
+  "profileDetails": "个人资料详情"
 }
