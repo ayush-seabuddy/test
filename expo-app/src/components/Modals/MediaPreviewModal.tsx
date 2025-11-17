@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Modal,
   View,
@@ -6,25 +6,15 @@ import {
   Dimensions,
   TouchableOpacity,
   StatusBar,
-  ActivityIndicator,
   Platform,
   Text,
+  ActivityIndicator,
 } from "react-native";
 import { Image } from "expo-image";
-import { Video, AVPlaybackStatus, ResizeMode } from "expo-av";
 import ImageViewer from "react-native-image-zoom-viewer";
-import Orientation from "react-native-orientation-locker";
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { X, Send, Volume2, VolumeX } from "lucide-react-native";
-
-// Use react-native-video only in EAS builds
-let ReactNativeVideo: any = null;
-if (process.env.EXPO_PUBLIC_USE_EAS === "true") {
-  try {
-    ReactNativeVideo = require("react-native-video").default;
-  } catch (e) {
-    console.warn("react-native-video not available");
-  }
-}
+import Video from "react-native-video"; // ← Only this
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -48,18 +38,112 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
   canSend = false,
   uploadImageToCloudinary,
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
+
+  const styles = StyleSheet.create({
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "black",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    imageViewer: {
+      width: screenWidth,
+      height: canSend ? screenHeight * 0.7 : screenHeight,
+    },
+    loaderContainer: {
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: [{ translateX: -25 }, { translateY: -25 }],
+      zIndex: 2,
+    },
+    topBar: {
+      position: "absolute",
+      top: Platform.OS === "ios" ? 60 : 30,
+      left: 20,
+      right: 20,
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      zIndex: 10,
+    },
+    iconButton: {
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    mediaWrapper: {
+      flex: 1,
+      width: "100%",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    mediaContainer: {
+      width: "100%",
+      height: "100%",
+    },
+    loader: {
+      ...StyleSheet.absoluteFillObject,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "rgba(0,0,0,0.5)",
+    },
+    sendButtonContainer: {
+      position: "absolute",
+      bottom: 50,
+      alignSelf: "center",
+    },
+    sendButton: {
+      width: 64,
+      height: 64,
+      borderRadius: 32,
+      backgroundColor: "#fff",
+      justifyContent: "center",
+      alignItems: "center",
+      elevation: 10,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 5 },
+      shadowOpacity: 0.3,
+      shadowRadius: 10,
+    },
+    unsupportedText: {
+      color: "#fff",
+      fontSize: 18,
+    },
+  });
+
+
+
+  const [isLoading, setIsLoading] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
-  const [videoDimensions, setVideoDimensions] = useState<{
-    width?: number;
-    height?: number;
-  }>({});
-  const [dimensions, setDimensions] = useState({ width:	screenWidth, height: screenHeight });
+  const [videoAspectRatio, setVideoAspectRatio] = useState(1);
+  const [dimensions, setDimensions] = useState({ width: screenWidth, height: screenHeight });
 
   const mediaUri = uri || PLACEHOLDER_IMAGE;
   const isPlaceholder = mediaUri === PLACEHOLDER_IMAGE;
 
-  // Listen to orientation changes
+  const viewerRef = useRef<any>(null);
+  const [imageStatus, setImageStatus] = useState<'loading' | 'success' | 'fail'>('loading');
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (viewerRef.current?.state?.imageSizes?.[0]) {
+        const status = viewerRef.current.state.imageSizes[0].status;
+        setImageStatus(status);
+        if (status === 'success' || status === 'fail') {
+          setIsLoading(false)
+          clearInterval(interval);
+        }
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Handle orientation changes
   useEffect(() => {
     const subscription = Dimensions.addEventListener("change", ({ window }) => {
       setDimensions({ width: window.width, height: window.height });
@@ -67,29 +151,31 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
     return () => subscription?.remove();
   }, []);
 
-  // Reset orientation on close/unmount
+  // Lock to portrait when modal closes
   useEffect(() => {
-    return () => {
-      Orientation.lockToPortrait();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!visible) {
-      Orientation.unlockAllOrientations();
+    if (visible) {
+      // Allow rotation when modal is open
+      ScreenOrientation.unlockAsync().catch(() => { }); // silent fail if already unlocked
     }
+
+    // Cleanup: lock to portrait when modal closes/unmounts
+    return () => {
+      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT).catch(
+        () => { }
+      );
+    };
   }, [visible]);
 
   const handleClose = useCallback(() => {
-    Orientation.lockToPortrait();
+    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT);
     onClose();
   }, [onClose]);
 
   const toggleMute = () => setIsMuted((prev) => !prev);
 
-  const isLandscape = videoDimensions.width && videoDimensions.height
-    ? videoDimensions.width > videoDimensions.height
-    : false;
+  // Dynamic video size based on aspect ratio and orientation
+  const videoWidth = dimensions.width;
+  const videoHeight = videoWidth / videoAspectRatio;
 
   const renderImage = () => {
     if (isPlaceholder) {
@@ -103,73 +189,56 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
       );
     }
 
+    const images = [{ url: mediaUri }];
     return (
+
       <>
         <ImageViewer
-          imageUrls={[{ url: mediaUri }]}
-          style={styles.mediaContainer}
+          ref={viewerRef}
+          imageUrls={images}
+          style={styles.imageViewer}
           enableSwipeDown={false}
           renderIndicator={() => <View />}
-          backgroundColor="transparent"
-        //   onLoadStart={() => setIsLoading(true)}
-        //   onLoadEnd={() => setIsLoading(false)}
           loadingRender={() => (
-            <View style={styles.loader}>
-              <ActivityIndicator size="large" color="#fff" />
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator size="large" color="#ffffff" />
             </View>
           )}
+          backgroundColor="transparent"
         />
-        {isLoading && (
-          <View style={styles.loader}>
-            <ActivityIndicator size="large" color="#fff" />
-          </View>
-        )}
       </>
     );
   };
 
   const renderVideo = () => {
-    const videoStyle = isLandscape
-      ? [styles.mediaLandscape, { width: dimensions.height, height: dimensions.width }]
-      : styles.mediaPortrait;
-
-    // Use react-native-video in EAS, fallback to expo-av
-    if (ReactNativeVideo) {
-      return (
-        <ReactNativeVideo
-          source={{ uri: mediaUri }}
-          style={videoStyle}
-          resizeMode="contain"
-          repeat
-          muted={isMuted}
-          controls
-          onLoad={(data: any) => {
-            setIsLoading(false);
-            setVideoDimensions({
-              width: data.naturalSize.width,
-              height: data.naturalSize.height,
-            });
-          }}
-          onLoadStart={() => setIsLoading(true)}
-        />
-      );
+    if (!mediaUri || isPlaceholder) {
+      return <Text style={styles.unsupportedText}>No video source</Text>;
     }
 
-    // Fallback: expo-av (no fullscreen, no advanced controls)
     return (
       <Video
         source={{ uri: mediaUri }}
-        style={videoStyle}
-        useNativeControls
-        resizeMode={ResizeMode.CONTAIN}
-        isLooping
-        isMuted={isMuted}
-        onPlaybackStatusUpdate={(status: AVPlaybackStatus) => {
-          if (status.isLoaded) {
-            setIsLoading(false);
+        style={{
+          width: videoWidth,
+          height: videoHeight,
+        }}
+        resizeMode="contain"
+        controls={true}
+        muted={isMuted}
+        repeat={true}
+        paused={false}
+        onLoad={(data) => {
+          setIsLoading(false);
+          if (data.naturalSize?.width && data.naturalSize?.height) {
+            setVideoAspectRatio(data.naturalSize.width / data.naturalSize.height);
           }
         }}
-        onLoadStart={() => setIsLoading(true)}
+        onError={(e) => {
+          console.warn("Video error:", e);
+          setIsLoading(false);
+        }}
+        // Optional: better performance on Android
+        ignoreSilentSwitch="ignore"
       />
     );
   };
@@ -183,31 +252,29 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.modalOverlay}>
-        <StatusBar backgroundColor="rgba(0,0,0,0.95)" barStyle="light-content" />
+        <StatusBar backgroundColor="black" barStyle="light-content" />
 
-        {/* Top Action Bar */}
-        <View
-          style={[
-            styles.topBar,
-            { justifyContent: type === "video" ? "space-between" : "flex-end" },
-          ]}
-        >
+        {/* Top Bar */}
+        <View style={styles.topBar}>
           {type === "video" && (
             <TouchableOpacity onPress={toggleMute} style={styles.iconButton}>
-              {isMuted ? (
-                <VolumeX size={20} color="#fff" />
-              ) : (
-                <Volume2 size={20} color="#fff" />
-              )}
+              {isMuted ? <VolumeX size={24} color="#fff" /> : <Volume2 size={24} color="#fff" />}
             </TouchableOpacity>
           )}
           <TouchableOpacity onPress={handleClose} style={styles.iconButton}>
-            <X size={20} color="#fff" />
+            <X size={24} color="#fff" />
           </TouchableOpacity>
         </View>
 
-        {/* Media */}
-        <View style={styles.mediaWrapper}>{renderContent()}</View>
+        {/* Media Content */}
+        <View style={styles.mediaWrapper}>
+          {renderContent()}
+          {isLoading && (
+            <View style={styles.loader}>
+              <ActivityIndicator size="large" color="#fff" />
+            </View>
+          )}
+        </View>
 
         {/* Send Button */}
         {canSend && (
@@ -215,98 +282,19 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
             <TouchableOpacity
               onPress={uploadImageToCloudinary}
               style={styles.sendButton}
-              accessibilityLabel="Send media"
             >
               <Send size={28} color="#000" />
             </TouchableOpacity>
           </View>
         )}
-
-        {/* Global Loader */}
-        {isLoading && (
-          <View style={styles.loader}>
-            <ActivityIndicator size="large" color="#fff" />
-          </View>
-        )}
       </View>
     </Modal>
   );
+
+
+
 };
 
-// Static styles only
-const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.95)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  topBar: {
-    position: "absolute",
-    top: Platform.OS === "ios" ? 60 : 20,
-    left: 20,
-    right: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    zIndex: 10,
-  },
-  iconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    justifyContent: "center",
-    alignItems: "center",
-    backdropFilter: "blur(10px)",
-  },
-  mediaWrapper: {
-    width: screenWidth,
-    height: screenHeight * 0.8,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  mediaContainer: {
-    width: screenWidth,
-    height: screenHeight * 0.8,
-  },
-  mediaPortrait: {
-    width: screenWidth,
-    height: screenHeight * 0.8,
-    borderRadius: 12,
-  },
-  mediaLandscape: {
-    borderRadius: 0,
-  },
-  loader: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: [{ translateX: -25 }, { translateY: -25 }],
-    zIndex: 2,
-  },
-  sendButtonContainer: {
-    position: "absolute",
-    bottom: 50,
-    left: (screenWidth - 60) / 2,
-    zIndex: 10,
-  },
-  sendButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "#fff",
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-  },
-  unsupportedText: {
-    color: "#fff",
-    fontSize: 16,
-  },
-});
+
 
 export default MediaPreviewModal;

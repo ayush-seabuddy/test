@@ -33,6 +33,22 @@
       "expo-localization",
       "expo-font",
       [
+        "react-native-video",
+        {
+          "androidEnableCaching": true,
+          "iosEnableCaching": true
+        }
+      ],
+      [
+        "expo-screen-orientation",
+        {
+          "supportedOrientations": [
+            "portrait",
+            "landscape"
+          ]
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",

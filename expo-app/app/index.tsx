@@ -10,6 +10,8 @@ import CustomStatusBar from "@/src/components/CustomStatusBar";
 import { initI18n } from "@/src/localization/i18n";
 import Colors from "@/src/utils/Colors";
 import Splash from "./onboarding/Splash";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { login } from "@/src/apis/apiService";
 
 export default function Index() {
   const router = useRouter();
@@ -17,17 +19,22 @@ export default function Index() {
     const init = async () => {
       await initI18n();
 
-      setTimeout(() => {
-        router.replace("/auth/Login");
-      }, 2500);
-    //    setTimeout(async()=>{
-    //   // console.log("hello");
-    // let data  =await login("rishabhmaurya186@gmail.com","Seekware@123")
-    // AsyncStorage.setItem("userDetails", JSON.stringify(data?.data?.result));
-    // await AsyncStorage.setItem("authToken", data?.data?.result.authToken);
+      // setTimeout(() => {
+      //   router.replace("/auth/Login");
+      // }, 2500);
+       setTimeout(async()=>{
+      // console.log("hello");
+    let data  =await login({email:"rishabhmaurya186@gmail.com",password:"Seekware@123"})
+    await AsyncStorage.setItem("userDetails", JSON.stringify(data?.data));
+    await AsyncStorage.setItem("authToken", data?.data?.authToken);
+    await AsyncStorage.setItem("userId", data?.data?.id);
+    await AsyncStorage.setItem("employerId", data?.data?.employerId);
+    if(data?.data?.shipId){
+      await AsyncStorage.setItem("shipId", data?.data?.shipId);
+    }
       
-    //   router.replace("/home");
-    // },3000)
+      router.replace("/home");
+    },3000)
     };
 
     init();

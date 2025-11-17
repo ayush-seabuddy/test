@@ -30,7 +30,9 @@ export default function CommunityLayout() {
               borderRadius: 25,
               marginTop: 10,
               padding: 5,
-              position: "relative",
+               position: "absolute",
+              top: 0,
+              zIndex: 1,
             }}
           >
             {state.routes.map((route, index) => {

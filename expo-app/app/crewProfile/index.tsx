@@ -163,11 +163,7 @@ const Profile: React.FC = () => {
   const [selectedMedia, setSelectedMedia] = useState<string >("");
 
 
-  const handleMediaPress = (url?: string) => {
-    if (!url) {
-      Alert.alert(t('url_error', { url }));
-      return;
-    }
+  const handleMediaPress = (url: string) => {
     setSelectedMedia(url);
     setModalVisible(true);
     
@@ -182,7 +178,7 @@ const Profile: React.FC = () => {
         titleStyle={styles.headerTitle}
       />
        <TouchableOpacity
-        onPress={() => handleMediaPress(crewProfileDetails?.profileUrl)}
+        onPress={() => handleMediaPress(crewProfileDetails?.profileUrl||"")}
         style={styles.viewIconContainer}
       >
         <Maximize2 size={20} color={Colors.black} />
