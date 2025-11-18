@@ -14,6 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import Colors from "@/src/utils/Colors";
 import { House } from "lucide-react-native";
+import { router } from "expo-router";
 
 const SocialHeader = () => {
   const navigation = useNavigation();
@@ -99,7 +100,7 @@ return (
         </TouchableOpacity>
 
         {/* Home */}
-        <TouchableOpacity style={styles.homeButton}>
+        <TouchableOpacity style={styles.homeButton} onPress={() => router.push("/home")}>
           <House size={22} color="#000" />
         </TouchableOpacity>
       </View>

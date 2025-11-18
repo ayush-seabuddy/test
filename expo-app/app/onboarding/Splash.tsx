@@ -1,10 +1,10 @@
+import AppContainer from '@/src/components/AppContainer';
+import { ImagesAssets } from '@/src/utils/ImageAssets';
 import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Image, Animated, Platform, Dimensions, StatusBar } from 'react-native';
 // import FocusAwareStatusBar from '../statusbar/FocusAwareStatusBar';
 // import { ImagesAssets } from '../assets/ImagesAssets';
 // import { GetAssessment } from '../CommonApi';
-import AppContainer from '../components/AppContainer';
-import { ImagesAssets } from '../utils/ImageAssets';
 
 const { height } = Dimensions.get('window');
 

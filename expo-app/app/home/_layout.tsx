@@ -9,7 +9,6 @@ export default function HomeLayout() {
      <Provider store={store}>
     <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="(bottomtab)" />
     </Stack>
     </Provider>
   );
