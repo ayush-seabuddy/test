@@ -725,6 +725,15 @@
   "resultpopup_description":"It's a great step towards understanding yourself better and gaining insights that can help you grow. Well done!",
   "openresult":"Open Result",
   "home":"Home",
-  "completedquestions":"Completed"
+  "completedquestions":"Completed",
+  "famouspeopledesc":"Famous people with the same personality type",
+  "personalityDescText":"Personality Description",
+  "personalitytraits":"Personality Traits",
+  "careerpath":"Career Path",
+  "nodataavailable":"No Data Available",
+  "pleasewait":"Please Wait...",
+  "failedtogeneratepdf":"Failed To Generate PDF",
+  "enterhere":"Enter Here",
+  "nohappinessindexdata":"No Happiness Index data available yet"
 
 }

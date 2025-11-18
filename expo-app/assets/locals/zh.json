@@ -724,5 +724,14 @@
   "resultpopup_description": "这是增进自我了解、获得有助于自身成长的洞见的重要一步。做得好！",
   "openresult": "打开结果",
   "home": "家",
-    "completedquestions":"完全的"
+  "completedquestions": "完全的",
+  "famouspeopledesc": "具有相同性格类型的名人",
+  "personalityDescText": "性格描述",
+  "personalitytraits": "性格特征",
+  "careerpath": "职业道路",
+  "nodataavailable": "无可用数据",
+  "pleasewait": "请稍等...",
+  "failedtogeneratepdf": "生成 PDF 文件失败",
+  "enterhere": "在此输入",
+  "nohappinessindexdata": "目前尚无幸福指数数据。"
 }

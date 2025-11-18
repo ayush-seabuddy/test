@@ -42,12 +42,12 @@ export interface ViewProfileParams {
 }
 
 export interface SaveAssessmentRequest {
-  questionType: string;                 
-  month: string;                        
+  questionType: string;
+  month: string;
   answers: Array<{
     questionId: string;
-    answer: number;                     
-    createdAt: string;                
+    answer: number;
+    createdAt: string;
   }>;
 }
 
@@ -125,6 +125,13 @@ export interface GetAllAssessmentsParams {
   questionType?: string
 }
 
+export interface GetAllAssessmentsResultParams {
+  questionType?: string
+}
+
+export interface GetAllAssessmentResponseListParams {
+  assessmentType?: string
+}
 
 export const login = async (
   payload: LoginRequest
@@ -252,5 +259,23 @@ export const saveassessmentresponse = async (
     method: "POST",
     url: ENDPOINTS.SAVEASSESSMENTRESPONSE,
     data: payload,
+  });
+};
+
+
+export const getallassessmentsResult = async (params?: GetAllAssessmentsResultParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETALLASSESSMENTSRESULT,
+    params
+  });
+};
+
+
+export const getassessmentresponseList = async (params?: GetAllAssessmentResponseListParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETASSESSMENTRESPONSELIST,
+    params
   });
 };

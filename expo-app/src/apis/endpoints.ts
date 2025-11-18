@@ -25,7 +25,9 @@ export const ENDPOINTS = {
   GETALLCOUNTRIES:`${BASE_URL}/user/getAllCountries`,
   UPDATEPROFILE:`${BASE_URL}/user/updateProfile`,
   GETALLASSESSMENTS:`${BASE_URL}/user/getAssessmentQuestions`,
+  GETALLASSESSMENTSRESULT:`${BASE_URL}/user/getAssessmentResult`,
   SAVEASSESSMENTRESPONSE:`${BASE_URL}/user/saveAssessmentResponses`,
+  GETASSESSMENTRESPONSELIST:`${BASE_URL}/user/getAssessmentResponseList`,
   GetAllSocialPost: `${BASE_URL}/user/getAllHangoutPost`,
   VIEW_PROFILE: `${BASE_URL}/user/viewUserProfile`,
 };

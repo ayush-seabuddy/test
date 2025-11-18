@@ -215,7 +215,7 @@ const PersonalityMapTestScreen = () => {
 
   return (
     <View style={styles.main}>
-      <PersonalityMapResultModal visible={true} setModalVisible={setshowResultPopup} />
+      <PersonalityMapResultModal visible={showResultPopup} setModalVisible={setshowResultPopup} />
 
       <View style={styles.header}>
 
