@@ -6,6 +6,7 @@ import zh from "javascript-time-ago/locale/zh.json";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import socketService from './socketService';
 import { updateShipList, updateFleetList } from '../redux/chatListSlice'
+import moment from 'moment-timezone';
 
 TimeAgo.addDefaultLocale(en);
 
@@ -87,6 +88,19 @@ export const getUserDetails = async () => {
   }
 };
 
+export  const formatChatTime = (timestamp: string) => {
+    const messageDate = moment(timestamp);
+    const today = moment().startOf("day");
+    const yesterday = moment().subtract(1, "days").startOf("day");
+
+    if (messageDate.isSame(today, "day")) {
+      return messageDate.format("hh:mm A");
+    } else if (messageDate.isSame(yesterday, "day")) {
+      return "Yesterday";
+    } else {
+      return messageDate.format("DD/MM/YY");
+    }
+  };
 
 export const getChatList = async (dispatch: any) => {
   let storeUserId = await AsyncStorage.getItem('userId');

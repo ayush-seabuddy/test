@@ -38,5 +38,7 @@ export const ImagesAssets = {
   // chat page Icons
    shipIcon: require("../../assets/images/shipIcon.png"),
    fleetIcon: require("../../assets/images/fleetIcon.png"),
+
+   userIcon : require("../../assets/images/Man.png"),
   
 };

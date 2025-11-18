@@ -1,9 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
+import { ChatRoom } from '../screens/chat/types/chatRoom'
 
 export interface CounterState {
-  shipChatList: [],
-  fleetChatList: [] 
+  shipChatList: ChatRoom[],
+  fleetChatList: ChatRoom[] 
 }
 
 const initialState: CounterState = {
@@ -15,10 +16,10 @@ export const chatListSlice = createSlice({
   name: 'chatList',
   initialState,
   reducers: {
-    updateShipList: (state,action: PayloadAction<[]>) => {
+    updateShipList: (state,action: PayloadAction<ChatRoom[]>) => {
       state.shipChatList = action.payload;
     },
-    updateFleetList: (state,action: PayloadAction<[]>) => {
+    updateFleetList: (state,action: PayloadAction<ChatRoom[]>) => {
       state.fleetChatList = action.payload;
     },
   },

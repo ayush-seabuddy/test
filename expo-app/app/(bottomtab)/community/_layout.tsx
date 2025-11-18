@@ -1,48 +1,43 @@
 import SocialHeader from "@/src/screens/community/SocialHeader";
 import Colors from "@/src/utils/Colors";
-import { Tabs } from "expo-router";
+import { router, Tabs, usePathname } from "expo-router";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 export default function CommunityLayout() {
   const unreadCount = 5;
+   const pathname = usePathname();
+   console.log("pathname: ", pathname);
+   const routes = ["/community/social", "/community/chats"] as const;
+
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.white }}>
-      {/* ✅ Custom Header */}
-      {/* <Header /> */}
-      <SocialHeader />
+     
 
-      {/* ✅ Tabs below header */}
-      <Tabs
-        initialRouteName="social"
-        screenOptions={{
-          tabBarPosition: "top",
-          headerShown: false, // hide Expo header (we have custom one)
-        }}
-        tabBar={({ state, descriptors, navigation }) => (
-          <View
+      {['/community/chats','/community/social'].includes(pathname) && <View
             style={{
               flexDirection: "row",
               alignSelf: "center",
               width: 200,
               backgroundColor: "#364B3866",
               borderRadius: 25,
-              marginTop: 10,
+              marginTop: 70,
               padding: 5,
                position: "absolute",
               top: 0,
               zIndex: 1,
             }}
           >
-            {state.routes.map((route, index) => {
-              const isFocused = state.index === index;
-              const { options } = descriptors[route.key];
+            {['social','chat'].map((name, index) => {
+               const isFocused = pathname.includes(name);
+               
 
+               console.log("routes[index]: ", routes[index]);
               return (
                 <TouchableOpacity
-                  key={route.key}
-                  onPress={() => navigation.navigate(route.name)}
+                  key={name}
+                  onPress={() => router.push(routes[index])}
                   style={{
                     flex: 1,
                     height: 35,
@@ -62,7 +57,7 @@ export default function CommunityLayout() {
                       fontSize: 14,
                     }}
                   >
-                    {options.title || route.name}
+                      {name === "social" ? "Hangout" : "Chats"}
                   </Text>
 
                   
@@ -97,11 +92,20 @@ export default function CommunityLayout() {
                       </Text>
                     </View>
                   )}
-          </View>
-        )}
+          </View>}
+
+      {/* ✅ Tabs below header */}
+      <Tabs
+        initialRouteName="social"
+        screenOptions={{
+          tabBarPosition: "top",
+          headerShown: false, 
+          tabBarStyle: {
+            display: "none",
+          },
+        }}
         
       >
-        {/* ✅ Each screen content below the custom header + tabs */}
         <Tabs.Screen
           name="social"
           options={{ title: "Hangout" }}

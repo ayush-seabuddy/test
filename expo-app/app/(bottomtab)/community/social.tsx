@@ -1,6 +1,7 @@
 // HomeTab.tsx
 import { getAllSocialPost } from '@/src/apis/apiService';
 import PostCard from '@/src/screens/community/PostCard';
+import SocialHeader from '@/src/screens/community/SocialHeader';
 import Colors from '@/src/utils/Colors';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -14,36 +15,37 @@ const HomeTab = () => {
 
 
 
-useEffect(() => {
- async function getData() {
-  let data  = await getAllSocialPost({limit:6 , page :2})
-  console.log("data: ", data.data?.hangoutsList);
-  // if(data.data?.hangoutsList[0]){
-  //   router.push({
-  //     pathname: '/crewProfile',
-  //     params: { crewId: data.data?.hangoutsList[0].userId },
-  //   });
-  // }
-  if(data?.data){
-    setPostData(data.data?.hangoutsList)
-  }
-}
-  getData()
-},[])
-  const renderItem = ({ item , index }: { item: any , index : number}) => (
-    <PostCard item={item} index={index}
-    />
-  );
+// useEffect(() => {
+//  async function getData() {
+//   let data  = await getAllSocialPost({limit:6 , page :2})
+//   console.log("data: ", data.data?.hangoutsList);
+//   // if(data.data?.hangoutsList[0]){
+//   //   router.push({
+//   //     pathname: '/crewProfile',
+//   //     params: { crewId: data.data?.hangoutsList[0].userId },
+//   //   });
+//   // }
+//   if(data?.data){
+//     setPostData(data.data?.hangoutsList)
+//   }
+// }
+//   getData()
+// },[])
+  // const renderItem = ({ item , index }: { item: any , index : number}) => (
+  //   <PostCard item={item} index={index}
+  //   />
+  // );
 
   return (
     <View style={styles.container}>
-      <FlatList
+       <SocialHeader />
+      {/* <FlatList
         data={postData}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-      />
+      /> */}
     </View>
   );
 };

@@ -9,8 +9,10 @@ type ExtraConfig = {
 
 // Safely access extra with fallback
 const extra = Constants.expoConfig?.extra as ExtraConfig | undefined;
+console.log("extra: ", extra);
 
 export const BASE_URL = extra?.API_URL;
+console.log("BASE_URL: ", BASE_URL);
 
 // Define endpoints
 export const ENDPOINTS = {
