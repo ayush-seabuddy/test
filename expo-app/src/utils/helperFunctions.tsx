@@ -7,6 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import socketService from './socketService';
 import { updateShipList, updateFleetList } from '../redux/chatListSlice'
 import moment from 'moment-timezone';
+import { viewProfile } from '../apis/apiService';
+import { setUserDetails } from '../redux/userDetailsSlice';
 
 TimeAgo.addDefaultLocale(en);
 
@@ -88,19 +90,19 @@ export const getUserDetails = async () => {
   }
 };
 
-export  const formatChatTime = (timestamp: string) => {
-    const messageDate = moment(timestamp);
-    const today = moment().startOf("day");
-    const yesterday = moment().subtract(1, "days").startOf("day");
+export const formatChatTime = (timestamp: string) => {
+  const messageDate = moment(timestamp);
+  const today = moment().startOf("day");
+  const yesterday = moment().subtract(1, "days").startOf("day");
 
-    if (messageDate.isSame(today, "day")) {
-      return messageDate.format("hh:mm A");
-    } else if (messageDate.isSame(yesterday, "day")) {
-      return "Yesterday";
-    } else {
-      return messageDate.format("DD/MM/YY");
-    }
-  };
+  if (messageDate.isSame(today, "day")) {
+    return messageDate.format("hh:mm A");
+  } else if (messageDate.isSame(yesterday, "day")) {
+    return "Yesterday";
+  } else {
+    return messageDate.format("DD/MM/YY");
+  }
+};
 
 export const getChatList = async (dispatch: any) => {
   let storeUserId = await AsyncStorage.getItem('userId');
@@ -123,3 +125,52 @@ export const getChatList = async (dispatch: any) => {
     dispatch(updateFleetList(data));
   });
 };
+
+export  const formatDateSeparator = (date: Date|string) => {
+    const messageDate = moment(date).local().startOf("day");
+    const today = moment().local().startOf("day");
+    const yesterday = moment().local().subtract(1, "days").startOf("day");
+
+    if (messageDate.isSame(today, "day")) {
+      return "Today";
+    } else if (messageDate.isSame(yesterday, "day")) {
+      return "Yesterday";
+    } else {
+      return messageDate.format("DD/MM/YYYY");
+    }
+  };
+
+
+
+export const viewUserProfile = async (dispatch: any) => {
+  let userDetailsString = await AsyncStorage.getItem("userDetails");
+  if (!userDetailsString) return
+  const userDetails = JSON.parse(userDetailsString) as Record<string, any>;
+
+
+
+  const userProfileDetails = await viewProfile()
+
+  const updateUserDetails = async () => {
+    if (!userProfileDetails || !userProfileDetails.data) return
+
+    const updatedUserDetails = {
+      ...userDetails,...userProfileDetails.data
+    };
+
+    if (userProfileDetails.data?.shipId) {
+      await AsyncStorage.setItem("shipId", userProfileDetails.data?.shipId);
+    } else {
+      await AsyncStorage.removeItem("shipId");
+    }
+    await AsyncStorage.setItem("userDetails", JSON.stringify(updatedUserDetails));
+    dispatch(setUserDetails(updatedUserDetails));
+  }
+
+
+   setImmediate(() => {
+      updateUserDetails()
+    });
+
+    return userProfileDetails
+}

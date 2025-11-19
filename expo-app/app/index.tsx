@@ -36,6 +36,8 @@ export default function Index() {
       
       router.replace("/home");
     },3000)
+
+    
     };
 
     init();
