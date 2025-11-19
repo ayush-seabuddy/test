@@ -543,6 +543,7 @@
     "impactful": "🔹 Impactful: Honest answers lead to real changes"
   },
   "undertenminutes": "⏰ Under 10 mins",
+  "undertwominutes":"⏰ Under 2 mins",
   "happinessindexdisclaimer": "* This survey is private and strictly confidential only to support crew wellbeing, not performance review or employment decisions.",
   "happinessindexunder10min": "⏰ 10 mins · Industry Standard",
   "happinessindexmessage": "Fill the Seafarers’ Happiness Index now and contribute to global insights that shape a better future for all seafarers.",
@@ -734,6 +735,24 @@
   "pleasewait":"Please Wait...",
   "failedtogeneratepdf":"Failed To Generate PDF",
   "enterhere":"Enter Here",
-  "nohappinessindexdata":"No Happiness Index data available yet"
+  "monthlywellbeingdescription":"Just share how you feel honestly. Your input helps make ship life safer, healthier, and happier for you and everyone.",
+  "score": "Score",
+
+  "mood_stable": "Stable Mood",
+  "mood_stable_message": "Great job! Your mood is stable, keep up the positive vibes!",
+
+  "mood_mild": "Mild Mood Disturbance",
+  "mood_mild_message": "You're doing well, but there's room to boost your mood even further. Keep it up!",
+
+  "mood_moderate": "Moderate Mood Disturbance",
+  "mood_moderate_message": "Your mood is showing some disturbance. Try some stress-relief techniques to get back on track.",
+
+  "mood_high": "High Mood Disturbance",
+  "mood_high_message": "It looks like you're experiencing high stress. Consider connecting with a consultant for support.",
+  "reminder_title": "Your {{month}} check-in is ready!",
+  "reminder_message": "This short survey is mandatory and helps us understand how you’re feeling so we can improve life onboard.",
+  "start_checkin": "Start Check-In",
+  "nowellbeingdata":"No Wellbeing Pulse data is available at this time",
+  "nohappinessindexdata":"No Happiness index data is available at this time"
 
 }

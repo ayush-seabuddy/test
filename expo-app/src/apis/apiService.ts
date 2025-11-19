@@ -133,6 +133,12 @@ export interface GetAllAssessmentResponseListParams {
   assessmentType?: string
 }
 
+export interface GetAllContentsParams {
+  page?: number,
+  limit?: number,
+  onlyAnnouncement?: boolean
+}
+
 export const login = async (
   payload: LoginRequest
 ): Promise<ApiResponse> => {
@@ -276,6 +282,14 @@ export const getassessmentresponseList = async (params?: GetAllAssessmentRespons
   return await apiRequest({
     method: "GET",
     url: ENDPOINTS.GETASSESSMENTRESPONSELIST,
+    params
+  });
+};
+
+export const getallcontents = async (params?: GetAllContentsParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETALLCONTENTS,
     params
   });
 };

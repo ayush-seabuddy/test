@@ -3,9 +3,9 @@ import CustomLottie from '@/src/components/CustomLottie';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronLeft, ArrowUpRight } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     View,
@@ -13,9 +13,10 @@ import {
     StyleSheet,
     FlatList,
     TouchableOpacity,
-    Image,
     Dimensions,
+    ActivityIndicator,
 } from 'react-native';
+import moment from 'moment';
 
 const { width, height } = Dimensions.get('window');
 
@@ -27,64 +28,111 @@ const getScoreMeaning = (score: number) => {
     return 'Very Low — Major challenges, low satisfaction.';
 };
 
-const getScoreStyle = (score: number) => {
-    if (score >= 75) return { bg: '#A9DFBF', text: '#145A32' };
-    if (score >= 40) return { bg: '#F9E79F', text: '#7D6608' };
-    return { bg: '#F5B7B1', text: '#78281F' };
+const classifyTMD = (tmd: number) => {
+    if (!tmd || isNaN(tmd)) {
+        return { mood: 'No Data', message: 'No mood data available.' };
+    }
+
+    tmd = Math.round(tmd);
+    if (tmd < 6) {
+        return { mood: 'Stable Mood', message: 'Great job! Your mood is stable, keep up the positive vibes!' };
+    } else if (tmd < 21) {
+        return { mood: 'Mild Mood Disturbance', message: "You're doing well, but there's room to boost your mood even further." };
+    } else if (tmd <= 35) {
+        return { mood: 'Moderate Mood Disturbance', message: 'Your mood is showing some disturbance. Try stress-relief techniques.' };
+    } else {
+        return { mood: 'High Mood Disturbance', message: 'It looks like you’re experiencing high stress. Consider support.' };
+    }
 };
 
-const AllAssessmentResultListing = ({ navigation }: any) => {
-    const [loading, setloading] = useState(false);
-    const [assessmentData, setAssessmentData] = useState([]);
+const getScoreStyle = (score: number, assessmentType: 'HAPPINESS' | 'POMS') => {
+    if (assessmentType === 'HAPPINESS') {
+        if (score >= 75) return { bg: '#A9DFBF', text: '#145A32' };
+        if (score >= 40) return { bg: '#F9E79F', text: '#7D6608' };
+        return { bg: '#F5B7B1', text: '#78281F' };
+    } else {
+        if (score < 6) return { bg: '#A9DFBF', text: '#145A32' };
+        if (score < 21) return { bg: '#F9E79F', text: '#7D6608' };
+        if (score <= 35) return { bg: '#F5B7B1', text: '#78281F' };
+        return { bg: '#E74C3C', text: '#fff' };
+    }
+};
+
+const AllAssessmentResultListing = () => {
+    const { assessmentType = 'HAPPINESS' } = useLocalSearchParams();
+    const [loading, setLoading] = useState(true);
+    const [assessmentData, setAssessmentData] = useState<any[]>([]);
     const router = useRouter();
     const { t } = useTranslation();
 
-    const getAllAssessmentResponseList = async () => {
-        setloading(true);
+    const fetchAssessments = useCallback(async () => {
+        setLoading(true);
         try {
             const apiResponse = await getassessmentresponseList({
-                assessmentType: 'HAPPINESS',
+                assessmentType: assessmentType as string,
             });
 
-            setloading(false);
-
-            if (apiResponse.success && apiResponse.status == 200) {
+            if (apiResponse.success && apiResponse.status === 200) {
                 const list = apiResponse.data?.assessmentList || [];
                 setAssessmentData(list);
             } else {
                 showToast.error(t('oops'), apiResponse.message);
+                setAssessmentData([]);
             }
         } catch (error) {
-            setloading(false);
+            console.error('Error fetching assessments:', error);
             showToast.error(t('oops'), t('somethingwentwrong'));
+            setAssessmentData([]);
+        } finally {
+            setLoading(false);
         }
-    };
+    }, [assessmentType, t]);
 
     useEffect(() => {
-        getAllAssessmentResponseList();
-    }, []);
+        fetchAssessments();
+    }, [fetchAssessments]);
 
-    const renderItem = ({ item }: any) => {
+    const sortedData = useMemo(() => {
+        return [...assessmentData]
+            .filter(item => item.questionType === assessmentType)
+            .sort((a, b) => b.month.localeCompare(a.month));
+    }, [assessmentData, assessmentType]);
+
+    const title = assessmentType === 'POMS'
+        ? t('monthlywellbeingpulse')
+        : t('monthlyhappinessindex');
+
+    const noDataMessage = assessmentType === 'POMS'
+        ? t('nowellbeingdata')
+        : t('nohappinessindexdata');
+
+    const renderItem = ({ item }: { item: any }) => {
         const score = Number(item?.questionsAndAnswers?.[0]?.result ?? 0);
+        const formattedDate = moment(item.month).format('MMM YYYY');
+        const { bg, text } = getScoreStyle(score, assessmentType as 'HAPPINESS' | 'POMS');
 
-        const formattedDate = new Date(item.month + '-01').toLocaleString('default', {
-            month: 'short',
-            year: 'numeric',
-        });
-
-        const { bg, text } = getScoreStyle(score);
+        let infoContent;
+        if (assessmentType === 'HAPPINESS') {
+            infoContent = <Text style={styles.meaningText}>{getScoreMeaning(score)}</Text>;
+        } else {
+            const { mood, message } = classifyTMD(score);
+            infoContent = (
+                <View style={{ marginTop: 6 }}>
+                    <Text style={styles.moodText}>{mood}</Text>
+                    <Text style={styles.messageText}>{message}</Text>
+                </View>
+            );
+        }
 
         return (
             <TouchableOpacity
                 style={styles.card}
-                onPress={() =>
+                onPress={() => {
                     router.push({
-                        pathname: '/monthlyhappinessindex/MonthlyHappinessIndexResultScreen',
-                        params: {
-                            assessmentData: JSON.stringify(item),
-                        }
-                    })
-                }
+                        pathname: assessmentType === 'POMS' ? '/monthlywellbeingpulse/MonthlyWellbeingPulseResultScreen' : '/monthlyhappinessindex/MonthlyHappinessIndexResultScreen',
+                        params: { assessmentData: JSON.stringify(item) },
+                    });
+                }}
             >
                 <View style={styles.cardContent}>
                     <View style={styles.leftSection}>
@@ -96,39 +144,46 @@ const AllAssessmentResultListing = ({ navigation }: any) => {
                             </Text>
                         </View>
 
-                        <Text style={styles.meaningText}>{getScoreMeaning(score)}</Text>
+                        {infoContent}
                     </View>
 
                     <View style={styles.rightIcon}>
-                        <ArrowUpRight size={14} />
+                        <ArrowUpRight size={16} color="#666" />
                     </View>
                 </View>
             </TouchableOpacity>
         );
     };
 
+    if (loading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#06361F" />
+            </View>
+        );
+    }
+
     return (
         <View style={styles.container}>
             <GlobalHeader
-                title={t('monthlyhappinessindex')}
-                leftIcon={<ChevronLeft size={20} />}
+                title={title}
+                leftIcon={<ChevronLeft size={24} color="#000" />}
                 onLeftPress={() => router.back()}
             />
 
-            <FlatList
-                data={assessmentData}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={renderItem}
-                contentContainerStyle={styles.listContent}
-                showsVerticalScrollIndicator={false}
-                ListEmptyComponent={
-                    <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyText}>
-                            {t('nohappinessindexdata')}
-                        </Text>
-                    </View>
-                }
-            />
+            {sortedData.length > 0 ? (
+                <FlatList
+                    data={sortedData}
+                    keyExtractor={(_, index) => index.toString()}
+                    renderItem={renderItem}
+                    contentContainerStyle={styles.listContent}
+                    showsVerticalScrollIndicator={false}
+                />
+            ) : (
+                <View style={styles.emptyContainer}>
+                    <Text style={styles.emptyText}>{noDataMessage}</Text>
+                </View>
+            )}
 
             <View style={styles.lottieBackground}>
                 <CustomLottie isBlurView={false} />
@@ -144,27 +199,31 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f8f8f8',
     },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f8f8f8',
+    },
     listContent: {
         paddingHorizontal: 16,
         paddingTop: 12,
-        paddingBottom: height * 0.4,
+        paddingBottom: height * 0.5,
     },
     card: {
         backgroundColor: 'rgba(180, 180, 180, 0.4)',
         borderRadius: 12,
         padding: 16,
-        marginVertical: 6,
-        flexDirection: 'row',
-        alignItems: 'center',
+        marginVertical: 8,
     },
     cardContent: {
-        flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
     },
     leftSection: {
         flex: 1,
+        paddingRight: 10,
     },
     dateText: {
         fontSize: 15,
@@ -174,10 +233,10 @@ const styles = StyleSheet.create({
     },
     scoreBadge: {
         alignSelf: 'flex-start',
-        paddingHorizontal: 10,
-        paddingVertical: 5,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
         borderRadius: 8,
-        marginVertical: 6,
+        marginVertical: 4,
     },
     scoreText: {
         fontWeight: '600',
@@ -187,31 +246,42 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#333',
         fontFamily: 'Poppins-Regular',
-        marginTop: 4,
         lineHeight: 18,
+        marginTop: 4,
+    },
+    moodText: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#000',
+        fontFamily: 'Poppins-SemiBold',
+    },
+    messageText: {
+        fontSize: 12.5,
+        color: '#444',
+        fontFamily: 'Poppins-Regular',
+        marginTop: 4,
+        lineHeight: 17,
     },
     rightIcon: {
         backgroundColor: '#fff',
         padding: 10,
-        borderRadius: 10,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     emptyContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        paddingHorizontal: 40,
         marginTop: height * 0.2,
     },
-    emptyImage: {
-        width: 120,
-        height: 120,
-        opacity: 0.8,
-    },
     emptyText: {
-        marginTop: 20,
         fontSize: 16,
         color: '#fff',
         textAlign: 'center',
         fontFamily: 'Poppins-Regular',
+        lineHeight: 22,
     },
     lottieBackground: {
         position: 'absolute',
@@ -219,8 +289,8 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         height: '50%',
-        borderTopLeftRadius: 25,
-        borderTopRightRadius: 25,
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
         overflow: 'hidden',
         backgroundColor: 'rgba(193, 193, 193, 0.9)',
     },
