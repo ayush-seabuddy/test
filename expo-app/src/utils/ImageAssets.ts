@@ -10,4 +10,37 @@ export const ImagesAssets = {
   unselectedShiplife: require("../../assets/images/unselectedShiplife.png"),
   splashHeadingImage: require("../../assets/images/SplashHeadingImage.png"),
   splashCaptainImage: require("../../assets/images/SplashCaptainImage.png"),
+  sailorsocietyimage: require("../../assets/images/sailorsocietyimage.png"),
+  homePageJollie: require("../../assets/images/JollieImages/homePageJollie.png"),
+  personalityMapJollie: require("../../assets/images/JollieImages/PersonalityMapJollie.png"),
+  selectedLine:require("../../assets/images/SelectedLine.png"),
+  unselectedLine:require("../../assets/images/UnselectedLine.png"),
+  personalitymapresultpopupjollie:require("../../assets/images/JollieImages/PersonalityMapResultPopup.png"),
+  personaresultbackground:require("../../assets/images/JollieImages/PersonaResultBackground.png"),
+
+
+
+  // Home Screen Images
+
+  ChatLogo: require("../../assets/images/Home/Chat.png"),
+  GlobeLogo: require("../../assets/images/Home/Globe.png"),
+  MusicLogo: require("../../assets/images/Home/Music.png"),
+  NotebookLogo: require("../../assets/images/Home/Notebook.png"),
+  ShipAnchorLogo: require("../../assets/images/Home/ShipAnchor.png"),
+  UsersLogo: require("../../assets/images/Home/Users.png"),
+
+
+  // Social page Images
+
+  appTitleLogo: require("../../assets/images/Header/appTitle.png"),
+  notificationBell: require("../../assets/images/Header/notificationBell.png"),
+  companyLibraryLogo: require("../../assets/images/Header/companyLibraryLogo.png"),
+  searchLogo: require("../../assets/images/Header/search.png"),
+
+  // chat page Icons
+   shipIcon: require("../../assets/images/shipIcon.png"),
+   fleetIcon: require("../../assets/images/fleetIcon.png"),
+
+   userIcon : require("../../assets/images/Man.png"),
+  
 };

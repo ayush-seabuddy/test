@@ -1,8 +1,29 @@
 const Colors = {
-  lightGreen: '#B0DB02',
+  lightGreen: "#B0DB02",
   darkGreen: "#06361F",
-  captainanimatedlayoutbg:"#FFFFFFB2",
-  white:"#FFFFFF"
+  captainanimatedlayoutbg: "#CCCCCC",
+  white: "#FFFFFF",
+  loginformBackground: "#ECECEB",
+  iconColor: "#949494",
+  placeholdertextColor: "#B7B7B7",
+  primary: "#02130B",
+  primaryLight: "#8DAF02",
+  background: "#CCCCCC",
+  cardBackground: "rgba(255, 255, 255, 0.7)",
+  inputBackground: "rgba(255, 255, 255, 0.8)",
+  textPrimary: "#161616",
+  textSecondary: "#454545",
+  textMuted: "#505050",
+  textPlaceholder: "#B7B7B7",
+  iconMuted: "#888",
+  error: "red",
+  disabled: "#808080",
+  blueLink: "blue",
+  buttonWhiteBg: "#FFFFFF",
+  buttonWhiteText: "#06361F",
+  black: "#000000",
+  grayDark: "#4B5563",
+  success: "#22c55e",
 };
 
 export default Colors;
