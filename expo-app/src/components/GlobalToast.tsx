@@ -40,6 +40,7 @@ export const showToast = {
       text1: title,
       text2: message,
       position: "top",
+      topOffset: 50,
       visibilityTime: 2500,
     }),
   error: (title: string, message?: string) =>
@@ -48,6 +49,7 @@ export const showToast = {
       text1: title,
       text2: message,
       position: "top",
+      topOffset: 50,
       visibilityTime: 3000,
     }),
 };

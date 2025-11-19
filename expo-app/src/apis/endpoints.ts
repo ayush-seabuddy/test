@@ -9,10 +9,8 @@ type ExtraConfig = {
 
 // Safely access extra with fallback
 const extra = Constants.expoConfig?.extra as ExtraConfig | undefined;
-console.log("extra: ", extra);
 
 export const BASE_URL = extra?.API_URL;
-console.log("BASE_URL: ", BASE_URL);
 
 // Define endpoints
 export const ENDPOINTS = {
@@ -24,6 +22,11 @@ export const ENDPOINTS = {
   UPLOADFILE: `${BASE_URL}/user/uploadFile`,
   GETALLCOUNTRIES:`${BASE_URL}/user/getAllCountries`,
   UPDATEPROFILE:`${BASE_URL}/user/updateProfile`,
+  GETALLASSESSMENTS:`${BASE_URL}/user/getAssessmentQuestions`,
+  GETALLASSESSMENTSRESULT:`${BASE_URL}/user/getAssessmentResult`,
+  SAVEASSESSMENTRESPONSE:`${BASE_URL}/user/saveAssessmentResponses`,
+  GETASSESSMENTRESPONSELIST:`${BASE_URL}/user/getAssessmentResponseList`,
+  GETALLCONTENTS:`${BASE_URL}/content/getAllContents`,
   GetAllSocialPost: `${BASE_URL}/user/getAllHangoutPost`,
   VIEW_PROFILE: `${BASE_URL}/user/viewUserProfile`,
 };

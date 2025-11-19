@@ -64,3 +64,69 @@ export interface ChatListState {
   shipChatList: ChatRoom[]
   fleetChatList: ChatRoom[]
 }
+
+
+
+export interface CrewMember {
+  userId: string;
+  isBoarded?: boolean;
+}
+
+export interface ShipInfo {
+  crewMembers: CrewMember[];
+}
+
+export interface MessageUser {
+  id: string;
+  fullName: string;
+  email: string;
+  profileUrl: string|null;
+  designation: string;
+  department: string;
+  ship?: ShipInfo;
+}
+
+export interface MessageReaction {
+  id: string;
+  userId: string;
+  messageId: string;
+  reaction: string;       // "❤️" | "😂" | "😊" etc.
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ParentMessage {
+  id: string;
+  senderId: string;
+  chatRoomId: string;
+  messageType: string;
+  replyTo?: string | null;
+  content: string;
+  caption?: string | null;
+  fileName?: string | null;
+  thumbnail?: string | null;
+  createdAtId: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  messageUser: MessageUser;
+}
+
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  chatRoomId: string;
+  messageType: "MESSAGE" | "IMAGE" | "FILE" | "VIDEO" | string;
+  replyTo: string | null;
+  content: string;
+  caption: string | null;
+  fileName: string | null;
+  thumbnail: string | null;
+  createdAtId: string;
+  status: "ACTIVE" | "EDIT" | "DELETE" | string;
+  createdAt: string;
+  updatedAt: string;
+  messageUser: MessageUser;
+  parentMessage: ParentMessage | null;
+  chatReactionDetails: MessageReaction[];
+}

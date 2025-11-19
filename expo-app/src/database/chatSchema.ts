@@ -22,7 +22,7 @@ export function createTables() {
     );
   `);
 
- db.execSync(`
+  db.execSync(`
   CREATE TABLE IF NOT EXISTS participants_details (
     id TEXT,
     email TEXT,
@@ -59,5 +59,57 @@ export function createTables() {
       createdAt TEXT,
       userData TEXT
     );
+  `);
+
+
+
+
+
+  db.execSync(`
+    CREATE TABLE IF NOT EXISTS messages (
+  id TEXT PRIMARY KEY NOT NULL,
+  chatRoomId TEXT NOT NULL,
+  senderId TEXT NOT NULL,
+  messageType TEXT,
+  replyTo TEXT,
+  content TEXT,
+  caption TEXT,
+  fileName TEXT,
+  thumbnail TEXT,
+  createdAtId INTEGER,
+  status TEXT,
+  createdAt TEXT,
+  updatedAt TEXT,
+  parentMessageId TEXT
+);
+  `);
+
+  db.execSync(`
+   CREATE TABLE IF NOT EXISTS message_users (
+  id TEXT PRIMARY KEY NOT NULL,
+  fullName TEXT,
+  email TEXT,
+  profileUrl TEXT,
+  designation TEXT,
+  department TEXT,
+  ship TEXT
+);
+  `);
+
+
+  
+
+
+
+  db.execSync(`
+ CREATE TABLE IF NOT EXISTS message_reactions (
+  id TEXT PRIMARY KEY NOT NULL,
+  messageId TEXT NOT NULL,
+  userId TEXT NOT NULL,
+  reaction TEXT,
+  createdAt TEXT,
+  updatedAt TEXT,
+  FOREIGN KEY(messageId) REFERENCES messages(id) ON DELETE CASCADE
+);
   `);
 }

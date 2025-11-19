@@ -8,7 +8,7 @@ import {
   Platform,
   TouchableOpacity,
 } from "react-native";
-import { Mail, Lock, CheckSquare, Square } from "lucide-react-native";
+import { Mail, Lock, CheckSquare, Square, Check } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
@@ -152,11 +152,11 @@ const LoginScreen = () => {
                 <TouchableOpacity
                   onPress={() => setTermsAccepted(!termsAccepted)}
                 >
-                  {termsAccepted ? (
-                    <CheckSquare size={20} color={Colors.primaryLight} />
-                  ) : (
-                    <Square size={20} color={Colors.iconMuted} />
-                  )}
+
+                  <View style={[styles.checkbox, termsAccepted && styles.checkboxChecked]}>
+                    {termsAccepted && <Check size={16} color={Colors.white} />}
+                  </View>
+
                 </TouchableOpacity>
 
                 <Text style={styles.termsText}>{t("iacceptthe")}</Text>
@@ -272,5 +272,19 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins-Regular",
   }, loginButton: {
     width: '100%'
-  }
+  },
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#ccc',
+    marginRight: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkboxChecked: {
+    backgroundColor: Colors.lightGreen,
+    borderColor: Colors.lightGreen,
+  },
 });

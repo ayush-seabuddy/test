@@ -17,7 +17,7 @@ import { ChatRoom } from '@/src/screens/chat/types/chatRoom'
 import socketService from '@/src/utils/socketService'
 import { ImagesAssets } from '@/src/utils/ImageAssets'
 import Colors from '@/src/utils/Colors'
-import { formatChatTime } from '@/src/utils/helperFunctions'
+import { formatChatTime, viewUserProfile } from '@/src/utils/helperFunctions'
 import { t } from 'i18next'
 import { router } from 'expo-router'
 import { saveChatRooms } from '@/src/database/chatRoomService'
@@ -132,6 +132,10 @@ const ChatLoungeList = () => {
 
     
   },[shipChatList,fleetChatList])
+
+  useEffect(() => {
+    viewUserProfile(dispatch)
+  },[])
 
   return (
     <ScrollView
