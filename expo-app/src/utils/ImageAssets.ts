@@ -36,5 +36,11 @@ export const ImagesAssets = {
   notificationBell: require("../../assets/images/Header/notificationBell.png"),
   companyLibraryLogo: require("../../assets/images/Header/companyLibraryLogo.png"),
   searchLogo: require("../../assets/images/Header/search.png"),
+
+  // chat page Icons
+   shipIcon: require("../../assets/images/shipIcon.png"),
+   fleetIcon: require("../../assets/images/fleetIcon.png"),
+
+   userIcon : require("../../assets/images/Man.png"),
   
 };

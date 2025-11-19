@@ -12,6 +12,7 @@ import Colors from "@/src/utils/Colors";
 import Splash from "./onboarding/Splash";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { login } from "@/src/apis/apiService";
+import { createTables } from "@/src/database/chatSchema";
 
 export default function Index() {
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function Index() {
       await initI18n();
 
       setTimeout(() => {
-        router.replace("/monthlyhappinessindex/AllAssessmentResultListing");
+        router.replace("/auth/Login");
       }, 2500);
       //    setTimeout(async()=>{
       //   // console.log("hello");
@@ -34,6 +35,10 @@ export default function Index() {
 
     init();
   }, []);
+
+  useEffect(() => {
+    createTables();
+  })
 
   return (
     <I18nextProvider i18n={i18next}>

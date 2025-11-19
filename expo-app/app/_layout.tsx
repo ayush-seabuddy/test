@@ -12,6 +12,9 @@ import KeyboardWrapper from "../src/components/KeyboardWrapper";
 import { initI18n } from "@/src/localization/i18n";
 import i18n from "i18next";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import socketService from "@/src/utils/socketService";
+import { Provider } from "react-redux";
+import { store } from "@/src/redux/store";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -38,9 +41,14 @@ export default function RootLayout() {
     if (fontsLoaded) prepare();
   }, [fontsLoaded]);
 
+  useEffect(()=>{
+   socketService.initializeSocket()
+  },[])
+
   if (!appReady) return null;
 
   return (
+     <Provider store={store}>
     <SafeAreaProvider>
       <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
         <StatusBar barStyle="dark-content" backgroundColor="#000" />
@@ -54,6 +62,7 @@ export default function RootLayout() {
         <Toast />
       </SafeAreaView>
     </SafeAreaProvider>
+    </Provider>
   );
 }
 
