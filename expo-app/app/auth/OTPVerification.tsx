@@ -136,6 +136,7 @@ const OTPVerification = () => {
             <GlobalButton
               title={t('continue')}
               onPress={verifyOTP}
+              buttonStyle={{width:'90%'}}
               loading={loading}
               disabled={otp.length !== 6}
             />

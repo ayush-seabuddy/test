@@ -41,6 +41,16 @@ export interface ViewProfileParams {
   userId?: string;
 }
 
+export interface SaveAssessmentRequest {
+  questionType: string;
+  month: string;
+  answers: Array<{
+    questionId: string;
+    answer: number;
+    createdAt: string;
+  }>;
+}
+
 export interface ApiResponse<T = any> {
   success: boolean;
   status?: number;
@@ -108,6 +118,27 @@ export interface UpdateProfileRequest {
   status?: string;
   isProfileCompleted?: true;
 }
+
+
+
+export interface GetAllAssessmentsParams {
+  questionType?: string
+}
+
+export interface GetAllAssessmentsResultParams {
+  questionType?: string
+}
+
+export interface GetAllAssessmentResponseListParams {
+  assessmentType?: string
+}
+
+export interface GetAllContentsParams {
+  page?: number,
+  limit?: number,
+  onlyAnnouncement?: boolean
+}
+
 export const login = async (
   payload: LoginRequest
 ): Promise<ApiResponse> => {
@@ -157,6 +188,7 @@ export const resetpassword = async (
     data: payload,
   });
 };
+
 
 export const uploadfile = async (payload: UploadFileRequest) => {
   try {
@@ -212,6 +244,52 @@ export const viewProfile = async (
   return await apiRequest({
     method: "GET",
     url: ENDPOINTS.VIEW_PROFILE,
+    params
+  });
+};
+
+
+export const getallassessments = async (params?: GetAllAssessmentsParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETALLASSESSMENTS,
+    params
+  });
+};
+
+
+export const saveassessmentresponse = async (
+  payload: SaveAssessmentRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "POST",
+    url: ENDPOINTS.SAVEASSESSMENTRESPONSE,
+    data: payload,
+  });
+};
+
+
+export const getallassessmentsResult = async (params?: GetAllAssessmentsResultParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETALLASSESSMENTSRESULT,
+    params
+  });
+};
+
+
+export const getassessmentresponseList = async (params?: GetAllAssessmentResponseListParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETASSESSMENTRESPONSELIST,
+    params
+  });
+};
+
+export const getallcontents = async (params?: GetAllContentsParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETALLCONTENTS,
     params
   });
 };

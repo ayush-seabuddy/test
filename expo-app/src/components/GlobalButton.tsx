@@ -7,6 +7,7 @@ import {
   TouchableOpacityProps,
   ViewStyle,
   TextStyle,
+  StyleProp,
 } from "react-native";
 import Colors from "../utils/Colors";
 
@@ -14,8 +15,8 @@ interface GlobalButtonProps extends TouchableOpacityProps {
   title: string;
   loading?: boolean;
   disabled?: boolean;
-  buttonStyle?: ViewStyle;
-  textStyle?: TextStyle;
+  buttonStyle?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
 }
 
 const GlobalButton: React.FC<GlobalButtonProps> = ({
@@ -60,7 +61,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: Colors.primary,
     height: 50,
-    width: "90%",
+    width: "100%",
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",

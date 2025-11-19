@@ -162,7 +162,6 @@ const styles = StyleSheet.create({
         borderRadius: 32,
         backgroundColor: "rgba(218,218,218,0.4)",
         paddingHorizontal: 20,
-        paddingVertical: 30,
         alignItems: "center",
         width: "100%",
         overflow: "hidden",
@@ -172,6 +171,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderColor: "rgba(255,255,255,0.6)",
         paddingVertical: 10,
+        marginTop:16,
         alignItems: "center",
         width: "100%",
         marginBottom: isProMax ? -15 : -10,
@@ -213,10 +213,10 @@ const styles = StyleSheet.create({
     featuresContainer: {
         gap: 16,
         width: "100%",
-        marginTop: 20,
     },
     featuresGrid: {
         flex: 1,
+        marginTop:20,
         alignItems: "center",
         justifyContent: "center",
         gap: 8,
@@ -257,7 +257,6 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        marginTop: 10,
         gap: 5,
     },
     guideIcon: {
