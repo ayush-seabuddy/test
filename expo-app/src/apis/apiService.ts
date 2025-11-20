@@ -136,7 +136,9 @@ export interface GetAllAssessmentResponseListParams {
 export interface GetAllContentsParams {
   page?: number,
   limit?: number,
-  onlyAnnouncement?: boolean
+  onlyAnnouncement?: boolean,
+  contentCategory?:string,
+  contentType?:string,
 }
 
 export const login = async (
