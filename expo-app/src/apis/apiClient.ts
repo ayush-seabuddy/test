@@ -19,29 +19,34 @@ apiClient.interceptors.request.use(
       });
     }
 
+    // Add token if present
     const token = await AsyncStorage.getItem("authToken");
     if (token) {
       config.headers["authToken"] = token;
     }
 
+    // Set correct Content-Type
     if (config.data instanceof FormData) {
       config.headers["Content-Type"] = "multipart/form-data";
     } else if (config.method !== "get") {
       config.headers["Content-Type"] = "application/json";
     }
 
+    // ⬇️ NEW LOG — Logs all request headers
+    console.log("📤 REQUEST HEADERS:", config.headers);
+
     console.log("📤 REQUEST URL:", config.url);
 
     if (config.method?.toLowerCase() !== "get") {
       console.log("📤 REQUEST DATA:", config.data);
     }
+
     console.log("📤 REQUEST PARAMS:", config.params);
 
     return config;
   },
   (error) => Promise.reject(error)
 );
-
 
 apiClient.interceptors.response.use(
   (response) => {

@@ -34,7 +34,6 @@ export interface UploadFileRequest {
 export interface SocialPostParams {
   page?: number;
   limit?: number;
-  [key: string]: any;
 }
 
 export interface ViewProfileParams {
@@ -230,12 +229,12 @@ export const updateprofile = async (
   });
 };
 
-export const getAllSocialPost = async (
+export const getallposts = async (
   params?: SocialPostParams
 ): Promise<ApiResponse> => {
   return await apiRequest({
     method: "GET",
-    url: ENDPOINTS.GetAllSocialPost,
+    url: ENDPOINTS.GETALLPOSTS,
     params,
   });
 };
