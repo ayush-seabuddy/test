@@ -113,10 +113,10 @@ const PersonalityMapTestScreen = () => {
     try {
       const payload = {
         questionType: 'PERSONALITY',
-        month: new Date().toISOString().slice(0, 7), // YYYY-MM
+        month: new Date().toISOString().slice(0, 7),
         answers: Object.entries(answers).map(([questionId, answer]) => ({
           questionId,
-          answer,                     // number (1-5)
+          answer,
           createdAt: new Date().toISOString(),
         })),
       };
@@ -126,7 +126,6 @@ const PersonalityMapTestScreen = () => {
       if (res.success && res.status === 200) {
         showToast.success(t('success'), res.message);
 
-        // Mark test as completed locally
         try {
           const user = JSON.parse((await AsyncStorage.getItem('userDetails')) || '{}');
           user.isPersonalityTestCompleted = true;
@@ -135,10 +134,10 @@ const PersonalityMapTestScreen = () => {
         setshowResultPopup(true);
 
       } else {
-        showToast.error('Error', res.message || 'Submission failed');
+        showToast.error('Error', res.message);
       }
     } catch (err: any) {
-      showToast.error('Error', err.message || 'Network error');
+      showToast.error('Error', err.message);
     } finally {
       setSubmitting(false);
     }
