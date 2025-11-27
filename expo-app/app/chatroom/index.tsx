@@ -1,6 +1,6 @@
 // src/screens/chat/ChatRoom.tsx
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { useRoute, RouteProp } from '@react-navigation/native'
 import { ChatMessage, ChatRoom } from '@/src/screens/chat/types/chatRoom' // <-- your type
 import ChatRoomHeader from '@/src/screens/chatroom/ChatRoomHeader'
@@ -14,9 +14,10 @@ import { saveMessage } from '@/src/database/chatMessageService'
 import { useLoadPreviousMessages } from '@/src/hooks/usePrevMessage'
 import { FlatList } from 'react-native-gesture-handler'
 import { Image } from 'expo-image'
-import { ActivityIndicator } from 'react-native-paper'
+import { ActivityIndicator, TextInput } from 'react-native-paper'
 import Colors from '@/src/utils/Colors'
 import { formatChatTime, formatDateSeparator } from '@/src/utils/helperFunctions'
+import { Camera, Paperclip, SendHorizontal } from 'lucide-react-native'
 
 type ChatRoomScreenParams = {
   chatRoomDetails: ChatRoom
@@ -45,7 +46,7 @@ const ChatRoomScreen = () => {
   const [chatLoading, setChatLoading] = useState(true);
   const [content, setContent] = useState("");
   const [contentImage, setContentImage] = useState("");
-  const [chatListState, setChatList] = useState<ChatMessage>([]);
+  const [chatListState, setChatList] = useState<ChatMessage[]>([]);
   const [newMessages, setNewMessages] = useState([]);
   const [groupName, setGroupName] = useState("");
   const [participant, setParticipants] = useState("");
@@ -158,13 +159,14 @@ const ChatRoomScreen = () => {
   // }, [loadPage]);
 
   const getGroupedChatList = () => {
-    const groupedMessages = [];
-    let currentDateKey = null;
-    let buffer = [];
+    const groupedMessages: (ChatMessage | { type: string; date: Date; id: string })[] = [];
+    let currentDateKey: string|null = null;
+    let buffer:Array<ChatMessage & { type: string }> = [];
 
     chatListState.forEach((message, index) => {
       const messageDate = moment(message.createdAt).local().startOf("day");
       const dateKey = messageDate.format("YYYY-MM-DD");
+      
 
       if (currentDateKey === null) {
         currentDateKey = dateKey;
@@ -277,7 +279,10 @@ const ChatRoomScreen = () => {
             <View style={{ flexDirection: "row" }}>
               {senderId !== item.senderId && (
                 <TouchableOpacity
-                // onPress={() => navigation.navigate("CrewProfile", { item: item.messageUser })}
+                onPress={() => router.push({
+                  pathname: "/crewProfile",
+                  params: { crewId: item?.messageUser?.crewId }
+                })}
                 >
                   <Image
                     source={{ uri: item?.messageUser?.profileUrl }}
@@ -578,6 +583,31 @@ const ChatRoomScreen = () => {
         onEndReachedThreshold={0.2}
         ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color={Colors.darkGreen} /> : null}
       />
+      <View style={{flexDirection:"row" , display:"flex" , alignItems:"center" ,gap:5 , paddingHorizontal:10}}>
+        <Camera size={25} color={Colors.black} />
+        <Paperclip size={25} color={Colors.black} />
+
+<View style={{flex:1}}>
+   <TextInput
+  multiline
+  numberOfLines={4}
+  scrollEnabled={true}
+  style={{
+    backgroundColor: "white",
+    color: "black",
+  }}
+  contentStyle={{
+    color: "black",
+  }}
+  theme={{ roundness: 4 }}
+  mode="outlined"
+  outlineColor="black"
+  activeOutlineColor="black"
+/>
+      </View>
+      <SendHorizontal size={25} color={Colors.black} />
+      </View>
+   
     </View>
   )
 }
@@ -585,8 +615,182 @@ const ChatRoomScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "white",
+    paddingBottom:10
   },
-
-})
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    backgroundColor: "rgba(230, 230, 230, 0.5)",
+    borderRadius: 10,
+    marginHorizontal: 10,
+    marginBottom: Platform.OS === "ios" ? 20 : 10,
+    minHeight: 55,
+  },
+  inputInnerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  icon: {
+    width: 23,
+    height: 23,
+    marginHorizontal: 5,
+  },
+  textInput: {
+    flex: 1,
+    paddingHorizontal: 10,
+    alignItems: "center",
+    marginBottom: 8,
+    color: "black",
+    fontSize: 16,
+  },
+  microphoneButton: {
+    backgroundColor: "#82934b",
+    padding: 8,
+    borderRadius: 50,
+    marginLeft: 10,
+  },
+  dateSeparatorContainer: {
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  dateSeparatorText: {
+    backgroundColor: "#E6E6E6",
+    color: "#333",
+    paddingVertical: 5,
+    paddingHorizontal: 15,
+    borderRadius: 15,
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+  modalContainerForEdit: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContentForEdit: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 12,
+    width: "80%",
+    alignItems: "flex-end",
+  },
+  modalMessage: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 15,
+    width: "100%",
+  },
+  modalOptionForEdit: {
+    flexDirection: "row",
+    paddingVertical: 12,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "flex-end",
+  },
+  modalIcon: {
+    marginRight: 10,
+  },
+  modalOptionTextForEdit: {
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  emojiOption: {
+    padding: 10,
+    marginHorizontal: 5,
+  },
+  emojiText: {
+    fontSize: 24,
+    color: "white",
+  },
+  clearButton: {
+    padding: 5,
+    marginLeft: 5,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  replyContainer: {
+    flexDirection: "row",
+    marginHorizontal: 10,
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
+    padding: 5,
+    borderRadius: 10,
+    marginBottom: 5,
+  },
+  replyText: {
+    fontSize: 12,
+    color: "#666",
+    flex: 1,
+  },
+  replyCloseButton: {
+    padding: 5,
+  },
+  sheetContent: {
+    paddingVertical: 20,
+    zIndex: 1001,
+  },
+  sheetTitle: {
+    fontSize: 16,
+    fontFamily: "Poppins-Regular",
+    color: "black",
+    marginVertical: 10,
+    textAlign: "center",
+    fontWeight: "700",
+  },
+  userItemContainer: {
+    borderColor: "gray",
+    backgroundColor: "#f3f3f3",
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    paddingVertical: 5,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  userItem: {
+    paddingVertical: 8,
+    fontSize: 14,
+    fontFamily: "Poppins-Regular",
+    color: "black",
+  },
+  userImage: {
+    height: 40,
+    width: 40,
+    borderRadius: 20,
+    marginRight: 20,
+  },
+  noLikesText: {
+    fontSize: 16,
+    color: "black",
+    textAlign: "center",
+    paddingVertical: 20,
+  },
+  searchNavContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 10,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 10,
+    marginHorizontal: 10,
+    marginTop: 5,
+  },
+  searchCount: {
+    fontSize: 14,
+    color: "#000",
+  },
+  searchNavButtons: {
+    flexDirection: "row",
+    gap: 10,
+  },
+});
 
 export default ChatRoomScreen

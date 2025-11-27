@@ -55,8 +55,10 @@ const ChatLoungeList = () => {
     socketService.on('groupChatRooms', (data) =>
       dispatch(updateShipList(data?.groupChatRooms || []))
     )
-    socketService.on('groupChatRoomsEmployer', (data) =>
+    socketService.on('groupChatRoomsEmployer', (data) =>{
+      console.log("data: ", data);
       dispatch(updateFleetList(data?.groupChatRooms || []))
+    }
     )
   }
 
@@ -73,7 +75,7 @@ const ChatLoungeList = () => {
     const lastMsg = room.lastMessage
     const handChatListPress = () => {
       router.push({
-        pathname: '/community/chats/chatroom',
+        pathname: '/chatroom',
         params: { chatRoomDetails: JSON.stringify(room) },
       })
     }
