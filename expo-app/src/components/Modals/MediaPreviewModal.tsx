@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import {
-  Modal,
-  View,
-  StyleSheet,
-  Dimensions,
-  TouchableOpacity,
-  StatusBar,
-  Platform,
-  Text,
-  ActivityIndicator,
-} from "react-native";
 import { Image } from "expo-image";
-import ImageViewer from "react-native-image-zoom-viewer";
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { X, Send, Volume2, VolumeX } from "lucide-react-native";
+import { Send, Volume2, VolumeX, X } from "lucide-react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Dimensions,
+  Modal,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import ImageViewer from "react-native-image-zoom-viewer";
 import Video from "react-native-video"; // ← Only this
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");

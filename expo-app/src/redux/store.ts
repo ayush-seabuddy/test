@@ -1,13 +1,16 @@
 import { configureStore } from "@reduxjs/toolkit";
-import socialPostReducer from "./socialPostSlice"
-import chatListReducer from "./chatListSlice"
+import chatListReducer from "./chatListSlice";
+import contentReducer from "./ContentSlice";
+import socialPostReducer from "./socialPostSlice";
 import UserDetails from "./userDetailsSlice";
+
 
 export const store = configureStore({
   reducer: {
     counter:  socialPostReducer,
     chatList: chatListReducer,
-    userDetails: UserDetails
+    userDetails: UserDetails,
+    content: contentReducer
   },
 });
 

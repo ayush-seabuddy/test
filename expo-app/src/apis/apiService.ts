@@ -34,7 +34,6 @@ export interface UploadFileRequest {
 export interface SocialPostParams {
   page?: number;
   limit?: number;
-  [key: string]: any;
 }
 
 export interface ViewProfileParams {
@@ -136,7 +135,15 @@ export interface GetAllAssessmentResponseListParams {
 export interface GetAllContentsParams {
   page?: number,
   limit?: number,
-  onlyAnnouncement?: boolean
+  onlyAnnouncement?: boolean,
+  contentCategory?:string,
+  contentType?:string,
+  department?:string,
+  subCategory?:string
+}
+
+export interface GetAllHelplinesParams {
+  helplineType?: string,
 }
 
 export const login = async (
@@ -228,12 +235,12 @@ export const updateprofile = async (
   });
 };
 
-export const getAllSocialPost = async (
+export const getallposts = async (
   params?: SocialPostParams
 ): Promise<ApiResponse> => {
   return await apiRequest({
     method: "GET",
-    url: ENDPOINTS.GetAllSocialPost,
+    url: ENDPOINTS.GETALLPOSTS,
     params,
   });
 };
@@ -293,3 +300,27 @@ export const getallcontents = async (params?: GetAllContentsParams): Promise<Api
     params
   });
 };
+
+
+export const getAllHelplines = async (params?: GetAllHelplinesParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GET_ALL_HELPLINES,
+    params
+  });
+};
+
+export const viewUserTest = async (): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.VIEW_USER_TEST,
+  });
+}
+
+export const getAllCategory = async (): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETALLCATEGORY,
+  });
+};
+

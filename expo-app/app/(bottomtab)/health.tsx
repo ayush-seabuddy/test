@@ -1,14 +1,10 @@
+import Health from '@/src/screens/health/Health'
 import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
 
 const HealthScreen = () => {
   return (
-    <View>
-      <Text>HealthScreen</Text>
-    </View>
+    <Health />
   )
 }
 
 export default HealthScreen
-
-const styles = StyleSheet.create({})

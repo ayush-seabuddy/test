@@ -1,5 +1,4 @@
 import Constants from 'expo-constants';
-import { BaseGesture } from 'react-native-gesture-handler/lib/typescript/handlers/gestures/gesture';
 
 // Type-safe extra config
 type ExtraConfig = {
@@ -27,6 +26,12 @@ export const ENDPOINTS = {
   SAVEASSESSMENTRESPONSE:`${BASE_URL}/user/saveAssessmentResponses`,
   GETASSESSMENTRESPONSELIST:`${BASE_URL}/user/getAssessmentResponseList`,
   GETALLCONTENTS:`${BASE_URL}/content/getAllContents`,
-  GetAllSocialPost: `${BASE_URL}/user/getAllHangoutPost`,
+  GETALLPOSTS: `${BASE_URL}/user/getAllHangoutPost`,
   VIEW_PROFILE: `${BASE_URL}/user/viewUserProfile`,
+  GET_ALL_HELPLINES: `${BASE_URL}/helpline/getAllHelplines`,
+  VIEW_USER_TEST: `${BASE_URL}/user/viewUserTest`, 
+  GETALLCATEGORY:`${BASE_URL}/content/getAllCategory`,
 };
+
+
+ 

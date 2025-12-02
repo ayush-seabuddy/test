@@ -5,14 +5,14 @@ import { useEffect } from "react";
 import { I18nextProvider } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 
+import { login } from "@/src/apis/apiService";
 import AppContainer from "@/src/components/AppContainer";
 import CustomStatusBar from "@/src/components/CustomStatusBar";
 import { createTables } from "@/src/database/chatSchema";
 import { initI18n } from "@/src/localization/i18n";
 import Colors from "@/src/utils/Colors";
-import Splash from "./onboarding/Splash";
-import { login } from "@/src/apis/apiService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Splash from "./onboarding/Splash";
 
 export default function Index() {
   const router = useRouter();
@@ -26,6 +26,7 @@ export default function Index() {
          setTimeout(async()=>{
         // console.log("hello");
       let data  =await login({email:"rishabhmaurya186@gmail.com",password:"Seekware@123"})
+      console.log("data: ", JSON.stringify(data?.data));
       AsyncStorage.setItem("userDetails", JSON.stringify(data?.data));
       await AsyncStorage.setItem("authToken", data?.data.authToken);
       await AsyncStorage.setItem("userId", data?.data.id);

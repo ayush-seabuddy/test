@@ -1,23 +1,24 @@
 // src/screens/chat/ChatRoom.tsx
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { useRoute, RouteProp } from '@react-navigation/native'
-import { ChatMessage, ChatRoom } from '@/src/screens/chat/types/chatRoom' // <-- your type
-import ChatRoomHeader from '@/src/screens/chatroom/ChatRoomHeader'
-import { router, useFocusEffect } from 'expo-router'
-import { useDispatch, useSelector } from 'react-redux'
-import moment from 'moment-timezone'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { RootState } from '@/src/redux/store'
-import socketService from '@/src/utils/socketService'
-import { saveMessage } from '@/src/database/chatMessageService'
-import { useLoadPreviousMessages } from '@/src/hooks/usePrevMessage'
-import { FlatList } from 'react-native-gesture-handler'
-import { Image } from 'expo-image'
-import { ActivityIndicator, TextInput } from 'react-native-paper'
-import Colors from '@/src/utils/Colors'
-import { formatChatTime, formatDateSeparator } from '@/src/utils/helperFunctions'
-import { Camera, Paperclip, SendHorizontal } from 'lucide-react-native'
+import { uploadfile } from '@/src/apis/apiService';
+import MediaPreviewModal from '@/src/components/Modals/MediaPreviewModal';
+import { saveMessage } from '@/src/database/chatMessageService';
+import { RootState } from '@/src/redux/store';
+import { ChatMessage, ChatRoom } from '@/src/screens/chat/types/chatRoom'; // <-- your type
+import ChatRoomHeader from '@/src/screens/chatroom/ChatRoomHeader';
+import Colors from '@/src/utils/Colors';
+import { formatChatTime, formatDateSeparator } from '@/src/utils/helperFunctions';
+import socketService from '@/src/utils/socketService';
+import { RouteProp, useRoute } from '@react-navigation/native';
+import { Image } from 'expo-image';
+import * as ImagePicker from "expo-image-picker";
+import { router, useFocusEffect } from 'expo-router';
+import { Camera, Check, Edit, Paperclip, Reply, SendHorizonal, Trash2, X } from 'lucide-react-native';
+import moment from 'moment-timezone';
+import React, { useCallback, useRef, useState } from 'react';
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList } from 'react-native-gesture-handler';
+import { ActivityIndicator, TextInput, } from 'react-native-paper';
+import { useDispatch, useSelector } from 'react-redux';
 
 type ChatRoomScreenParams = {
   chatRoomDetails: ChatRoom
@@ -27,7 +28,7 @@ type ChatRoomRouteProp = RouteProp<{ ChatRoom: ChatRoomScreenParams }, 'ChatRoom
 const ChatRoomScreen = () => {
   const route = useRoute<ChatRoomRouteProp>()
   const chatRoomDetails = typeof route.params?.chatRoomDetails === 'string' ? JSON.parse(route.params?.chatRoomDetails) : route.params?.chatRoomDetails
-
+  const chatRoomId = chatRoomDetails.id;
   const headerPops = {
     navigation: () => router.back(),
     data: chatRoomDetails,
@@ -41,7 +42,6 @@ const ChatRoomScreen = () => {
   const dispatch = useDispatch();
   // const { chatList, typingStatus } = useSelector(selectChat);
   const [typingTimeout, setTypingTimeout] = useState(null);
-  const [chatRoomId, setChatRoomID] = useState("");
   const [loading, setLoading] = useState(false);
   const [chatLoading, setChatLoading] = useState(true);
   const [content, setContent] = useState("");
@@ -68,8 +68,8 @@ const ChatRoomScreen = () => {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingMessage, setEditingMessage] = useState(null);
   const [editedContent, setEditedContent] = useState("");
-  const [editingMessageId, setEditingMessageId] = useState(null);
-  const [inputHeight, setInputHeight] = useState(40);
+  const [editingMessageId, setEditingMessageId] = useState<string>("");
+  const [inputHeight, setInputHeight] = useState(55);
   const [editModal, setEditModal] = useState(false);
   const [replyingTo, setReplyingTo] = useState(null);
   const [myReaction, setMyReaction] = useState('');
@@ -81,42 +81,184 @@ const ChatRoomScreen = () => {
   const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
   const [searchQuery, setSearchQuery] = useState("");
 
-
+  const emojis = ["👍", "😊", "❤️", "😂", "😮", "😢"];
 
   const { id: senderId, shipId } = useSelector((state: RootState) => state.userDetails)
 
 
 
 
+  const handleEditMessage = (message:{ id: string; content: string; messageType: string;}) => {
+    console.log("message: ", message);
+    if (!message.id) {
+      return;
+    }
+    if (message.messageType === "IMAGE") {
+      return;
+    }
+    setContent(message.content);
+    setEditingMessageId(message.id);
+    if (textInputRef.current) {
+      textInputRef?.current?.focus();
+    }
+  };
 
-  //  useFocusEffect(
-  //   useCallback(() => {
+  const handleDeleteMessage = (message) => {
+    socketService.emit("userEditMessage", {
+      senderId,
+      ChatId: message.id,
+      type: "DELETE",
+    });
+  };
+
+  const handleReplyMessage = (message) => {
+    setReplyingTo(message);
+    setEditModal(false);
+    if (textInputRef.current) {
+      textInputRef.current.focus();
+    }
+  };
+
+  const handleEmojiReaction = (message, emoji) => {
+
+
+    socketService.emit("userReactMessage", {
+      senderId,
+      chatRoomId,
+      ChatId: message.id,
+      reaction: emoji,
+    });
+
+    setChatList((prevMessageList) => {
+      return prevMessageList.map((msg) => {
+        if (msg.id === message.id) {
+          let chatReactionDetails = msg?.chatReactionDetails || [];
+          let alreadyReacted = msg?.chatReactionDetails?.find((item) => item.userId === senderId);
+          if (alreadyReacted) {
+            if (alreadyReacted.reaction == emoji) {
+              chatReactionDetails = chatReactionDetails?.filter((item) => item.userId !== senderId);
+            } else {
+              chatReactionDetails = chatReactionDetails?.filter((item) => item.userId !== senderId);
+              chatReactionDetails?.push({ messageId: message.id, reaction: emoji, userId: senderId });
+            }
+          } else {
+            chatReactionDetails?.push({ messageId: message.id, reaction: emoji, userId: senderId });
+          }
+          return { ...msg, chatReactionDetails: chatReactionDetails };
+        }
+        return msg;
+      });
+    });
+    setEditModal(false);
+  };
+
+  const handleDelteReaction = (messageId, emoji) => {
+    const message = chatListState.find((msg) => String(msg.id) === String(messageId));
+    if (!message) return;
+    socketService.emit("userReactMessage", {
+      senderId,
+      chatRoomId,
+      ChatId: message.id,
+      reaction: emoji,
+    });
+
+    setChatList((prevMessageList) => {
+      return prevMessageList.map((msg) => {
+        if (msg.id === message.id) {
+          let chatReactionDetails = msg?.chatReactionDetails || [];
+          let alreadyReacted = msg?.chatReactionDetails?.find((item) => item.userId === senderId);
+          if (alreadyReacted) {
+            if (alreadyReacted.reaction == emoji) {
+              chatReactionDetails = chatReactionDetails?.filter((item) => item.userId !== senderId);
+            } else {
+              chatReactionDetails = chatReactionDetails?.filter((item) => item.userId !== senderId);
+              chatReactionDetails?.push({ messageId: message.id, reaction: emoji, userId: senderId });
+            }
+          } else {
+            chatReactionDetails?.push({ messageId: message.id, reaction: emoji, userId: senderId });
+          }
+          return { ...msg, chatReactionDetails: chatReactionDetails };
+        }
+        return msg;
+      });
+    });
+    setEditModal(false);
+  };
+
+  const sendMessage = async () => {
+    if (content.trim() === "") return;
+
+    try {
+      if (editingMessageId) {
+        const editPayload = {
+          senderId,
+          chatRoomId,
+          content,
+          ChatId: editingMessageId,
+          type: "UPDATE",
+        };
+        socketService.emit("userEditMessage", editPayload);
+        setEditingMessageId(null);
+      } else {
+        const createdAt = new Date().toUTCString();
+        const createdAtId = Date.now();
+        const chat_payload = {
+          senderId,
+          chatRoomId,
+          content,
+          createdAt,
+          createdAtId: Number(createdAtId),
+          replyTo: replyingTo ? replyingTo.id : null,
+        };
+        socketService.emit("userSendMessage", chat_payload);
+        chat_payload.parentMessage = replyingTo;
+        setChatList((prevMessageList) => [chat_payload, ...prevMessageList]);
+      }
+      setContent("");
+      setReplyingTo(null);
+      setInputHeight(55);
+    } catch (error) {
+      console.log("Error sending/editing message:", error);
+    }
+  };
+
+  const handleUserEditMessage = (data) => {
+    setChatList((prevMessageList) =>
+      prevMessageList.map((msg) =>
+        msg.id === data.id
+          ? { ...msg, content: data.content || msg.content, status: data.status }
+          : msg
+      )
+    );
+  };
+  useFocusEffect(
+    useCallback(() => {
 
 
 
-  //     socketService.on("userPreviousMessages", handleUserChatInitiated);
-  //     socketService.on("receiveUserMessage", handleReceiveUserMessage);
-  //     socketService.on("typingStatusUpdated", f1);
-  //     socketService.on("receiveUserEditMessage", handleUserEditMessage);
-  //     socketService.on("getUserEditMessage", handleUserEditMessage);
-  //     socketService.on("receiveUserReactMessage", handleUserReactMessage);
-  //     socketService.on("getUserMessage", handleGetUserMessage);
-  //     socketService.on("receiveChatReaction",f2);
-  //     socketService.on("getChatReaction", f3);
+      // socketService.on("userPreviousMessages", handleUserChatInitiated);
+      // socketService.on("receiveUserMessage", handleReceiveUserMessage);
+      // socketService.on("typingStatusUpdated", f1);
+      socketService.on("receiveUserEditMessage", handleUserEditMessage);
+      socketService.on("getUserEditMessage", handleUserEditMessage);
+      // socketService.on("receiveUserReactMessage", handleUserReactMessage);
+      // socketService.on("getUserMessage", handleGetUserMessage);
+      // socketService.on("receiveChatReaction",f2);
+      // socketService.on("getChatReaction", f3);
 
-  //     return () => {
-  //       socketService.off("userPreviousMessages", handleUserChatInitiated);
-  //       socketService.off("receiveUserMessage", handleReceiveUserMessage);
-  //       socketService.off("typingStatusUpdated");
-  //       socketService.off("receiveUserEditMessage", handleUserEditMessage);
-  //       socketService.off("getUserEditMessage", handleUserEditMessage);
-  //       socketService.off("receiveUserReactMessage", handleUserReactMessage);
-  //       socketService.off("getUserMessage", handleGetUserMessage);
-  //       socketService.off("receiveChatReaction");
-  //       socketService.off("getChatReaction");
-  //     };
-  //   }, [])
-  // );
+      return () => {
+        // socketService.off("userPreviousMessages", handleUserChatInitiated);
+        // socketService.off("receiveUserMessage", handleReceiveUserMessage);
+        // socketService.off("typingStatusUpdated");
+        socketService.off("receiveUserEditMessage", handleUserEditMessage);
+        socketService.off("getUserEditMessage", handleUserEditMessage);
+        // socketService.off("receiveUserReactMessage", handleUserReactMessage);
+        // socketService.off("getUserMessage", handleGetUserMessage);
+        // socketService.off("receiveChatReaction");
+        // socketService.off("getChatReaction");
+      };
+    }, [])
+  );
 
 
 
@@ -143,6 +285,82 @@ const ChatRoomScreen = () => {
     }, [])
   );
 
+
+
+  const sendMessageImageUrl = async (contentImage: string) => {
+    if (!contentImage || contentImage.trim() === "") return;
+
+    try {
+      const createdAt = new Date().toISOString();
+      const createdAtId = Date.now();
+      const chat_payload = {
+        senderId,
+        chatRoomId,
+        content: contentImage,
+        createdAt,
+        messageType: "IMAGE",
+        createdAtId: Number(createdAtId),
+        replyTo: replyingTo ? replyingTo.id : null,
+      };
+
+      socketService.emit("userSendMessage", chat_payload);
+      setChatList((prevMessageList) => [chat_payload, ...prevMessageList]);
+      setContentImage("");
+      setReplyingTo(null);
+    } catch (error) {
+      console.log("Error sending image message:", error);
+    }
+  };
+
+
+  const uploadImage = async (photo: string) => {
+    if (!photo) return;
+    setLoading(true);
+    try {
+      const apiResponse = await uploadfile({ file: photo });
+      if (apiResponse.success && apiResponse.status == 200) {
+        setContentImage(apiResponse.data);
+        await sendMessageImageUrl(apiResponse.data);
+
+      } else {
+      }
+    } catch (err) {
+    } finally {
+      setLoading(false);
+    }
+  };
+  const selectImageFromCamera = async (type: "camera" | "library" = "camera") => {
+
+    try {
+      setLoading(true);
+
+      const result = type === "camera"
+        ? await ImagePicker.launchCameraAsync({
+          allowsEditing: true,
+        })
+        : await ImagePicker.launchImageLibraryAsync({
+          allowsEditing: true,
+        });
+
+      if (result.canceled) return;
+
+      const uri = result.assets?.[0]?.uri;
+      if (!uri) return;
+      console.log("uri: ", uri);
+      setMediaModalVisible(true);
+      setSelectedMedia({ uri: uri, isVideo: false, imageUri: uri });
+      setLoading(false);
+    } catch (error) {
+
+    }
+  };
+
+
+  // const selectImage = async (type: "camera" | "library") => {
+  //   const hasPermission = await requestPermissions(type);
+  //   if (!hasPermission) return;
+
+
   //   const { loadPage } = useLoadPreviousMessages(chatRoomDetails.id, 30);
 
 
@@ -160,13 +378,13 @@ const ChatRoomScreen = () => {
 
   const getGroupedChatList = () => {
     const groupedMessages: (ChatMessage | { type: string; date: Date; id: string })[] = [];
-    let currentDateKey: string|null = null;
-    let buffer:Array<ChatMessage & { type: string }> = [];
+    let currentDateKey: string | null = null;
+    let buffer: Array<ChatMessage & { type: string }> = [];
 
     chatListState.forEach((message, index) => {
       const messageDate = moment(message.createdAt).local().startOf("day");
       const dateKey = messageDate.format("YYYY-MM-DD");
-      
+
 
       if (currentDateKey === null) {
         currentDateKey = dateKey;
@@ -279,10 +497,10 @@ const ChatRoomScreen = () => {
             <View style={{ flexDirection: "row" }}>
               {senderId !== item.senderId && (
                 <TouchableOpacity
-                onPress={() => router.push({
-                  pathname: "/crewProfile",
-                  params: { crewId: item?.messageUser?.crewId }
-                })}
+                  onPress={() => router.push({
+                    pathname: "/crewProfile",
+                    params: { crewId: item?.messageUser?.crewId }
+                  })}
                 >
                   <Image
                     source={{ uri: item?.messageUser?.profileUrl }}
@@ -583,31 +801,192 @@ const ChatRoomScreen = () => {
         onEndReachedThreshold={0.2}
         ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color={Colors.darkGreen} /> : null}
       />
-      <View style={{flexDirection:"row" , display:"flex" , alignItems:"center" ,gap:5 , paddingHorizontal:10}}>
-        <Camera size={25} color={Colors.black} />
-        <Paperclip size={25} color={Colors.black} />
 
-<View style={{flex:1}}>
-   <TextInput
-  multiline
-  numberOfLines={4}
-  scrollEnabled={true}
-  style={{
-    backgroundColor: "white",
-    color: "black",
-  }}
-  contentStyle={{
-    color: "black",
-  }}
-  theme={{ roundness: 4 }}
-  mode="outlined"
-  outlineColor="black"
-  activeOutlineColor="black"
-/>
+      {replyingTo && (
+        <View style={styles.replyContainer}>
+          <Text style={styles.replyText}>
+            Replying to {replyingTo.messageUser?.fullName || "Unknown"}
+          </Text>
+          <TouchableOpacity
+            onPress={() => setReplyingTo(null)}
+            style={styles.replyCloseButton}
+          >
+            <X size={20} color="black" />
+          </TouchableOpacity>
+        </View>
+      )}
+      <View style={[styles.inputContainer, {}]}>
+        <View style={styles.inputInnerContainer}>
+          <TouchableOpacity
+            onPress={() => selectImageFromCamera("camera")}
+          >
+            <Camera size={20} color="grey" style={styles.icon} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => selectImageFromCamera("library")}
+          >
+            <Paperclip size={17} color="grey" style={styles.icon} />
+          </TouchableOpacity>
+          <View style={{ flex: 1, flexDirection: "row" }}>
+            <TextInput
+              // style={[styles.textInput, { maxHeight: 180 }]}
+              style={{
+                flex: 1,
+                paddingHorizontal: 10,
+                marginBottom: 8,
+                color: "black",
+                backgroundColor: "rgba(230, 230, 230, 0.5)",
+              }}
+              activeUnderlineColor="transparent"
+              underlineColor="transparent"
+              contentStyle={{
+                color: "black",
+              }}
+              placeholder={editingMessageId ? "Edit your message..." : "Type something..."}
+              placeholderTextColor="gray"
+              value={content}
+              ref={textInputRef}
+              multiline={true}
+              numberOfLines={4}
+              scrollEnabled={true}
+              onChangeText={(value) => {
+                setContent(value);
+              }}
+              onSubmitEditing={() => {
+                sendMessage();
+              }}
+            />
+            {editingMessageId && (
+              <TouchableOpacity
+                onPress={() => {
+                  setEditingMessageId(null);
+                  setContent("");
+                  setEditModal(false);
+                  setInputHeight(55);
+                  if (textInputRef.current) {
+                    textInputRef.current.blur();
+                  }
+                }}
+                style={styles.clearButton}
+              >
+                <X size={18} color="#808080" />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+        <TouchableOpacity
+          onPress={() => {
+            sendMessage();
+          }}
+          style={styles.microphoneButton}
+        >
+          {editingMessageId ?
+            <Check size={18} color="#fff" />
+            : <SendHorizonal size={18} color="#fff" />}
+        </TouchableOpacity>
       </View>
-      <SendHorizontal size={25} color={Colors.black} />
-      </View>
-   
+
+
+
+      {selectedMedia && (
+        <MediaPreviewModal
+          visible={mediaModalVisible}
+          onClose={() => setMediaModalVisible(false)}
+          uri={selectedMedia.uri}
+          type={selectedMedia.isVideo ? "video" : "image"}
+          canSend={!!selectedMedia.imageUri}
+          uploadImageToCloudinary={() => {
+            console.log("selectedMedia: ", selectedMedia);
+            if (selectedMedia.imageUri) {
+              setLoading(true);
+              setMediaModalVisible(false);
+              uploadImage(selectedMedia.imageUri);
+              // uploadImageToCloudinary(selectedMedia.imageUri);
+            }
+          }}
+        />
+      )}
+      {editModal && (
+        <Modal
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setEditModal(false)}
+        >
+          <View style={styles.modalContainerForEdit}>
+            <View style={styles.modalContentForEdit}>
+              <Text style={styles.modalMessage}>This action is for your chat message</Text>
+              {senderId === editingMessage?.senderId && editingMessage?.messageType !== "IMAGE" && (
+                <TouchableOpacity
+                  style={styles.modalOptionForEdit}
+                  onPress={() => {
+                    handleEditMessage(editingMessage);
+                    setEditModal(false);
+                  }}
+                >
+                  <Edit size={20} color="#82934b" style={styles.modalIcon} />
+                  <Text style={[styles.modalOptionTextForEdit, { color: "#82934b" }]}>Edit</Text>
+                </TouchableOpacity>
+              )}
+              {senderId === editingMessage?.senderId && (
+                <TouchableOpacity
+                  style={styles.modalOptionForEdit}
+                  onPress={() => {
+                    handleDeleteMessage(editingMessage);
+                    setContent("");
+                    setEditingMessageId(null);
+                    setEditModal(false);
+                    setInputHeight(55);
+                  }}
+                >
+                  <Trash2 size={20} color="#FF4D4D" style={styles.modalIcon} />
+                  <Text style={[styles.modalOptionTextForEdit, { color: "#FF4D4D" }]}>Delete</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={styles.modalOptionForEdit}
+                onPress={() => {
+                  handleReplyMessage(editingMessage);
+                }}
+              >
+                <Reply size={20} color="#82934b" style={styles.modalIcon} />
+                <Text style={[styles.modalOptionTextForEdit, { color: "#82934b" }]}>Reply</Text>
+              </TouchableOpacity>
+              <FlatList
+                data={emojis}
+                renderItem={({ item: emoji }) => (
+                  <TouchableOpacity
+                    style={[styles.emojiOption, {
+                      ...myReaction == emoji ?
+                        {
+                          backgroundColor: "rgba(192, 190, 190, 0.5)",
+                          borderRadius: 30,
+                        }
+                        : {}
+                    }]}
+                    onPress={() => handleEmojiReaction(editingMessage, emoji)}
+                  >
+                    <Text style={styles.emojiText}>{emoji}</Text>
+                  </TouchableOpacity>
+                )}
+                keyExtractor={(item) => item}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{ marginTop: 10 }}
+              />
+              <TouchableOpacity
+                style={styles.modalOptionForEdit}
+                onPress={() => {
+                  setEditModal(false);
+                  setInputHeight(55);
+                }}
+              >
+                <X size={20} color="#808080" style={styles.modalIcon} />
+                <Text style={[styles.modalOptionTextForEdit, { color: "#808080" }]}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+      )}
     </View>
   )
 }
@@ -616,7 +995,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "white",
-    paddingBottom:10
+    paddingBottom: 10
   },
   loadingContainer: {
     flex: 1,
@@ -630,7 +1009,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(230, 230, 230, 0.5)",
     borderRadius: 10,
     marginHorizontal: 10,
-    marginBottom: Platform.OS === "ios" ? 20 : 10,
+    marginBottom: 20,
     minHeight: 55,
   },
   inputInnerContainer: {
