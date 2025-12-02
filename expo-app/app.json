@@ -33,10 +33,10 @@
       "expo-localization",
       "expo-font",
       [
-        "react-native-video",
+        "expo-video",
         {
-          "androidEnableCaching": true,
-          "iosEnableCaching": true
+          "supportsBackgroundPlayback": true,
+          "supportsPictureInPicture": true
         }
       ],
       [
