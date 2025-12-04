@@ -40,6 +40,14 @@
         }
       ],
       [
+        "freshchat-react-native",
+        {
+          "appId": "d3f0a0cc-c399-4f7d-a766-aa6178b81a2d",
+          "appKey": "6284ec56-b238-4a42-b2ac-8685a420c73d",
+          "domain": "msdk.freshchat.com"
+        }
+      ],
+      [
         "expo-screen-orientation",
         {
           "supportedOrientations": [

@@ -1,14 +1,18 @@
+// FullScreenMediaModal.tsx
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
-    StyleSheet,
-    View,
-    Dimensions,
-    ScrollView,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    Pressable,
+  Modal,
+  StyleSheet,
+  View,
+  ScrollView,
+  Dimensions,
+  Pressable,
+  TouchableOpacity,
+  Animated,
+  PanResponder,
+  StatusBar,
 } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import { X } from "lucide-react-native";
 import { Image } from "expo-image";
 import { VideoView, useVideoPlayer } from "expo-video";
@@ -17,218 +21,303 @@ import Colors from "@/src/utils/Colors";
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 type MediaItem = {
-    uri: string;
-    type: "image" | "video";
+  uri: string;
+  type: "image" | "video";
 };
 
-const FullScreenMediaPreview = () => {
-    const router = useRouter();
-    const params = useLocalSearchParams();
+type FullScreenMediaModalProps = {
+  visible: boolean;
+  media: MediaItem[];
+  initialIndex?: number;
+  onClose: () => void;
+};
 
-    const mediaString = Array.isArray(params.media) ? params.media[0] : params.media;
-    const mediaArray: MediaItem[] = JSON.parse(mediaString as string);
+const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
+  visible,
+  media,
+  initialIndex = 0,
+  onClose,
+}) => {
+  const [activeIndex, setActiveIndex] = useState(initialIndex);
+  const [showUI, setShowUI] = useState(true);
+  const scrollViewRef = useRef<ScrollView>(null);
 
-    const startIndex = Array.isArray(params.index)
-        ? Number(params.index[0])
-        : Number(params.index || 0);
+  // Animation values for swipe-to-dismiss
+  const translateY = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
 
-    const [activeIndex, setActiveIndex] = useState(startIndex);
-    const [showUI, setShowUI] = useState(true);
-    const [showVideoControls, setShowVideoControls] = useState(true);
-    const scrollViewRef = useRef<ScrollView>(null);
+  // Video players pre-created for performance
+  const videoUris = useMemo(() => media.filter(m => m.type === "video").map(m => m.uri), [media]);
 
-    // Extract all video URIs upfront
-    const videoPaths = useMemo(
-        () => mediaArray.filter((item) => item.type === "video").map((item) => item.uri),
-        [mediaArray]
-    );
+  const players = videoUris.map(uri =>
+    useVideoPlayer(uri, player => {
+      player.loop = true;
+      player.muted = false;
+      player.volume = 1.0;
+    })
+  );
 
-    // Create stable video players for all videos
-    const players = videoPaths.map((uri) =>
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        useVideoPlayer(uri, (p) => {
-            p.loop = true;
-            p.muted = false;
-            p.staysActiveInBackground = false;
-        })
-    );
+  const playerMap = useMemo(() => {
+    const map = new Map<string, any>();
+    videoUris.forEach((uri, i) => map.set(uri, players[i]));
+    return map;
+  }, [videoUris, players]);
 
-    // Map URIs to players for easy lookup
-    const videoPlayerMap = useMemo(() => {
-        const map = new Map<string, any>();
-        videoPaths.forEach((uri, index) => {
-            map.set(uri, players[index]);
-        });
-        return map;
-    }, [videoPaths, players]);
-
-    useEffect(() => {
-        // Auto-scroll to start index
+  // Auto scroll to initial index
+  useEffect(() => {
+    if (visible) {
+      setActiveIndex(initialIndex);
+      setShowUI(true);
+      setTimeout(() => {
         scrollViewRef.current?.scrollTo({
-            x: startIndex * SCREEN_WIDTH,
-            animated: false,
+          x: initialIndex * SCREEN_WIDTH,
+          animated: false,
         });
-    }, [startIndex]);
+      }, 100);
+    }
+  }, [visible, initialIndex]);
 
-    const handleScroll = (event: any) => {
-        const contentOffsetX = event.nativeEvent.contentOffset.x;
-        const newIndex = Math.round(contentOffsetX / SCREEN_WIDTH);
-        if (newIndex !== activeIndex) {
-            setActiveIndex(newIndex);
+  // Play active video, pause others
+  useEffect(() => {
+    if (!visible) return;
+
+    media.forEach((item, idx) => {
+      const player = playerMap.get(item.uri);
+      if (!player || item.type !== "video") return;
+
+      if (idx === activeIndex) {
+        player.play();
+        player.seekBy(-player.position); // safely resets to start
+      } else {
+        player.pause();
+      }
+    });
+  }, [activeIndex, visible, media, playerMap]);
+  // Handle horizontal scroll
+  const handleScroll = (event: any) => {
+    const x = event.nativeEvent.contentOffset.x;
+    const newIndex = Math.round(x / SCREEN_WIDTH);
+    if (newIndex !== activeIndex) {
+      setActiveIndex(newIndex);
+    }
+  };
+
+  // Toggle UI on tap
+  const toggleUI = () => {
+    setShowUI(prev => !prev);
+  };
+
+  // Swipe down to close
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dy) > 20,
+      onPanResponderMove: (_, gesture) => {
+        if (gesture.dy > 0) {
+          translateY.setValue(gesture.dy);
+          opacity.setValue(1 - gesture.dy / SCREEN_HEIGHT * 0.7);
         }
-    };
-
-    // Play/pause videos based on active index
-    useEffect(() => {
-        mediaArray.forEach((item, index) => {
-            if (item.type === "video") {
-                const player = videoPlayerMap.get(item.uri);
-                if (player) {
-                    if (index === activeIndex) {
-                        player.play();
-                    } else {
-                        player.pause();
-                    }
-                }
-            }
-        });
-    }, [activeIndex, mediaArray, videoPlayerMap]);
-
-    const renderMedia = (item: MediaItem, index: number) => {
-        if (item.type === "video") {
-            const player = videoPlayerMap.get(item.uri);
-
-            return (
-                <View key={index} style={styles.mediaWrapper}>
-                    <VideoView
-                        player={player}
-                        style={StyleSheet.absoluteFillObject}
-                        contentFit="contain"
-                        allowsPictureInPicture={false}
-                        nativeControls={showVideoControls}
-                    />
-                    <Pressable
-                        style={StyleSheet.absoluteFillObject}
-                        onPress={() => {
-                            setShowUI((prev) => !prev);
-                            setShowVideoControls((prev) => !prev);
-                        }}
-                        pointerEvents="box-none"
-                    >
-                        <View style={{ flex: 1 }} pointerEvents="none" />
-                    </Pressable>
-                </View>
-            );
+      },
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dy > SCREEN_HEIGHT * 0.25 || gesture.vy > 1) {
+          Animated.parallel([
+            Animated.timing(translateY, {
+              toValue: SCREEN_HEIGHT,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+            Animated.timing(opacity, {
+              toValue: 0,
+              duration: 300,
+              useNativeDriver: true,
+            }),
+          ]).start(() => {
+            onClose();
+            translateY.setValue(0);
+            opacity.setValue(1);
+          });
+        } else {
+          Animated.parallel([
+            Animated.spring(translateY, {
+              toValue: 0,
+              useNativeDriver: true,
+            }),
+            Animated.timing(opacity, {
+              toValue: 1,
+              duration: 200,
+              useNativeDriver: true,
+            }),
+          ]).start();
         }
+      },
+    })
+  ).current;
 
-        return (
-            <TouchableOpacity
-                key={index}
-                activeOpacity={1}
-                onPress={() => setShowUI((prev) => !prev)}
-                style={styles.mediaWrapper}
+  const renderItem = (item: MediaItem, index: number) => {
+    if (item.type === "video") {
+      const player = playerMap.get(item.uri);
+
+      return (
+        <Pressable
+          key={index}
+          style={styles.mediaContainer}
+          onPress={toggleUI}
+          {...panResponder.panHandlers}
+        >
+          {player && (
+            <VideoView
+              player={player}
+              style={StyleSheet.absoluteFillObject}
+              contentFit="contain"
+              nativeControls={showUI}
+            />
+          )}
+        </Pressable>
+      );
+    }
+return (
+  <Pressable
+    key={index}
+    style={styles.mediaContainer}
+    onPress={toggleUI}
+    {...panResponder.panHandlers}
+  >
+  <Image
+    source={{ uri: item.uri }}
+    style={StyleSheet.absoluteFillObject}
+    contentFit="contain"
+    transition={300}
+  />
+  </Pressable>
+);
+
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      statusBarTranslucent
+      onRequestClose={onClose}
+    >
+      <Animated.View
+        style={[
+          styles.modalBackdrop,
+          { opacity },
+        ]}
+        pointerEvents="box-none"
+      >
+        <StatusBar hidden={!showUI} />
+
+        <Animated.View
+          style={{
+            flex: 1,
+            transform: [{ translateY }],
+          }}
+          {...panResponder.panHandlers}
+        >
+          {/* Close Button */}
+          <Animated.View
+            style={[
+              styles.closeButton,
+              !showUI && styles.hidden,
+            ]}
+          >
+            <TouchableOpacity onPress={onClose} style={styles.closeButtonInner}>
+              <X size={24} color="white" strokeWidth={2} />
+            </TouchableOpacity>
+          </Animated.View>
+
+          {/* Media Carousel */}
+          <ScrollView
+            ref={scrollViewRef}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={handleScroll}
+            onMomentumScrollEnd={handleScroll}
+            scrollEventThrottle={16}
+            decelerationRate="fast"
+            contentContainerStyle={{
+              width: SCREEN_WIDTH * media.length,
+            }}
+          >
+            {media.map(renderItem)}
+          </ScrollView>
+
+          {/* Pagination Dots */}
+          {media.length > 1 && (
+            <Animated.View
+              style={[
+                styles.pagination,
+                !showUI && styles.hidden,
+              ]}
             >
-                <Image
-                    source={{ uri: item.uri }}
-                    style={StyleSheet.absoluteFillObject}
-                    contentFit="contain"
-                    placeholder={{ blurhash: "LEHV6nWB2yk8pyo0adR*.7kCMdkI" }}
-                    transition={300}
+              {media.map((_, i) => (
+                <View
+                  key={i}
+                  style={[
+                    styles.dot,
+                    i === activeIndex ? styles.dotActive : styles.dotInactive,
+                  ]}
                 />
-            </TouchableOpacity>
-        );
-    };
-
-    return (
-        <View style={styles.container}>
-            {/* Close Button */}
-            <TouchableOpacity
-                style={[styles.closeBtn, !showUI && styles.hidden]}
-                onPress={() => router.back()}
-            >
-                <X size={20} color="black" strokeWidth={1.5} />
-            </TouchableOpacity>
-
-            {/* Media Carousel */}
-            <ScrollView
-                ref={scrollViewRef}
-                horizontal
-                pagingEnabled
-                showsHorizontalScrollIndicator={false}
-                onScroll={handleScroll}
-                onMomentumScrollEnd={handleScroll}
-                scrollEventThrottle={16}
-                decelerationRate="fast"
-                contentContainerStyle={{ width: SCREEN_WIDTH * mediaArray.length }}
-            >
-                {mediaArray.map(renderMedia)}
-            </ScrollView>
-
-            {/* Pagination Dots */}
-            {mediaArray.length > 1 && (
-                <View style={[styles.paginationWrapper, !showUI && styles.hidden]}>
-                    {mediaArray.map((_, i) => (
-                        <View
-                            key={i}
-                            style={[
-                                styles.dot,
-                                i === activeIndex ? styles.dotActive : styles.dotInactive,
-                            ]}
-                        />
-                    ))}
-                </View>
-            )}
-        </View>
-    );
+              ))}
+            </Animated.View>
+          )}
+        </Animated.View>
+      </Animated.View>
+    </Modal>
+  );
 };
 
-export default FullScreenMediaPreview;
+export default FullScreenMediaModal;
 
+// Styles
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: "black",
-    },
-    closeBtn: {
-        position: "absolute",
-        top: 20,
-        right: 20,
-        zIndex: 20,
-        padding: 10,
-        borderRadius: 30,
-        backgroundColor: "#fff",
-    },
-    hidden: {
-        opacity: 0,
-    },
-    mediaWrapper: {
-        width: SCREEN_WIDTH,
-        height: SCREEN_HEIGHT,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "black",
-    },
-    paginationWrapper: {
-        position: "absolute",
-        bottom: 60,
-        left: 0,
-        right: 0,
-        flexDirection: "row",
-        justifyContent: "center",
-        zIndex: 10,
-    },
-    dot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        marginHorizontal: 4,
-    },
-    dotActive: {
-        width: 24,
-        backgroundColor: Colors.lightGreen,
-        borderRadius: 4,
-    },
-    dotInactive: {
-        backgroundColor: "rgba(255,255,255,0.5)",
-    },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "black",
+  },
+  mediaContainer: {
+    width: SCREEN_WIDTH,
+    height: SCREEN_HEIGHT,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  closeButton: {
+    position: "absolute",
+    top: 50,
+    right: 20,
+    zIndex: 20,
+  },
+  closeButtonInner: {
+    padding: 12,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    borderRadius: 30,
+  },
+  hidden: {
+    opacity: 0,
+  },
+  pagination: {
+    position: "absolute",
+    bottom: 80,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginHorizontal: 4,
+  },
+  dotActive: {
+    width: 24,
+    backgroundColor: Colors.lightGreen || "#4ADE80",
+    borderRadius: 4,
+  },
+  dotInactive: {
+    backgroundColor: "rgba(255,255,255,0.4)",
+  },
 });

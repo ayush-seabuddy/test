@@ -35,6 +35,17 @@ export interface SocialPostParams {
   page?: number;
   limit?: number;
 }
+export interface UpdatePostRequest {
+  hangoutId?: string;
+  reason?: string;
+  status?: string
+}
+
+export interface LikePostRequest {
+  hangoutId: string,
+  comment: string,
+  isLiked: true,
+}
 
 export interface ViewProfileParams {
   userId?: string;
@@ -136,8 +147,17 @@ export interface GetAllContentsParams {
   page?: number,
   limit?: number,
   onlyAnnouncement?: boolean,
-  contentCategory?:string,
-  contentType?:string,
+  contentCategory?: string,
+  contentType?: string,
+}
+
+export interface GetAllCommentsParams {
+  hangoutId: string
+  page?: number,
+  limit?: number,
+}
+export interface GetAllHelplinesParams {
+  helplineType?: string
 }
 
 export const login = async (
@@ -239,6 +259,26 @@ export const getallposts = async (
   });
 };
 
+export const updatepost = async (
+  payload: UpdatePostRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "PUT",
+    url: ENDPOINTS.UPDATEPOST,
+    data: payload,
+  });
+};
+
+export const likecommentpost = async (
+  payload: LikePostRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "PUT",
+    url: ENDPOINTS.LIKEPOST,
+    data: payload,
+  });
+};
+
 export const viewProfile = async (
   params?: ViewProfileParams
 ): Promise<ApiResponse> => {
@@ -291,6 +331,22 @@ export const getallcontents = async (params?: GetAllContentsParams): Promise<Api
   return await apiRequest({
     method: "GET",
     url: ENDPOINTS.GETALLCONTENTS,
+    params
+  });
+};
+
+export const getallcomments = async (params?: GetAllCommentsParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETALLCOMMENTS,
+    params
+  });
+};
+
+export const getallhelplines = async (params?: GetAllHelplinesParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETALLHELPLINES,
     params
   });
 };

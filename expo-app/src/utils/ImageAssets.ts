@@ -13,10 +13,21 @@ export const ImagesAssets = {
   sailorsocietyimage: require("../../assets/images/sailorsocietyimage.png"),
   homePageJollie: require("../../assets/images/JollieImages/homePageJollie.png"),
   personalityMapJollie: require("../../assets/images/JollieImages/PersonalityMapJollie.png"),
-  selectedLine:require("../../assets/images/SelectedLine.png"),
-  unselectedLine:require("../../assets/images/UnselectedLine.png"),
-  personalitymapresultpopupjollie:require("../../assets/images/JollieImages/PersonalityMapResultPopup.png"),
-  personaresultbackground:require("../../assets/images/JollieImages/PersonaResultBackground.png"),
+  selectedLine: require("../../assets/images/SelectedLine.png"),
+  unselectedLine: require("../../assets/images/UnselectedLine.png"),
+  personalitymapresultpopupjollie: require("../../assets/images/JollieImages/PersonalityMapResultPopup.png"),
+  personaresultbackground: require("../../assets/images/JollieImages/PersonaResultBackground.png"),
+  HelplineJollie: require("../../assets/images/JollieImages/HelplineJollie.png"),
+  HealthBuddyJollie: require("../../assets/images/JollieImages/HealthBuddy.png"),
+  MarineBuddyJollie: require("../../assets/images/JollieImages/MarineBuddy.png"),
+  SpiritualBuddyJollie: require("../../assets/images/JollieImages/SpiritualBuddy.png"),
+   EmergencyJollieImage: require("../../assets/images/JollieImages/EmergencyJollieImage.png"),
+  nodatafound: require("../../assets/images/nodatafound.png"),
+  sosImage: require("../../assets/images/sosimage.png"),
+  sailorsIcon: require("../../assets/images/SailorsIcon.png"),
+  WhatsappIcon: require("../../assets/images/WhatsappIcon.png"),
+
+
 
 
 
@@ -38,9 +49,9 @@ export const ImagesAssets = {
   searchLogo: require("../../assets/images/Header/search.png"),
 
   // chat page Icons
-   shipIcon: require("../../assets/images/shipIcon.png"),
-   fleetIcon: require("../../assets/images/fleetIcon.png"),
+  shipIcon: require("../../assets/images/shipIcon.png"),
+  fleetIcon: require("../../assets/images/fleetIcon.png"),
 
-   userIcon : require("../../assets/images/Man.png"),
-  
+  userIcon: require("../../assets/images/Man.png"),
+
 };
