@@ -1,22 +1,62 @@
 diff --git a/node_modules/react-native-freshchat-sdk/android/build.gradle b/node_modules/react-native-freshchat-sdk/android/build.gradle
-index aece4f7..0fbf2d6 100755
+index aece4f7..38e7774 100755
 --- a/node_modules/react-native-freshchat-sdk/android/build.gradle
 +++ b/node_modules/react-native-freshchat-sdk/android/build.gradle
-@@ -31,12 +31,15 @@ buildscript {
-         jcenter()
+@@ -1,42 +1,28 @@
+ apply plugin: 'com.android.library'
++apply plugin: 'com.facebook.react'
+ 
+ android {
+-    compileSdkVersion 34
+-    buildToolsVersion "34.0.0"
++    compileSdk 34
+ 
+     defaultConfig {
+-        minSdkVersion 21
+-        targetSdkVersion 34
+-        versionCode 1
+-        versionName "1.0"
++        minSdk 21
++        targetSdk 34
      }
-     dependencies {
-+    implementation "androidx.localbroadcastmanager:localbroadcastmanager:1.1.0"
-         classpath 'com.android.tools.build:gradle:3.3.0'
+-}
+ 
+-repositories {
+-    maven { url "https://jitpack.io" }
+-    maven {
+-        url 'https://maven.google.com/'
+-        name 'Google'
++    compileOptions {
++        sourceCompatibility JavaVersion.VERSION_1_8
++        targetCompatibility JavaVersion.VERSION_1_8
      }
+-    jcenter()
+ }
+ 
+-buildscript {
+-    repositories {
+-        maven { url "https://jitpack.io" }
+-        maven {
+-            url 'https://maven.google.com/'
+-            name 'Google'
+-        }
+-        jcenter()
+-    }
+-    dependencies {
+-        classpath 'com.android.tools.build:gradle:3.3.0'
+-    }
++repositories {
++    google()
++    mavenCentral()
++    maven { url "https://jitpack.io" }
  }
  
  dependencies {
-+    implementation "androidx.localbroadcastmanager:localbroadcastmanager:1.1.0"
      implementation "com.facebook.react:react-native:+"
-     implementation 'com.google.android.gms:play-services-gcm:11.+'
-     implementation 'com.github.freshworks:freshchat-android:6.4.4'
-+    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
+-    implementation 'com.google.android.gms:play-services-gcm:11.+'
+-    implementation 'com.github.freshworks:freshchat-android:6.4.4'
++    implementation "com.github.freshworks:freshchat-android:6.4.4"
++    implementation "androidx.localbroadcastmanager:localbroadcastmanager:1.1.0"
  }
 diff --git a/node_modules/react-native-freshchat-sdk/android/build/.transforms/57b99ecb11df8e50059edc28557565c4/results.bin b/node_modules/react-native-freshchat-sdk/android/build/.transforms/57b99ecb11df8e50059edc28557565c4/results.bin
 deleted file mode 100644
