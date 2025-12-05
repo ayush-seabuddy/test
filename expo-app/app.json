@@ -40,20 +40,22 @@
         }
       ],
       [
-        "freshchat-react-native",
-        {
-          "appId": "d3f0a0cc-c399-4f7d-a766-aa6178b81a2d",
-          "appKey": "6284ec56-b238-4a42-b2ac-8685a420c73d",
-          "domain": "msdk.freshchat.com"
-        }
-      ],
-      [
         "expo-screen-orientation",
         {
           "supportedOrientations": [
             "portrait",
             "landscape"
           ]
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraMavenRepos": [],
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35
+          }
         }
       ],
       [
@@ -79,6 +81,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "env": "local",
+      "router": {},
+      "eas": {
+        "projectId": "460b0d77-860d-4116-a777-adae29e8089d"
+      }
     }
   }
 }
