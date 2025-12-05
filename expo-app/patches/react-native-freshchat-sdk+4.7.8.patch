@@ -1,0 +1,298 @@
+diff --git a/node_modules/react-native-freshchat-sdk/android/build.gradle b/node_modules/react-native-freshchat-sdk/android/build.gradle
+index aece4f7..0fbf2d6 100755
+--- a/node_modules/react-native-freshchat-sdk/android/build.gradle
++++ b/node_modules/react-native-freshchat-sdk/android/build.gradle
+@@ -31,12 +31,15 @@ buildscript {
+         jcenter()
+     }
+     dependencies {
++    implementation "androidx.localbroadcastmanager:localbroadcastmanager:1.1.0"
+         classpath 'com.android.tools.build:gradle:3.3.0'
+     }
+ }
+ 
+ dependencies {
++    implementation "androidx.localbroadcastmanager:localbroadcastmanager:1.1.0"
+     implementation "com.facebook.react:react-native:+"
+     implementation 'com.google.android.gms:play-services-gcm:11.+'
+     implementation 'com.github.freshworks:freshchat-android:6.4.4'
++    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
+ }
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/.transforms/57b99ecb11df8e50059edc28557565c4/results.bin b/node_modules/react-native-freshchat-sdk/android/build/.transforms/57b99ecb11df8e50059edc28557565c4/results.bin
+deleted file mode 100644
+index 0d259dd..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/.transforms/57b99ecb11df8e50059edc28557565c4/results.bin
++++ /dev/null
+@@ -1 +0,0 @@
+-o/classes
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/.transforms/57b99ecb11df8e50059edc28557565c4/transformed/classes/classes_dex/classes.dex b/node_modules/react-native-freshchat-sdk/android/build/.transforms/57b99ecb11df8e50059edc28557565c4/transformed/classes/classes_dex/classes.dex
+deleted file mode 100644
+index a726fc8..0000000
+Binary files a/node_modules/react-native-freshchat-sdk/android/build/.transforms/57b99ecb11df8e50059edc28557565c4/transformed/classes/classes_dex/classes.dex and /dev/null differ
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/.transforms/aa952bc88ce8f80ffe6bc469769d45c5/results.bin b/node_modules/react-native-freshchat-sdk/android/build/.transforms/aa952bc88ce8f80ffe6bc469769d45c5/results.bin
+deleted file mode 100644
+index 61a58fa..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/.transforms/aa952bc88ce8f80ffe6bc469769d45c5/results.bin
++++ /dev/null
+@@ -1 +0,0 @@
+-i/classes_dex
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/.transforms/d656f705a67cf6cfc5846fc83f5d887b/results.bin b/node_modules/react-native-freshchat-sdk/android/build/.transforms/d656f705a67cf6cfc5846fc83f5d887b/results.bin
+deleted file mode 100644
+index e3f0ff0..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/.transforms/d656f705a67cf6cfc5846fc83f5d887b/results.bin
++++ /dev/null
+@@ -1 +0,0 @@
+-i/classes_global-synthetics
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/generated/source/buildConfig/debug/com/freshchat/consumer/sdk/react/BuildConfig.java b/node_modules/react-native-freshchat-sdk/android/build/generated/source/buildConfig/debug/com/freshchat/consumer/sdk/react/BuildConfig.java
+deleted file mode 100644
+index 13eafa4..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/generated/source/buildConfig/debug/com/freshchat/consumer/sdk/react/BuildConfig.java
++++ /dev/null
+@@ -1,10 +0,0 @@
+-/**
+- * Automatically generated file. DO NOT MODIFY
+- */
+-package com.freshchat.consumer.sdk.react;
+-
+-public final class BuildConfig {
+-  public static final boolean DEBUG = Boolean.parseBoolean("true");
+-  public static final String LIBRARY_PACKAGE_NAME = "com.freshchat.consumer.sdk.react";
+-  public static final String BUILD_TYPE = "debug";
+-}
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/aapt_friendly_merged_manifests/debug/aapt/AndroidManifest.xml b/node_modules/react-native-freshchat-sdk/android/build/intermediates/aapt_friendly_merged_manifests/debug/aapt/AndroidManifest.xml
+deleted file mode 100644
+index 9d0c573..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/intermediates/aapt_friendly_merged_manifests/debug/aapt/AndroidManifest.xml
++++ /dev/null
+@@ -1,7 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+-    package="com.freshchat.consumer.sdk.react" >
+-
+-    <uses-sdk android:minSdkVersion="16" />
+-
+-</manifest>
+\ No newline at end of file
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/aapt_friendly_merged_manifests/debug/aapt/output-metadata.json b/node_modules/react-native-freshchat-sdk/android/build/intermediates/aapt_friendly_merged_manifests/debug/aapt/output-metadata.json
+deleted file mode 100644
+index 91a6273..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/intermediates/aapt_friendly_merged_manifests/debug/aapt/output-metadata.json
++++ /dev/null
+@@ -1,18 +0,0 @@
+-{
+-  "version": 3,
+-  "artifactType": {
+-    "type": "AAPT_FRIENDLY_MERGED_MANIFESTS",
+-    "kind": "Directory"
+-  },
+-  "applicationId": "com.freshchat.consumer.sdk.react",
+-  "variantName": "debug",
+-  "elements": [
+-    {
+-      "type": "SINGLE",
+-      "filters": [],
+-      "attributes": [],
+-      "outputFile": "AndroidManifest.xml"
+-    }
+-  ],
+-  "elementType": "File"
+-}
+\ No newline at end of file
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/aar_metadata/debug/aar-metadata.properties b/node_modules/react-native-freshchat-sdk/android/build/intermediates/aar_metadata/debug/aar-metadata.properties
+deleted file mode 100644
+index 776557e..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/intermediates/aar_metadata/debug/aar-metadata.properties
++++ /dev/null
+@@ -1,5 +0,0 @@
+-aarFormatVersion=1.0
+-aarMetadataVersion=1.0
+-minCompileSdk=1
+-minCompileSdkExtension=0
+-minAndroidGradlePluginVersion=1.0.0
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/annotation_processor_list/debug/annotationProcessors.json b/node_modules/react-native-freshchat-sdk/android/build/intermediates/annotation_processor_list/debug/annotationProcessors.json
+deleted file mode 100644
+index 9e26dfe..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/intermediates/annotation_processor_list/debug/annotationProcessors.json
++++ /dev/null
+@@ -1 +0,0 @@
+-{}
+\ No newline at end of file
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/compile_library_classes_jar/debug/classes.jar b/node_modules/react-native-freshchat-sdk/android/build/intermediates/compile_library_classes_jar/debug/classes.jar
+deleted file mode 100644
+index df6d110..0000000
+Binary files a/node_modules/react-native-freshchat-sdk/android/build/intermediates/compile_library_classes_jar/debug/classes.jar and /dev/null differ
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/compile_r_class_jar/debug/R.jar b/node_modules/react-native-freshchat-sdk/android/build/intermediates/compile_r_class_jar/debug/R.jar
+deleted file mode 100644
+index a5f6bc5..0000000
+Binary files a/node_modules/react-native-freshchat-sdk/android/build/intermediates/compile_r_class_jar/debug/R.jar and /dev/null differ
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/compile_symbol_list/debug/R.txt b/node_modules/react-native-freshchat-sdk/android/build/intermediates/compile_symbol_list/debug/R.txt
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties b/node_modules/react-native-freshchat-sdk/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties
+deleted file mode 100644
+index ac4a776..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/intermediates/incremental/debug/packageDebugResources/compile-file-map.properties
++++ /dev/null
+@@ -1 +0,0 @@
+-#Tue Apr 30 14:28:53 IST 2024
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml b/node_modules/react-native-freshchat-sdk/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml
+deleted file mode 100644
+index a65a04c..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/intermediates/incremental/debug/packageDebugResources/merger.xml
++++ /dev/null
+@@ -1,2 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<merger version="3"><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/main/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="main" generated-set="main$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/main/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/debug/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="debug" generated-set="debug$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/debug/res"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated$Generated" generated="true" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/build/generated/res/resValues/debug"/></dataSet><dataSet aapt-namespace="http://schemas.android.com/apk/res-auto" config="generated" generated-set="generated$Generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/build/generated/res/resValues/debug"/></dataSet><mergedItems/></merger>
+\ No newline at end of file
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml b/node_modules/react-native-freshchat-sdk/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml
+deleted file mode 100644
+index 2fbffeb..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/intermediates/incremental/mergeDebugJniLibFolders/merger.xml
++++ /dev/null
+@@ -1,2 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/main/jniLibs"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/debug/jniLibs"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/incremental/mergeDebugShaders/merger.xml b/node_modules/react-native-freshchat-sdk/android/build/intermediates/incremental/mergeDebugShaders/merger.xml
+deleted file mode 100644
+index 75d8bfe..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/intermediates/incremental/mergeDebugShaders/merger.xml
++++ /dev/null
+@@ -1,2 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/main/shaders"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/debug/shaders"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/incremental/packageDebugAssets/merger.xml b/node_modules/react-native-freshchat-sdk/android/build/intermediates/incremental/packageDebugAssets/merger.xml
+deleted file mode 100644
+index 5dd113f..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/intermediates/incremental/packageDebugAssets/merger.xml
++++ /dev/null
+@@ -1,2 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/main/assets"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/debug/assets"/></dataSet><dataSet config="generated" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/build/intermediates/shader_assets/debug/out"/></dataSet></merger>
+\ No newline at end of file
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/BuildConfig.class b/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/BuildConfig.class
+deleted file mode 100644
+index 033c138..0000000
+Binary files a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/BuildConfig.class and /dev/null differ
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$1.class b/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$1.class
+deleted file mode 100644
+index e733bfd..0000000
+Binary files a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$1.class and /dev/null differ
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$2.class b/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$2.class
+deleted file mode 100644
+index 25a2a96..0000000
+Binary files a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$2.class and /dev/null differ
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$3.class b/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$3.class
+deleted file mode 100644
+index a81da5e..0000000
+Binary files a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$3.class and /dev/null differ
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$4.class b/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$4.class
+deleted file mode 100644
+index 4221ae4..0000000
+Binary files a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$4.class and /dev/null differ
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$5.class b/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$5.class
+deleted file mode 100644
+index d431711..0000000
+Binary files a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$5.class and /dev/null differ
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$6.class b/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$6.class
+deleted file mode 100644
+index b20116e..0000000
+Binary files a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$6.class and /dev/null differ
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$FreshchatSDKBroadcastReceiver.class b/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$FreshchatSDKBroadcastReceiver.class
+deleted file mode 100644
+index ef1eb07..0000000
+Binary files a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk$FreshchatSDKBroadcastReceiver.class and /dev/null differ
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk.class b/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk.class
+deleted file mode 100644
+index d806980..0000000
+Binary files a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdk.class and /dev/null differ
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdkPackage.class b/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdkPackage.class
+deleted file mode 100644
+index 7cc747f..0000000
+Binary files a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/RNFreshchatSdkPackage.class and /dev/null differ
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/StringUtils.class b/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/StringUtils.class
+deleted file mode 100644
+index f4edd46..0000000
+Binary files a/node_modules/react-native-freshchat-sdk/android/build/intermediates/javac/debug/classes/com/freshchat/consumer/sdk/react/StringUtils.class and /dev/null differ
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/local_only_symbol_list/debug/R-def.txt b/node_modules/react-native-freshchat-sdk/android/build/intermediates/local_only_symbol_list/debug/R-def.txt
+deleted file mode 100644
+index 78ac5b8..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/intermediates/local_only_symbol_list/debug/R-def.txt
++++ /dev/null
+@@ -1,2 +0,0 @@
+-R_DEF: Internal format may change without notice
+-local
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/manifest_merge_blame_file/debug/manifest-merger-blame-debug-report.txt b/node_modules/react-native-freshchat-sdk/android/build/intermediates/manifest_merge_blame_file/debug/manifest-merger-blame-debug-report.txt
+deleted file mode 100644
+index 4af2484..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/intermediates/manifest_merge_blame_file/debug/manifest-merger-blame-debug-report.txt
++++ /dev/null
+@@ -1,7 +0,0 @@
+-1<?xml version="1.0" encoding="utf-8"?>
+-2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+-3    package="com.freshchat.consumer.sdk.react" >
+-4
+-5    <uses-sdk android:minSdkVersion="16" />
+-6
+-7</manifest>
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml b/node_modules/react-native-freshchat-sdk/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml
+deleted file mode 100644
+index 9d0c573..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/intermediates/merged_manifest/debug/AndroidManifest.xml
++++ /dev/null
+@@ -1,7 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+-    package="com.freshchat.consumer.sdk.react" >
+-
+-    <uses-sdk android:minSdkVersion="16" />
+-
+-</manifest>
+\ No newline at end of file
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/navigation_json/debug/navigation.json b/node_modules/react-native-freshchat-sdk/android/build/intermediates/navigation_json/debug/navigation.json
+deleted file mode 100644
+index 0637a08..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/intermediates/navigation_json/debug/navigation.json
++++ /dev/null
+@@ -1 +0,0 @@
+-[]
+\ No newline at end of file
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/runtime_library_classes_jar/debug/classes.jar b/node_modules/react-native-freshchat-sdk/android/build/intermediates/runtime_library_classes_jar/debug/classes.jar
+deleted file mode 100644
+index 6749f6e..0000000
+Binary files a/node_modules/react-native-freshchat-sdk/android/build/intermediates/runtime_library_classes_jar/debug/classes.jar and /dev/null differ
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/intermediates/symbol_list_with_package_name/debug/package-aware-r.txt b/node_modules/react-native-freshchat-sdk/android/build/intermediates/symbol_list_with_package_name/debug/package-aware-r.txt
+deleted file mode 100644
+index d35eabd..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/intermediates/symbol_list_with_package_name/debug/package-aware-r.txt
++++ /dev/null
+@@ -1 +0,0 @@
+-com.freshchat.consumer.sdk.react
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/outputs/logs/manifest-merger-debug-report.txt b/node_modules/react-native-freshchat-sdk/android/build/outputs/logs/manifest-merger-debug-report.txt
+deleted file mode 100644
+index 0eebedf..0000000
+--- a/node_modules/react-native-freshchat-sdk/android/build/outputs/logs/manifest-merger-debug-report.txt
++++ /dev/null
+@@ -1,17 +0,0 @@
+--- Merging decision tree log ---
+-manifest
+-ADDED from /Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/main/AndroidManifest.xml:1:1-3:12
+-INJECTED from /Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/main/AndroidManifest.xml:1:1-3:12
+-	package
+-		ADDED from /Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/main/AndroidManifest.xml:2:5-47
+-		INJECTED from /Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/main/AndroidManifest.xml
+-	xmlns:android
+-		ADDED from /Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/main/AndroidManifest.xml:1:11-69
+-uses-sdk
+-INJECTED from /Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/main/AndroidManifest.xml reason: use-sdk injection requested
+-INJECTED from /Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/main/AndroidManifest.xml
+-INJECTED from /Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/main/AndroidManifest.xml
+-	android:targetSdkVersion
+-		INJECTED from /Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/main/AndroidManifest.xml
+-	android:minSdkVersion
+-		INJECTED from /Users/sakrishnan/Desktop/ReactNative14/NativeCall/node_modules/react-native-freshchat-sdk/android/src/main/AndroidManifest.xml
+diff --git a/node_modules/react-native-freshchat-sdk/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin b/node_modules/react-native-freshchat-sdk/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin
+deleted file mode 100644
+index 842ec14..0000000
+Binary files a/node_modules/react-native-freshchat-sdk/android/build/tmp/compileDebugJavaWithJavac/previous-compilation-data.bin and /dev/null differ
