@@ -755,5 +755,7 @@
   "writecomment": "写评论...",
   "no_helplines_available": "当前没有可用的帮助热线。",
   "hey": "嘿",
-  "emergency_lines": "以下是紧急联系电话"
+  "emergency_lines": "以下是紧急联系电话",
+  "submitAsAnonymous": "匿名提交",
+    "helplineformdisclaimerdescription":"所有热线电话和在线聊天均严格保密。联系我们不会影响您的工作或在公司的地位。这些服务的唯一目的是为您提供支持和指导。"
 }

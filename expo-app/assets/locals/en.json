@@ -757,5 +757,7 @@
   "writecomment": "Write a comment...",
   "no_helplines_available": "No helplines available at the moment.",
   "hey":"Hey",
-  "emergency_lines":"Here’s the emergency lines"
+  "emergency_lines":"Here’s the emergency lines",
+  "submitAsAnonymous":"Submit as Anonymous",
+  "helplineformdisclaimerdescription":"All helpline calls and chats are strictly confidential. Reaching out will not affect your job or standing onboard. These services exist solely to support and guide you."
 }

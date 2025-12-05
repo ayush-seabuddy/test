@@ -61,6 +61,16 @@ export interface SaveAssessmentRequest {
   }>;
 }
 
+export interface SubmitHelplineAnswerRequest {
+  helplineId: string;
+  answers: {
+    helplineQuestionId: string;
+    answer: string;
+    createdAt: string;
+  }[];
+}
+
+
 export interface ApiResponse<T = any> {
   success: boolean;
   status?: number;
@@ -348,5 +358,22 @@ export const getallhelplines = async (params?: GetAllHelplinesParams): Promise<A
     method: "GET",
     url: ENDPOINTS.GETALLHELPLINES,
     params
+  });
+};
+
+export const gethelplineformquestions = async (): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETHELPLINEFORMQUESTIONS,
+  });
+};
+
+export const submithelplineanswer = async (
+  payload: SubmitHelplineAnswerRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "POST",
+    url: ENDPOINTS.SUBMITHELPLINEANSWER,
+    data: payload,
   });
 };

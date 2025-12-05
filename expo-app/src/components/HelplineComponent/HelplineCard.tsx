@@ -23,6 +23,7 @@ import {
     ConversationOptions,
 } from 'react-native-freshchat-sdk';
 import { getUserDetails } from '@/src/utils/helperFunctions';
+import { useRouter } from 'expo-router';
 
 interface Helpline {
     id: string;
@@ -38,7 +39,7 @@ const DOMAIN = "msdk.freshchat.com";
 
 const HelplineAndAICards = () => {
     const { t } = useTranslation();
-
+    const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [helplineData, setHelplineData] = useState<Helpline[]>([]);
     const [emergencyModalVisible, setEmergencyModalVisible] = useState(false);
@@ -157,28 +158,40 @@ const HelplineAndAICards = () => {
     const openSailorsSocietyChat = () => {
         Haptics.selectionAsync();
         const options = new ConversationOptions();
-        options.tags = ['sailorssociety', 'crisis', '24_7'];
-        options.filteredViewTitle = "Sailors’ Society Crisis Support";
+        options.tags = ["sailorssociety"];
+        options.filteredViewTitle = "Sailors' Society Live chat";
         Freshchat.showConversations(options);
     };
 
     const renderItem = ({ item }: { item: Helpline }) => {
-        const SOS = item.id === "static-1";
-        const Sailors = item.id === "static-2";
+        const isSOS = item.id === "static-1";
+        const isSailorsSociety = item.id === "static-2";
 
         return (
             <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => {
-                    if (SOS) openEmergencyModal();
-                    if (Sailors) openSailorsSocietyChat();
+                    if (isSOS) {
+                        openEmergencyModal();
+                    } else if (isSailorsSociety) {
+                        openSailorsSocietyChat();
+                    } else {
+                        Haptics.selectionAsync();
+                        router.push({
+                            pathname: '/helplineform',
+                            params: {
+                                helplineName: item.helplineName,
+                                helplineId: item.id,
+                            },
+                        });
+                    }
                 }}
             >
                 <View style={styles.card}>
                     <View style={styles.content}>
                         <Image source={item.iconUrl} style={styles.icon} contentFit="contain" />
                         <View style={styles.textContainer}>
-                            <Text style={[styles.title, SOS && styles.titleEmergency]}>
+                            <Text style={[styles.title, isSOS && styles.titleEmergency]}>
                                 {item.helplineName}
                             </Text>
                             <Text style={styles.description}>{item.helplineDescription}</Text>

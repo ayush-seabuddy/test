@@ -269,7 +269,7 @@ const UpdateProfile = () => {
       />
 
       <View style={styles.bottomCard1}>
-        <CustomLottie isBlurView={false} componetHeight={height * 0.85} />
+        <CustomLottie isBlurView={false} componentHeight={height * 0.85} />
       </View>
 
       <View style={styles.mainContent}>

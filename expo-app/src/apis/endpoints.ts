@@ -29,9 +29,11 @@ export const ENDPOINTS = {
   GETALLCONTENTS: `${BASE_URL}/content/getAllContents`,
   GETALLPOSTS: `${BASE_URL}/user/getAllHangoutPost`,
   UPDATEPOST: `${BASE_URL}/user/updateHangoutPost`,
-  LIKEPOST:`${BASE_URL}/user/likeCommentHangoutPost`,
-  GETALLCOMMENTS:`${BASE_URL}/user/getAllHangoutPostComments`,
+  LIKEPOST: `${BASE_URL}/user/likeCommentHangoutPost`,
+  GETALLCOMMENTS: `${BASE_URL}/user/getAllHangoutPostComments`,
   VIEW_PROFILE: `${BASE_URL}/user/viewUserProfile`,
-  GETALLHELPLINES:`${BASE_URL}/helpline/getAllHelplines`,
+  GETALLHELPLINES: `${BASE_URL}/helpline/getAllHelplines`,
+  GETHELPLINEFORMQUESTIONS: `${BASE_URL}/helpline/getAllHelplineFormQuestions`,
+  SUBMITHELPLINEANSWER: `${BASE_URL}/helpline/addHelplineFormAnswers`,
 
 };
