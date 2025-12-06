@@ -35,6 +35,17 @@ export interface SocialPostParams {
   page?: number;
   limit?: number;
 }
+export interface UpdatePostRequest {
+  hangoutId?: string;
+  reason?: string;
+  status?: string
+}
+
+export interface LikePostRequest {
+  hangoutId: string,
+  comment: string,
+  isLiked: true,
+}
 
 export interface ViewProfileParams {
   userId?: string;
@@ -49,6 +60,16 @@ export interface SaveAssessmentRequest {
     createdAt: string;
   }>;
 }
+
+export interface SubmitHelplineAnswerRequest {
+  helplineId: string;
+  answers: {
+    helplineQuestionId: string;
+    answer: string;
+    createdAt: string;
+  }[];
+}
+
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -136,8 +157,17 @@ export interface GetAllContentsParams {
   page?: number,
   limit?: number,
   onlyAnnouncement?: boolean,
-  contentCategory?:string,
-  contentType?:string,
+  contentCategory?: string,
+  contentType?: string,
+}
+
+export interface GetAllCommentsParams {
+  hangoutId: string
+  page?: number,
+  limit?: number,
+}
+export interface GetAllHelplinesParams {
+  helplineType?: string
 }
 
 export const login = async (
@@ -239,6 +269,26 @@ export const getallposts = async (
   });
 };
 
+export const updatepost = async (
+  payload: UpdatePostRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "PUT",
+    url: ENDPOINTS.UPDATEPOST,
+    data: payload,
+  });
+};
+
+export const likecommentpost = async (
+  payload: LikePostRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "PUT",
+    url: ENDPOINTS.LIKEPOST,
+    data: payload,
+  });
+};
+
 export const viewProfile = async (
   params?: ViewProfileParams
 ): Promise<ApiResponse> => {
@@ -292,5 +342,38 @@ export const getallcontents = async (params?: GetAllContentsParams): Promise<Api
     method: "GET",
     url: ENDPOINTS.GETALLCONTENTS,
     params
+  });
+};
+
+export const getallcomments = async (params?: GetAllCommentsParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETALLCOMMENTS,
+    params
+  });
+};
+
+export const getallhelplines = async (params?: GetAllHelplinesParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETALLHELPLINES,
+    params
+  });
+};
+
+export const gethelplineformquestions = async (): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETHELPLINEFORMQUESTIONS,
+  });
+};
+
+export const submithelplineanswer = async (
+  payload: SubmitHelplineAnswerRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "POST",
+    url: ENDPOINTS.SUBMITHELPLINEANSWER,
+    data: payload,
   });
 };

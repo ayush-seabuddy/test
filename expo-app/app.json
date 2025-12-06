@@ -33,10 +33,10 @@
       "expo-localization",
       "expo-font",
       [
-        "react-native-video",
+        "expo-video",
         {
-          "androidEnableCaching": true,
-          "iosEnableCaching": true
+          "supportsBackgroundPlayback": true,
+          "supportsPictureInPicture": true
         }
       ],
       [
@@ -46,6 +46,16 @@
             "portrait",
             "landscape"
           ]
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraMavenRepos": [],
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35
+          }
         }
       ],
       [
@@ -71,6 +81,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "env": "local",
+      "router": {},
+      "eas": {
+        "projectId": "460b0d77-860d-4116-a777-adae29e8089d"
+      }
     }
   }
 }

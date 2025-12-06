@@ -83,7 +83,7 @@ const ResetPassword = () => {
     <KeyboardWrapper>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
-          <CustomLottie isBlurView={false} componetHeight={height * 0.78} />
+          <CustomLottie isBlurView={false} componentHeight={height * 0.78} />
           <View style={styles.topOverlay} />
           <Animated.Image
             source={ImagesAssets.splashCaptainImage}

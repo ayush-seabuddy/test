@@ -129,7 +129,7 @@ const Profile: React.FC = () => {
     }
   };
 
-    const handleOpenLink = async (item:SocialMediaLink) => {
+  const handleOpenLink = async (item: SocialMediaLink) => {
     const url = item.link;
 
     if (url !== "") {
@@ -160,25 +160,25 @@ const Profile: React.FC = () => {
   )?.isBoarded;
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedMedia, setSelectedMedia] = useState<string >("");
+  const [selectedMedia, setSelectedMedia] = useState<string>("");
 
 
   const handleMediaPress = (url: string) => {
     setSelectedMedia(url);
     setModalVisible(true);
-    
+
   };
 
   return (
     <View style={styles.container}>
       <GlobalHeader
         title={t('crew_profile')}
-        leftIcon={<ArrowLeft size={30} color={Colors.black} />}
+        leftIcon={<ArrowLeft size={24} color={Colors.black} />}
         onLeftPress={handleBackPress}
         titleStyle={styles.headerTitle}
       />
-       <TouchableOpacity
-        onPress={() => handleMediaPress(crewProfileDetails?.profileUrl||"")}
+      <TouchableOpacity
+        onPress={() => handleMediaPress(crewProfileDetails?.profileUrl || "")}
         style={styles.viewIconContainer}
       >
         <Maximize2 size={20} color={Colors.black} />
@@ -304,8 +304,12 @@ const Profile: React.FC = () => {
             {crewProfileDetails.workingExperience?.length ? (
               <View style={styles.experienceCard}>
                 <Text style={styles.experienceTitle}>{t("experience")}</Text>
-                {crewProfileDetails.workingExperience.map((item, index) => (
-                  <View key={index} style={styles.experienceItem}>
+
+                {crewProfileDetails.workingExperience.map((item) => (
+                  <View
+                    key={`${item.companyName}-${item.from}-${item.to}`}
+                    style={styles.experienceItem}
+                  >
                     <View style={styles.experienceHeader}>
                       <Text style={styles.companyName}>
                         {item.companyName.slice(0, 30)}
@@ -320,6 +324,7 @@ const Profile: React.FC = () => {
               </View>
             ) : null}
 
+
             {/* Social Media Links */}
             {crewProfileDetails.SocialMediaLinks?.length ? (
               <View style={styles.socialCard}>
@@ -327,10 +332,10 @@ const Profile: React.FC = () => {
                 <FlatList
                   data={crewProfileDetails.SocialMediaLinks}
                   renderItem={renderSocialMediaItem}
-                  keyExtractor={(item) => item.id}
-                  key="social-media-list"
+                  keyExtractor={(item, index) => item.id || `${item.platform}-${index}`}
                   scrollEnabled={false}
                 />
+
               </View>
             ) : null}
           </View>
@@ -338,11 +343,11 @@ const Profile: React.FC = () => {
       </ScrollView>
 
       {modalVisible && <MediaPreviewModal
-  visible={modalVisible}
-  onClose={() => setModalVisible(false)}
-  uri={selectedMedia}
-  type="image"
-/>}
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        uri={selectedMedia}
+        type="image"
+      />}
     </View>
   );
 };
@@ -356,7 +361,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#b5b3b3',
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
   },
   headerImage: {
     width: '100%',
@@ -385,7 +390,7 @@ const styles = StyleSheet.create({
   crewDetailsContainer: {
     paddingHorizontal: 25,
     paddingVertical: 40,
-    backgroundColor:"rgba(0, 0, 0, 0.08)"
+    backgroundColor: "rgba(0, 0, 0, 0.08)"
   },
   headerInfo: {
     paddingTop: Platform.OS === 'ios' ? 15 : 0,
@@ -445,7 +450,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 5,
-    gap:5
+    gap: 5
   },
   infoLabel: {
     flex: 0.5,
@@ -555,7 +560,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     marginTop: 10,
-    gap:5
+    gap: 5
   },
   socialPlatformText: {
     flex: 1,
@@ -563,7 +568,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'Poppins-Regular',
   },
- viewIconContainer: {
+  viewIconContainer: {
     borderRadius: 5,
     backgroundColor: "#D9D9D9",
     position: "absolute",
