@@ -17,7 +17,11 @@ import {
 } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import moment from 'moment';
-import { gethelplineformquestions, submithelplineanswer } from '@/src/apis/apiService';
+import {
+  gethelplineformquestions,
+  getsinglehelplineanswer,
+  submithelplineanswer,
+} from '@/src/apis/apiService';
 import { showToast } from '@/src/components/GlobalToast';
 import { useTranslation } from 'react-i18next';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -26,6 +30,7 @@ import { ChevronLeft } from 'lucide-react-native';
 import Colors from '@/src/utils/Colors';
 import CustomLottie from '@/src/components/CustomLottie';
 import GlobalButton from '@/src/components/GlobalButton';
+import { formatStatus } from '@/src/utils/helperFunctions';
 
 interface Question {
   id: string;
@@ -42,18 +47,21 @@ interface Answer {
   answer: string;
 }
 
-// Only these two question IDs will be auto-filled as "Anonymous" and disabled
 const ANONYMOUS_DISABLED_IDS = [
-  '2253ebb8-7178-48c6-a11c-9b6749aa5282',
-  '4e7e1d70-595e-47f2-89b0-48132c485e8b',
+  '2253ebb8-7178-48c6-a11c-9b6749aa5282', // Name
+  '4e7e1d70-595e-47f2-89b0-48132c485e8b', // Rank
 ];
 
 const HelplineFormScreen = () => {
   const { t } = useTranslation();
-  const { helplineName, helplineId } = useLocalSearchParams<{
+  const { helplineName, helplineId, complaintId, complaintStatus } = useLocalSearchParams<{
     helplineName: string;
     helplineId: string;
+    complaintId?: string;
+    complaintStatus?: string
   }>();
+
+  const isViewMode = !!complaintId;
 
   const [questions, setQuestions] = useState<Question[]>([]);
   const [responses, setResponses] = useState<Record<string, string>>({});
@@ -68,6 +76,7 @@ const HelplineFormScreen = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
+
   useEffect(() => {
     const timer = setTimeout(() => setIsModalVisible(true), 600);
     return () => clearTimeout(timer);
@@ -80,10 +89,44 @@ const HelplineFormScreen = () => {
       if (res.success && res.status === 200) {
         setQuestions(res.data || []);
       } else {
-        showToast.error(t('error'), res.message || 'Failed to load form');
+        showToast.error(t('oops'), res.message || 'Failed to load form');
       }
     } catch (err) {
-      showToast.error(t('error'), t('somethingwentwrong'));
+      showToast.error(t('oops'), t('somethingwentwrong'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchhelplineanswers = async () => {
+    if (!complaintId) return;
+
+    setLoading(true);
+    try {
+      const res = await getsinglehelplineanswer({ helplineFormId: complaintId });
+      if (res.success && res.status === 200) {
+        const answers = res.data?.helplineAnswers || [];
+
+        const prefilled: Record<string, string> = {};
+        answers.forEach((item: any) => {
+          const qid = item.helplineQuestion.id;
+          prefilled[qid] = item.answer;
+        });
+
+        setResponses(prefilled);
+
+        // Auto-detect if user submitted anonymously
+        const hasAnonymousName = answers.some(
+          (a: any) =>
+            a.helplineQuestion.id === ANONYMOUS_DISABLED_IDS[0] && a.answer === 'Anonymous'
+        );
+        setIsAnonymous(hasAnonymousName);
+      } else {
+        showToast.error(t('oops'), res.message || 'Failed to load answers');
+      }
+    } catch (err: any) {
+      console.error('Fetch answers error:', err);
+      showToast.error(t('oops'), t('somethingwentwrong'));
     } finally {
       setLoading(false);
     }
@@ -91,9 +134,14 @@ const HelplineFormScreen = () => {
 
   useEffect(() => {
     fetchQuestions();
-  }, []);
+    if (complaintId) {
+      fetchhelplineanswers();
+    }
+  }, [complaintId]);
 
   const handleAnonymousToggle = () => {
+    if (isViewMode) return;
+
     setIsAnonymous(prev => {
       const newVal = !prev;
       const updated = { ...responses };
@@ -115,7 +163,7 @@ const HelplineFormScreen = () => {
   };
 
   const isFieldDisabled = (questionId: string) => {
-    return isAnonymous && ANONYMOUS_DISABLED_IDS.includes(questionId);
+    return isViewMode || (isAnonymous && ANONYMOUS_DISABLED_IDS.includes(questionId));
   };
 
   const openDatePicker = (id: string, mode: 'date' | 'time' | 'datetime') => {
@@ -157,6 +205,8 @@ const HelplineFormScreen = () => {
   };
 
   const handleSubmit = async () => {
+    if (isViewMode) return; // Prevent submit in view mode
+
     if (!isFormValid()) {
       showToast.error(t('validationError'), t('pleaseFillAllRequiredFields'));
       return;
@@ -182,10 +232,7 @@ const HelplineFormScreen = () => {
 
       if (apiResponse.success && apiResponse.status === 200) {
         showToast.success(t('success'), apiResponse.message || t('formSubmittedSuccessfully'));
-
-        setTimeout(() => {
-          router.back();
-        }, 1500);
+        setTimeout(() => router.back(), 1500);
       } else {
         showToast.error(t('oops'), apiResponse.message);
       }
@@ -196,9 +243,10 @@ const HelplineFormScreen = () => {
       setSubmitting(false);
     }
   };
+
   const renderQuestion = ({ item, index }: { item: Question; index: number }) => {
     const isDisabled = isFieldDisabled(item.id);
-    const value = isDisabled ? 'Anonymous' : (responses[item.id] || '');
+    const value = responses[item.id] || '';
 
     return (
       <View style={styles.questionContainer}>
@@ -207,28 +255,33 @@ const HelplineFormScreen = () => {
           {item.isRequired && <Text style={styles.requiredAsterisk}> *</Text>}
         </Text>
 
+        {/* Textfield */}
         {item.answerType === 'Textfield' && (
           <TextInput
             style={[styles.input, isDisabled && styles.disabledInput]}
-            placeholder={isDisabled ? 'Anonymous' : 'Enter your answer'}
             value={value}
-            onChangeText={(text) => handleInputChange(item.id, text)}
+            placeholder={isDisabled ? '—' : 'Enter your answer'}
+            placeholderTextColor="#aaa"
+            onChangeText={(text) => !isDisabled && handleInputChange(item.id, text)}
             editable={!isDisabled}
           />
         )}
 
+        {/* Textarea */}
         {item.answerType === 'Textarea' && (
           <TextInput
             style={[styles.textarea, isDisabled && styles.disabledInput]}
-            placeholder={isDisabled ? 'Anonymous' : 'Describe your concern'}
             value={value}
-            onChangeText={(text) => handleInputChange(item.id, text)}
+            placeholder={isDisabled ? '—' : 'Describe your concern'}
+            placeholderTextColor="#aaa"
+            onChangeText={(text) => !isDisabled && handleInputChange(item.id, text)}
             multiline
             textAlignVertical="top"
             editable={!isDisabled}
           />
         )}
 
+        {/* Radio */}
         {item.answerType === 'Radio' && (
           <View style={styles.radioGroup}>
             {item.answerOptions?.map((option) => {
@@ -240,7 +293,6 @@ const HelplineFormScreen = () => {
                   style={[styles.radioOption, isDisabled && styles.radioOptionDisabled]}
                   onPress={() => !isDisabled && handleInputChange(item.id, option)}
                   disabled={isDisabled}
-                  activeOpacity={0.7}
                 >
                   <View style={[styles.radioOuterCircle, isSelected && styles.radioOuterCircleSelected]}>
                     {isSelected && <View style={styles.radioInnerCircle} />}
@@ -254,38 +306,22 @@ const HelplineFormScreen = () => {
           </View>
         )}
 
-        {item.answerType === 'Date' && (
+        {['Date', 'Time', 'DateTime'].includes(item.answerType) && (
           <TouchableOpacity
             disabled={isDisabled}
-            onPress={() => openDatePicker(item.id, 'date')}
-            style={[styles.pickerButton, isDisabled && styles.disabledInput]}
-          >
-            <Text style={[styles.pickerText, !value && { color: '#aaa' }]}>
-              {value || 'Select Date'}
-            </Text>
-          </TouchableOpacity>
-        )}
+            onPress={() => {
+              if (isDisabled) return;
 
-        {item.answerType === 'Time' && (
-          <TouchableOpacity
-            disabled={isDisabled}
-            onPress={() => openDatePicker(item.id, 'time')}
-            style={[styles.pickerButton, isDisabled && styles.disabledInput]}
-          >
-            <Text style={[styles.pickerText, !value && { color: '#aaa' }]}>
-              {value || 'Select Time'}
-            </Text>
-          </TouchableOpacity>
-        )}
+              let mode: 'date' | 'time' | 'datetime' = 'date';
+              if (item.answerType === 'Time') mode = 'time';
+              if (item.answerType === 'DateTime') mode = 'datetime';
 
-        {item.answerType === 'DateTime' && (
-          <TouchableOpacity
-            disabled={isDisabled}
-            onPress={() => openDatePicker(item.id, 'datetime')}
+              openDatePicker(item.id, mode);
+            }}
             style={[styles.pickerButton, isDisabled && styles.disabledInput]}
           >
-            <Text style={[styles.pickerText, !value && { color: '#aaa' }]}>
-              {value || 'Select Date & Time'}
+            <Text style={[styles.pickerText, !value || value === 'Anonymous' ? { color: '#aaa' } : { color: '#444' }]}>
+              {value && value !== 'Anonymous' ? value : 'Select date/time'}
             </Text>
           </TouchableOpacity>
         )}
@@ -296,20 +332,27 @@ const HelplineFormScreen = () => {
   return (
     <View style={styles.container}>
       <GlobalHeader
-        title={helplineName}
+        title={isViewMode ? t('helplineForm') : helplineName}
         leftIcon={<ChevronLeft size={20} />}
         onLeftPress={() => router.back()}
       />
 
-      <View style={styles.toggleContainer}>
-        <Text style={styles.toggleLabel}>{t('submitAsAnonymous')}</Text>
-        <Switch
-          value={isAnonymous}
-          onValueChange={handleAnonymousToggle}
-          trackColor={{ false: '#767577', true: Colors.lightGreen }}
-          thumbColor={isAnonymous ? '#fff' : '#f4f3f4'}
-        />
-      </View>
+      {/* Header Section */}
+      {isViewMode ? (
+        <View style={styles.toggleContainer}>
+          <Text style={styles.toggleLabel}>{t('status')} : {formatStatus(complaintStatus ?? '')}</Text>
+        </View>
+      ) : (
+        <View style={styles.toggleContainer}>
+          <Text style={styles.toggleLabel}>{t('submitAsAnonymous')}</Text>
+          <Switch
+            value={isAnonymous}
+            onValueChange={handleAnonymousToggle}
+            trackColor={{ false: '#767577', true: Colors.lightGreen }}
+            thumbColor={isAnonymous ? '#fff' : '#f4f3f4'}
+          />
+        </View>
+      )}
 
       {loading ? (
         <View style={styles.center}>
@@ -325,35 +368,39 @@ const HelplineFormScreen = () => {
                 ref={flatListRef}
                 data={questions}
                 renderItem={renderQuestion}
-                keyExtractor={(item) => item.id}
+                keyExtractor={item => item.id}
                 contentContainerStyle={{
                   padding: 16,
-                  paddingTop: 50,
-                  paddingBottom: 100,
+                  paddingTop: 45,
+                  paddingBottom: isViewMode ? 40 : 120,
                 }}
                 showsVerticalScrollIndicator={false}
               />
             </TouchableWithoutFeedback>
           </KeyboardAvoidingView>
 
-          <View style={styles.floatingButtonContainer}>
-            <GlobalButton
-              title={t('submit')}
-              onPress={handleSubmit}
-              disabled={!isFormValid() || submitting}
-              loading={submitting}
-              buttonStyle={{ width: '90%' }}
-            />
-          </View>
+          {/* Hide Submit Button in View Mode */}
+          {!isViewMode && (
+            <View style={styles.floatingButtonContainer}>
+              <GlobalButton
+                title={t('submit')}
+                onPress={handleSubmit}
+                disabled={!isFormValid() || submitting}
+                loading={submitting}
+                buttonStyle={{ width: '90%' }}
+              />
+            </View>
+          )}
         </View>
       )}
 
+      {/* Date/Time Picker */}
       <DatePicker
         modal
         open={openPickerFor !== null}
         date={tempDate}
         mode={pickerMode}
-        onConfirm={(selectedDate) => {
+        onConfirm={selectedDate => {
           if (!openPickerFor) return;
 
           let formatted = '';
@@ -371,11 +418,12 @@ const HelplineFormScreen = () => {
         onCancel={() => setOpenPickerFor(null)}
       />
 
+      {/* Disclaimer Modal */}
       <Modal transparent visible={isModalVisible} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalText}>
-                           {t('helplineformdisclaimerdescription')}
+              {t('helplineformdisclaimerdescription')}
             </Text>
             <TouchableOpacity style={styles.modalButton} onPress={() => setIsModalVisible(false)}>
               <Text style={styles.modalButtonText}>{t('ok')}</Text>
@@ -389,7 +437,6 @@ const HelplineFormScreen = () => {
 
 export default HelplineFormScreen;
 
-// Styles remain exactly the same
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   toggleContainer: {
@@ -420,11 +467,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     lineHeight: 22,
   },
-  requiredAsterisk: {
-    color: '#d32f2f',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  requiredAsterisk: { color: '#d32f2f', fontSize: 16, fontWeight: 'bold' },
   input: {
     backgroundColor: '#fff',
     padding: 16,
@@ -445,8 +488,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
   },
   disabledInput: {
-    backgroundColor: '#f5f5f5',
-    color: '#999',
+    backgroundColor: '#f8f8f8',
+    color: '#666',
     borderColor: '#ddd',
   },
   pickerButton: {
@@ -462,18 +505,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
     color: '#444',
   },
-  radioGroup: {
-    marginTop: 8,
-  },
+  radioGroup: { marginTop: 8 },
   radioOption: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 8,
     paddingHorizontal: 4,
   },
-  radioOptionDisabled: {
-    opacity: 0.5,
-  },
+  radioOptionDisabled: { opacity: 0.6 },
   radioOuterCircle: {
     height: 26,
     width: 26,
@@ -490,7 +529,7 @@ const styles = StyleSheet.create({
   radioInnerCircle: {
     height: 16,
     width: 16,
-    borderRadius: 20,
+    borderRadius: 8,
     backgroundColor: Colors.lightGreen || '#B0DB02',
   },
   radioOptionLabel: {
@@ -499,9 +538,7 @@ const styles = StyleSheet.create({
     color: '#333',
     flex: 1,
   },
-  radioLabelDisabled: {
-    color: '#aaa',
-  },
+  radioLabelDisabled: { color: '#999' },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   floatingButtonContainer: {
     position: 'absolute',
@@ -513,7 +550,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center' },
   modalContent: { backgroundColor: '#fff', padding: 24, borderRadius: 16, width: '85%', alignItems: 'center' },
-  modalText: { fontSize: 14, textAlign: 'center', marginBottom: 20, lineHeight: 22 ,fontFamily:'Poppins-Regular'},
+  modalText: { fontSize: 14, textAlign: 'center', marginBottom: 20, lineHeight: 22, fontFamily: 'Poppins-Regular' },
   modalButton: { backgroundColor: '#02130B', paddingHorizontal: 40, paddingVertical: 12, borderRadius: 8 },
   modalButtonText: { color: '#fff', fontWeight: '600' },
 });

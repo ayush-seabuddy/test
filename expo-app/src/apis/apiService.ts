@@ -170,6 +170,23 @@ export interface GetAllHelplinesParams {
   helplineType?: string
 }
 
+export interface GetAllComplaintHistoryParams {
+  page?: number,
+  limit?: number,
+}
+
+export interface GetSingleHelplineAnswerParams {
+  helplineFormId: string,
+}
+
+export interface GetAllAdminBuddyUpEventsParams {
+  isAdmin: boolean;
+}
+
+export interface GetLeaderboardParams {
+  isZero:boolean;
+}
+
 export const login = async (
   payload: LoginRequest
 ): Promise<ApiResponse> => {
@@ -377,3 +394,36 @@ export const submithelplineanswer = async (
     data: payload,
   });
 };
+
+export const getallcomplainthistory = async (params?: GetAllComplaintHistoryParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETALLCOMPLAINTHISTORY,
+    params
+  });
+};
+
+export const getsinglehelplineanswer = async (params?: GetSingleHelplineAnswerParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETHELPLINEANSWER,
+    params,
+  });
+};
+export const getalladminbuddyupevents = async (params?: GetAllAdminBuddyUpEventsParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GetAllAdminBuddyUpEvents,
+    params,
+  });
+};
+
+
+export const getleaderboard = async (params?: GetLeaderboardParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETUSERLEADERBOARD,
+    params,
+  });
+};
+

@@ -35,5 +35,9 @@ export const ENDPOINTS = {
   GETALLHELPLINES: `${BASE_URL}/helpline/getAllHelplines`,
   GETHELPLINEFORMQUESTIONS: `${BASE_URL}/helpline/getAllHelplineFormQuestions`,
   SUBMITHELPLINEANSWER: `${BASE_URL}/helpline/addHelplineFormAnswers`,
+  GETALLCOMPLAINTHISTORY: `${BASE_URL}/helpline/getAllHelplineSubmittedForms`,
+  GETHELPLINEANSWER: `${BASE_URL}/helpline/getOneHelplineFormAnswers`,
+  GetAllAdminBuddyUpEvents: `${BASE_URL}/activity/getAllGroupActivityCategories`,
+  GETUSERLEADERBOARD:`${BASE_URL}/user/getUserLeaderBoard`,
 
 };

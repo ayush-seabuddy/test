@@ -15,6 +15,7 @@ import Colors from "@/src/utils/Colors";
 import { History, Home } from "lucide-react-native";
 import HelplineAndAICards from "@/src/components/HelplineComponent/HelplineCard";
 import AIJollieCard from "@/src/components/HelplineComponent/AIJollieCard";
+import { router } from "expo-router";
 
 const { width, height } = Dimensions.get("window");
 
@@ -26,10 +27,18 @@ const HelplineScreen = () => {
 
       <View style={styles.headerContainer}>
         <Text style={styles.title}>{t("helplines")}</Text>
-        <TouchableOpacity style={styles.historyButton}>
+        <TouchableOpacity style={styles.historyButton}
+          onPress={() => {
+            router.push('/complainthistory');
+          }}
+        >
           <History size={21} color="#000" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.homeButton}>
+        <TouchableOpacity style={styles.homeButton}
+          onPress={() => {
+            router.replace('/home')
+          }}
+        >
           <Home size={21} color="#000" />
         </TouchableOpacity>
       </View>

@@ -21,12 +21,12 @@ export const ImagesAssets = {
   HealthBuddyJollie: require("../../assets/images/JollieImages/HealthBuddy.png"),
   MarineBuddyJollie: require("../../assets/images/JollieImages/MarineBuddy.png"),
   SpiritualBuddyJollie: require("../../assets/images/JollieImages/SpiritualBuddy.png"),
-   EmergencyJollieImage: require("../../assets/images/JollieImages/EmergencyJollieImage.png"),
+  EmergencyJollieImage: require("../../assets/images/JollieImages/EmergencyJollieImage.png"),
   nodatafound: require("../../assets/images/nodatafound.png"),
   sosImage: require("../../assets/images/sosimage.png"),
   sailorsIcon: require("../../assets/images/SailorsIcon.png"),
   WhatsappIcon: require("../../assets/images/WhatsappIcon.png"),
-
+  LeaderboardIcon: require("../../assets/images/TrophyIcon.png"),
 
 
 

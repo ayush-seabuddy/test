@@ -756,8 +756,34 @@
   "edityourcomment": "Edit your comment...",
   "writecomment": "Write a comment...",
   "no_helplines_available": "No helplines available at the moment.",
-  "hey":"Hey",
-  "emergency_lines":"Here’s the emergency lines",
-  "submitAsAnonymous":"Submit as Anonymous",
-  "helplineformdisclaimerdescription":"All helpline calls and chats are strictly confidential. Reaching out will not affect your job or standing onboard. These services exist solely to support and guide you."
+  "hey": "Hey",
+  "emergency_lines": "Here’s the emergency lines",
+  "submitAsAnonymous": "Submit as Anonymous",
+  "helplineformdisclaimerdescription": "All helpline calls and chats are strictly confidential. Reaching out will not affect your job or standing onboard. These services exist solely to support and guide you.",
+  "marinebuddy_disclaimer": "This chatbot provides general information based on ship manuals and available references. It is not a substitute for professional maritime judgment, official regulations, or instructions from vessel management or port authorities. Always confirm critical decisions with your company’s policies, technical manuals, and qualified personnel. Seabuddy accepts no liability for actions taken solely on the basis of this chatbot’s responses.",
+  "healthbuddy_disclaimer": "This chatbot provides general health and wellness information only. It is not medical advice, diagnosis, or treatment. Always seek the advice of a qualified healthcare professional with any questions you may have about a medical condition. Never disregard professional medical advice because of something provided here. If you experience a medical emergency, call for immediate assistance. Seabuddy does not assume liability for outcomes related to chatbot use.",
+  "spiritualbuddy_disclaimer": "This chatbot offers general spiritual reflections and supportive conversation. It is not a substitute for personal faith practice, professional counseling, or formal religious guidance. Views expressed are generated and not affiliated with any specific tradition. Use discretion and consult trusted leaders or advisors for personal matters. Seabuddy is not responsible for decisions made based on this content.",
+  "jollieistyping": "Jollie is typing...",
+  "healthSuggestion": {
+    "title": "Your 24/7 wellness check-in! Let's talk about your health—mind, body or mood.",
+    "q1": "I need motivation today",
+    "q2": "How can I sleep better?",
+    "q3": "What's a healthy habit to try?",
+    "q4": "Give me tips to reduce stress"
+  },
+  "spiritualSuggestion": {
+    "title": "Personal guidance for peace. Tap a prompt below or share what's on your mind.",
+    "q1": "Share a teaching for today",
+    "q2": "What does my faith say about stress?",
+    "q3": "Give me strength today",
+    "q4": "Let's reflect together"
+  },
+  "technicalSuggestion": {
+    "title": "Ask anything about marine rules onboard — SOLAS, MARPOL, fire safety and more.",
+    "q1": "Explain this MARPOL rule",
+    "q2": "Clarify this checklist item",
+    "q3": "I'm unsure about a procedure"
+  },
+  "helplineForm": "Helpline Form",
+  "claimyourmilesnow": "Claim your miles now!"
 }
