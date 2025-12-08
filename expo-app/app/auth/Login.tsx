@@ -1,24 +1,23 @@
-import React, { useState, useRef, useEffect } from "react";
-import {
-  Dimensions,
-  StyleSheet,
-  Text,
-  View,
-  Animated,
-  Platform,
-  TouchableOpacity,
-} from "react-native";
-import { Mail, Lock, CheckSquare, Square, Check } from "lucide-react-native";
-import { useTranslation } from "react-i18next";
+import GlobalButton from "@/src/components/GlobalButton";
+import GlobalTextInput from "@/src/components/GlobalTextInput";
+import { showToast } from "@/src/components/GlobalToast";
 import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
-import GlobalButton from "@/src/components/GlobalButton";
-import { router } from "expo-router";
-import GlobalTextInput from "@/src/components/GlobalTextInput";
-import { login } from "../../src/apis/apiService";
-import { showToast } from "@/src/components/GlobalToast";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import KeyboardWrapper from "@/src/components/KeyboardWrapper";
+import { router } from "expo-router";
+import { Check, Lock, Mail } from "lucide-react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Animated,
+  Dimensions,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { login } from "../../src/apis/apiService";
 
 const { height } = Dimensions.get("window");
 
@@ -68,8 +67,10 @@ const LoginScreen = () => {
           t("welcomeback")
         );
         await AsyncStorage.setItem('userDetails', JSON.stringify(apiResponse.data));
-        await AsyncStorage.setItem('authToken', apiResponse.data.authToken);
-        await AsyncStorage.setItem('userId', apiResponse.data.id);
+        apiResponse?.data.authToken && await AsyncStorage.setItem("authToken", apiResponse?.data.authToken);
+        apiResponse?.data.id && await AsyncStorage.setItem("userId", apiResponse?.data.id);
+        apiResponse?.data.shipId && await AsyncStorage.setItem("shipId", apiResponse?.data.shipId);
+        apiResponse?.data.employerId && await AsyncStorage.setItem("employerId", apiResponse?.data.employerId);
         const storedData = await AsyncStorage.getItem('userDetails');
 
 
@@ -107,7 +108,7 @@ const LoginScreen = () => {
   };
 
   return (
-    <KeyboardWrapper>
+  
       <View style={{ flex: 1, backgroundColor: Colors.background }}>
         <View style={styles.wrapper}>
           <View style={styles.backgroundOverlay} />
@@ -189,7 +190,7 @@ const LoginScreen = () => {
           </View>
         </View>
       </View>
-    </KeyboardWrapper>
+ 
 
   );
 };

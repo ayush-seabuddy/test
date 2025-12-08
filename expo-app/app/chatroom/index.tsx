@@ -1,12 +1,13 @@
 // src/screens/chat/ChatRoom.tsx
-import { uploadfile } from '@/src/apis/apiService';
+import { getReactionsOnMessage, uploadfile } from '@/src/apis/apiService';
+import KeyboardAvoidingWrapper from '@/src/components/KeyboardAvoidingWrapper';
 import MediaPreviewModal from '@/src/components/Modals/MediaPreviewModal';
 import { saveMessage } from '@/src/database/chatMessageService';
 import { RootState } from '@/src/redux/store';
 import { ChatMessage, ChatRoom } from '@/src/screens/chat/types/chatRoom'; // <-- your type
 import ChatRoomHeader from '@/src/screens/chatroom/ChatRoomHeader';
+import Chats from '@/src/screens/chatroom/components/ChatDataList';
 import Colors from '@/src/utils/Colors';
-import { formatChatTime, formatDateSeparator } from '@/src/utils/helperFunctions';
 import socketService from '@/src/utils/socketService';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { Image } from 'expo-image';
@@ -14,17 +15,19 @@ import * as ImagePicker from "expo-image-picker";
 import { router, useFocusEffect } from 'expo-router';
 import { Camera, Check, Edit, Paperclip, Reply, SendHorizonal, Trash2, X } from 'lucide-react-native';
 import moment from 'moment-timezone';
-import React, { useCallback, useRef, useState } from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { Dimensions, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { ActivityIndicator, TextInput, } from 'react-native-paper';
+import RBSheet from 'react-native-raw-bottom-sheet';
 import { useDispatch, useSelector } from 'react-redux';
+// import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 
 type ChatRoomScreenParams = {
   chatRoomDetails: ChatRoom
 }
 type ChatRoomRouteProp = RouteProp<{ ChatRoom: ChatRoomScreenParams }, 'ChatRoom'>
-
+const { width , height } = Dimensions.get("screen");
 const ChatRoomScreen = () => {
   const route = useRoute<ChatRoomRouteProp>()
   const chatRoomDetails = typeof route.params?.chatRoomDetails === 'string' ? JSON.parse(route.params?.chatRoomDetails) : route.params?.chatRoomDetails
@@ -63,20 +66,20 @@ const ChatRoomScreen = () => {
   const [keyboardPadding, setKeyboardPadding] = useState(0);
   const [chatItemPadding, setChatItemPadding] = useState(0);
   const [mediaModalVisible, setMediaModalVisible] = useState(false);
-  const [selectedMedia, setSelectedMedia] = useState(null);
+  const [selectedMedia, setSelectedMedia] = useState<{ uri: string; isVideo: boolean }>({ uri: "", isVideo: false });
   const [imageLoading, setImageLoading] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [editingMessage, setEditingMessage] = useState(null);
+  const [editingMessage, setEditingMessage] = useState<ChatMessage|null>(null);
   const [editedContent, setEditedContent] = useState("");
   const [editingMessageId, setEditingMessageId] = useState<string>("");
   const [inputHeight, setInputHeight] = useState(55);
   const [editModal, setEditModal] = useState(false);
-  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyingTo, setReplyingTo] = useState<ChatMessage|null>(null);
   const [myReaction, setMyReaction] = useState('');
   const textInputRef = useRef(null);
   const PAGE_SIZE = 50;
-  const bottomSheetRef = useRef(null);
-  const [reactionCountList, setReactionCountList] = useState([]);
+  const bottomSheetRef = useRef<typeof RBSheet | null>(null);
+  const [reactionCountList, setReactionCountList] = useState<ReactionData[]>([]);
   const [searchResults, setSearchResults] = useState([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -85,10 +88,19 @@ const ChatRoomScreen = () => {
 
   const { id: senderId, shipId } = useSelector((state: RootState) => state.userDetails)
 
+ interface ReactionData {
+  createdAt: string;
+  id: string;
+  messageId: string;
+  reactUsers: any; // you can replace `any` with a proper type if you know the shape
+  reaction: string; // e.g. "❤️"
+  updatedAt: string;
+  userId: string;
+}
 
 
 
-  const handleEditMessage = (message:{ id: string; content: string; messageType: string;}) => {
+  const handleEditMessage = (message: { id: string; content: string; messageType: string; }) => {
     console.log("message: ", message);
     if (!message.id) {
       return;
@@ -231,7 +243,55 @@ const ChatRoomScreen = () => {
       )
     );
   };
-  useFocusEffect(
+
+    const fetchChatReactions = async (id:string) => {
+      try {
+        const response = await getReactionsOnMessage({messageId:id});
+        if (response.data && response.data.length > 0) {
+            let myReaction:ReactionData = response.data.find((reaction:ReactionData) => String(reaction.userId) == senderId);
+            let reactionWithoutMy = response.data.filter((reaction:ReactionData) => String(reaction.userId) != senderId);
+            if (myReaction) {
+              setReactionCountList([myReaction, ...reactionWithoutMy]);
+            } else {
+              setReactionCountList(response.data);
+            }
+             bottomSheetRef?.current?.open()
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          console.error("Error fetching data:", error.message);
+        } else {
+          console.error("Error fetching data:", error);
+        }
+      }
+    };
+
+    const handleReceiveChatReaction = (data:ReactionData) => {
+        if (data.messageId) {
+          setChatList((prevMessageList) => {
+            return prevMessageList.map((msg) => {
+              if (String(msg.id) == String(data.messageId)) {
+                let chatReactionDetails = msg.chatReactionDetails || [];
+                let alreadyReacted = msg?.chatReactionDetails?.find((item) => item.userId === data.userId);
+                if (alreadyReacted) {
+                  if (alreadyReacted.reaction == data.reaction) {
+                    chatReactionDetails = chatReactionDetails?.filter((item) => item.userId !== data.userId);
+                  } else {
+                    chatReactionDetails = chatReactionDetails?.filter((item) => item.userId !== data.userId);
+                    chatReactionDetails?.push(data);
+                  }
+                } else {
+                  chatReactionDetails.push(data);
+                }
+                return { ...msg, chatReactionDetails: chatReactionDetails };
+              }
+              return msg;
+            });
+          });
+        }
+      }
+ 
+    useFocusEffect(
     useCallback(() => {
 
 
@@ -243,7 +303,7 @@ const ChatRoomScreen = () => {
       socketService.on("getUserEditMessage", handleUserEditMessage);
       // socketService.on("receiveUserReactMessage", handleUserReactMessage);
       // socketService.on("getUserMessage", handleGetUserMessage);
-      // socketService.on("receiveChatReaction",f2);
+      socketService.on("receiveChatReaction",handleReceiveChatReaction);
       // socketService.on("getChatReaction", f3);
 
       return () => {
@@ -419,7 +479,7 @@ const ChatRoomScreen = () => {
     return groupedMessages;
   };
 
-  const renderMessageContent = (content, senderId, item, isSearchResult = false, searchQuery = "") => {
+  const renderMessageContent = (content: string, senderId: string, item: ChatMessage, isSearchResult = false, searchQuery = ""): React.ReactNode => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const parts = content.split(urlRegex);
 
@@ -455,345 +515,40 @@ const ChatRoomScreen = () => {
     });
   };
 
-  const ChatDataList = ({ item, index }: { item: any, index: number }) => {
-    if (item.type === "date") {
-      return (
-        <View style={styles.dateSeparatorContainer}>
-          <View style={styles.dateSeparatorText}>
-            <Text>{formatDateSeparator(item.date)}</Text>
-          </View>
-        </View>
-      );
-    }
-
-    const handleMediaPress = (uri) => {
-      setSelectedMedia({ uri, isVideo: false });
-      setMediaModalVisible(true);
-    };
-
-    const handleLongPress = (item) => {
-      let reaction = item?.chatReactionDetails?.find(item => String(item.userId) == String(senderId))?.reaction || "";
-      setMyReaction(reaction);
-      setEditingMessage(item);
-      setEditModal(true);
-    };
-
-    const isSearchResult = searchResults.some((result) => result.id === item.id);
-
-    return (
-      <View style={{ flexDirection: 'column' }}>
-        <TouchableOpacity
-          onLongPress={() => handleLongPress(item)}
-          disabled={item.status === "DELETE"}
-        >
-          <View
-            style={{
-              alignItems: senderId === item.senderId ? "flex-end" : "flex-start",
-              marginHorizontal: 10,
-              marginVertical: 5,
-              justifyContent: senderId === item.senderId ? "flex-end" : "flex-start",
-            }}
-          >
-            <View style={{ flexDirection: "row" }}>
-              {senderId !== item.senderId && (
-                <TouchableOpacity
-                  onPress={() => router.push({
-                    pathname: "/crewProfile",
-                    params: { crewId: item?.messageUser?.crewId }
-                  })}
-                >
-                  <Image
-                    source={{ uri: item?.messageUser?.profileUrl }}
-                    style={{
-                      height: 40,
-                      width: 40,
-                      borderRadius: 20,
-                      marginRight: 5,
-                    }}
-                    resizeMode="cover"
-                  />
-                </TouchableOpacity>
-              )}
-              <View
-                style={{
-                  backgroundColor:
-                    senderId === item.senderId ? "#82934b" : "#E6E6E680",
-                  maxWidth: "80%",
-                  padding: 10,
-                  paddingTop: 5,
-                  borderRadius: 15,
-                  borderBottomRightRadius: senderId === item.senderId ? 0 : 15,
-                  borderBottomLeftRadius: senderId === item.senderId ? 15 : 0,
-                }}
-              >
-                {senderId !== item.senderId && (
-                  <>
-                    <Text style={{ fontSize: 12, color: "black", marginBottom: 5 }}>
-                      {item?.messageUser?.fullName} ({item?.messageUser?.designation})
-                    </Text>
-                    {item?.messageUser?.department !== "Shore_Staff" && (
-                      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 5 }}>
-                        <View
-                          style={{
-                            width: 12,
-                            height: 12,
-                            borderRadius: 6,
-                            backgroundColor: item?.messageUser?.ship?.crewMembers?.find(
-                              (member) => member.userId === item?.messageUser?.id
-                            )?.isBoarded
-                              ? "#66FF66"
-                              : "#FF6666",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            marginRight: 5,
-                          }}
-                        >
-                          <View
-                            style={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: 3,
-                              backgroundColor: item?.messageUser?.ship?.crewMembers?.find(
-                                (member) => member.userId === item?.messageUser?.id
-                              )?.isBoarded
-                                ? "#00CC00"
-                                : "#CC0000",
-                            }}
-                          />
-                        </View>
-                        <Text
-                          style={{
-                            fontSize: 9,
-                            color: item?.messageUser?.ship?.crewMembers?.find(
-                              (member) => member.userId === item?.messageUser?.id
-                            )?.isBoarded
-                              ? "green"
-                              : "#f43d3d",
-                          }}
-                        >
-                          (
-                          {item?.messageUser?.ship?.crewMembers?.find(
-                            (member) => member.userId === item?.messageUser?.id
-                          )?.isBoarded
-                            ? "Onboard"
-                            : "Onleave"}
-                          )
-                        </Text>
-                      </View>
-                    )}
-                  </>
-                )}
-                {item.parentMessage && item.status !== "DELETE" && (
-                  <View style={{ backgroundColor: senderId === item?.senderId ? 'rgb(185, 206, 100)' : "rgb(189, 186, 186)", padding: 5, borderRadius: 5, marginBottom: 5 }}>
-                    <Text style={{ fontSize: 12, color: senderId === item?.senderId ? '#444' : "rgb(81, 99, 10)", fontStyle: "italic" }}>
-                      {item.parentMessage?.messageUser?.fullName || "Unknown"}
-                    </Text>
-                    {item?.parentMessage?.messageType === "IMAGE" && item?.parentMessage?.status !== "DELETE" ? (
-                      <TouchableOpacity onPress={() => handleMediaPress(item?.parentMessage?.content)}>
-                        <View style={{ height: 60, width: 200 }}>
-                          {imageLoading && (
-                            <ActivityIndicator
-                              style={{
-                                position: "absolute",
-                                top: "50%",
-                                left: "50%",
-                                transform: [{ translateX: -15 }, { translateY: -15 }],
-                              }}
-                              size="large"
-                              color={Colors.darkGreen}
-                            />
-                          )}
-                          <View
-                            style={{
-                              display: "flex",
-                              flexDirection: "row",
-                              justifyContent: "space-between",
-                              alignItems: "center"
-                            }}>
-                            <Text>Photo</Text>
-                            <Image
-                              source={{ uri: item?.parentMessage?.content }}
-                              style={{ height: 60, width: 60, borderRadius: 10 }}
-                              onLoadStart={() => setImageLoading(true)}
-                              onLoadEnd={() => setImageLoading(false)}
-                              contentFit="cover"
-                            />
-                          </View>
-                        </View>
-                      </TouchableOpacity>
-                    ) : (
-                      <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
-                        {item?.parentMessage?.status === "DELETE" ? (
-                          <Text
-                            style={{
-                              color: senderId === item?.parentMessage?.senderId ? "#d9d4d4" : "#666565",
-                              fontSize: 14,
-                              fontStyle: "italic",
-                            }}
-                          >
-                            This message has been deleted
-                          </Text>
-                        ) : (
-                          <Text
-                            style={{
-                              color: "#000",
-                              fontSize: 16,
-                            }}
-                          >
-                            {renderMessageContent(item?.parentMessage?.content, senderId, item?.parentMessage, isSearchResult, searchQuery)}
-                          </Text>
-                        )}
-                      </View>
-                    )}
-                  </View>
-                )}
-                {item.messageType === "IMAGE" && item.status !== "DELETE" ? (
-                  <TouchableOpacity onPress={() => handleMediaPress(item.content)}>
-                    <View style={{ height: 200, width: 200 }}>
-                      {imageLoading || !item?.id && (
-                        <ActivityIndicator
-                          style={{
-                            position: "absolute",
-                            top: "50%",
-                            left: "50%",
-                            transform: [{ translateX: -15 }, { translateY: -15 }],
-                          }}
-                          size="large"
-                          color={Colors.darkGreen}
-                        />
-                      )}
-
-                      <Image
-                        source={{ uri: item?.content }}
-                        style={{ height: "100%", width: "100%", borderRadius: 10 }}
-                        onLoadStart={() => setImageLoading(true)}
-                        onLoadEnd={() => setImageLoading(false)}
-                        contentFit="cover"
-                      />
-                    </View>
-                  </TouchableOpacity>
-                ) : (
-                  <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
-                    {item.status === "DELETE" ? (
-                      <Text
-                        style={{
-                          color: senderId === item.senderId ? "#d9d4d4" : "#666565",
-                          fontSize: 14,
-                          fontStyle: "italic",
-                        }}
-                      >
-                        This message has been deleted
-                      </Text>
-                    ) : (
-                      <Text
-                        style={{
-                          color: senderId === item.senderId ? "#fff" : "#000",
-                          fontSize: 16,
-                        }}
-                      >
-                        {renderMessageContent(item.content || "", senderId, item, isSearchResult, searchQuery)}
-                      </Text>
-                    )}
-                    {item.reaction && (
-                      <Text style={{ fontSize: 16, marginLeft: 5 }}>{item.reaction}</Text>
-                    )}
-                  </View>
-                )}
-                {item.status !== "DELETE" && (
-                  <View>
-                    {item.status === "EDIT" && item.messageType !== "IMAGE" && (
-                      <Text
-                        style={{
-                          color: senderId === item.senderId ? "#ddd" : "#666",
-                          fontSize: 12,
-                          marginLeft: 5,
-                          textAlign: "right",
-                        }}
-                      >
-                        (Edited)
-                      </Text>
-                    )}
-                    <Text
-                      style={{
-                        fontSize: 12,
-                        color: senderId === item.senderId ? "black" : "#808080",
-                        textAlign: "right",
-                        marginTop: 5,
-                        marginLeft: 45,
-                      }}
-                    >
-                      {item.createdAt && formatChatTime(item.createdAt)}
-                    </Text>
-                  </View>
-                )}
-              </View>
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        {item.status !== "DELETE" && item?.chatReactionDetails?.length > 0 && (
-          <TouchableOpacity
-            style={{
-              flexDirection:
-                item.chatReactionDetails.length === 1 ? "column" : "row",
-              alignSelf: senderId === item.senderId ? "flex-end" : "flex-start",
-              marginTop: -12,
-              marginLeft: senderId === item.senderId ? 0 : 55,
-              marginBottom: 10,
-              marginRight: senderId === item.senderId ? 9 : 0,
-              backgroundColor: "#ededed",
-              borderRadius:
-                item.chatReactionDetails.length === 1 ? 30 : 15, // rounder for single
-              paddingHorizontal:
-                item.chatReactionDetails.length === 1 ? 6 : 5,
-              paddingVertical:
-                item.chatReactionDetails.length === 1 ? 6 : 3,
-              borderWidth: 0.2,
-              borderColor: "#3b3934",
-              alignItems: "center",
-              justifyContent: "center",
-              minWidth: item.chatReactionDetails.length === 1 ? 28 : undefined,
-              minHeight: item.chatReactionDetails.length === 1 ? 28 : undefined,
-            }}
-            onPress={() => {
-              // fetchChatReactions(item.id);
-              setLoading(true);
-              // setTimeout(() => {
-              //   bottomSheetRef.current.open();
-              //   setLoading(false);
-              // }, 2000);
-            }}
-          >
-            <Text style={{ fontSize: 14, color: "black" }}>
-              {item.chatReactionDetails[0]?.reaction}
-            </Text>
-            {item.chatReactionDetails.length > 1 && (
-              <Text
-                style={{
-                  fontSize: 12,
-                  color: "black",
-                  fontWeight: "600",
-                  marginLeft: 4,
-                }}
-              >
-                {item.chatReactionDetails.length}
-              </Text>
-            )}
-          </TouchableOpacity>
-        )}
-
-      </View>
-    );
-  };
+ 
   return (
+    <KeyboardAvoidingWrapper
+      style={{ flex: 1 }}
+    >
+
     <View style={styles.container}>
       <ChatRoomHeader  {...headerPops} />
-
-
       <FlatList
         ref={flatListRef}
         data={getGroupedChatList()}
-        renderItem={ChatDataList}
+        style={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1 }}
+        renderItem={({ item,index }) =>
+        <Chats 
+        item={item} 
+        index={index}
+        handleReplyMessage={handleReplyMessage}
+        imageLoading={imageLoading}
+        renderMessageContent={renderMessageContent}
+        senderId={senderId}
+        searchQuery={searchQuery}
+        searchResults={searchResults}
+        setEditModal={setEditModal}
+        setEditingMessage={setEditingMessage}
+        setImageLoading={setImageLoading}
+        setSelectedMedia={setSelectedMedia}
+        setLoading={setLoading}
+        setMediaModalVisible={setMediaModalVisible}
+        setMyReaction={setMyReaction}
+        fetchChatReactions={fetchChatReactions}
+        styles={styles}
+        />
+        }
         keyExtractor={(item, index) => item.id + index.toString()}
         inverted
         // onEndReached={handleLoadMore}
@@ -815,65 +570,72 @@ const ChatRoomScreen = () => {
           </TouchableOpacity>
         </View>
       )}
-      <View style={[styles.inputContainer, {}]}>
+      <View style={[styles.inputContainer]}>
         <View style={styles.inputInnerContainer}>
           <TouchableOpacity
+            style={styles.iconContainer}
             onPress={() => selectImageFromCamera("camera")}
           >
-            <Camera size={20} color="grey" style={styles.icon} />
+            <Camera size={26} color="grey" style={styles.icon} />
           </TouchableOpacity>
+      
+            <View style={{ flex: 1, flexDirection: "row" }}>
+
+              <TextInput
+                // style={[styles.textInput, { maxHeight: 180 }]}
+                style={{
+                  flex: 1,
+                  paddingHorizontal: 10,
+                  color: "black",
+                  backgroundColor: "rgba(0, 0, 0, 0)",
+                  minHeight: 45
+                }}
+                activeUnderlineColor="transparent"
+                underlineColor="transparent"
+                contentStyle={{
+                  color: "black",
+                }}
+                placeholder={editingMessageId ? "Edit your message..." : "Type something..."}
+                placeholderTextColor="gray"
+                value={content}
+                ref={textInputRef}
+                multiline={true}
+                numberOfLines={4}
+                scrollEnabled={true}
+                onChangeText={(value) => {
+                  setContent(value);
+                }}
+                onSubmitEditing={() => {
+                  sendMessage();
+                }}
+              />
+
+              {editingMessageId && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setEditingMessageId(null);
+                    setContent("");
+                    setEditModal(false);
+                    setInputHeight(55);
+                    if (textInputRef.current) {
+                      textInputRef.current.blur();
+                    }
+                  }}
+                  style={styles.clearButton}
+                >
+                  <X size={18} color="#808080" />
+                </TouchableOpacity>
+              )}
+            </View>
+       
           <TouchableOpacity
+            style={styles.iconContainer}
             onPress={() => selectImageFromCamera("library")}
           >
-            <Paperclip size={17} color="grey" style={styles.icon} />
+            <Paperclip size={24} color="grey" style={styles.icon} />
           </TouchableOpacity>
-          <View style={{ flex: 1, flexDirection: "row" }}>
-            <TextInput
-              // style={[styles.textInput, { maxHeight: 180 }]}
-              style={{
-                flex: 1,
-                paddingHorizontal: 10,
-                marginBottom: 8,
-                color: "black",
-                backgroundColor: "rgba(230, 230, 230, 0.5)",
-              }}
-              activeUnderlineColor="transparent"
-              underlineColor="transparent"
-              contentStyle={{
-                color: "black",
-              }}
-              placeholder={editingMessageId ? "Edit your message..." : "Type something..."}
-              placeholderTextColor="gray"
-              value={content}
-              ref={textInputRef}
-              multiline={true}
-              numberOfLines={4}
-              scrollEnabled={true}
-              onChangeText={(value) => {
-                setContent(value);
-              }}
-              onSubmitEditing={() => {
-                sendMessage();
-              }}
-            />
-            {editingMessageId && (
-              <TouchableOpacity
-                onPress={() => {
-                  setEditingMessageId(null);
-                  setContent("");
-                  setEditModal(false);
-                  setInputHeight(55);
-                  if (textInputRef.current) {
-                    textInputRef.current.blur();
-                  }
-                }}
-                style={styles.clearButton}
-              >
-                <X size={18} color="#808080" />
-              </TouchableOpacity>
-            )}
-          </View>
         </View>
+
         <TouchableOpacity
           onPress={() => {
             sendMessage();
@@ -881,12 +643,110 @@ const ChatRoomScreen = () => {
           style={styles.microphoneButton}
         >
           {editingMessageId ?
-            <Check size={18} color="#fff" />
-            : <SendHorizonal size={18} color="#fff" />}
+            <Check size={25} color="#fff" />
+            : <SendHorizonal size={25} color="#fff" />}
         </TouchableOpacity>
       </View>
 
-
+ <RBSheet
+        ref={bottomSheetRef}
+        // closeOnDragDown={true}
+        closeOnPressMask={true}
+        height={height * 0.5}
+        customStyles={{
+          container: {
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            backgroundColor: "white",
+          },
+          draggableIcon: {
+            display: "none",
+          },
+        }}
+      >
+        <View style={styles.sheetContent}>
+          <Text style={styles.sheetTitle}>
+            {reactionCountList?.length} Reactions
+          </Text>
+          <ScrollView contentContainerStyle={{ paddingBottom: 50 }}>
+            {reactionCountList.length > 0 ? (
+              reactionCountList.map((user) => (
+                <View key={user.id}>
+                  <View style={styles.userItemContainer}>
+                    <View style={{ position: "relative" }}>
+                      {/* <Image
+                        source={require("../assets/images/AnotherImage/Man.png")}
+                        style={[styles.userImage, { position: "absolute" }]}
+                      /> */}
+                      <Image
+                        style={styles.userImage}
+                        source={user?.reactUsers?.profileUrl ? { uri: user?.reactUsers?.profileUrl } : null}
+                        resizeMode="cover"
+                        onTouchEnd={() => {
+                          if (user?.userId !== senderId) {
+                            // closeSheet();
+                            router.push({
+                              pathname: "/crewProfile",
+                              params: {
+                                crewId: user?.userId,
+                              },
+                            })
+                          }
+                        }}
+                      />
+                    </View>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        flex: 1,
+                      }}
+                    >
+                      {user?.userId == senderId ? (
+                        <TouchableOpacity
+                          style={{}}
+                          onPress={() => {
+                            handleDelteReaction(user.messageId, user.reaction);
+                            setReactionCountList(prev => prev.filter(item => String(item.userId) != senderId));
+                          }}
+                        >
+                          <Text style={[styles.userItem, { paddingVertical: 2 }]}>
+                            You
+                          </Text>
+                          <Text style={{ fontSize: 12, color: "gray" }}>
+                            Tap to remove
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <Text
+                          style={styles.userItem}
+                          onPress={() => {
+                            // closeSheet();
+                            router.push({
+                              pathname: "/crewProfile",
+                              params: {
+                                crewId: user?.userId,
+                              },
+                            })
+                            }}
+                          >
+                            {user?.reactUsers?.fullName}
+                          </Text>
+                      )}
+                      <Text style={{ fontSize: 18 }}>{user?.reaction}</Text>
+                    </View>
+                  </View>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.noLikesText}>
+                {'No Reaction found'}
+              </Text>
+            )}
+          </ScrollView>
+        </View>
+      </RBSheet>
 
       {selectedMedia && (
         <MediaPreviewModal
@@ -988,6 +848,7 @@ const ChatRoomScreen = () => {
         </Modal>
       )}
     </View>
+     </KeyboardAvoidingWrapper>
   )
 }
 
@@ -995,7 +856,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "white",
-    paddingBottom: 10
+    // paddingBottom: 10
   },
   loadingContainer: {
     flex: 1,
@@ -1004,18 +865,23 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-end",
     padding: 10,
-    backgroundColor: "rgba(230, 230, 230, 0.5)",
     borderRadius: 10,
     marginHorizontal: 10,
     marginBottom: 20,
-    minHeight: 55,
+    minHeight: 45,
   },
   inputInnerContainer: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-end",
+    borderRadius: 30,
+    backgroundColor: "rgba(230, 230, 230, 0.5)",
     flex: 1,
+  },
+  iconContainer: {
+    margin: 10,
+    marginBottom: 18
   },
   icon: {
     width: 23,
@@ -1035,6 +901,10 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 50,
     marginLeft: 10,
+    height: 45,
+    width: 45,
+    justifyContent: "center",
+    alignItems: "center",
   },
   dateSeparatorContainer: {
     alignItems: "center",

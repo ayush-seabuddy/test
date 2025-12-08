@@ -753,6 +753,7 @@
   "reminder_message": "This short survey is mandatory and helps us understand how you’re feeling so we can improve life onboard.",
   "start_checkin": "Start Check-In",
   "nowellbeingdata":"No Wellbeing Pulse data is available at this time",
-  "nohappinessindexdata":"No Happiness index data is available at this time"
+  "nohappinessindexdata":"No Happiness index data is available at this time",
+  "contentList": "Content List"
 
 }

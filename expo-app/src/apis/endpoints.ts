@@ -31,6 +31,12 @@ export const ENDPOINTS = {
   GET_ALL_HELPLINES: `${BASE_URL}/helpline/getAllHelplines`,
   VIEW_USER_TEST: `${BASE_URL}/user/viewUserTest`, 
   GETALLCATEGORY:`${BASE_URL}/content/getAllCategory`,
+  VIEW_CONTENT_DETAILS:`${BASE_URL}/content/viewContentDetails`,
+  GET_ALL_DOCTORS:`${BASE_URL}/helpline/allDoctorsList`,
+  GET_ALL_BOOKED_APPOINTMENTS:`${BASE_URL}/helpline/allBookedAppointments`,
+  GET_REACTIONS_ON_MESSAGE:`${BASE_URL}/user/getReactionsOnMessage`,
+  GET_RECOMMENDED_CONTENTS:`${BASE_URL}/content/getRecommendedContents`,
+
 };
 
 

@@ -2,6 +2,7 @@
 import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import { Image } from "expo-image";
+import { router } from "expo-router";
 import { ChartNoAxesCombined, Smile } from "lucide-react-native";
 import React from "react";
 import { useTranslation } from "react-i18next";
@@ -34,7 +35,7 @@ const WellnessCard = () => {
 
   return (
     <View style={styles.main}>
-      <TouchableOpacity style={styles.container}>
+      <TouchableOpacity style={styles.container} onPress={() => { router.push("/wellnessOfficerList")}}>
         <View style={styles.leftColumn}>
           <Text style={styles.title}>{t("speaktowellnessofficer")}</Text>
           <Text style={styles.description}>

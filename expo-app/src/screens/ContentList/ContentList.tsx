@@ -1,6 +1,12 @@
+import { getallcontents } from '@/src/apis/apiService';
+import Colors from '@/src/utils/Colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router, useLocalSearchParams } from 'expo-router';
+import { t } from 'i18next';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  Dimensions,
   FlatList,
   Image,
   StyleSheet,
@@ -11,47 +17,145 @@ import {
 import Header from './Header';
 
 // Dummy data generator
-const generateDummyData = (page: number, perPage: number = 10) => {
-  const start = (page - 1) * perPage;
-  const items = [];
-  for (let i = 1; i <= perPage; i++) {
-    const id = start + i;
-    items.push({
-      id: id.toString(),
-      title: `Beautiful Car ${id}`,
-      price: `$${(Math.random() * 300 + 50).toFixed(2)}K`,
-      year: 2018 + Math.floor(Math.random() * 7),
-      mileage: `${(Math.random() * 100 + 10).toFixed(0)}K mi`,
-      imageUrl: `https://picsum.photos/seed/car${id}/300/200`, // Random placeholder images
-    });
-  }
-  return items;
-};
 
-const CardItem = ({ item }: { item: any }) => {
-  return (
-    <TouchableOpacity style={styles.card} activeOpacity={0.8}>
-      <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
-      <View style={styles.cardContent}>
-        <Text style={styles.cardTitle} numberOfLines={1}>
-          {item.title}
-        </Text>
-        <Text style={styles.cardPrice}>{item.price}</Text>
-        <Text style={styles.cardDetails}>
-          {item.year} • {item.mileage}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
-};
 
+
+const { width, height } = Dimensions.get('window')
 const ContentList = () => {
+  const { item } = useLocalSearchParams();
+  const data2 = typeof item === "string" ? JSON.parse(item) : null;
   const [data, setData] = useState<any[]>([]);
+  console.log("data: dlfdsklfsdklf", data.length);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  // Initial load
+
+  const getContentTypeConfig = (contentType: 'ARTICLE' | 'VIDEO' | 'MUSIC') => {
+    switch (contentType) {
+      case "ARTICLE":
+        return {
+          navigationScreen: "contentDetails",
+          emptyMessage: "No Article Found",
+          imageComponent: Image,
+          imageStyle: styles.imageBackground,
+          cardStyle: styles.cardContainer,
+          cardContentStyle: styles.cardContent,
+          textContainerStyle: styles.textContainer,
+          showPlayIcon: false,
+        };
+      case "VIDEO":
+        return {
+          navigationScreen: "contentDetails",
+          emptyMessage: "No Video Found",
+          imageComponent: Image,
+          imageStyle: styles.imageBackground,
+          cardStyle: styles.cardContainer,
+          cardContentStyle: styles.cardContent,
+          textContainerStyle: styles.textContainer,
+          showPlayIcon: false,
+        };
+      case "MUSIC":
+        return {
+          navigationScreen: "contentDetails",
+          emptyMessage: "No Audio Found",
+          imageComponent: Image,
+          imageStyle: styles.imageBackground,
+          cardStyle: styles.cardContainer,
+          cardContentStyle: styles.cardContent,
+          textContainerStyle: styles.textContainer,
+          showPlayIcon: false,
+        };
+      default:
+        return {
+          navigationScreen: "contentDetails",
+          emptyMessage: "No Article Found",
+          imageComponent: Image,
+          imageStyle: styles.imageBackground,
+          cardStyle: styles.cardContainer,
+          cardContentStyle: styles.cardContent,
+          textContainerStyle: styles.textContainer,
+          showPlayIcon: false,
+        };
+    }
+  };
+
+
+  const RenderData = ({ item, index }: { item: any, index: number }) => {
+
+    const config = getContentTypeConfig(item.contentType);
+    if (!config) return null;
+
+
+
+    return (
+      <TouchableOpacity style={styles.card} activeOpacity={0.8} key={index} onPress={() =>
+        router.push({
+          pathname: "/contentDetails/[contentId]",
+          params: { item: JSON.stringify(item), contentId: item?.id },
+        })
+      }>
+        <View style={config.cardContentStyle}>
+
+          <Image
+            style={config.imageStyle}
+            resizeMode="cover"
+            source={{
+              uri: item?.thumbnail
+            }} />
+          <View style={styles.textContainer}>
+            <Text
+              style={[styles.titleText]}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {item?.contentTitle.slice(0, 25)}
+            </Text>
+          </View>
+          <LinearGradient
+            colors={['transparent', 'rgba(65, 65, 65, 0.56)']} // adjust opacity as you like
+            style={styles.gradientOverlay}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+          />
+
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  const generateDummyData = async (page: number, perPage: number = 18) => {
+
+    try {
+      const response = await getallcontents({
+        page: page,
+        limit: perPage,
+        subCategory: data2?.id,
+        contentType: "VIDEO"
+
+      })
+      if (response.data) {
+        const { allContents, ...details } = response.data
+        console.log("response.data: details", details, allContents);
+        if (response.data.totalPages > page) {
+          setHasMore(true)
+        } else {
+          setHasMore(false)
+        }
+
+        return response.data.allContents
+      } else {
+        return []
+      }
+
+
+    } catch (error) {
+      console.log("error: ", error);
+      return []
+    }
+
+  };
+
   React.useEffect(() => {
     loadMoreItems();
   }, []);
@@ -61,8 +165,8 @@ const ContentList = () => {
 
     setLoading(true);
     // Simulate API delay
-    setTimeout(() => {
-      const newItems = generateDummyData(page);
+    setTimeout(async () => {
+      const newItems = await generateDummyData(page);
       setData((prev) => [...prev, ...newItems]);
       setPage((prev) => prev + 1);
 
@@ -85,14 +189,15 @@ const ContentList = () => {
 
   return (
     <View style={styles.container}>
-      <Header title="Content List" setContentType={() => {}} />
+
+      <Header title={t("contentList")} setContentType={() => { }} />
       <FlatList
         data={data}
-        renderItem={({ item }) => <CardItem item={item} />}
+        renderItem={RenderData}
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.row}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { flexGrow: 1 }]}
         showsVerticalScrollIndicator={false}
         onEndReached={loadMoreItems}
         onEndReachedThreshold={0.5}
@@ -102,7 +207,6 @@ const ContentList = () => {
             <Text>No cars found</Text>
           </View>
         }
-       
       />
     </View>
   );
@@ -116,13 +220,15 @@ const styles = StyleSheet.create({
   listContent: {
     padding: 12,
     paddingTop: 65,
+    flexGrow: 1
   },
   row: {
     justifyContent: 'space-between',
   },
   card: {
     flex: 1,
-    backgroundColor: '#fff',
+    minHeight: 120,
+    backgroundColor: 'gray',
     borderRadius: 12,
     margin: 6,
     overflow: 'hidden',
@@ -137,9 +243,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 120,
     resizeMode: 'cover',
-  },
-  cardContent: {
-    padding: 10,
   },
   cardTitle: {
     fontSize: 14,
@@ -178,6 +281,40 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 100,
+  },
+  cardContainer: {
+    borderRadius: 5,
+    alignSelf: "center",
+    marginRight: 10,
+  },
+  cardContent: {
+    borderRadius: 5,
+    overflow: "hidden",
+  },
+  titleText: {
+    fontSize: 12,
+    fontFamily: "Poppins-SemiBold",
+    color: Colors.white
+  },
+  imageBackground: {
+    height: width * 0.5 * (9 / 16),
+    width: width * 0.5,
+    justifyContent: "space-between",
+  },
+  textContainer: {
+    padding: 8,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  gradientOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 50,
   },
 });
 

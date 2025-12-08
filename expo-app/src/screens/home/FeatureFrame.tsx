@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from "react";
-import {
-    Text,
-    StyleSheet,
-    Image,
-    View,
-    Dimensions,
-    TouchableOpacity,
-    ImageSourcePropType,
-} from "react-native";
-import { BlurView } from "expo-blur";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useTranslation } from "react-i18next";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BlurView } from "expo-blur";
 import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+    Dimensions,
+    Image,
+    ImageSourcePropType,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 const { height, width } = Dimensions.get("screen");
 const isProMax = height >= 926;
@@ -68,7 +68,7 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
             icon: ImagesAssets.UsersLogo,
             title: t("ship_life"),
             description: t("ship_life_description"),
-            onPress: () => console.log("Ship Life Pressed"),
+            onPress: () => router.push("/(bottomtab)/health"),
         },
         {
             icon: ImagesAssets.ShipAnchorLogo,

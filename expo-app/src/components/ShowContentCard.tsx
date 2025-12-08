@@ -13,10 +13,7 @@ import {
 
 const { height, width } = Dimensions.get("window");
 
-const ShowContentCard = ({ data, keyId, headerName }: { data: any, keyId: any, headerName: any }) => {
-    console.log("headerName: ", headerName);
-    console.log("keyId: ", keyId);
-    console.log("data: ", data);
+const ShowContentCard = ({ data, keyId }: { data: any, keyId: any }) => {
     const getContentTypeConfig = (contentType: 'ARTICLE' | 'VIDEO' | 'MUSIC') => {
         switch (contentType) {
             case "ARTICLE":

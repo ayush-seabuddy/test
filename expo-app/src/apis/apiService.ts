@@ -146,6 +146,30 @@ export interface GetAllHelplinesParams {
   helplineType?: string,
 }
 
+export interface ViewContentDetailsParams{
+  contentId?: string
+}
+
+export interface GetAllDoctorsParams {
+  page?: number,
+  limit?: number,
+}
+
+export interface GetAllBookedAppointmentsParams {
+  page?: number,
+  limit?: number,
+}
+
+export interface GetReactionsOnMessageParams {
+  messageId: string,
+  page?: number,
+  limit?: number,
+}
+
+export interface GetRecommendedContentsParams {
+  contentId: string,
+}
+
 export const login = async (
   payload: LoginRequest
 ): Promise<ApiResponse> => {
@@ -321,6 +345,46 @@ export const getAllCategory = async (): Promise<ApiResponse> => {
   return await apiRequest({
     method: "GET",
     url: ENDPOINTS.GETALLCATEGORY,
+  });
+};
+
+export const viewContentDetails = async (params?: ViewContentDetailsParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.VIEW_CONTENT_DETAILS,
+    params
+  });
+};
+
+export const getAllDoctors = async (params?: GetAllDoctorsParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GET_ALL_DOCTORS,
+    params
+  });
+};
+
+export const getAllBookedAppointments = async (params?: GetAllBookedAppointmentsParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GET_ALL_BOOKED_APPOINTMENTS,
+    params
+  });
+};
+
+export const getReactionsOnMessage = async (params?: GetReactionsOnMessageParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GET_REACTIONS_ON_MESSAGE,
+    params
+  });
+};
+
+export const getRecommendedContents = async (params?: GetRecommendedContentsParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GET_RECOMMENDED_CONTENTS,
+    params
   });
 };
 

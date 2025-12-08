@@ -1,14 +1,14 @@
+import Colors from "@/src/utils/Colors";
 import React, { ReactNode } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
   Platform,
-  ViewStyle,
+  StyleSheet,
+  Text,
   TextStyle,
+  TouchableOpacity,
+  View,
+  ViewStyle,
 } from "react-native";
-import Colors from "@/src/utils/Colors";
 
 interface GlobalHeaderProps {
   title?: string;
@@ -26,7 +26,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
   title = "",
   onLeftPress,
   onRightPress,
-  leftIcon,
+  leftIcon, 
   rightIcon,
   containerStyle,
   titleStyle,

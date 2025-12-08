@@ -52,7 +52,7 @@ apiClient.interceptors.response.use(
   (response) => {
     console.log("📥 RESPONSE URL:", response.config.url);
     console.log("📥 RESPONSE STATUS:", response.status);
-    console.log("📥 RESPONSE DATA:", JSON.stringify(response.data));
+    // console.log("📥 RESPONSE DATA:", JSON.stringify(response.data));
 
     return response;
   },

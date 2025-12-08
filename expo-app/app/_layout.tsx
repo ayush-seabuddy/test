@@ -1,26 +1,25 @@
-import Colors from "@/src/utils/Colors";
 import { useFonts } from "expo-font";
 import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { I18nextProvider } from "react-i18next";
-import { StatusBar, StyleSheet, Text } from "react-native";
+import { Platform, StatusBar, StyleSheet } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-import KeyboardWrapper from "../src/components/KeyboardWrapper";
-import { initI18n } from "@/src/localization/i18n";
-import i18n from "i18next";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import socketService from "@/src/utils/socketService";
 import { Provider } from "react-redux";
+
+import { initI18n } from "@/src/localization/i18n";
 import { store } from "@/src/redux/store";
+import Colors from "@/src/utils/Colors";
+import socketService from "@/src/utils/socketService";
+import i18n from "i18next";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [appReady, setAppReady] = useState(false);
-
   const [fontsLoaded] = useFonts({
     "Poppins-Regular": require("../assets/fonts/Poppins-Regular.ttf"),
     "Poppins-Medium": require("../assets/fonts/Poppins-Medium.ttf"),
@@ -33,42 +32,60 @@ export default function RootLayout() {
 
   useEffect(() => {
     async function prepare() {
-      await initI18n();
-      setAppReady(true);
-      SplashScreen.hideAsync();
+      try {
+        await initI18n();                    // ← only initializes i18n
+        socketService.initializeSocket();    // ← connect socket
+      } catch (e) {
+        console.warn("Init failed:", e);
+      } finally {
+        await SplashScreen.hideAsync();
+      }
     }
 
-    if (fontsLoaded) prepare();
+    if (fontsLoaded) {
+      prepare();
+    }
   }, [fontsLoaded]);
 
-  useEffect(()=>{
-   socketService.initializeSocket()
-  },[])
-
-  if (!appReady) return null;
+  // While loading → show native splash screen
+  if (!fontsLoaded) return null;
 
   return (
-     <Provider store={store}>
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-        <StatusBar barStyle="dark-content" backgroundColor="#000" />
-          <PaperProvider>
-            <I18nextProvider i18n={i18n}>
-                  <GestureHandlerRootView style={{ flex: 1 }}>
-                <Slot />
+    <Provider store={store}>
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+          <StatusBar barStyle="dark-content" backgroundColor="#000" />
+          <KeyboardAwareScrollView
+            contentContainerStyle={{
+              flexGrow: 1,
+              paddingBottom: 20,
+            }}
+            keyboardShouldPersistTaps="handled"
+            enableOnAndroid={true}
+            enableAutomaticScroll={true}
+            extraHeight={20}
+            extraScrollHeight={Platform.OS === "android" ? 20 : 0}
+            keyboardOpeningTime={250}
+            showsVerticalScrollIndicator={false}
+          >
+            <PaperProvider>
+              <I18nextProvider i18n={i18n}>
+                <GestureHandlerRootView style={{ flex: 1 }}>
+                  <Slot />
+                  <Toast />
                 </GestureHandlerRootView>
-            </I18nextProvider>
-          </PaperProvider>
-        <Toast />
-      </SafeAreaView>
-    </SafeAreaProvider>
+              </I18nextProvider>
+            </PaperProvider>
+          </KeyboardAwareScrollView>
+        </SafeAreaView>
+      </SafeAreaProvider>
     </Provider>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
-    backgroundColor: Colors?.white || "#fff",
+    backgroundColor: Colors.white ?? "#fff",
   },
 });

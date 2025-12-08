@@ -1,12 +1,14 @@
-// Posts.tsx (Optimized & Clean)
 import React, { useEffect, useState, useCallback } from 'react';
 import { FlatList, ActivityIndicator, RefreshControl, View, StyleSheet } from 'react-native';
 import { getallposts } from '../apis/apiService';
 import { showToast } from './GlobalToast';
-import TextBasedPost from './TextBasedPost';   // ← New
+import TextBasedPost from './TextBasedPost';
 import MediaBasedPost from './MediaBasedPost';
+import { useTranslation } from 'react-i18next';
+import Colors from '../utils/Colors';
 
 const Posts: React.FC = () => {
+    const { t } = useTranslation();
     const [posts, setPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -23,14 +25,26 @@ const Posts: React.FC = () => {
             const response = await getallposts({ page: pageNum, limit });
             if (response.success) {
                 const newPosts = response.data.hangoutsList || [];
-                setPosts(prev => (isRefresh || pageNum === 1 ? newPosts : [...prev, ...newPosts]));
+                // Remove duplicates based on ID
+                setPosts(prev => {
+                    if (isRefresh || pageNum === 1) {
+                        return newPosts;
+                    }
+
+                    // Filter out duplicates when appending
+                    const existingIds = new Set(prev.map((p: any) => p.id));
+                    const uniqueNewPosts = newPosts.filter((post: any) => !existingIds.has(post.id));
+                    return [...prev, ...uniqueNewPosts];
+                });
+
                 setHasMore(newPosts.length === limit);
                 setPage(pageNum);
             } else {
-                showToast.error('Error', response.message || 'Failed to load posts');
+                showToast.error(t('oops'), response.message);
             }
-        } catch {
-            showToast.error('Error', 'Something went wrong');
+        } catch (error) {
+            console.error('❌ Error fetching posts:', error);
+            showToast.error(t('oops'), t('somethingwentwrong'));
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -41,18 +55,35 @@ const Posts: React.FC = () => {
         fetchPosts(1, true);
     }, []);
 
-    const onRefresh = () => fetchPosts(1, true);
-    const onEndReached = () => !loading && hasMore && fetchPosts(page + 1);
+    const onRefresh = useCallback(() => {
+        setHasMore(true);
+        fetchPosts(1, true);
+    }, [fetchPosts]);
 
-    const renderItem = ({ item }: { item: any }) => {
-        const hasImages = item.imageUrls?.length > 0;
-        return hasImages ? <MediaBasedPost post={item} /> : <TextBasedPost post={item} />;
-    };
+    const onEndReached = useCallback(() => {
+        if (!loading && hasMore) {
+            fetchPosts(page + 1);
+        }
+    }, [loading, hasMore, page, fetchPosts]);
+
+    const renderItem = useCallback(({ item, index }: { item: any; index: number }) => {
+        const imageUrls = item.imageUrls || item.images || [];
+        const hasMedia = Array.isArray(imageUrls) && imageUrls.length > 0;
+        if (hasMedia) {
+            const normalizedPost = {
+                ...item,
+                imageUrls: imageUrls
+            };
+            return <MediaBasedPost post={normalizedPost} index={index} />;
+        } else {
+            return <TextBasedPost post={item} index={index} />;
+        }
+    }, []);
 
     if (loading && posts.length === 0) {
         return (
             <View style={styles.centerLoader}>
-                <ActivityIndicator size="large" color="#8DAF02" />
+                <ActivityIndicator size="small" color={Colors.lightGreen} />
             </View>
         );
     }
@@ -60,15 +91,22 @@ const Posts: React.FC = () => {
     return (
         <FlatList
             data={posts}
-            keyExtractor={item => item.id}
+            keyExtractor={(item, index) => `${item.id}-${index}`}
             renderItem={renderItem}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+            refreshControl={
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    colors={['#8DAF02']}
+                    tintColor="#8DAF02"
+                />
+            }
             onEndReached={onEndReached}
             onEndReachedThreshold={0.7}
             ListFooterComponent={
                 loading && posts.length > 0 ? (
                     <View style={styles.footerLoader}>
-                        <ActivityIndicator size="small" color="#8DAF02" />
+                        <ActivityIndicator size="small" color={Colors.lightGreen} />
                     </View>
                 ) : null
             }
@@ -76,13 +114,28 @@ const Posts: React.FC = () => {
             removeClippedSubviews={true}
             maxToRenderPerBatch={8}
             windowSize={21}
+            initialNumToRender={5}
+            contentContainerStyle={posts.length === 0 ? styles.emptyContainer : undefined}
         />
     );
 };
 
 const styles = StyleSheet.create({
-    centerLoader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    footerLoader: { paddingVertical: 20, alignItems: 'center' },
+    centerLoader: {
+        flex: 1,
+        marginTop:50,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    footerLoader: {
+        paddingVertical: 20,
+        alignItems: 'center',
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });
 
 export default Posts;

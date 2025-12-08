@@ -1,17 +1,16 @@
 // components/Cards/CategorySection.tsx
+import ShowContentCard from "@/src/components/ShowContentCard";
 import { RootState } from "@/src/redux/store";
 import { ChevronRight } from "lucide-react-native";
 import React from "react";
 import {
-    Dimensions,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { useSelector } from "react-redux";
-import ShowContentCard from "./ShowContentCard";
 
 const { height } = Dimensions.get("window");
 const isProMax = height >= 926;
@@ -55,18 +54,11 @@ const CategorySection: React.FC<CategorySectionProps> = ({
                 <ChevronRight size={20} color="#404040" />
               </TouchableOpacity>
             </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.scrollContent}
-              style={styles.scrollView}
-            >
               <ShowContentCard
                 keyId={item.id}
                 data={contentList[item.id] || {}}
-                headerName={item.Name || ""}
               />
-            </ScrollView>
+          
           </View>
         );
       })}

@@ -5,13 +5,11 @@ import { useEffect } from "react";
 import { I18nextProvider } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 
-import { login } from "@/src/apis/apiService";
 import AppContainer from "@/src/components/AppContainer";
 import CustomStatusBar from "@/src/components/CustomStatusBar";
 import { createTables } from "@/src/database/chatSchema";
 import { initI18n } from "@/src/localization/i18n";
 import Colors from "@/src/utils/Colors";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import Splash from "./onboarding/Splash";
 
 export default function Index() {
@@ -20,21 +18,10 @@ export default function Index() {
     const init = async () => {
       await initI18n();
 
-      // setTimeout(() => {
-      //   router.replace("/(bottomtab)/community/social");
-      // }, 2500);
-         setTimeout(async()=>{
-        // console.log("hello");
-      let data  =await login({email:"rishabhmaurya186@gmail.com",password:"Seekware@123"})
-      console.log("data: ", JSON.stringify(data?.data));
-      AsyncStorage.setItem("userDetails", JSON.stringify(data?.data));
-      await AsyncStorage.setItem("authToken", data?.data.authToken);
-      await AsyncStorage.setItem("userId", data?.data.id);
-      await AsyncStorage.setItem("shipId", data?.data.shipId);
-      await AsyncStorage.setItem("employerId", data?.data.employerId);
-
-        router.replace("/home");
-      },3000)
+      setTimeout(() => {
+        router.replace("/auth/Login");
+      }, 2500);
+      
     };
 
     init();

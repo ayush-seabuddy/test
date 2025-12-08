@@ -19,7 +19,7 @@ const Health = ({ }) => {
   return (
     <View style={styles.container}>
       <HealthHeader />
-       <ScrollView
+      <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={styles.contentContainerStyle}
         showsVerticalScrollIndicator={false}
@@ -27,7 +27,13 @@ const Health = ({ }) => {
 
         <WellnessCard />
         <AssessmentList />
-        <CategorySection   onCategoryPress={() => {router.push("/contentList")}}/>
+        <CategorySection onCategoryPress={(data) => {
+          router.push({
+            pathname: "/contentList",
+            params: { item: JSON.stringify(data) }  
+          });
+        }
+        } />
 
       </ScrollView>
     </View>

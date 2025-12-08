@@ -1,31 +1,32 @@
 
-import React, { useEffect } from 'react'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import { Image } from 'expo-image'
+import React, { useEffect, useState } from 'react'
 import {
   ScrollView,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
+  View,
 } from 'react-native'
-import { Image } from 'expo-image'
 import { useDispatch, useSelector } from 'react-redux'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 
+import { saveChatRooms } from '@/src/database/chatRoomService'
+import { updateOneFleetChat, updateOneShipChat } from '@/src/redux/chatListSlice'
 import { RootState } from '@/src/redux/store'
-import { updateFleetList, updateShipList } from '@/src/redux/chatListSlice'
 import { ChatRoom } from '@/src/screens/chat/types/chatRoom'
-import socketService from '@/src/utils/socketService'
-import { ImagesAssets } from '@/src/utils/ImageAssets'
 import Colors from '@/src/utils/Colors'
 import { formatChatTime, viewUserProfile } from '@/src/utils/helperFunctions'
-import { t } from 'i18next'
+import { ImagesAssets } from '@/src/utils/ImageAssets'
+import socketService from '@/src/utils/socketService'
 import { router } from 'expo-router'
-import { saveChatRooms } from '@/src/database/chatRoomService'
-import { db } from '@/src/database/chatDB'
+import { t } from 'i18next'
 
 const ChatLoungeList = () => {
   const dispatch = useDispatch()
   const { shipChatList, fleetChatList } = useSelector((state: RootState) => state.chatList)
+  const [shipList, setShipList] = useState([])
+  const [fleetList, setFleetList] = useState([])
 
   const loungeSections = [
     {
@@ -52,12 +53,18 @@ const ChatLoungeList = () => {
     socketService.emit('getAllGroupChatRooms', { userId, shipId })
     socketService.emit('getAllGroupChatRooms', { userId, employerId })
 
-    socketService.on('groupChatRooms', (data) =>
-      dispatch(updateShipList(data?.groupChatRooms || []))
+    socketService.on('groupChatRooms', (data) => {
+      data?.groupChatRooms?.map((item: ChatRoom) => {
+        dispatch(updateOneShipChat(item))
+      })
+      setShipList(data?.groupChatRooms || [])
+    }
     )
-    socketService.on('groupChatRoomsEmployer', (data) =>{
-      console.log("data: ", data);
-      dispatch(updateFleetList(data?.groupChatRooms || []))
+    socketService.on('groupChatRoomsEmployer', (data) => {
+      data?.groupChatRooms?.map((item: ChatRoom) => {
+        dispatch(updateOneFleetChat(item))
+      })
+      setFleetList(data?.groupChatRooms || [])
     }
     )
   }
@@ -70,18 +77,19 @@ const ChatLoungeList = () => {
     }
   }, [dispatch])
 
-  const renderChatRow = (room: ChatRoom) => {
+  const renderChatRow = (room: ChatRoom, index: number) => {
     const hasUnread = room.isUnReadMessage && room.unReadMessages > 0
     const lastMsg = room.lastMessage
     const handChatListPress = () => {
+      console.log("room.id: ", room.id);
       router.push({
-        pathname: '/chatroom',
-        params: { chatRoomDetails: JSON.stringify(room) },
+        pathname: `/chatroom/[chatRoomId]`,
+        params: { chatRoomId: room.id, chatRoomDetails: JSON.stringify(room) },
       })
     }
 
     return (
-      <TouchableOpacity key={room.id} style={styles.chatRow} onPress={handChatListPress}>
+      <TouchableOpacity key={index} style={styles.chatRow} onPress={handChatListPress} >
         <View style={styles.chatMiddle}>
           <Text
             style={[styles.groupName, hasUnread && styles.groupNameUnread]}
@@ -100,9 +108,9 @@ const ChatLoungeList = () => {
             {lastMsg?.messageType !== 'MESSAGE'
               ? lastMsg?.messageType
               : (lastMsg?.content || '')
-                  .replace(/\n/g, ' ')
-                  .trim()
-                  .slice(0, 35) + (lastMsg?.content?.trim().length > 35 ? '...' : '')}
+                .replace(/\n/g, ' ')
+                .trim()
+                .slice(0, 35) + (lastMsg?.content?.trim().length > 35 ? '...' : '')}
           </Text>
         </View>
 
@@ -125,19 +133,19 @@ const ChatLoungeList = () => {
     )
   }
 
-  useEffect(()=>{
-    let chatList = [...shipChatList,...fleetChatList];
-    console.log("chatList: ", chatList.length);
-    if(chatList.length > 0){
+  useEffect(() => {
+    let chatList = [...shipList, ...fleetList];
+
+    if (chatList.length > 0) {
       saveChatRooms(chatList);
     }
 
-    
-  },[shipChatList,fleetChatList])
+
+  }, [shipList, fleetList])
 
   useEffect(() => {
     viewUserProfile(dispatch)
-  },[])
+  }, [])
 
   return (
     <ScrollView
@@ -149,7 +157,6 @@ const ChatLoungeList = () => {
 
         return (
           <View key={section.title} style={styles.sectionContainer}>
-            {/* Section Header */}
             <View style={styles.sectionHeader}>
               <Image
                 source={section.icon}
@@ -163,7 +170,7 @@ const ChatLoungeList = () => {
               </View>
             </View>
             <View style={styles.chatRowContainer}>
-            {section.rooms.map(renderChatRow)}
+              {section.rooms.map(renderChatRow)}
             </View>
           </View>
         )
@@ -217,7 +224,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     borderColor: '#e0e0e0',
   },
-  chatMiddle: { flex: 1 ,},
+  chatMiddle: { flex: 1, },
   groupName: {
     fontSize: 16,
     fontFamily: 'WhyteInktrap-Bold',

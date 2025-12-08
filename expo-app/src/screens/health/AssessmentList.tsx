@@ -8,6 +8,7 @@ import Colors from '@/src/utils/Colors';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
+import { router } from 'expo-router';
 import { t } from 'i18next';
 import { ArrowUpRight, ChevronDown, ChevronUp, TriangleAlert } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -168,6 +169,16 @@ const AssessmentList = () => {
   },[])
 
 
+  const handleHappinessPress = () => {
+    const path = profileDetails?.isHappinessIndex == true ? "/monthlyhappinessindex" : "/monthlyhappinessindex/AllAssessmentResultListing";
+    router.push(path);
+  }
+
+  const handlePOMSPress = () => {
+    router.push("/monthlywellbeingpulse");
+  }
+
+
 
   return (
     <View>
@@ -217,7 +228,7 @@ const AssessmentList = () => {
 
         <View style={{ marginBottom: 15 }}>
           <Pressable style={styles.frameParent}
-          //   onPress={handleHappinessPress}
+            onPress={handleHappinessPress}
           >
             <View style={[styles.frameGroup, styles.frameGroupFlexBox]}>
               <Image style={styles.frameChild} resizeMode="cover" source={ImagesAssets.Happiness} />
@@ -264,7 +275,7 @@ const AssessmentList = () => {
 
         <View style={{ marginBottom: 15 }}>
           <Pressable style={styles.frameParent}
-          //   onPress={handlePOMSPress}
+            onPress={handlePOMSPress}
           >
             <View style={[styles.frameGroup, styles.frameGroupFlexBox]}>
               <Image style={styles.frameChild} resizeMode="cover" source={ImagesAssets.POMS} />
