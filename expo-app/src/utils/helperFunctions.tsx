@@ -125,19 +125,19 @@ export const getChatList = async (dispatch: any) => {
   });
 };
 
-export  const formatDateSeparator = (date: Date|string) => {
-    const messageDate = moment(date).local().startOf("day");
-    const today = moment().local().startOf("day");
-    const yesterday = moment().local().subtract(1, "days").startOf("day");
+export const formatDateSeparator = (date: Date | string) => {
+  const messageDate = moment(date).local().startOf("day");
+  const today = moment().local().startOf("day");
+  const yesterday = moment().local().subtract(1, "days").startOf("day");
 
-    if (messageDate.isSame(today, "day")) {
-      return "Today";
-    } else if (messageDate.isSame(yesterday, "day")) {
-      return "Yesterday";
-    } else {
-      return messageDate.format("DD/MM/YYYY");
-    }
-  };
+  if (messageDate.isSame(today, "day")) {
+    return "Today";
+  } else if (messageDate.isSame(yesterday, "day")) {
+    return "Yesterday";
+  } else {
+    return messageDate.format("DD/MM/YYYY");
+  }
+};
 
 
 
@@ -154,7 +154,7 @@ export const viewUserProfile = async (dispatch: any) => {
     if (!userProfileDetails || !userProfileDetails.data) return
 
     const updatedUserDetails = {
-      ...userDetails,...userProfileDetails.data
+      ...userDetails, ...userProfileDetails.data
     };
 
     if (userProfileDetails.data?.shipId) {
@@ -167,9 +167,26 @@ export const viewUserProfile = async (dispatch: any) => {
   }
 
 
-   setImmediate(() => {
-      updateUserDetails()
-    });
+  setImmediate(() => {
+    updateUserDetails()
+  });
 
-    return userProfileDetails
+  return userProfileDetails
+}
+
+// 🔹 Format DATE like → 07 Dec 2025, 12:31 AM
+export const formatDate = (date: string) => {
+  const d = new Date(date);
+  return d.toLocaleString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  }).replace(',', ''); // removes comma between date & time
+}
+
+export const formatStatus = (status: string) => {
+  return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 }

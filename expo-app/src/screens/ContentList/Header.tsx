@@ -2,7 +2,7 @@ import { router } from "expo-router";
 import { ChevronDown, ChevronLeft } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
-  Dimensions, Platform,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -41,7 +41,6 @@ const Header = ({  title, setContentType }: { title: string; setContentType: (co
   };
 
   return (
-    <View style={{ height: 60, flex:1 , flexDirection:"column", width: Dimensions.get("window").width}}>
     <View style={styles.container}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
         <TouchableOpacity 
@@ -82,16 +81,7 @@ const Header = ({  title, setContentType }: { title: string; setContentType: (co
       </View>
       
     </View>
-    <View style={{ height: 1 , ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.5,
-      },
-      android: { elevation: 5 },
-    }), backgroundColor: "#FFFFFF" , width: "100%"}} />
-    </View>
+ 
   );
 };
 

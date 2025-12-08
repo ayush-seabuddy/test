@@ -19,14 +19,17 @@ export const ENDPOINTS = {
   VERIFYOTP: `${BASE_URL}/user/verifyOtp`,
   RESETPASSWORD: `${BASE_URL}/user/resetPassword`,
   UPLOADFILE: `${BASE_URL}/user/uploadFile`,
-  GETALLCOUNTRIES:`${BASE_URL}/user/getAllCountries`,
-  UPDATEPROFILE:`${BASE_URL}/user/updateProfile`,
-  GETALLASSESSMENTS:`${BASE_URL}/user/getAssessmentQuestions`,
-  GETALLASSESSMENTSRESULT:`${BASE_URL}/user/getAssessmentResult`,
-  SAVEASSESSMENTRESPONSE:`${BASE_URL}/user/saveAssessmentResponses`,
-  GETASSESSMENTRESPONSELIST:`${BASE_URL}/user/getAssessmentResponseList`,
-  GETALLCONTENTS:`${BASE_URL}/content/getAllContents`,
+  GETALLCOUNTRIES: `${BASE_URL}/user/getAllCountries`,
+  UPDATEPROFILE: `${BASE_URL}/user/updateProfile`,
+  GETALLASSESSMENTS: `${BASE_URL}/user/getAssessmentQuestions`,
+  GETALLASSESSMENTSRESULT: `${BASE_URL}/user/getAssessmentResult`,
+  SAVEASSESSMENTRESPONSE: `${BASE_URL}/user/saveAssessmentResponses`,
+  GETASSESSMENTRESPONSELIST: `${BASE_URL}/user/getAssessmentResponseList`,
+  GETALLCONTENTS: `${BASE_URL}/content/getAllContents`,
   GETALLPOSTS: `${BASE_URL}/user/getAllHangoutPost`,
+  UPDATEPOST: `${BASE_URL}/user/updateHangoutPost`,
+  LIKEPOST: `${BASE_URL}/user/likeCommentHangoutPost`,
+  GETALLCOMMENTS: `${BASE_URL}/user/getAllHangoutPostComments`,
   VIEW_PROFILE: `${BASE_URL}/user/viewUserProfile`,
   GET_ALL_HELPLINES: `${BASE_URL}/helpline/getAllHelplines`,
   VIEW_USER_TEST: `${BASE_URL}/user/viewUserTest`, 
@@ -37,7 +40,15 @@ export const ENDPOINTS = {
   GET_REACTIONS_ON_MESSAGE:`${BASE_URL}/user/getReactionsOnMessage`,
   GET_RECOMMENDED_CONTENTS:`${BASE_URL}/content/getRecommendedContents`,
 
-};
 
 
  
+  GETALLHELPLINES: `${BASE_URL}/helpline/getAllHelplines`,
+  GETHELPLINEFORMQUESTIONS: `${BASE_URL}/helpline/getAllHelplineFormQuestions`,
+  SUBMITHELPLINEANSWER: `${BASE_URL}/helpline/addHelplineFormAnswers`,
+  GETALLCOMPLAINTHISTORY: `${BASE_URL}/helpline/getAllHelplineSubmittedForms`,
+  GETHELPLINEANSWER: `${BASE_URL}/helpline/getOneHelplineFormAnswers`,
+  GetAllAdminBuddyUpEvents: `${BASE_URL}/activity/getAllGroupActivityCategories`,
+  GETUSERLEADERBOARD:`${BASE_URL}/user/getUserLeaderBoard`,
+
+};

@@ -15,14 +15,14 @@ const { width, height } = Dimensions.get("window");
 
 type CustomLottieProps = {
   type?: "default" | "fullscreen";
-  componetHeight?: number;
+  componentHeight?: number;
   isBlurView?: boolean;
   customSyle?: StyleProp<ViewStyle>;
 };
 
 const CustomLottie: React.FC<CustomLottieProps> = ({
   type = "default",
-  componetHeight,
+  componentHeight,
   isBlurView = true,
   customSyle,
 }) => {
@@ -33,7 +33,7 @@ const CustomLottie: React.FC<CustomLottieProps> = ({
     },
     lottieContainer: {
       width: width,
-      height: componetHeight ?? height * 0.68,
+      height: componentHeight ?? height * 0.68,
       borderTopLeftRadius: 25,
       borderTopRightRadius: 25,
       overflow: "hidden",

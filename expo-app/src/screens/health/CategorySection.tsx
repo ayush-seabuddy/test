@@ -69,13 +69,14 @@ const CategorySection: React.FC<CategorySectionProps> = ({
 const styles = StyleSheet.create({
   sectionContainer: {
     marginBottom: 20,
+     paddingHorizontal: 15,
   },
   header: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 15,
+    // paddingHorizontal: 15,
   },
   categoryTitle: {
     fontSize: isProMax ? 16 : 15,

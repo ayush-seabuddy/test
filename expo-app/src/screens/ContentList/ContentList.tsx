@@ -197,7 +197,7 @@ const ContentList = () => {
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.row}
-        contentContainerStyle={[styles.listContent, { flexGrow: 1 }]}
+        contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         onEndReached={loadMoreItems}
         onEndReachedThreshold={0.5}
@@ -219,8 +219,10 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 12,
-    paddingTop: 65,
-    flexGrow: 1
+    // paddingTop: 65,
+    flexGrow: 1,
+    flex:1,
+    // backgroundColor:"red"
   },
   row: {
     justifyContent: 'space-between',

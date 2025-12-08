@@ -49,6 +49,16 @@
         }
       ],
       [
+        "expo-build-properties",
+        {
+          "android": {
+            "extraMavenRepos": [],
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35
+          }
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
@@ -71,6 +81,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "env": "local",
+      "router": {},
+      "eas": {
+        "projectId": "460b0d77-860d-4116-a777-adae29e8089d"
+      }
     }
   }
 }
