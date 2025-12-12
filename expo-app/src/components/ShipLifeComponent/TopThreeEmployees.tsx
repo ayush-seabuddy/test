@@ -40,9 +40,13 @@ const TopThreeEmployees = ({ topEmployee }: { topEmployee: TopEmployee[] }) => {
         />
       )}
 
-      <View style={styles.rightArrow}>
+      <TouchableOpacity style={styles.rightArrow}
+      onPress={()=>{
+        router.push('/leaderboard')
+      }}
+      >
         <ArrowRight size={24} />
-      </View>
+      </TouchableOpacity>
     </View>
   )
 }
@@ -50,7 +54,7 @@ const TopThreeEmployees = ({ topEmployee }: { topEmployee: TopEmployee[] }) => {
 export default TopThreeEmployees;
 
 const styles = StyleSheet.create({
-  topEmployeeView: { flexDirection: 'column', marginRight: 20, justifyContent: 'center', alignItems: 'center' },
+  topEmployeeView: { flexDirection: 'column', marginRight: 20, marginTop: 5, justifyContent: 'center', alignItems: 'center' },
   topEmployeeImage: { height: 65, width: 65, borderRadius: 50, marginBottom: 10 },
   topEmployeeName: { textAlign: 'center', fontFamily: 'Poppins-Regular', fontSize: 10 },
   rightArrow: { marginBottom: 37 }

@@ -10,15 +10,15 @@ interface BuddyUpEvent {
 
 const bgColors = ["#FFA754", "#72BEFF", "#7153FE", "#FF7942", "#4F71FF", "#FE5F5E"];
 
-const BuddyUpEvents = ({ buddyupEvent }: { buddyupEvent: BuddyUpEvent[] }) => {
+const AdminBuddyUpCategory = ({ buddyupCategory }: { buddyupCategory: BuddyUpEvent[] }) => {
   const flatListRef = useRef<FlatList>(null);
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    if (buddyupEvent.length === 0) return;
+    if (buddyupCategory.length === 0) return;
 
     const interval = setInterval(() => {
-      const nextIndex = (index + 1) % buddyupEvent.length;
+      const nextIndex = (index + 1) % buddyupCategory.length;
       setIndex(nextIndex);
 
       flatListRef.current?.scrollToIndex({
@@ -28,27 +28,29 @@ const BuddyUpEvents = ({ buddyupEvent }: { buddyupEvent: BuddyUpEvent[] }) => {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [index, buddyupEvent.length]);
+  }, [index, buddyupCategory.length]);
 
   return (
-    <FlatList
-      ref={flatListRef}
-      data={buddyupEvent}
-      horizontal
-      keyExtractor={item => item.id}
-      showsHorizontalScrollIndicator={false}
-      pagingEnabled
-      renderItem={({ item, index }) => (
-        <View style={[styles.buddyupeventsView, { backgroundColor: bgColors[index % bgColors.length] }]}>
-          <Image source={item.categoryImage} style={styles.buddyupeventImage} />
-          <Text style={styles.buddyupeventName}>{item.categoryName}</Text>
-        </View>
-      )}
-    />
+    <View>
+      <FlatList
+        ref={flatListRef}
+        data={buddyupCategory}
+        horizontal
+        keyExtractor={item => item.id}
+        showsHorizontalScrollIndicator={false}
+        pagingEnabled
+        renderItem={({ item, index }) => (
+          <View style={[styles.buddyupeventsView, { backgroundColor: bgColors[index % bgColors.length] }]}>
+            <Image source={item.categoryImage} style={styles.buddyupeventImage} />
+            <Text style={styles.buddyupeventName}>{item.categoryName}</Text>
+          </View>
+        )}
+      />
+    </View>
   );
 };
 
-export default BuddyUpEvents;
+export default AdminBuddyUpCategory;
 
 const styles = StyleSheet.create({
   buddyupeventsView: {

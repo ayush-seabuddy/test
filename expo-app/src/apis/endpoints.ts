@@ -37,7 +37,10 @@ export const ENDPOINTS = {
   SUBMITHELPLINEANSWER: `${BASE_URL}/helpline/addHelplineFormAnswers`,
   GETALLCOMPLAINTHISTORY: `${BASE_URL}/helpline/getAllHelplineSubmittedForms`,
   GETHELPLINEANSWER: `${BASE_URL}/helpline/getOneHelplineFormAnswers`,
-  GetAllAdminBuddyUpEvents: `${BASE_URL}/activity/getAllGroupActivityCategories`,
-  GETUSERLEADERBOARD:`${BASE_URL}/user/getUserLeaderBoard`,
+  GETALLADMINBUDDYUPCATEGORY: `${BASE_URL}/activity/getAllGroupActivityCategories`,
+  GETUSERLEADERBOARD: `${BASE_URL}/user/getUserLeaderBoard`,
+  GETALLBUDDYUPEVENTS: `${BASE_URL}/activity/getAllGroupActivity`,
+  EDITDELETEBUDDYUPEVENTS: `${BASE_URL}/activity/addUpdateGroupActivity`,
+  VIEWBUDDYUPDETAILS: `${BASE_URL}/activity/viewGroupActivityDetails`,
 
 };

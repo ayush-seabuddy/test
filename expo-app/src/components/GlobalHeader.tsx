@@ -14,8 +14,8 @@ interface GlobalHeaderProps {
   title?: string;
   onLeftPress?: () => void;
   onRightPress?: () => void;
-  leftIcon?: ReactNode; 
-  rightIcon?: ReactNode; 
+  leftIcon?: ReactNode;
+  rightIcon?: ReactNode;
   containerStyle?: ViewStyle;
   titleStyle?: TextStyle;
   showShadow?: boolean;
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 3 }, 
+        shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.12,
         shadowRadius: 3.5,
       },
@@ -90,13 +90,14 @@ const styles = StyleSheet.create({
         elevation: 0,
       },
     }),
-    borderBottomWidth: StyleSheet.hairlineWidth, 
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: Colors.background,
   },
 
   iconContainer: {
     width: 45,
     height: 45,
+    marginLeft: 10,
     justifyContent: "center",
     alignItems: "center",
   },
