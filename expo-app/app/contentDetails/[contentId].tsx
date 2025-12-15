@@ -1,4 +1,6 @@
 import { viewContentDetails } from '@/src/apis/apiService';
+import ArticleDetails from '@/src/screens/ContentDetails/ArticleDetails';
+import AudioDetails from '@/src/screens/ContentDetails/AudioDetails';
 import VideoDetails from '@/src/screens/ContentDetails/VideoDetails';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -36,6 +38,7 @@ const ContentDetailsScreen = () => {
 
   const { contentId } = useLocalSearchParams();
   const [data, setData] = useState<Content | null>(null);
+  console.log("data: sdfsdlfsd", data);
   const [loading, setLoading] = useState<boolean>(true);
 
   const getVideoDetail = async () => {
@@ -86,13 +89,14 @@ const ContentDetailsScreen = () => {
   // 🟢 **Render based on content type**
   switch (data.contentType) {
     case "ARTICLE":
-      return <VideoDetails data={data} />;
-
+      return <ArticleDetails data={data} />;
+   case "ANNOUNCEMENT":
+      return <ArticleDetails data={data} />;
     case "VIDEO":
       return <VideoDetails data={data} />;
 
-    case "AUDIO":
-      return <VideoDetails data={data} />;
+    case "MUSIC":
+      return <AudioDetails data={data} />;
 
     default:
       return <VideoDetails data={data} />;

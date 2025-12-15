@@ -61,6 +61,7 @@ const ChatLoungeList = () => {
     }
     )
     socketService.on('groupChatRoomsEmployer', (data) => {
+      console.log("data: ", JSON.stringify(data));
       data?.groupChatRooms?.map((item: ChatRoom) => {
         dispatch(updateOneFleetChat(item))
       })

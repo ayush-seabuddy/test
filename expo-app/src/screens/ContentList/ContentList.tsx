@@ -25,10 +25,11 @@ const ContentList = () => {
   const { item } = useLocalSearchParams();
   const data2 = typeof item === "string" ? JSON.parse(item) : null;
   const [data, setData] = useState<any[]>([]);
-  console.log("data: dlfdsklfsdklf", data.length);
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(true);
+  console.log("loading: ", loading);
+  const [hasMore, setHasMore] = useState(false);
+  const [contentType, setContentType] = useState<string>("")
 
 
   const getContentTypeConfig = (contentType: 'ARTICLE' | 'VIDEO' | 'MUSIC') => {
@@ -131,12 +132,10 @@ const ContentList = () => {
         page: page,
         limit: perPage,
         subCategory: data2?.id,
-        contentType: "VIDEO"
-
+        ...(contentType && { contentType }),
       })
       if (response.data) {
         const { allContents, ...details } = response.data
-        console.log("response.data: details", details, allContents);
         if (response.data.totalPages > page) {
           setHasMore(true)
         } else {
@@ -157,8 +156,22 @@ const ContentList = () => {
   };
 
   React.useEffect(() => {
-    loadMoreItems();
-  }, []);
+    getData();
+  }, [contentType]);
+
+  const getData = async () => {
+    try {
+      setLoading(true);
+      const newData = await generateDummyData(1);
+      setData(newData);
+    } catch (error) {
+
+    } finally {
+      setLoading(false)
+    }
+
+  };
+
 
   const loadMoreItems = () => {
     if (loading || !hasMore) return;
@@ -190,7 +203,7 @@ const ContentList = () => {
   return (
     <View style={styles.container}>
 
-      <Header title={t("contentList")} setContentType={() => { }} />
+      <Header title={t("contentList")} setContentType={setContentType} />
       <FlatList
         data={data}
         renderItem={RenderData}
@@ -203,8 +216,10 @@ const ContentList = () => {
         onEndReachedThreshold={0.5}
         ListFooterComponent={renderFooter}
         ListEmptyComponent={
+
           <View style={styles.empty}>
-            <Text>No cars found</Text>
+
+            {loading ? <ActivityIndicator size="large" color="#000" /> : <Text>No cars found</Text>}
           </View>
         }
       />
@@ -221,7 +236,7 @@ const styles = StyleSheet.create({
     padding: 12,
     // paddingTop: 65,
     flexGrow: 1,
-    flex:1,
+    flex: 1,
     // backgroundColor:"red"
   },
   row: {

@@ -48,7 +48,9 @@ const CategorySection: React.FC<CategorySectionProps> = ({
             <View style={styles.header}>
               <View>
                 <Text style={styles.categoryTitle}>{mainTitle}</Text>
-                {subtitle && <Text style={styles.categorySub}>{subtitle}</Text>}
+                 {item.description && (
+            <Text style={styles.categorySub}>{item.description}</Text>
+          )}
               </View>
               <TouchableOpacity onPress={() => onCategoryPress(item)}>
                 <ChevronRight size={20} color="#404040" />
@@ -84,6 +86,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     fontFamily: "Poppins-SemiBold",
     color: "#404040",
+  
   },
   categorySub: {
     fontSize: isProMax ? 13 : 12,
@@ -91,6 +94,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     fontFamily: "Poppins-Regular",
     color: "#404040",
+      marginBottom: 10
   },
   scrollView: {
     marginTop: 10,

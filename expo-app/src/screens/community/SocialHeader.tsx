@@ -1,20 +1,18 @@
 // CustomHeader.js
-import React, { useCallback, useEffect, useState } from "react";
+import Colors from "@/src/utils/Colors";
+import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { useNavigation } from "@react-navigation/native";
+import { router } from "expo-router";
+import { House } from "lucide-react-native";
+import React, { useState } from "react";
 import {
-  View,
+  Image,
+  Platform,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  Platform,
-  Image,
-  TextInput,
+  View
 } from "react-native";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ImagesAssets } from "@/src/utils/ImageAssets";
-import Colors from "@/src/utils/Colors";
-import { House } from "lucide-react-native";
-import { router } from "expo-router";
 
 const SocialHeader = () => {
   const navigation = useNavigation();
@@ -86,7 +84,7 @@ return (
         </TouchableOpacity>
 
         {/* Company Library */}
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => router.push("/company-library")}>
           <View style={styles.iconWrapper}>
             <Image source={ImagesAssets.companyLibraryLogo} style={styles.iconImage} />
           </View>

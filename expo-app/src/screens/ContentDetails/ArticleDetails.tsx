@@ -12,41 +12,64 @@ import {
 
 import { getRecommendedContents } from "@/src/apis/apiService";
 import GlobalHeader from "@/src/components/GlobalHeader";
-import VideoPlayer from "@/src/components/VideoPlayer";
+import MediaPreviewModal from "@/src/components/Modals/MediaPreviewModal";
+import PDFModal from "@/src/components/Modals/PDFModal";
 import Colors from "@/src/utils/Colors";
 import { Video } from "expo-av";
 import { BlurView } from "expo-blur";
-import { router, useLocalSearchParams } from "expo-router";
+import { ImageBackground } from "expo-image";
+import { router } from "expo-router";
+import { t } from "i18next";
 import { ChevronLeft } from "lucide-react-native";
-import { ActivityIndicator, Modal } from "react-native-paper";
-import RelatedContentCard from "./RelatedContentCard";
+import { Modal } from "react-native-paper";
+import RelatedVideosCard from "./RelatedContentCard";
 import { Content } from "./type";
 
-interface ContentDetails {
-  id: string;
-  contentTitle?: string;
-  description?: string;
-  contentUrl?: string[];
-  createdAt?: string;
-}
 
-export default function VideosDetails({data:fullDetails}:{data:Content}) {
-  const { dataItem, fromHome } = useLocalSearchParams<{
-    dataItem: string;
-    fromHome?: string;
-  }>();
+const { width, height } = Dimensions.get("window");
+
+export default function ArticleDetails({ data: fullDetails }: { data: Content }) {
+  console.log("fullDetails: ", fullDetails);
+
 
   const [notificationDetailModalVisible, setNotificationDetailModalVisible] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState<any>(null);
   const [RecommendedData, setRecommendedData] = useState<any[]>([]);
   const [fullscreen, setFullscreen] = useState(false);
   const [loading, setLoading] = useState(false);
-
   const scrollViewRef = useRef<ScrollView>(null);
   const videoRef = useRef<Video>(null);
   const appState = useRef(AppState.currentState);
+  const [pdfModalVisible, setPdfModalVisible] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState("");
+  const [pdfTitle, setPdfTitle] = useState("App Guide");
+  const [mediaPreviewVisible, setMediaPreviewVisible] = useState<boolean>(false);
+  const [mediaUri, setMediaUri] = useState<string>("");
 
- 
+  const handleOpenPDF: (url: string, title: string) => void = (url, title) => {
+    setPdfUrl(url);
+    setPdfTitle(title);
+    setPdfModalVisible(true);
+  };
+
+  const showMediaPreview = (uri: string) => {
+    setMediaUri(uri);
+    setMediaPreviewVisible(true);
+  };
+  const handleClosePDF = () => {
+    setPdfModalVisible(false);
+    setPdfUrl("");
+    setPdfTitle("App Guide");
+  };
+
+  const handleContentToggle = (item: string) => {
+    if (item.toLowerCase().endsWith(".pdf")) {
+      handleOpenPDF(item, "Article");
+    }
+    else {
+      showMediaPreview(item);
+    }
+  };
   useEffect(() => {
     const subscription = AppState.addEventListener("change", async (nextAppState) => {
       if (appState.current === "active" && nextAppState !== "active") {
@@ -61,7 +84,6 @@ export default function VideosDetails({data:fullDetails}:{data:Content}) {
     };
   }, []);
 
-  // ✅ Recommended Videos
   useEffect(() => {
     async function getRecommended() {
       if (!fullDetails?.id) return;
@@ -102,37 +124,17 @@ export default function VideosDetails({data:fullDetails}:{data:Content}) {
         title={fullDetails?.contentTitle}
         leftIcon={<ChevronLeft />}
         onLeftPress={() => router.back()}
-         />
+      />
+
+
+      <ImageBackground
+        source={{ uri: fullDetails?.thumbnail }}
+        style={styles.headerImage}
+        resizeMode="cover"
+      />
 
 
 
-      {/* Video Player */}
-      <View style={{ flex: fullscreen ? 1 : 0 }}>
-        {loading && (
-          <ActivityIndicator
-            size="large"
-            color={Colors.primary}
-            style={{ position: "absolute", top: "40%", left: "40%", zIndex: 2 }}
-          />
-        )}
-       <VideoPlayer uri={fullDetails?.contentUrl[0]} />
-        {/* <Video
-          ref={videoRef}
-          source={{ uri: fullDetails?.contentUrl?.[0] || "" }}
-          style={[
-            styles.video,
-            fullscreen && { width: "100%", height: "100%" },
-          ]}
-          useNativeControls
-          // resizeMode="contain"
-          onLoadStart={() => setLoading(true)}
-          onLoad={() => setLoading(false)}
-          onError={(e) => console.log("Video Error:", e)}
-          onFullscreenUpdate={(e) => {
-            setFullscreen(e.fullscreenUpdate === 1);
-          }}
-        /> */}
-      </View>
 
       {/* Content Scroll */}
       <ScrollView
@@ -147,24 +149,45 @@ export default function VideosDetails({data:fullDetails}:{data:Content}) {
               <View style={styles.frameContent}>
                 <Text style={styles.title}>{fullDetails?.contentTitle}</Text>
                 <Text style={styles.description}>{fullDetails?.description}</Text>
-                <Text style={styles.postedOn}>Posted on - {getRelativeTime(fullDetails?.createdAt)}</Text>
+                <Text style={styles.postedOn}><Text style={styles.postedOnText}>Posted on: </Text>{getRelativeTime(fullDetails?.createdAt)}</Text>
               </View>
             </View>
           </View>
         </View>
+        <View style={styles.cardContainer}>
+          <View style={styles.frameContainer}>
+            <Text style={styles.title}>{t("Contents")}</Text>
+            <View style={styles.frameParent}>
+              {fullDetails?.contentUrl?.map((item: any, index: number) => (
+                <TouchableOpacity
+                  style={styles.pdfButton}
+                  onPress={() => handleContentToggle(item)}
+                  key={index}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.pdfButtonText}>
+                    Click to view {item.toLowerCase().endsWith(".pdf") ? "PDF" : "Image"}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+          </View>
+        </View>
 
         {/* Related Videos */}
-        {RecommendedData.length > 0 && (
-          <>
-            <Text style={styles.relatedTitle}>Related Videos</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.relatedContentContainer}>
-              <RelatedContentCard
+        <View style={{ paddingHorizontal: 16 }}>
+          {RecommendedData.length > 0 && (
+            <>
+              <Text style={styles.relatedTitle}>{t("otherRecommendedArticles")}</Text>
+
+              <RelatedVideosCard
                 data={RecommendedData}
                 onArticleClick={() => scrollViewRef.current?.scrollTo({ y: 0, animated: true })}
               />
-            </ScrollView>
-          </>
-        )}
+            </>
+          )}
+        </View>
       </ScrollView>
 
       {/* Fallback Modal */}
@@ -184,6 +207,21 @@ export default function VideosDetails({data:fullDetails}:{data:Content}) {
           </TouchableOpacity>
         </View>
       </Modal>
+
+      <PDFModal
+        visible={pdfModalVisible}
+        onClose={handleClosePDF}
+        pdfUrl={pdfUrl}
+        title={pdfTitle}
+      />
+      {mediaPreviewVisible && (
+        <MediaPreviewModal
+          onClose={() => setMediaPreviewVisible(false)}
+          visible={mediaPreviewVisible}
+          type="image"
+          uri={mediaUri}
+        />
+      )}
     </View>
   );
 }
@@ -197,11 +235,11 @@ const styles = StyleSheet.create({
     width: "100%",
     height: Dimensions.get("window").height * 0.25,
   },
-  scrollViewContent: { paddingBottom: 100 },
-  cardContainer: { padding: 16 },
+  scrollViewContent: { paddingBottom: 100, paddingTop: height * 0.2 },
+  cardContainer: { paddingHorizontal: 16, paddingVertical: 4 },
   frameWrapper: { width: "100%" },
   frameContainer: {
-    backgroundColor: "rgba(197, 197, 197, 0.6)",
+    backgroundColor: "rgb(197, 197, 197)",
     borderRadius: 12,
     overflow: "hidden",
     padding: 16,
@@ -215,15 +253,18 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     fontFamily: "Poppins-Regular",
-    lineHeight:22,
+    lineHeight: 22,
     color: "#444",
+    marginVertical: 20
   },
   postedOn: { fontSize: 12, color: "#06361f" },
   relatedTitle: {
     marginTop: 20,
-    marginLeft: 16,
     fontSize: 18,
     fontWeight: "600",
+  },
+  postedOnText: {
+
   },
   modalBox: {
     padding: 20,
@@ -242,7 +283,43 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   closeText: { color: "#fff", fontWeight: "700" },
-  relatedContentContainer:{paddingHorizontal:16}
+  relatedContentContainer: { paddingHorizontal: 16 },
+  headerImage: {
+    width: '100%',
+    height: height * 0.3,
+    position: 'absolute',
+    top: 51,
+    left: 0,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    overflow: 'hidden',
+  },
+  frameParent: {
+    flexWrap: "wrap",
+    alignContent: "flex-start",
+    flexDirection: "row",
+    alignSelf: "stretch",
+    gap: 12,
+    width: "100%",
+    marginTop: 10
+  },
+  pdfButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+    backgroundColor: "#F0F0F0",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ccc",
+  },
+  pdfButtonText: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: "#333",
+    fontFamily: "Poppins-SemiBold",
+    textAlign: "center",
+  },
 });
 
 
