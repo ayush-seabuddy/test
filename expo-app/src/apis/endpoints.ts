@@ -43,6 +43,6 @@ export const ENDPOINTS = {
   VIEWBUDDYUPDETAILS: `${BASE_URL}/activity/viewGroupActivityDetails`,
   LISTALLUSERSFORTAG:`${BASE_URL}/user/listAllUsersForTag`,
   CREATEPOST:`${BASE_URL}/user/createHangoutPost`,
-  UPDATEPOST:`${BASE_URL}/user/updateHangoutPostById`
+  UPDATEPOST:`${BASE_URL}/user/updateHangoutPost`,
 
 };

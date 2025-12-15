@@ -63,12 +63,8 @@ const BuddyUpEventCard = ({
             setloading(false)
 
             if (apiResponse.success && apiResponse.status === 200) {
-
                 setEventList(prev => prev.filter(item => item.id !== eventId))
-
-                // Notify parent component to update its state
                 onEventDeleted?.(eventId)
-
                 showToast.success(t("success"), apiResponse.message)
             } else {
                 showToast.error(t("oops"), apiResponse.message)
