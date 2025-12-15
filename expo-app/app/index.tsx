@@ -19,7 +19,7 @@ export default function Index() {
       await initI18n();
 
       setTimeout(() => {
-        router.replace("/community/social");
+        router.replace("/(bottomtab)/community/social");
       }, 2500);
       //    setTimeout(async()=>{
       //   // console.log("hello");

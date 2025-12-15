@@ -82,6 +82,19 @@ export interface EditDeleteBuddyUpEventRequest {
   }[];
 }
 
+export interface Hangout {
+  imageUrls?: string[];
+  caption: string;
+  tags?: string[];
+  hashtags?: string[];
+  ratioValue?: string;
+  imageresizeMode?: string;
+  createdAt?: string;
+}
+
+export interface CreatePostRequest {
+  hangouts: Hangout[];
+}
 
 export interface SubmitHelplineAnswerRequest {
   helplineId: string;
@@ -214,6 +227,10 @@ export interface GetAllBuddyUpEventParams {
 
 export interface ViewBuddyUpDetailsParams {
   eventId: string
+}
+
+export interface ListAllUsersForTagParams {
+  shipId: string
 }
 
 export interface GetLeaderboardParams {
@@ -484,5 +501,23 @@ export const viewbuddyupdetails = async (params?: ViewBuddyUpDetailsParams): Pro
     method: "GET",
     url: ENDPOINTS.VIEWBUDDYUPDETAILS,
     params,
+  });
+};
+
+export const listallusersfortag = async (params?: ListAllUsersForTagParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.LISTALLUSERSFORTAG,
+    params,
+  });
+};
+
+export const createpost = async (
+  payload: CreatePostRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "POST",
+    url: ENDPOINTS.CREATEPOST,
+    data: payload,
   });
 };

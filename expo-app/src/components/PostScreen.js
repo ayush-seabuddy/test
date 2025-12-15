@@ -194,7 +194,8 @@ const PostMedia = ({
               style={{ width: '100%', height: '100%' }}
               source={{ uri: item.uri }}
               contentFit="cover"
-              placeholder={ImagesAssets.userIcon}
+              placeholder={ImagesAssets.PlaceholderImage}
+              placeholderContentFit='cover'
               onLoadStart={() => setImageLoading((prev) => ({ ...prev, [item.uri]: true }))}
               onLoad={() => setImageLoading((prev) => ({ ...prev, [item.uri]: false }))}
             />

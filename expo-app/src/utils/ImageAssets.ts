@@ -29,6 +29,8 @@ export const ImagesAssets = {
   LeaderboardIcon: require("../../assets/images/TrophyIcon.png"),
   SailorsIcon: require("../../assets/images/SailorsIcon.png"),
   SeabuddyPlaceholder: require("../../assets/images/SeabuddyPlaceholder.svg"),
+  PlaceholderImage: require("../../assets/images/PlaceholderImage.png"),
+  GalleryIcon: require("../../assets/images/gallery.png"),
 
 
 

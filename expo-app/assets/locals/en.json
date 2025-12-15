@@ -274,7 +274,7 @@
   "addhashtags": "Add Hashtags",
   "update": "Update",
   "share": "Share",
-  "selectpeopletotag": "Select people to Tag",
+  "selectpeopletotag": "Select people to tag",
   "done": "Done",
   "nousersboarded": "No users have boarded your ship yet.",
   "loading": "Loading...",
@@ -787,5 +787,7 @@
   "helplineForm": "Helpline Form",
   "claimyourmilesnow": "Claim your miles now!",
   "activeSailors": "Active Sailors of the Month",
-  "activeSailors_description": "Top seafarers who went the extra mile in energy, spirit, and connection at sea this month"
+  "activeSailors_description": "Top seafarers who went the extra mile in energy, spirit, and connection at sea this month",
+  "preview":"Preview",
+  "tagged":"tagged"
 }
