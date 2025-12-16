@@ -789,5 +789,6 @@
   "activeSailors": "Active Sailors of the Month",
   "activeSailors_description": "Top seafarers who went the extra mile in energy, spirit, and connection at sea this month",
   "preview":"Preview",
-  "tagged":"tagged"
+  "tagged":"tagged",
+  "leaderboardinfo_description":"Seafarers leading the quest to become ‘Sailor of the month’ by going extra mile in energy, spirit and connection at sea this month"
 }

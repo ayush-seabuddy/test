@@ -1,3 +1,5 @@
+import { FilterIcon } from "lucide-react-native";
+
 export const ImagesAssets = {
   appLogo: require("../../assets/images/icon.png"),
   selectedHome: require("../../assets/images/selectedHome.png"),
@@ -31,6 +33,8 @@ export const ImagesAssets = {
   SeabuddyPlaceholder: require("../../assets/images/SeabuddyPlaceholder.svg"),
   PlaceholderImage: require("../../assets/images/PlaceholderImage.png"),
   GalleryIcon: require("../../assets/images/gallery.png"),
+  LeaderboardSailorsIcon:require("../../assets/images/LeaderboardSailorsIcon.png"),
+   FilterIcon:require("../../assets/images/FilterIcon.png"),
 
 
 

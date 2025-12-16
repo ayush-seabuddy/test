@@ -234,7 +234,8 @@ export interface ListAllUsersForTagParams {
 }
 
 export interface GetLeaderboardParams {
-  isZero: boolean;
+   page:number,
+   limit:number,
 }
 
 export const login = async (

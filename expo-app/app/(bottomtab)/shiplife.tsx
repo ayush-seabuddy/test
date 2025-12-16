@@ -29,7 +29,7 @@ interface BuddyUpEvent {
   eventName: string
   description: string
   startDateTime: string
-  endDateTime?: string
+  endDateTime: string
   location?: string
   imageUrls: string[]
   joinedPeople: string[]
@@ -144,7 +144,7 @@ const ShipLifeScreen = () => {
 
       const [adminbuddyRes, topemployeeRes, ongoingRes, pastRes, viewprofileRes] = await Promise.all([
         getalladminbuddyupcategories({ isAdmin: true }),
-        getleaderboard({ isZero: false }),
+        getleaderboard(),
         GETALLBUDDYUPEVENTS({ page: 1, limit: 5, eventType: 'ON_GOING' }),
         GETALLBUDDYUPEVENTS({ page: 1, limit: 5, eventType: 'PAST' }),
         viewProfile({ userId: loggeduserData?.id })

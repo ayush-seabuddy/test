@@ -4,6 +4,7 @@ import React, { ReactNode, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle, TextStyle } from "react-native";
 import Popover from "react-native-popover-view";
 import Colors from "@/src/utils/Colors";
+import { Placement } from "react-native-popover-view/dist/Types";
 
 interface GlobalPopOverProps {
   children: ReactNode;
@@ -11,8 +12,8 @@ interface GlobalPopOverProps {
   popOverContent?: ReactNode;
   showOkButton?: boolean;
   buttonText?: string;
-  buttonStyle?: StyleProp<ViewStyle>;        // <-- added
-  buttonTextStyle?: StyleProp<TextStyle>;     // <-- added
+  buttonStyle?: StyleProp<ViewStyle>;
+  buttonTextStyle?: StyleProp<TextStyle>;
 }
 
 const GlobalPopOver: React.FC<GlobalPopOverProps> = ({
@@ -29,6 +30,7 @@ const GlobalPopOver: React.FC<GlobalPopOverProps> = ({
   return (
     <Popover
       isVisible={visible}
+      placement={Placement.BOTTOM}
       onRequestClose={() => setVisible(false)}
       from={
         <TouchableOpacity onPress={() => setVisible(true)}>
