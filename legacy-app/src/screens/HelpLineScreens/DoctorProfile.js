@@ -1,24 +1,21 @@
 import * as React from "react";
 import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Platform,
   Dimensions,
   Image,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import LottieView from "lottie-react-native";
-import { ImagesAssets } from "../../assets/ImagesAssets";
-import FocusAwareStatusBar from "../../statusbar/FocusAwareStatusBar";
-import Colors from "../../colors/Colors";
-import DoctorProfileHeader from "../../component/headers/HelpLineScreensHeader/DoctorProfileHeader";
-import DoctorProfileCard from "../../component/Cards/HelpLineScreensCards/DoctorProfileCard";
-import DoctorCalendarCard from "../../component/Cards/HelpLineScreensCards/DoctorCalendarCard";
-import CustomLottie from "../../component/CustomLottie";
 import FastImage from "react-native-fast-image";
+import { ImagesAssets } from "../../assets/ImagesAssets";
+import Colors from "../../colors/Colors";
+import DoctorProfileCard from "../../component/Cards/HelpLineScreensCards/DoctorProfileCard";
+import DoctorProfileHeader from "../../component/headers/HelpLineScreensHeader/DoctorProfileHeader";
 import MediaPreviewModal from "../../component/Modals/MediaPreviewModal";
+import FocusAwareStatusBar from "../../statusbar/FocusAwareStatusBar";
 
 const { width, height } = Dimensions.get("window");
 

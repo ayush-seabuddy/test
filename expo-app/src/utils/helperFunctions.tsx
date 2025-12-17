@@ -1,14 +1,13 @@
-import { Text } from 'react-native';
-import ReactTimeAgo from 'react-time-ago';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import TimeAgo from "javascript-time-ago";
 import en from "javascript-time-ago/locale/en.json";
-import zh from "javascript-time-ago/locale/zh.json";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import socketService from './socketService';
-import { updateShipList, updateFleetList } from '../redux/chatListSlice'
 import moment from 'moment-timezone';
+import { Text } from 'react-native';
+import ReactTimeAgo from 'react-time-ago';
 import { viewProfile } from '../apis/apiService';
+import { updateFleetList, updateShipList } from '../redux/chatListSlice';
 import { setUserDetails } from '../redux/userDetailsSlice';
+import socketService from './socketService';
 
 TimeAgo.addDefaultLocale(en);
 

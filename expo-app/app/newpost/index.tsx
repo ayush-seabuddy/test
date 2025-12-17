@@ -29,8 +29,10 @@ import {
 } from '@gorhom/bottom-sheet';
 import { X } from 'lucide-react-native';
 import { showToast } from '@/src/components/GlobalToast';
-import { createpost, listallusersfortag } from '@/src/apis/apiService';
+import { createpost, listallusersfortag, uploadfile } from '@/src/apis/apiService';
 import { getUserDetails } from '@/src/utils/helperFunctions';
+import { BASE_URL } from '@/src/apis/endpoints';
+import axios from 'axios';
 
 type AllUsers = {
   id: string;
@@ -84,6 +86,13 @@ const NewPostScreen = () => {
       setHasOpenedTagSheet(true);
     }
   }, [hasOpenedTagSheet, allUsers.length]);
+
+  const getMimeType = (uri: string, type: 'image' | 'video') => {
+    if (type === 'video') return 'video/mp4';
+    return 'image/jpeg';
+  };
+
+
 
   const fetchAllUsersForTag = async () => {
     const userData = await getUserDetails();
@@ -152,8 +161,6 @@ const NewPostScreen = () => {
     }
   };
 
-
-
   const createPost = async () => {
     try {
       setIsLoading(true);
@@ -186,7 +193,64 @@ const NewPostScreen = () => {
     }
   };
 
+  const uploadSelectedMedia = async (): Promise<string[]> => {
+    if (selectedMedia.length === 0) {
+      showToast.error(t('oops'), t('nomediafileSelected'));
+      return [];
+    }
 
+    try {
+      setIsLoading(true);
+
+      const userData = await getUserDetails();
+      const uploadedUrls: string[] = [];
+
+      for (let index = 0; index < selectedMedia.length; index++) {
+        const media = selectedMedia[index];
+
+        const formData = new FormData();
+        formData.append('file', {
+          uri: media.uri,
+          name: `media_${index}.${media.type === 'video' ? 'mp4' : 'jpg'}`,
+          type: getMimeType(media.uri, media.type),
+        } as any);
+
+        console.log('====================================');
+        console.log(`⬆️ Uploading file ${index + 1}/${selectedMedia.length}`);
+        console.log(formData);
+        console.log('====================================');
+
+        const response = await axios.post(
+          `${BASE_URL}/user/uploadFile`,
+          formData,
+          {
+            headers: {
+              authToken: userData.authToken,
+              'Content-Type': 'multipart/form-data',
+              Accept: 'application/json',
+            },
+          }
+        );
+
+        if (response.data?.responseCode === 200 && response.data.result) {
+          uploadedUrls.push(response.data.result);
+        } else {
+          throw new Error(response.data?.message || 'Upload failed');
+        }
+      }
+
+      console.log('✅ Uploaded URLs:', uploadedUrls);
+      showToast.success(t('success'), 'Media uploaded successfully');
+
+      return uploadedUrls;
+    } catch (error) {
+      console.error('❌ Upload failed:', error);
+      showToast.error(t('error'), t('somethingwentwrong'));
+      return [];
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const addHashtag = () => {
     const tag = hashtagInput.trim();
@@ -215,20 +279,30 @@ const NewPostScreen = () => {
     setSelectedMedia((prev) => prev.filter((_, i) => i !== indexToRemove));
   }, []);
 
-  const handlePreview = () => {
+  const handlePreview = async () => {
     console.log('=== NEW POST PREVIEW ===');
-    console.log('Caption:', caption);
-    console.log('Media:', selectedMedia.length);
-    console.log('Tagged Users:', taggedUsers.map(u => u.fullName));
-    console.log('Hashtags:', hashtags);
+
+    const uploadedUrls = await uploadSelectedMedia();
+
+    console.log('Uploaded Media URLs:', uploadedUrls);
 
     Alert.alert(
       'Preview Ready!',
-      `Media: ${selectedMedia.length}\nTags: ${taggedUsers.length}\nHashtags: ${hashtags.length}`,
+      `Media: ${uploadedUrls}\nTags: ${taggedUsers.length}\nHashtags: ${hashtags.length}`,
       [{ text: 'OK' }]
     );
-    router.push('/newpost/previewpost')
+
+    router.push(
+      {
+pathname:'/newpost/previewpost',
+params:{
+
+  
+}
+      }
+    );
   };
+
 
   const renderMediaHeader = useCallback(() => (
     <TouchableOpacity style={styles.addMoreMediaButton} onPress={openMediaSheet}>

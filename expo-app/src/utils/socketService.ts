@@ -1,5 +1,5 @@
-import { io, Socket } from "socket.io-client";
 import Constants from 'expo-constants';
+import { io, Socket } from "socket.io-client";
 
 // Type-safe extra config
 type ExtraConfig = {
@@ -105,14 +105,10 @@ class WSService {
       this.socket = null;
     }
   };
-
-  // Optional: Getter for socket instance (use carefully)
   getSocket = (): Socket | null => {
     return this.socket;
   };
 }
-
-// Singleton instance
 const socketService = new WSService();
 
 export default socketService;

@@ -91,6 +91,7 @@ const UploadProfilePhoto = () => {
     setLoading(true);
     try {
       const apiResponse = await uploadfile({ file: photo });
+      setLoading(false);
       if (apiResponse.success && apiResponse.status == 200) {
         showToast.success(t("success"), apiResponse.message);
         router.push({ pathname: "/auth/UpdateProfile", params: { profilePhoto: apiResponse.data } });

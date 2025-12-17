@@ -10,6 +10,7 @@ import { ImagesAssets } from '@/src/utils/ImageAssets';
 import { viewbuddyupdetails } from '@/src/apis/apiService';
 import { showToast } from '@/src/components/GlobalToast';
 import MediaPreviewModal from '@/src/components/Modals/MediaPreviewModal';
+import Colors from '@/src/utils/Colors';
 
 interface GroupActivityDetail {
     id: string;
@@ -98,7 +99,7 @@ const BuddyUpEventDescription = () => {
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#007AFF" />
+                <ActivityIndicator size="large" color={Colors.lightGreen} />
             </View>
         );
     }

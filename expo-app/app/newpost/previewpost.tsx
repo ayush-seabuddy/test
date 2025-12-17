@@ -1,28 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'
 import {
   View,
   Text,
   StyleSheet,
   FlatList,
-  Image,
   TouchableOpacity,
   ScrollView,
   Dimensions,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-} from 'react-native';
-import Video from 'react-native-video';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTranslation } from 'react-i18next';
-import { showToast } from '@/src/components/GlobalToast';
+} from 'react-native'
+import { Image } from 'expo-image'
+import { useTranslation } from 'react-i18next'
+import { ChevronLeft } from 'lucide-react-native'
+import GlobalHeader from '@/src/components/GlobalHeader'
+import Video from 'react-native-video'
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get('window')
 
-interface FrameOption {
-  id: number;
-  label: string;
-  ratio: number;
+type MediaItem =
+  | string
+  | {
+    uri: string
+    type?: 'image' | 'video'
+  }
+
+type TaggedUser = {
+  id: string | number
+  fullName: string
+  profileUrl?: string
+}
+
+type FrameOption = {
+  id: number
+  label: string
+  ratio: number
 }
 
 const frameOptions: FrameOption[] = [
@@ -30,202 +40,106 @@ const frameOptions: FrameOption[] = [
   { id: 2, label: 'Square', ratio: 1 },
   { id: 3, label: 'Portrait', ratio: 1.25 },
   { id: 4, label: 'Full', ratio: 1.5 },
-];
+]
 
-interface MediaItem {
-  uri?: string;
-  url?: string;
-  type?: string;
-}
-
-interface TaggedUser {
-  id: number | string;
-  fullName: string;
-  profileUrl?: string;
-}
-
-interface RouteParams {
-  mediaFiles?: (string | MediaItem)[];
-  caption?: string;
-  taggedUsers?: TaggedUser[];
-  hashtags?: string[];
-  postId?: string | number;
-}
 
 const PreviewPostScreen: React.FC = () => {
-  const route = useRoute<any>(); // For stricter typing, define a proper route prop type if possible
-  const navigation = useNavigation<any>();
-  const { t } = useTranslation();
-  const [loading, setLoading] = useState<boolean>(false);
-  const [frame, setFrame] = useState<FrameOption>(frameOptions[1]);
-  const [activeIndex, setActiveIndex] = useState<number>(0);
+  const { t } = useTranslation()
 
-  const {
-    mediaFiles = [],
-    caption = '',
-    taggedUsers = [],
-    hashtags = [],
-    postId,
-  }: RouteParams = route.params || {};
+  const mediaFiles: MediaItem[] = [
+    'https://img.freepik.com/free-photo/beautiful-lake-mountains_395237-44.jpg?semt=ais_hybrid&w=740&q=80',
+    'https://images.pexels.com/photos/417173/pexels-photo-417173.jpeg',
+  ]
 
+  const caption = 'A beautiful view from the mountains 🌄'
+  const hashtags = ['#nature', '#travel', '#mountains']
+  const taggedUsers: TaggedUser[] = [
+    {
+      id: 1,
+      fullName: 'John Doe',
+      profileUrl:
+        'https://t4.ftcdn.net/jpg/05/89/93/27/360_F_589932782_vQAEAZhHnq1QCGu5ikwrYaQD0Mmurm0N.jpg',
+    },
+    {
+      id: 2,
+      fullName: 'Prince Singh',
+      profileUrl:
+        'https://t4.ftcdn.net/jpg/05/89/93/27/360_F_589932782_vQAEAZhHnq1QCGu5ikwrYaQD0Mmurm0N.jpg',
+    },
+    {
+      id: 3,
+      fullName: 'Shyam Mohan Tripathi',
+      profileUrl:
+        'https://t4.ftcdn.net/jpg/05/89/93/27/360_F_589932782_vQAEAZhHnq1QCGu5ikwrYaQD0Mmurm0N.jpg',
+    },
+    {
+      id: 4,
+      fullName: 'Vinay Gupta',
+      profileUrl:
+        'https://t4.ftcdn.net/jpg/05/89/93/27/360_F_589932782_vQAEAZhHnq1QCGu5ikwrYaQD0Mmurm0N.jpg',
+    },
+  ]
 
-//   const handleShare = async () => {
-//     if (loading) return;
-//     setLoading(true);
-
-//     try {
-//       const userDataStr = await AsyncStorage.getItem('userDetails');
-//       if (!userDataStr) throw new Error('No user data');
-//       const userData = JSON.parse(userDataStr);
-//       const authToken = userData.authToken;
-
-//       const finalMediaUrls: string[] = mediaFiles.map((item: string | MediaItem) =>
-//         typeof item === 'string' ? item : item.url || item.uri || ''
-//       );
-
-//       const payload = postId
-//         ? {
-//             id: postId,
-//             imageUrls: finalMediaUrls,
-//             caption: caption.trim(),
-//             tags: taggedUsers.map((u: TaggedUser) => u.id),
-//             hashtags,
-//             ratioValue: frame.ratio,
-//             imageresizeMode: 'cover',
-//           }
-//         : {
-//             hangouts: [
-//               {
-//                 imageUrls: finalMediaUrls,
-//                 caption: caption.trim(),
-//                 tags: taggedUsers.map((u: TaggedUser) => u.id),
-//                 hashtags,
-//                 ratioValue: frame.ratio,
-//                 imageresizeMode: 'cover',
-//                 createdAt: new Date().toISOString(),
-//               },
-//             ],
-//           };
-
-//       console.log(JSON.stringify(payload));
-
-//       const res = await fetch(
-//         postId
-//           ? `${apiServerUrl}/user/updateHangoutPostById`
-//           : `${apiServerUrl}/user/createHangoutPost`,
-//         {
-//           method: postId ? 'PUT' : 'POST',
-//           headers: {
-//             'Content-Type': 'application/json',
-//             authToken,
-//           },
-//           body: JSON.stringify(payload),
-//         }
-//       );
-
-//       const json = await res.json();
-//       console.log(json);
-
-//       if (json.responseCode === 200) {
-//         showToast.success(postId ? t('postupdatedsuccessfully') : t('postcreatedsuccessfully'));
-//         setTimeout(() => {
-//           navigation.navigate('Home', {
-//             screen: 'SeaBuddy',
-//             params: { name: 'hangout', refresh: true },
-//           });
-//         }, 1000);
-//       } else {
-//         throw new Error(json.message || 'Failed');
-//       }
-//     } catch (err) {
-//       console.error('Post error:', err);
-//       showToast.error(t('postFailed'));
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const index = Math.round(e.nativeEvent.contentOffset.x / width);
-    if (index !== activeIndex) setActiveIndex(index);
-  };
-
-  const renderMedia = ({ item }: { item: string | MediaItem }) => {
-    const height = width * frame.ratio;
+  const [frame, setFrame] = useState<FrameOption>(frameOptions[1])
+  const [activeIndex, setActiveIndex] = useState<number>(0)
+  const renderMedia = ({ item }: { item: MediaItem }) => {
+    const height = width * frame.ratio
+    const uri = typeof item === 'string' ? item : item.uri
     const isVideo =
       typeof item === 'string'
-        ? !!item.match(/\.(mp4|mov|avi)$/i)
-        : item.type === 'video';
-    const uri = typeof item === 'string' ? item : item.uri || '';
+        ? item.match(/\.(mp4|mov|avi)$/i)
+        : item.type === 'video'
 
     return (
-      <View style={{ width, height, backgroundColor: '#000' }}>
+      <View style={[styles.mediaWrapper, { height }]}>
         {isVideo ? (
           <Video
             source={{ uri }}
-            style={{ width: '100%', height: '100%' }}
+            style={styles.media}
             resizeMode="cover"
-            repeat={true}
-            muted={true}
+            repeat
+            muted
           />
         ) : (
           <Image
             source={{ uri }}
-            style={{ width: '100%', height: '100%' }}
-            resizeMode="cover"
+            style={styles.media}
+            contentFit="cover"
           />
         )}
       </View>
-    );
-  };
+    )
+  }
+
+  const onScroll = (e: any) => {
+    const index = Math.round(e.nativeEvent.contentOffset.x / width)
+    setActiveIndex(index)
+  }
 
   return (
     <View style={styles.container}>
-      <ScrollView>
-        {mediaFiles.length > 0 && (
-          <>
-            <FlatList
-              data={mediaFiles}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              renderItem={renderMedia}
-              keyExtractor={(item, i) =>
-                typeof item === 'string'
-                  ? `${item}-${i}`
-                  : `${(item as MediaItem).uri}-${i}`
-              }
-              onScroll={onScroll}
-              scrollEventThrottle={16}
-            />
+      <GlobalHeader title={t('previewpost')} leftIcon={<ChevronLeft />} />
 
-            <View style={styles.counterContainer}>
-              <Text style={styles.counterText}>
-                {activeIndex + 1}/{mediaFiles.length}
-              </Text>
-            </View>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <FlatList
+          data={mediaFiles}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(_, i) => i.toString()}
+          renderItem={renderMedia}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
+        />
 
-            {mediaFiles.length > 1 && (
-              <View style={styles.dotsContainer}>
-                {mediaFiles.map((_, i) => (
-                  <View
-                    key={i}
-                    style={[
-                      styles.dot,
-                      {
-                        backgroundColor:
-                          i === activeIndex ? '#fff' : 'rgba(255,255,255,0.5)',
-                      },
-                    ]}
-                  />
-                ))}
-              </View>
-            )}
-          </>
-        )}
+        <View style={styles.counterContainer}>
+          <Text style={styles.counterText}>
+            {activeIndex + 1}/{mediaFiles.length}
+          </Text>
+        </View>
 
         <View style={styles.frameContainer}>
-          {frameOptions.map((item) => (
+          {frameOptions.map(item => (
             <TouchableOpacity
               key={item.id}
               style={[
@@ -246,27 +160,28 @@ const PreviewPostScreen: React.FC = () => {
           ))}
         </View>
 
-        {caption ? (
+        {caption.length > 0 && (
           <View style={styles.captionContainer}>
             <Text style={styles.captionText}>{caption}</Text>
           </View>
-        ) : null}
+        )}
 
         {taggedUsers.length > 0 && (
           <View style={styles.taggedContainer}>
-            <Text style={styles.sectionLabel}>{t('with') || 'With'}:</Text>
+            <Text style={styles.sectionLabel}>
+              {t('with')}:
+            </Text>
+
             <View style={styles.taggedRow}>
-              {taggedUsers.map((u, i) => (
-                <View key={i} style={styles.taggedUser}>
+              {taggedUsers.map(user => (
+                <View key={user.id} style={styles.taggedUser}>
                   <Image
-                    source={{
-                      uri:
-                        u.profileUrl ||
-                        'https://t4.ftcdn.net/jpg/05/89/93/27/360_F_589932782_vQAEAZhHnq1QCGu5ikwrYaQD0Mmurm0N.jpg',
-                    }}
+                    source={{ uri: user.profileUrl }}
                     style={styles.taggedAvatar}
                   />
-                  <Text style={styles.taggedName}>{u.fullName}</Text>
+                  <Text style={styles.taggedName}>
+                    {user.fullName}
+                  </Text>
                 </View>
               ))}
             </View>
@@ -283,39 +198,24 @@ const PreviewPostScreen: React.FC = () => {
           </View>
         )}
       </ScrollView>
-
-      <View style={styles.bottomButtonContainer}>
-        <TouchableOpacity
-          style={styles.shareButton}
-        //   onPress={handleShare}
-          disabled={loading}
-        >
-          <Text style={styles.shareButtonText}>
-            {postId ? t('update') || 'Update Post' : t('share') || 'Share Post'}
-          </Text>
-        </TouchableOpacity>
-      </View>
     </View>
-  );
-};
+  )
+}
+
+export default PreviewPostScreen
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-    backgroundColor: '#fff',
-    elevation: 5,
+  mediaWrapper: {
+    width,
+    backgroundColor: '#000',
   },
-  headerTitle: {
-    marginLeft: 15,
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
+  media: {
+    width: '100%',
+    height: '100%',
   },
   counterContainer: {
     position: 'absolute',
@@ -330,19 +230,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: '600',
-  },
-  dotsContainer: {
-    position: 'absolute',
-    bottom: 15,
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginHorizontal: 4,
   },
   frameContainer: {
     flexDirection: 'row',
@@ -360,7 +247,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#02130B',
   },
   frameText: {
-    fontSize: 13,
+    fontSize: 12,
+    fontFamily: 'Poppins-Regular',
     color: '#666',
     fontWeight: '600',
   },
@@ -369,10 +257,10 @@ const styles = StyleSheet.create({
   },
   captionContainer: {
     padding: 16,
-    backgroundColor: '#fff',
   },
   captionText: {
     fontSize: 14,
+    fontFamily: 'Poppins-Regular',
     lineHeight: 20,
     color: '#333',
   },
@@ -382,6 +270,7 @@ const styles = StyleSheet.create({
   },
   sectionLabel: {
     fontSize: 13,
+    fontFamily: 'Poppins-Regular',
     color: '#666',
     fontWeight: '600',
     marginBottom: 8,
@@ -394,8 +283,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#f0f0f0',
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     paddingVertical: 6,
+    paddingRight: 16,
     borderRadius: 20,
     marginRight: 8,
     marginBottom: 8,
@@ -407,7 +297,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   taggedName: {
-    fontSize: 13,
+    fontSize: 12,
+    fontFamily: 'Poppins-Regular',
     color: '#333',
   },
   hashtagContainer: {
@@ -420,24 +311,6 @@ const styles = StyleSheet.create({
     color: '#1DA1F2',
     marginRight: 10,
     fontSize: 14,
+    fontFamily: 'Poppins-Regular'
   },
-  bottomButtonContainer: {
-    padding: 15,
-    backgroundColor: '#fff',
-    borderTopWidth: 0.5,
-    borderColor: '#ddd',
-  },
-  shareButton: {
-    backgroundColor: '#02130B',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  shareButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-});
-
-export default PreviewPostScreen;
+})

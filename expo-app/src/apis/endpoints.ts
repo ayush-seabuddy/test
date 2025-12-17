@@ -1,5 +1,4 @@
 import Constants from 'expo-constants';
-import { BaseGesture } from 'react-native-gesture-handler/lib/typescript/handlers/gestures/gesture';
 
 // Type-safe extra config
 type ExtraConfig = {
@@ -31,6 +30,14 @@ export const ENDPOINTS = {
   LIKEPOST: `${BASE_URL}/user/likeCommentHangoutPost`,
   GETALLCOMMENTS: `${BASE_URL}/user/getAllHangoutPostComments`,
   VIEW_PROFILE: `${BASE_URL}/user/viewUserProfile`,
+  GET_ALL_HELPLINES: `${BASE_URL}/helpline/getAllHelplines`,
+  VIEW_USER_TEST: `${BASE_URL}/user/viewUserTest`, 
+  GETALLCATEGORY:`${BASE_URL}/content/getAllCategory`,
+  VIEW_CONTENT_DETAILS:`${BASE_URL}/content/viewContentDetails`,
+  GET_ALL_DOCTORS:`${BASE_URL}/helpline/allDoctorsList`,
+  GET_ALL_BOOKED_APPOINTMENTS:`${BASE_URL}/helpline/allBookedAppointments`,
+  GET_REACTIONS_ON_MESSAGE:`${BASE_URL}/user/getReactionsOnMessage`,
+  GET_RECOMMENDED_CONTENTS:`${BASE_URL}/content/getRecommendedContents`,
   GETALLHELPLINES: `${BASE_URL}/helpline/getAllHelplines`,
   GETHELPLINEFORMQUESTIONS: `${BASE_URL}/helpline/getAllHelplineFormQuestions`,
   SUBMITHELPLINEANSWER: `${BASE_URL}/helpline/addHelplineFormAnswers`,
@@ -44,5 +51,6 @@ export const ENDPOINTS = {
   LISTALLUSERSFORTAG:`${BASE_URL}/user/listAllUsersForTag`,
   CREATEPOST:`${BASE_URL}/user/createHangoutPost`,
   UPDATEPOST:`${BASE_URL}/user/updateHangoutPost`,
+  GETALLSHIPSLIST:`${BASE_URL}/company/getAllShipsList`,
 
 };

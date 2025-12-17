@@ -1,46 +1,42 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  TextInput,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  FlatList,
-  PermissionsAndroid,
-  Keyboard,
-  ActivityIndicator,
-  Alert,
-  Modal,
-  Dimensions,
-  Linking,
-} from "react-native";
-import ChatRoomHeader from "../component/headers/ChatRoomHeader";
-import Colors from "../colors/Colors";
-import { ImagesAssets } from "../assets/ImagesAssets";
-import FocusAwareStatusBar from "../statusbar/FocusAwareStatusBar";
-import { AvoidSoftInput } from "react-native-avoid-softinput";
-import socketService from "../Socket/Socket";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useDispatch, useSelector } from "react-redux";
-import { launchImageLibrary, launchCamera } from "react-native-image-picker";
-import axios from "axios";
-import AudioRecorderPlayer from "react-native-audio-recorder-player";
-import RNFS from "react-native-fs";
-import Ionicons from "react-native-vector-icons/Ionicons";
-import { selectChat, setTypingStatus } from "../Redux/Socket/Chat";
-import { apiCallWithToken, apiServerUrl, getApiLevel } from "../Api";
-import Loader from "../component/Loader";
-import moment from "moment";
-import MediaPreviewModal from "../component/Modals/MediaPreviewModal";
-import FastImage from "react-native-fast-image";
 import { useFocusEffect } from "@react-navigation/native";
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import axios from "axios";
+import { Camera, Check, Paperclip, SendHorizonal } from "lucide-react-native";
+import moment from "moment";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Linking,
+  Modal,
+  PermissionsAndroid,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from "react-native";
+import AudioRecorderPlayer from "react-native-audio-recorder-player";
+import FastImage from "react-native-fast-image";
+import RNFS from "react-native-fs";
+import { launchCamera, launchImageLibrary } from "react-native-image-picker";
 import RBSheet from "react-native-raw-bottom-sheet";
-import { Camera, Check, Paperclip, Send, SendHorizonal } from "lucide-react-native";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import { useDispatch, useSelector } from "react-redux";
+import { apiCallWithToken, apiServerUrl, getApiLevel } from "../Api";
+import Colors from "../colors/Colors";
+import ChatRoomHeader from "../component/headers/ChatRoomHeader";
+import Loader from "../component/Loader";
+import MediaPreviewModal from "../component/Modals/MediaPreviewModal";
+import { selectChat, setTypingStatus } from "../Redux/Socket/Chat";
+import socketService from "../Socket/Socket";
+import FocusAwareStatusBar from "../statusbar/FocusAwareStatusBar";
 
 const ChatRoom = ({ navigation, route }) => {
   const dispatch = useDispatch();

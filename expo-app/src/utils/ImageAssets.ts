@@ -61,5 +61,15 @@ export const ImagesAssets = {
   fleetIcon: require("../../assets/images/fleetIcon.png"),
 
   userIcon: require("../../assets/images/Man.png"),
+  sosimage : require("../../assets/images/Header/sosimage.png"), 
+  whatsapp_icon : require("../../assets/images/whatsapp_icon.png"), 
+  emargncy_image : require("../../assets/images/emargncy_image.png"), 
+  helpline_img : require("../../assets/images/helpline_img.png"), 
+  Happiness : require("../../assets/images/Happiness.png"), 
+  POMS : require("../../assets/images/POMS.png"), 
+  personality : require("../../assets/images/personality.png"), 
+  NoContent : require("../../assets/images/no-content.png"),
+  forward10 : require("../../assets/images/forward-10.png"),
+  replay10 : require("../../assets/images/replay-10.png"),
 
 };

@@ -192,6 +192,21 @@ export interface GetAllContentsParams {
   page?: number,
   limit?: number,
   onlyAnnouncement?: boolean,
+  contentCategory?:string,
+  contentType?:string,
+  department?:string,
+  subCategory?:string
+}
+
+export interface GetAllHelplinesParams {
+  helplineType?: string,
+}
+
+export interface ViewContentDetailsParams{
+  contentId?: string
+}
+
+export interface GetAllDoctorsParams {
   contentCategory?: string,
   contentType?: string,
 }
@@ -210,6 +225,20 @@ export interface GetAllComplaintHistoryParams {
   limit?: number,
 }
 
+export interface GetAllBookedAppointmentsParams {
+  page?: number,
+  limit?: number,
+}
+
+export interface GetReactionsOnMessageParams {
+  messageId: string,
+  page?: number,
+  limit?: number,
+}
+
+export interface GetRecommendedContentsParams {
+  contentId: string,
+}
 export interface GetSingleHelplineAnswerParams {
   helplineFormId: string,
 }
@@ -229,6 +258,10 @@ export interface ViewBuddyUpDetailsParams {
   eventId: string
 }
 
+export interface GetAllShipsListParams {
+  employerId:string
+}
+
 export interface ListAllUsersForTagParams {
   shipId: string
 }
@@ -236,6 +269,8 @@ export interface ListAllUsersForTagParams {
 export interface GetLeaderboardParams {
    page:number,
    limit:number,
+   shipId?:string,
+   designation?:string,
 }
 
 export const login = async (
@@ -413,6 +448,14 @@ export const getallcontents = async (params?: GetAllContentsParams): Promise<Api
   });
 };
 
+
+export const getAllHelplines = async (params?: GetAllHelplinesParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GET_ALL_HELPLINES,
+    params
+  });
+};
 export const getallcomments = async (params?: GetAllCommentsParams): Promise<ApiResponse> => {
   return await apiRequest({
     method: "GET",
@@ -421,11 +464,39 @@ export const getallcomments = async (params?: GetAllCommentsParams): Promise<Api
   });
 };
 
+export const viewUserTest = async (): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.VIEW_USER_TEST,
+  });
+}
+
+export const getAllCategory = async (): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETALLCATEGORY,
+  });
+};
+
+export const viewContentDetails = async (params?: ViewContentDetailsParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.VIEW_CONTENT_DETAILS,
+    params
+  });
+};
 export const getallhelplines = async (params?: GetAllHelplinesParams): Promise<ApiResponse> => {
   return await apiRequest({
     method: "GET",
     url: ENDPOINTS.GETALLHELPLINES,
     params
+  });
+};
+
+export const getAllDoctors = async (params?: GetAllDoctorsParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GET_ALL_DOCTORS,
   });
 };
 
@@ -450,6 +521,30 @@ export const getallcomplainthistory = async (params?: GetAllComplaintHistoryPara
   return await apiRequest({
     method: "GET",
     url: ENDPOINTS.GETALLCOMPLAINTHISTORY,
+    params
+  });
+};
+
+export const getAllBookedAppointments = async (params?: GetAllBookedAppointmentsParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GET_ALL_BOOKED_APPOINTMENTS,
+    params
+  });
+};
+
+export const getReactionsOnMessage = async (params?: GetReactionsOnMessageParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GET_REACTIONS_ON_MESSAGE,
+    params
+  });
+};
+
+export const getRecommendedContents = async (params?: GetRecommendedContentsParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GET_RECOMMENDED_CONTENTS,
     params
   });
 };
@@ -520,5 +615,14 @@ export const createpost = async (
     method: "POST",
     url: ENDPOINTS.CREATEPOST,
     data: payload,
+  });
+};
+
+
+export const getallshipslist = async (params?: GetAllShipsListParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETALLSHIPSLIST,
+    params,
   });
 };

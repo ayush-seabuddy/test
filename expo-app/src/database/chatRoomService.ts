@@ -3,13 +3,11 @@ import { db } from "./chatDB";
 
 export function saveChatRooms(chatRooms: ChatRoom[]) {
   db.withTransactionSync(() => {
-
+    db.runSync(`DELETE FROM chat_rooms`);
+    db.runSync(`DELETE FROM last_messages`);
+    db.runSync(`DELETE FROM chat_participants`,);
+    db.runSync(`DELETE FROM participants_details`);
     chatRooms.forEach((room) => {
-      db.runSync(`DELETE FROM chat_rooms WHERE id = ?`, [room.id]);
-      db.runSync(`DELETE FROM last_messages WHERE chatRoomId = ?`, [room.id]);
-      db.runSync(`DELETE FROM chat_participants WHERE chatRoomId = ?`, [room.id]);
-      db.runSync(`DELETE FROM participants_details WHERE chatRoomId = ?`, [room.id]);
-
 
       db.runSync(
         `REPLACE INTO chat_rooms 
