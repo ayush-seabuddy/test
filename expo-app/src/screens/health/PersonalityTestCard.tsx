@@ -114,8 +114,7 @@ const styles = StyleSheet.create({
   frameParent: {
     backgroundColor: "rgba(180, 180, 180, 0.4)",
     width: "100%",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    padding:10,
     flex: 1,
     borderRadius: 10,
     alignSelf: "stretch",

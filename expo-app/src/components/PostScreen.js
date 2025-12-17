@@ -35,6 +35,7 @@ import FullScreenMediaModal from '@/app/fullscreenmediapreview';
 import CommentsSection from './CommentsSection';
 import Colors from '../utils/Colors';
 import { t } from 'i18next';
+import { ImagesAssets } from '../utils/ImageAssets';
 
 const { width } = Dimensions.get('window');
 
@@ -72,7 +73,7 @@ const UserItem = React.memo(({ user, onPress }) => (
       source={{ uri: user.profileUrl || undefined }}
       style={styles.userAvatar}
       contentFit="cover"
-      placeholder={{ blurhash: 'LEHV6nWB2yk8pyo0adR*.7kCMdkI' }}
+      placeholder={ImagesAssets.userIcon}
     />
     <View style={styles.userInfo}>
       <Text style={styles.userName}>{user.fullName}</Text>
@@ -92,7 +93,7 @@ const TaggedUsersRow = ({ users, onPress }) => (
             { marginLeft: index > 0 ? -15 : 0 },
           ]}
           contentFit="cover"
-          placeholder={{ blurhash: 'LEHV6nWB2yk8pyo0adR*.7kCMdkI' }}
+          placeholder={ImagesAssets.userIcon}
         />
       ))}
       {users.length > 3 && (
@@ -119,7 +120,7 @@ const PostHeader = ({
         source={{ uri: profileUrl || undefined }}
         style={styles.avatar}
         contentFit="cover"
-        placeholder={{ blurhash: 'LEHV6nWB2yk8pyo0adR*.7kCMdkI' }}
+        placeholder={ImagesAssets.userIcon}
       />
     </TouchableOpacity>
 
@@ -193,7 +194,8 @@ const PostMedia = ({
               style={{ width: '100%', height: '100%' }}
               source={{ uri: item.uri }}
               contentFit="cover"
-              placeholder={{ blurhash: 'LEHV6nWB2yk8pyo0adR*.7kCMdkI' }}
+              placeholder={ImagesAssets.PlaceholderImage}
+              placeholderContentFit='cover'
               onLoadStart={() => setImageLoading((prev) => ({ ...prev, [item.uri]: true }))}
               onLoad={() => setImageLoading((prev) => ({ ...prev, [item.uri]: false }))}
             />

@@ -1,21 +1,20 @@
-import { useFonts } from "expo-font";
 import { Slot } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import { useFonts } from "expo-font";
 import { useEffect } from "react";
-import { I18nextProvider } from "react-i18next";
-import { Platform, StatusBar, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
+import { StatusBar, StyleSheet } from "react-native";
 import { Provider } from "react-redux";
+import { PaperProvider } from "react-native-paper";
+import { I18nextProvider } from "react-i18next";
+import Toast from "react-native-toast-message";
 
-import { initI18n } from "@/src/localization/i18n";
-import { store } from "@/src/redux/store";
 import Colors from "@/src/utils/Colors";
-import socketService from "@/src/utils/socketService";
+import { store } from "@/src/redux/store";
+import { initI18n } from "@/src/localization/i18n";
 import i18n from "i18next";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import socketService from "@/src/utils/socketService";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -55,28 +54,14 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
           <StatusBar barStyle="dark-content" backgroundColor="#000" />
-          <KeyboardAwareScrollView
-            contentContainerStyle={{
-              flexGrow: 1,
-              paddingBottom: 20,
-            }}
-            keyboardShouldPersistTaps="handled"
-            enableOnAndroid={true}
-            enableAutomaticScroll={true}
-            extraHeight={20}
-            extraScrollHeight={Platform.OS === "android" ? 20 : 0}
-            keyboardOpeningTime={250}
-            showsVerticalScrollIndicator={false}
-          >
-            <PaperProvider>
-              <I18nextProvider i18n={i18n}>
-                <GestureHandlerRootView style={{ flex: 1 }}>
-                  <Slot />
-                  <Toast />
-                </GestureHandlerRootView>
-              </I18nextProvider>
-            </PaperProvider>
-          </KeyboardAwareScrollView>
+          <PaperProvider>
+            <I18nextProvider i18n={i18n}>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <Slot />
+                <Toast />
+              </GestureHandlerRootView>
+            </I18nextProvider>
+          </PaperProvider>
         </SafeAreaView>
       </SafeAreaProvider>
     </Provider>

@@ -13,7 +13,7 @@ const HowMilesWorkPopup = () => {
   ];
 
   return (
-    <View style={styles.container}>
+    <View>
       <Text style={styles.popupTitle}>{t('howmileswork')}</Text>
       <Text style={styles.popupText}>{t('howmileswork_description1')}</Text>
       <Text style={styles.popupText}>{t('howmileswork_description2')}</Text>
@@ -35,7 +35,6 @@ const HowMilesWorkPopup = () => {
 export default HowMilesWorkPopup
 
 const styles = StyleSheet.create({
-  container: { padding: 10 },
   popupTitle: { fontSize: 14, fontWeight: "bold", color: "#000", marginBottom: 6, fontFamily: "Poppins-SemiBold" },
   popupText: { fontSize: 12, lineHeight: 18, color: "#454545", fontFamily: "Poppins-Regular", marginBottom: 4 },
   table: { marginTop: 8, width: "100%" },

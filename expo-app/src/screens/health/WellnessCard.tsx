@@ -23,19 +23,19 @@ const WellnessCard = () => {
   const healthTrackerArray = [
     {
       title: t("moodTracker"),
-      image: <Smile size={30} color={Colors.white} />,
+      image: <Smile size={20} color={Colors.white} />,
       page: "MoodTracker",
     },
     {
       title: t("analytics"),
-      image: <ChartNoAxesCombined size={30} color={Colors.white} />,
+      image: <ChartNoAxesCombined size={20} color={Colors.white} />,
       page: "Analytics",
     },
   ];
 
   return (
     <View style={styles.main}>
-      <TouchableOpacity style={styles.container} onPress={() => { router.push("/wellnessOfficerList")}}>
+      <TouchableOpacity style={styles.container} onPress={() => { router.push("/wellnessOfficerList") }}>
         <View style={styles.leftColumn}>
           <Text style={styles.title}>{t("speaktowellnessofficer")}</Text>
           <Text style={styles.description}>
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     fontFamily: "WhyteInktrap-Medium",
     fontWeight: "500",
     lineHeight: 30,
-    fontSize: isProMax ? 20 : 17,
+    fontSize: isProMax ? 20 : 15,
   },
 
   description: {
@@ -143,7 +143,8 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontFamily: "WhyteInktrap-Medium",
     lineHeight: 16,
-    fontSize: 14,
+    marginTop: 5,
+    fontSize: 12,
   },
 });
 

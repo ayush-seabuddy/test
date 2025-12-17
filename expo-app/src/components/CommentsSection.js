@@ -24,6 +24,7 @@ import { getallcomments, likecommentpost } from '../apis/apiService';
 import { showToast } from './GlobalToast';
 import BottomSheet from './BottomSheet';
 import { t } from 'i18next';
+import { ImagesAssets } from '../utils/ImageAssets';
 
 // Fixed Light Mode Colors
 const ColorsLight = {
@@ -61,7 +62,7 @@ const CommentItem = React.memo(({
             source={{ uri: user.profileUrl }}
             style={styles.commentAvatar}
             contentFit="cover"
-            placeholder={{ blurhash: 'LEHV6nWB2yk8pyo0adR*.7kCMdkI' }}
+            placeholder={ImagesAssets.userIcon}
           />
         </TouchableOpacity>
 

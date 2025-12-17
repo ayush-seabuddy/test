@@ -61,6 +61,41 @@ export interface SaveAssessmentRequest {
   }>;
 }
 
+export interface EditDeleteBuddyUpEventRequest {
+  groupActivities?: {
+    eventId?: string;
+    imageUrls?: string[];
+    eventName?: string;
+    categoryId?: string;
+    description?: string;
+    location?: string;
+    startDateTime?: string;
+    endDateTime?: string;
+    points?: number;
+    isPublic?: boolean;
+    joinedPeople?: string[];
+    hashtags?: string[];
+    createdAt?: string;
+    completionImages?: string[];
+    completionDescription?: string;
+    status?: "ACTIVE" | "BLOCK" | "DELETE" | "COMPLETED" | "REQUESTED" | "REPORTED";
+  }[];
+}
+
+export interface Hangout {
+  imageUrls?: string[];
+  caption: string;
+  tags?: string[];
+  hashtags?: string[];
+  ratioValue?: string;
+  imageresizeMode?: string;
+  createdAt?: string;
+}
+
+export interface CreatePostRequest {
+  hangouts: Hangout[];
+}
+
 export interface SubmitHelplineAnswerRequest {
   helplineId: string;
   answers: {
@@ -208,12 +243,34 @@ export interface GetSingleHelplineAnswerParams {
   helplineFormId: string,
 }
 
-export interface GetAllAdminBuddyUpEventsParams {
+export interface GETALLADMINBUDDYUPCATEGORYParams {
   isAdmin: boolean;
 }
 
+export interface GetAllBuddyUpEventParams {
+  page: number,
+  limit: number,
+  eventType?: string,
+  filter?: string
+}
+
+export interface ViewBuddyUpDetailsParams {
+  eventId: string
+}
+
+export interface GetAllShipsListParams {
+  employerId:string
+}
+
+export interface ListAllUsersForTagParams {
+  shipId: string
+}
+
 export interface GetLeaderboardParams {
-  isZero:boolean;
+   page:number,
+   limit:number,
+   shipId?:string,
+   designation?:string,
 }
 
 export const login = async (
@@ -499,10 +556,10 @@ export const getsinglehelplineanswer = async (params?: GetSingleHelplineAnswerPa
     params,
   });
 };
-export const getalladminbuddyupevents = async (params?: GetAllAdminBuddyUpEventsParams): Promise<ApiResponse> => {
+export const getalladminbuddyupcategories = async (params?: GETALLADMINBUDDYUPCATEGORYParams): Promise<ApiResponse> => {
   return await apiRequest({
     method: "GET",
-    url: ENDPOINTS.GetAllAdminBuddyUpEvents,
+    url: ENDPOINTS.GETALLADMINBUDDYUPCATEGORY,
     params,
   });
 };
@@ -516,3 +573,56 @@ export const getleaderboard = async (params?: GetLeaderboardParams): Promise<Api
   });
 };
 
+export const GETALLBUDDYUPEVENTS = async (params?: GetAllBuddyUpEventParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETALLBUDDYUPEVENTS,
+    params,
+  });
+};
+
+export const editdeletebuddyupevent = async (
+  payload: EditDeleteBuddyUpEventRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "POST",
+    url: ENDPOINTS.EDITDELETEBUDDYUPEVENTS,
+    data: payload,
+  });
+};
+
+
+export const viewbuddyupdetails = async (params?: ViewBuddyUpDetailsParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.VIEWBUDDYUPDETAILS,
+    params,
+  });
+};
+
+export const listallusersfortag = async (params?: ListAllUsersForTagParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.LISTALLUSERSFORTAG,
+    params,
+  });
+};
+
+export const createpost = async (
+  payload: CreatePostRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "POST",
+    url: ENDPOINTS.CREATEPOST,
+    data: payload,
+  });
+};
+
+
+export const getallshipslist = async (params?: GetAllShipsListParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETALLSHIPSLIST,
+    params,
+  });
+};

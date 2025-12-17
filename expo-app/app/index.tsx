@@ -21,7 +21,14 @@ export default function Index() {
       setTimeout(() => {
         router.replace("/auth/Login");
       }, 2500);
-      
+      //    setTimeout(async()=>{
+      //   // console.log("hello");
+      // let data  =await login({email:"rishabhmaurya186@gmail.com",password:"Seekware@123"})
+      // AsyncStorage.setItem("userDetails", JSON.stringify(data?.data));
+      // await AsyncStorage.setItem("authToken", data?.data.authToken);
+
+      //   router.replace("/home");
+      // },3000)
     };
 
     init();

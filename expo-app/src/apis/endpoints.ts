@@ -27,7 +27,6 @@ export const ENDPOINTS = {
   GETASSESSMENTRESPONSELIST: `${BASE_URL}/user/getAssessmentResponseList`,
   GETALLCONTENTS: `${BASE_URL}/content/getAllContents`,
   GETALLPOSTS: `${BASE_URL}/user/getAllHangoutPost`,
-  UPDATEPOST: `${BASE_URL}/user/updateHangoutPost`,
   LIKEPOST: `${BASE_URL}/user/likeCommentHangoutPost`,
   GETALLCOMMENTS: `${BASE_URL}/user/getAllHangoutPostComments`,
   VIEW_PROFILE: `${BASE_URL}/user/viewUserProfile`,
@@ -39,16 +38,19 @@ export const ENDPOINTS = {
   GET_ALL_BOOKED_APPOINTMENTS:`${BASE_URL}/helpline/allBookedAppointments`,
   GET_REACTIONS_ON_MESSAGE:`${BASE_URL}/user/getReactionsOnMessage`,
   GET_RECOMMENDED_CONTENTS:`${BASE_URL}/content/getRecommendedContents`,
-
-
-
- 
   GETALLHELPLINES: `${BASE_URL}/helpline/getAllHelplines`,
   GETHELPLINEFORMQUESTIONS: `${BASE_URL}/helpline/getAllHelplineFormQuestions`,
   SUBMITHELPLINEANSWER: `${BASE_URL}/helpline/addHelplineFormAnswers`,
   GETALLCOMPLAINTHISTORY: `${BASE_URL}/helpline/getAllHelplineSubmittedForms`,
   GETHELPLINEANSWER: `${BASE_URL}/helpline/getOneHelplineFormAnswers`,
-  GetAllAdminBuddyUpEvents: `${BASE_URL}/activity/getAllGroupActivityCategories`,
-  GETUSERLEADERBOARD:`${BASE_URL}/user/getUserLeaderBoard`,
+  GETALLADMINBUDDYUPCATEGORY: `${BASE_URL}/activity/getAllGroupActivityCategories`,
+  GETUSERLEADERBOARD: `${BASE_URL}/user/getUserLeaderBoard`,
+  GETALLBUDDYUPEVENTS: `${BASE_URL}/activity/getAllGroupActivity`,
+  EDITDELETEBUDDYUPEVENTS: `${BASE_URL}/activity/addUpdateGroupActivity`,
+  VIEWBUDDYUPDETAILS: `${BASE_URL}/activity/viewGroupActivityDetails`,
+  LISTALLUSERSFORTAG:`${BASE_URL}/user/listAllUsersForTag`,
+  CREATEPOST:`${BASE_URL}/user/createHangoutPost`,
+  UPDATEPOST:`${BASE_URL}/user/updateHangoutPost`,
+  GETALLSHIPSLIST:`${BASE_URL}/company/getAllShipsList`,
 
 };
