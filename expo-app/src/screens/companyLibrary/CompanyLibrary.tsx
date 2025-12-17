@@ -51,7 +51,7 @@ const CompanyLibrary = () => {
         try {
             setLoading(true);
             contentList.forEach(async (item) => {
-               await getContentList(item);
+                await getContentList(item);
             });
 
         } catch (error) {
@@ -87,7 +87,7 @@ const CompanyLibrary = () => {
                 </Text>
             </View>
             <CompanyAnnouncements />
-            <>
+            {contentListData?.VIDEO?.length > 0 && <>
                 <View
                     style={{
                         flexDirection: "row",
@@ -110,24 +110,28 @@ const CompanyLibrary = () => {
                     </Text>
                     {contentListData?.VIDEO?.length > 3 && (
                         <TouchableOpacity
-                        // onPress={() => {
-                        //     navigation.navigate("ShowAllVideo", {
-                        //         data: Data,
-                        //     });
-                        // }}
+                            onPress={() => {
+                                router.push({
+                                    pathname: "/companyContentList",
+                                    params: {
+                                        title: `Watch`,
+                                        contentType: `VIDEO`
+                                    },
+                                });
+                            }}
                         >
                             <ChevronRight size={24} />
                         </TouchableOpacity>
                     )}
                 </View>
-               {!loading && <View style={{ paddingHorizontal: 16 }}>
+                {!loading && <View style={{ paddingHorizontal: 16 }}>
                     <RelatedContentCard data={contentListData?.VIDEO} />
                 </View>}
 
 
-            </>
+            </>}
 
-            <>
+            {contentListData?.MUSIC?.length > 0 && <>
                 <View
                     style={{
                         flexDirection: "row",
@@ -150,25 +154,29 @@ const CompanyLibrary = () => {
                     </Text>
                     {contentListData?.MUSIC?.length > 3 && (
                         <TouchableOpacity
-                        // onPress={() => {
-                        //     navigation.navigate("ShowAllVideo", {
-                        //         data: Data,
-                        //     });
-                        // }}
+                            onPress={() => {
+                                router.push({
+                                    pathname: "/companyContentList",
+                                    params: {
+                                        title: `Listen`,
+                                        contentType: `MUSIC`
+                                    },
+                                });
+                            }}
                         >
                             <ChevronRight size={24} />
                         </TouchableOpacity>
                     )}
                 </View>
-              { !loading && <View style={{ paddingHorizontal: 16 }}>
+                {!loading && <View style={{ paddingHorizontal: 16 }}>
                     <MusicCard data={contentListData?.MUSIC} />
                 </View>}
 
 
-            </>
+            </>}
 
 
-            <>
+            {contentListData?.READ?.length > 0 && <>
                 <View
                     style={{
                         flexDirection: "row",
@@ -191,22 +199,26 @@ const CompanyLibrary = () => {
                     </Text>
                     {contentListData?.READ?.length > 3 && (
                         <TouchableOpacity
-                        // onPress={() => {
-                        //     navigation.navigate("ShowAllVideo", {
-                        //         data: Data,
-                        //     });
-                        // }}
+                            onPress={() => {
+                                router.push({
+                                    pathname: "/companyContentList",
+                                    params: {
+                                        title: `Read`,
+                                        contentType: `READ`
+                                    },
+                                });
+                            }}
                         >
                             <ChevronRight size={24} />
                         </TouchableOpacity>
                     )}
                 </View>
-            {  !loading &&  <View style={{ paddingHorizontal: 16 }}>
+                {!loading && <View style={{ paddingHorizontal: 16 }}>
                     <RelatedContentCard data={contentListData?.READ} />
                 </View>}
 
 
-            </>
+            </>}
         </View>
     )
 }

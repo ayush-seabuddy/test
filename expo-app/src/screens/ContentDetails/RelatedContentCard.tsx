@@ -1,16 +1,14 @@
-import { ImagesAssets } from "@/src/utils/ImageAssets";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React from "react";
 import {
   Dimensions,
   FlatList,
-  Image,
   ImageBackground,
   Pressable,
   StyleSheet,
   Text,
-  View,
+  View
 } from "react-native";
 import { Content } from "./type";
 // import { ImagesAssets } from "../../assets/ImagesAssets";
@@ -68,15 +66,15 @@ const RelatedVideosCard = ({  data, onArticleClick }:{data:Content[] , onArticle
         data={data}
         renderItem={RenderData}
         showsHorizontalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Image
-              style={{ height: 80, width: 80 }}
-              source={ImagesAssets.NoContent}
-            />
-            <Text style={styles.emptyText}>No Related Videos Found</Text>
-          </View>
-        }
+        // ListEmptyComponent={
+        //   <View style={styles.emptyContainer}>
+        //     <Image
+        //       style={{ height: 80, width: 80 }}
+        //       source={ImagesAssets.NoContent}
+        //     />
+        //     <Text style={styles.emptyText}>No Related Videos Found</Text>
+        //   </View>
+        // }
       />
     </View>
   );

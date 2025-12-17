@@ -63,5 +63,7 @@ export const ImagesAssets = {
   NoContent : require("../../assets/images/no-content.png"),
   forward10 : require("../../assets/images/forward-10.png"),
   replay10 : require("../../assets/images/replay-10.png"),
+  coinStack : require("../../assets/images/coin-stack.png"),
+  users: require("../../assets/images/users.png"),
 
 };

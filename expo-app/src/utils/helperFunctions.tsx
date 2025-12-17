@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import TimeAgo from "javascript-time-ago";
 import en from "javascript-time-ago/locale/en.json";
 import moment from 'moment-timezone';
-import { Text } from 'react-native';
+import { Dimensions, Text } from 'react-native';
 import ReactTimeAgo from 'react-time-ago';
 import { viewProfile } from '../apis/apiService';
 import { updateFleetList, updateShipList } from '../redux/chatListSlice';
@@ -190,3 +190,8 @@ export const formatDate = (date: string) => {
 export const formatStatus = (status: string) => {
   return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 }
+
+
+export const width = Dimensions.get("window").width;
+export const height = Dimensions.get("window").height;
+export const isShipStaff = (role: string) => role !== "Shore_Staff"

@@ -81,7 +81,7 @@ const AudioDetails = ({ data: fullDetails }: { data: Content }) => {
             {player.loop ? (
               <Repeat1 size={32} color="#fff" strokeWidth={2} />
             ) : (
-              <Repeat size={32} color="#fff" strokeWidth={2} />
+              <Repeat size={32} color="#ccc" strokeWidth={2} />
             )}
           </TouchableOpacity>
 
