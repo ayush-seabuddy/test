@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -6,15 +6,14 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Alert,
   Keyboard,
   FlatList,
   ActivityIndicator,
 } from 'react-native';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { useTranslation } from 'react-i18next';
-import { ArrowRightCircle, ChevronLeft, Hash, Tag, Play } from 'lucide-react-native';
-import { router } from 'expo-router';
+import { ArrowRightCircle, ChevronLeft, Hash, Tag, Play, X } from 'lucide-react-native';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
 import { Video, ResizeMode } from 'expo-av';
@@ -27,9 +26,8 @@ import {
   BottomSheetFlatList,
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
-import { X } from 'lucide-react-native';
 import { showToast } from '@/src/components/GlobalToast';
-import { createpost, listallusersfortag, uploadfile } from '@/src/apis/apiService';
+import { listallusersfortag } from '@/src/apis/apiService';
 import { getUserDetails } from '@/src/utils/helperFunctions';
 import { BASE_URL } from '@/src/apis/endpoints';
 import axios from 'axios';
@@ -45,6 +43,7 @@ type MediaItem = {
   uri: string;
   type: 'image' | 'video';
   id: string;
+  isExisting?: boolean; // true if this media was already uploaded (from existing post)
 };
 
 const renderBackdrop = (props: any) => (
@@ -59,50 +58,66 @@ const renderBackdrop = (props: any) => (
 
 const NewPostScreen = () => {
   const { t } = useTranslation();
-  const [caption, setCaption] = useState('');
+  const params = useLocalSearchParams();
+
+  const isEditMode = params.editMode === 'true';
+  const editPostId = params.postId as string;
+
+  const [caption, setCaption] = useState((params.caption as string) || '');
   const [selectedMedia, setSelectedMedia] = useState<MediaItem[]>([]);
-  const [hashtags, setHashtags] = useState<string[]>([]);
+  const [hashtags, setHashtags] = useState<string[]>(
+    params.hashtags ? JSON.parse(params.hashtags as string) : []
+  );
+  const [taggedUsers, setTaggedUsers] = useState<AllUsers[]>(
+    params.taggedUsers ? JSON.parse(params.taggedUsers as string) : []
+  );
+
   const [hashtagInput, setHashtagInput] = useState('');
   const [allUsers, setAllUsers] = useState<AllUsers[]>([]);
-  const [taggedUsers, setTaggedUsers] = useState<AllUsers[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const [hasOpenedTagSheet, setHasOpenedTagSheet] = useState(false);
+
   const mediaSheetRef = useRef<BottomSheetModal>(null);
   const tagSheetRef = useRef<BottomSheetModal>(null);
 
   const snapPoints = ['40%'];
   const tagSnapPoints = ['70%'];
 
-  const openMediaSheet = useCallback(() => {
-    mediaSheetRef.current?.present();
-  }, []);
-
-  const openTagSheet = useCallback(() => {
-    tagSheetRef.current?.present();
-
-    if (!hasOpenedTagSheet && allUsers.length === 0) {
-      fetchAllUsersForTag();
-      setHasOpenedTagSheet(true);
+  // Load existing media when in edit mode
+  useEffect(() => {
+    if (isEditMode && params.imageUrls) {
+      try {
+        const urls: string[] = JSON.parse(params.imageUrls as string);
+        const media: MediaItem[] = urls.map((uri, index) => ({
+          uri,
+          type: /\.(mp4|mov|avi|m4v)$/i.test(uri) ? 'video' : 'image',
+          id: `existing-${index}-${Date.now()}`,
+          isExisting: true,
+        }));
+        setSelectedMedia(media);
+      } catch (e) {
+        console.log('Error parsing existing imageUrls:', e);
+      }
     }
-  }, [hasOpenedTagSheet, allUsers.length]);
+  }, [isEditMode, params.imageUrls]);
 
-  const getMimeType = (uri: string, type: 'image' | 'video') => {
-    if (type === 'video') return 'video/mp4';
-    return 'image/jpeg';
-  };
+  const openMediaSheet = useCallback(() => mediaSheetRef.current?.present(), []);
 
-
-
-  const fetchAllUsersForTag = async () => {
-    const userData = await getUserDetails();
+  const openTagSheet = useCallback(async () => {
+    setLoadingUsers(true);
     try {
-      setLoadingUsers(true);
+      const userData = await getUserDetails();
       const apiResponse = await listallusersfortag({ shipId: userData.shipId });
 
       if (apiResponse.success && apiResponse.status === 200) {
         const usersList = apiResponse.data?.usersList || [];
         setAllUsers(usersList);
+
+        if (usersList.length === 0) {
+          showToast.error(t('oops'), t('nousersboarded'));
+        } else {
+          tagSheetRef.current?.present();
+        }
       } else {
         showToast.error(t('oops'), apiResponse.message);
       }
@@ -112,6 +127,10 @@ const NewPostScreen = () => {
     } finally {
       setLoadingUsers(false);
     }
+  }, [t]);
+
+  const getMimeType = (uri: string, type: 'image' | 'video') => {
+    return type === 'video' ? 'video/mp4' : 'image/jpeg';
   };
 
   const pickMedia = async (type: 'photo' | 'video' | 'gallery') => {
@@ -141,13 +160,13 @@ const NewPostScreen = () => {
       }
 
       if (!result.canceled) {
-        const assets = result.assets;
+        const assets = result.assets || [];
         const newMedia: MediaItem[] = assets.map((asset) => ({
           uri: asset.uri,
           type: asset.type === 'video' ? 'video' : 'image',
-          id: `${asset.uri}-${Date.now()}`,
+          id: `${asset.uri}-${Date.now()}-${Math.random()}`,
+          isExisting: false,
         }));
-
         setSelectedMedia((prev) => [...prev, ...newMedia]);
         showToast.success(t('success'), `${newMedia.length} media item(s) added`);
       }
@@ -161,76 +180,31 @@ const NewPostScreen = () => {
     }
   };
 
-  const createPost = async () => {
-    try {
-      setIsLoading(true);
-
-      const payload = {
-        hangouts: [
-          {
-            caption: caption.trim(),
-            tags: taggedUsers.map((u) => u.id),
-            hashtags,
-            createdAt: new Date().toISOString(),
-          },
-        ],
-      };
-
-      const apiResponse = await createpost(payload);
-
-      setIsLoading(false);
-
-      if (apiResponse.success && apiResponse.status === 200) {
-        showToast.success(t('success'), t('postcreatedsuccessfully'));
-        router.push('/(bottomtab)/community/social')
-      } else {
-        showToast.error(t('oops'), apiResponse.message);
-      }
-    } catch (error) {
-      setIsLoading(false);
-      console.log('Error', error);
-      showToast.error(t('oops'), t('somethingwentwrong'));
-    }
-  };
-
-  const uploadSelectedMedia = async (): Promise<string[]> => {
-    if (selectedMedia.length === 0) {
-      showToast.error(t('oops'), t('nomediafileSelected'));
-      return [];
-    }
+  const uploadNewMediaOnly = async (): Promise<string[]> => {
+    const newMedia = selectedMedia.filter((m) => !m.isExisting);
+    if (newMedia.length === 0) return [];
 
     try {
       setIsLoading(true);
-
       const userData = await getUserDetails();
       const uploadedUrls: string[] = [];
 
-      for (let index = 0; index < selectedMedia.length; index++) {
-        const media = selectedMedia[index];
-
+      for (let i = 0; i < newMedia.length; i++) {
+        const media = newMedia[i];
         const formData = new FormData();
         formData.append('file', {
           uri: media.uri,
-          name: `media_${index}.${media.type === 'video' ? 'mp4' : 'jpg'}`,
+          name: `media_${i}.${media.type === 'video' ? 'mp4' : 'jpg'}`,
           type: getMimeType(media.uri, media.type),
         } as any);
 
-        console.log('====================================');
-        console.log(`⬆️ Uploading file ${index + 1}/${selectedMedia.length}`);
-        console.log(formData);
-        console.log('====================================');
-
-        const response = await axios.post(
-          `${BASE_URL}/user/uploadFile`,
-          formData,
-          {
-            headers: {
-              authToken: userData.authToken,
-              'Content-Type': 'multipart/form-data',
-              Accept: 'application/json',
-            },
-          }
-        );
+        const response = await axios.post(`${BASE_URL}/user/uploadFile`, formData, {
+          headers: {
+            authToken: userData.authToken,
+            'Content-Type': 'multipart/form-data',
+            Accept: 'application/json',
+          },
+        });
 
         if (response.data?.responseCode === 200 && response.data.result) {
           uploadedUrls.push(response.data.result);
@@ -239,14 +213,67 @@ const NewPostScreen = () => {
         }
       }
 
-      console.log('✅ Uploaded URLs:', uploadedUrls);
-      showToast.success(t('success'), 'Media uploaded successfully');
-
+      showToast.success(t('success'), 'New media uploaded');
       return uploadedUrls;
     } catch (error) {
-      console.error('❌ Upload failed:', error);
+      console.error('Upload failed:', error);
       showToast.error(t('error'), t('somethingwentwrong'));
       return [];
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePreview = async () => {
+    if (!caption.trim()) {
+      showToast.error(t('oops'), 'Caption is required');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      let finalMediaUrls: string[] = [];
+
+      // Keep existing (already uploaded) URLs
+      const existingUrls = selectedMedia
+        .filter((m) => m.isExisting)
+        .map((m) => m.uri);
+
+      // Upload only new media
+      const newUploadedUrls = await uploadNewMediaOnly();
+
+      if (newUploadedUrls.length < selectedMedia.filter((m) => !m.isExisting).length) {
+        showToast.error(t('error'), 'Some media failed to upload');
+        return;
+      }
+
+      finalMediaUrls = [...existingUrls, ...newUploadedUrls];
+
+      const mediaForPreview = finalMediaUrls.map((uri) => ({
+        uri,
+        type: /\.(mp4|mov|avi|m4v)$/i.test(uri) ? 'video' : 'image',
+      }));
+
+      router.push({
+        pathname: '/newpost/previewpost',
+        params: {
+          isEditMode: isEditMode ? 'true' : 'false',
+          postId: editPostId || '',
+          mediaFiles: JSON.stringify(mediaForPreview),
+          caption: caption.trim(),
+          hashtags: JSON.stringify(hashtags),
+          taggedUsers: JSON.stringify(
+            taggedUsers.map((u) => ({
+              id: u.id,
+              fullName: u.fullName,
+              profileUrl: u.profileUrl || undefined,
+            }))
+          ),
+        },
+      });
+    } catch (error) {
+      console.error('Preview preparation failed:', error);
+      showToast.error(t('error'), 'Failed to prepare preview');
     } finally {
       setIsLoading(false);
     }
@@ -255,13 +282,11 @@ const NewPostScreen = () => {
   const addHashtag = () => {
     const tag = hashtagInput.trim();
     if (!tag) return;
-
     const formatted = tag.startsWith('#') ? tag : `#${tag}`;
     if (hashtags.includes(formatted)) {
       showToast.error(t('oops'), `${formatted} is already added`);
       return;
     }
-
     setHashtags([...hashtags, formatted]);
     setHashtagInput('');
     Keyboard.dismiss();
@@ -279,40 +304,15 @@ const NewPostScreen = () => {
     setSelectedMedia((prev) => prev.filter((_, i) => i !== indexToRemove));
   }, []);
 
-  const handlePreview = async () => {
-    console.log('=== NEW POST PREVIEW ===');
-
-    const uploadedUrls = await uploadSelectedMedia();
-
-    console.log('Uploaded Media URLs:', uploadedUrls);
-
-    Alert.alert(
-      'Preview Ready!',
-      `Media: ${uploadedUrls}\nTags: ${taggedUsers.length}\nHashtags: ${hashtags.length}`,
-      [{ text: 'OK' }]
-    );
-
-    router.push(
-      {
-pathname:'/newpost/previewpost',
-params:{
-
-  
-}
-      }
-    );
-  };
-
-
   const renderMediaHeader = useCallback(() => (
     <TouchableOpacity style={styles.addMoreMediaButton} onPress={openMediaSheet}>
       <Image source={ImagesAssets.GalleryIcon} style={styles.addMoreIcon} />
       <Text style={styles.addMoreText}>{t('attachmore')}</Text>
     </TouchableOpacity>
-  ), [openMediaSheet]);
+  ), [openMediaSheet, t]);
 
-  const renderMediaItem = useCallback(({ item, index }: { item: MediaItem; index: number }) => {
-    return (
+  const renderMediaItem = useCallback(
+    ({ item, index }: { item: MediaItem; index: number }) => (
       <TouchableOpacity style={styles.mediaItemContainer} activeOpacity={0.9}>
         {item.type === 'image' ? (
           <Image source={{ uri: item.uri }} style={styles.mediaImage} contentFit="cover" />
@@ -327,7 +327,6 @@ params:{
             useNativeControls={false}
           />
         )}
-
         {item.type === 'video' && (
           <View style={styles.videoOverlay}>
             <View style={styles.playIconContainer}>
@@ -335,32 +334,24 @@ params:{
             </View>
           </View>
         )}
-
-        <TouchableOpacity
-          style={styles.removeMediaButton}
-          onPress={() => removeMedia(index)}
-        >
+        <TouchableOpacity style={styles.removeMediaButton} onPress={() => removeMedia(index)}>
           <X size={18} color={Colors.white} />
         </TouchableOpacity>
       </TouchableOpacity>
-    );
-  }, [removeMedia]);
+    ),
+    [removeMedia]
+  );
 
   const renderUserItem = useCallback(
     ({ item }: { item: AllUsers }) => {
       const isSelected = taggedUsers.some((u) => u.id === item.id);
-
       return (
         <TouchableOpacity
           style={[styles.userItem, isSelected && styles.selectedUserItem]}
           onPress={() => toggleTagUser(item)}
         >
           <Image
-            source={
-              item.profileUrl
-                ? { uri: item.profileUrl }
-                : ImagesAssets.userIcon
-            }
+            source={item.profileUrl ? { uri: item.profileUrl } : ImagesAssets.userIcon}
             style={styles.userAvatar}
             contentFit="cover"
           />
@@ -374,15 +365,11 @@ params:{
     [taggedUsers, toggleTagUser]
   );
 
-  const handleTagSheetDismiss = useCallback(() => {
-    tagSheetRef.current?.dismiss();
-  }, []);
-
   return (
     <BottomSheetModalProvider>
       <View style={styles.main}>
         <GlobalHeader
-          title={t('createnewpost')}
+          title={isEditMode ? t('editpost') : t('createnewpost')}
           leftIcon={<ChevronLeft />}
           onLeftPress={() => router.back()}
         />
@@ -453,6 +440,7 @@ params:{
                     <Image
                       source={user.profileUrl ? { uri: user.profileUrl } : ImagesAssets.userIcon}
                       style={styles.taggedAvatar}
+                      contentFit="cover"
                     />
                     <Text style={styles.taggedpeopleName}>{user.fullName}</Text>
                   </View>
@@ -474,8 +462,19 @@ params:{
                 onSubmitEditing={addHashtag}
                 maxLength={20}
               />
-              <TouchableOpacity onPress={addHashtag}>
-                <Text style={styles.addHashtagBtn}>+ Add</Text>
+              <TouchableOpacity
+                onPress={addHashtag}
+                disabled={!hashtagInput.trim()}
+                style={!hashtagInput.trim() && styles.disabledAddHashtagBtn}
+              >
+                <Text
+                  style={[
+                    styles.addHashtagBtn,
+                    !hashtagInput.trim() && styles.disabledAddHashtagText,
+                  ]}
+                >
+                  {t('plusAdd')}
+                </Text>
               </TouchableOpacity>
             </View>
 
@@ -496,16 +495,9 @@ params:{
           <TouchableOpacity
             style={[
               styles.previewandsharebutton,
-              (!caption.trim()) && styles.disabledButton,
+              !caption.trim() && styles.disabledButton,
             ]}
-            onPress={() => {
-              if (selectedMedia.length === 0) {
-                createPost();
-              } else {
-                handlePreview();
-              }
-            }}
-
+            onPress={handlePreview}
             disabled={!caption.trim()}
           >
             <Text style={styles.previewandsharetext}>
@@ -514,6 +506,7 @@ params:{
           </TouchableOpacity>
         </ScrollView>
 
+        {/* Media Selection Bottom Sheet */}
         <BottomSheetModal
           ref={mediaSheetRef}
           index={0}
@@ -524,7 +517,6 @@ params:{
         >
           <BottomSheetView style={styles.sheetContent}>
             <Text style={[styles.sheetTitle, { marginBottom: 10 }]}>{t('selectmedia')}</Text>
-
             <TouchableOpacity style={styles.sheetBtn} onPress={() => pickMedia('photo')}>
               <Text style={styles.sheetBtnText}>{t('takephoto')}</Text>
             </TouchableOpacity>
@@ -534,7 +526,6 @@ params:{
             <TouchableOpacity style={styles.sheetBtn} onPress={() => pickMedia('gallery')}>
               <Text style={styles.sheetBtnText}>{t('choosefromgallery')}</Text>
             </TouchableOpacity>
-
             <TouchableOpacity
               style={styles.cancelBtn}
               onPress={() => mediaSheetRef.current?.dismiss()}
@@ -544,6 +535,7 @@ params:{
           </BottomSheetView>
         </BottomSheetModal>
 
+        {/* Tag People Bottom Sheet */}
         <BottomSheetModal
           ref={tagSheetRef}
           snapPoints={tagSnapPoints}
@@ -558,33 +550,21 @@ params:{
                 styles.doneBtn,
                 taggedUsers.length === 0 && styles.disabledDoneBtn,
               ]}
-              onPress={handleTagSheetDismiss}
+              onPress={() => tagSheetRef.current?.dismiss()}
               disabled={taggedUsers.length === 0}
             >
               <Text style={styles.doneText}>{t('done')}</Text>
             </TouchableOpacity>
           </View>
 
-          {loadingUsers ? (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <ActivityIndicator size="large" color={Colors.lightGreen} />
-            </View>
-          ) : allUsers.length === 0 ? (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-              <Text style={{ color: '#666', fontSize: 14, textAlign: 'center' }}>
-                {t('no_users_found') || 'No users available to tag'}
-              </Text>
-            </View>
-          ) : (
-            <BottomSheetFlatList
-              data={allUsers}
-              keyExtractor={(item: AllUsers) => item.id}
-              renderItem={renderUserItem}
-              contentContainerStyle={styles.flatListContent}
-              showsVerticalScrollIndicator={false}
-              removeClippedSubviews={true}
-            />
-          )}
+          <BottomSheetFlatList
+            data={allUsers}
+            keyExtractor={(item:any) => item.id}
+            renderItem={renderUserItem}
+            contentContainerStyle={styles.flatListContent}
+            showsVerticalScrollIndicator={false}
+            removeClippedSubviews={true}
+          />
         </BottomSheetModal>
       </View>
     </BottomSheetModalProvider>
@@ -597,9 +577,12 @@ const styles = StyleSheet.create({
   main: { flex: 1, backgroundColor: '#fff' },
   loadingOverlay: {
     position: 'absolute',
-    top: '50%',
+    top: 0,
     left: 0,
     right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1000,
   },
@@ -626,10 +609,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
   },
-  galleryIcon: {
-    height: 40,
-    width: 40,
-  },
+  galleryIcon: { height: 40, width: 40 },
   addphotovideoText: {
     fontFamily: 'Poppins-Regular',
     fontSize: 12,
@@ -781,8 +761,10 @@ const styles = StyleSheet.create({
   addHashtagBtn: {
     color: Colors.lightGreen,
     fontFamily: 'Poppins-SemiBold',
-    fontSize: 14,
+    fontSize: 12,
   },
+  disabledAddHashtagBtn: { opacity: 0.5 },
+  disabledAddHashtagText: { color: '#999' },
   hashtagsList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -798,16 +780,8 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     gap: 6,
   },
-  hashtagText: {
-    color: '#000',
-    fontSize: 12,
-    fontFamily: 'Poppins-Regular',
-  },
-  hashtagRemove: {
-    color: '#000',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
+  hashtagText: { color: '#000', fontSize: 12, fontFamily: 'Poppins-Regular' },
+  hashtagRemove: { color: '#000', fontSize: 14, fontWeight: 'bold' },
   previewandsharebutton: {
     backgroundColor: 'black',
     height: 50,
@@ -863,11 +837,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ededed',
     borderColor: '#ededed',
   },
-  userAvatar: {
-    width: 35,
-    height: 35,
-    borderRadius: 25,
-  },
+  userAvatar: { width: 35, height: 35, borderRadius: 25 },
   userInfo: { flex: 1, marginLeft: 15 },
   userName: {
     fontSize: 12,
@@ -886,12 +856,6 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 5,
   },
-  disabledDoneBtn: {
-    backgroundColor: '#aaaaaa',
-  },
-  doneText: {
-    color: 'white',
-    fontSize: 12,
-    fontFamily: 'Poppins-SemiBold',
-  },
+  disabledDoneBtn: { backgroundColor: '#aaaaaa' },
+  doneText: { color: 'white', fontSize: 12, fontFamily: 'Poppins-SemiBold' },
 });

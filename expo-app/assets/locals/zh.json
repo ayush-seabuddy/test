@@ -821,5 +821,8 @@
     "wiper": "机舱清洁工"
   },
   "nomediafileSelected": "未选择媒体文件",
-  "previewpost": "预览帖"
+  "previewpost": "预览帖",
+  "plusAdd": "+ 添加",
+  "deletenotification": "删除通知",
+  "deletenotification_description": "您确定要删除此通知吗？"
 }

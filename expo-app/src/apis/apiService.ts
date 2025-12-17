@@ -41,6 +41,16 @@ export interface UpdatePostRequest {
   status?: string
 }
 
+export interface UpdatePostByIdRequest {
+  id: string,
+  imageUrls?: string[];
+  caption: string;
+  tags?: string[];
+  hashtags?: string[];
+  ratioValue?: number;
+  imageresizeMode?: string;
+}
+
 export interface LikePostRequest {
   hangoutId: string,
   comment: string,
@@ -87,7 +97,7 @@ export interface Hangout {
   caption: string;
   tags?: string[];
   hashtags?: string[];
-  ratioValue?: string;
+  ratioValue?: number;
   imageresizeMode?: string;
   createdAt?: string;
 }
@@ -192,17 +202,17 @@ export interface GetAllContentsParams {
   page?: number,
   limit?: number,
   onlyAnnouncement?: boolean,
-  contentCategory?:string,
-  contentType?:string,
-  department?:string,
-  subCategory?:string
+  contentCategory?: string,
+  contentType?: string,
+  department?: string,
+  subCategory?: string
 }
 
 export interface GetAllHelplinesParams {
   helplineType?: string,
 }
 
-export interface ViewContentDetailsParams{
+export interface ViewContentDetailsParams {
   contentId?: string
 }
 
@@ -259,7 +269,20 @@ export interface ViewBuddyUpDetailsParams {
 }
 
 export interface GetAllShipsListParams {
-  employerId:string
+  employerId: string
+}
+
+export interface GetAllNotificationsParams {
+  page: number,
+  limit: number,
+}
+
+export interface ReadSingleNotificationRequest {
+  notificationId: string
+}
+
+export interface DeleteAndClearAllNotificationRequest {
+  notificationId?: string,
 }
 
 export interface ListAllUsersForTagParams {
@@ -267,10 +290,10 @@ export interface ListAllUsersForTagParams {
 }
 
 export interface GetLeaderboardParams {
-   page:number,
-   limit:number,
-   shipId?:string,
-   designation?:string,
+  page: number,
+  limit: number,
+  shipId?: string,
+  designation?: string,
 }
 
 export const login = async (
@@ -378,6 +401,16 @@ export const updatepost = async (
   return await apiRequest({
     method: "PUT",
     url: ENDPOINTS.UPDATEPOST,
+    data: payload,
+  });
+};
+
+export const updatepostbyid = async (
+  payload: UpdatePostByIdRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "PUT",
+    url: ENDPOINTS.UPDATEPOSTBYID,
     data: payload,
   });
 };
@@ -623,6 +656,39 @@ export const getallshipslist = async (params?: GetAllShipsListParams): Promise<A
   return await apiRequest({
     method: "GET",
     url: ENDPOINTS.GETALLSHIPSLIST,
+    params,
+  });
+};
+
+export const getallnotifications = async (params?: GetAllNotificationsParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETALLNOTIFICATIONS,
+    params,
+  });
+};
+
+
+export const readsinglenotification = async (params?: ReadSingleNotificationRequest): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "PUT",
+    url: ENDPOINTS.READSINGLENOTIFICATION,
+    params,
+  });
+};
+
+export const readallnotifications = async (): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "PUT",
+    url: ENDPOINTS.READALLNOTIFICATIONS,
+  });
+};
+
+
+export const deleteandclearallnotification = async (params?: DeleteAndClearAllNotificationRequest): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "DELETE",
+    url: ENDPOINTS.DELETESINGLEANDCLEARALLNOTIFICATION,
     params,
   });
 };

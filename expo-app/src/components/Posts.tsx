@@ -45,7 +45,8 @@ export interface Post {
 const Posts: React.FC = () => {
   const { t } = useTranslation();
   const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true); // For first load
+  const [loadingMore, setLoadingMore] = useState(false);     // For pagination
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -63,8 +64,13 @@ const Posts: React.FC = () => {
 
     isFetchingMore.current = true;
 
-    if (!isRefresh) setLoading(pageNum === 1);
-    else setRefreshing(true);
+    if (isRefresh) {
+      setRefreshing(true);
+    } else if (pageNum === 1) {
+      setInitialLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
 
     try {
       const response = await getallposts({ page: pageNum, limit });
@@ -82,20 +88,21 @@ const Posts: React.FC = () => {
         setHasMore(newPosts.length === limit);
         setPage(pageNum);
       } else {
-        showToast.error(t('oops'), response.message);
+        showToast.error(t('oops'), response.message || t('somethingwentwrong'));
       }
     } catch (error) {
       console.error('Error fetching posts:', error);
       showToast.error(t('oops'), t('somethingwentwrong'));
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
+      setLoadingMore(false);
       setRefreshing(false);
       isFetchingMore.current = false;
     }
   }, [hasMore, limit, t]);
 
   useEffect(() => {
-    fetchPosts(1, true);
+    fetchPosts(1);
   }, []);
 
   const onRefresh = useCallback(() => {
@@ -105,9 +112,9 @@ const Posts: React.FC = () => {
   }, [fetchPosts]);
 
   const loadMore = useCallback(() => {
-    if (loading || !hasMore || isFetchingMore.current) return;
+    if (loadingMore || initialLoading || !hasMore || isFetchingMore.current) return;
     fetchPosts(page + 1);
-  }, [loading, hasMore, page, fetchPosts]);
+  }, [loadingMore, initialLoading, hasMore, page, fetchPosts]);
 
   const renderItem = useCallback(
     ({ item, index }: { item: Post; index: number }) => {
@@ -123,7 +130,7 @@ const Posts: React.FC = () => {
   const keyExtractor = useCallback((item: Post) => item.id.toString(), []);
 
   const ListFooter = () => {
-    if (!loading || posts.length === 0) return null;
+    if (!loadingMore) return null;
     return (
       <View style={styles.footerLoader}>
         <ActivityIndicator size="small" color={Colors.lightGreen} />
@@ -132,7 +139,7 @@ const Posts: React.FC = () => {
   };
 
   const ListEmpty = () => {
-    if (loading) return null;
+    if (initialLoading) return null;
     return (
       <View style={styles.emptyState}>
         <Image source={ImagesAssets.nodatafound} style={styles.nodatafoundImage} />
@@ -141,7 +148,8 @@ const Posts: React.FC = () => {
     );
   };
 
-  if (loading && posts.length === 0) {
+  // Full screen initial loader
+  if (initialLoading && posts.length === 0) {
     return (
       <View style={styles.centerLoader}>
         <ActivityIndicator size="small" color={Colors.lightGreen} />
@@ -155,7 +163,7 @@ const Posts: React.FC = () => {
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       onEndReached={loadMore}
-      onEndReachedThreshold={0.8} 
+      onEndReachedThreshold={0.5}
       ListFooterComponent={ListFooter}
       ListEmptyComponent={ListEmpty}
       refreshControl={
@@ -171,7 +179,7 @@ const Posts: React.FC = () => {
       maxToRenderPerBatch={10}
       windowSize={21}
       initialNumToRender={10}
-      contentContainerStyle={posts.length === 0 ? styles.emptyContainer : undefined}
+      contentContainerStyle={posts.length === 0 ? styles.emptyContainer : { paddingBottom: 20 }}
     />
   );
 };
@@ -179,6 +187,7 @@ const Posts: React.FC = () => {
 const styles = StyleSheet.create({
   centerLoader: {
     flex: 1,
+    marginTop:200,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
@@ -187,8 +196,14 @@ const styles = StyleSheet.create({
     paddingVertical: 30,
     alignItems: 'center',
   },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 14,
+    color: '#666',
+    fontFamily: 'Poppins-Regular',
+  },
   emptyContainer: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },

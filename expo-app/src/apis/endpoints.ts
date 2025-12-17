@@ -51,6 +51,11 @@ export const ENDPOINTS = {
   LISTALLUSERSFORTAG:`${BASE_URL}/user/listAllUsersForTag`,
   CREATEPOST:`${BASE_URL}/user/createHangoutPost`,
   UPDATEPOST:`${BASE_URL}/user/updateHangoutPost`,
+  UPDATEPOSTBYID:`${BASE_URL}/user/updateHangoutPostById`,
   GETALLSHIPSLIST:`${BASE_URL}/company/getAllShipsList`,
+  GETALLNOTIFICATIONS:`${BASE_URL}/user/getAllNotifications`,
+  READSINGLENOTIFICATION:`${BASE_URL}/user/readSingelNotification`,
+  READALLNOTIFICATIONS:`${BASE_URL}/user/readAllNotification`,
+  DELETESINGLEANDCLEARALLNOTIFICATION:`${BASE_URL}/user/clearNotifications`,
 
 };

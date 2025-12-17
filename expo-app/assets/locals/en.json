@@ -823,5 +823,8 @@
     "wiper": "Wiper"
   },
   "nomediafileSelected": "No media file selected",
-  "previewpost":"Preview Post"
+  "previewpost":"Preview Post",
+  "plusAdd":"+ Add",
+  "deletenotification":"Delete Notification",
+  "deletenotification_description":"Are you sure you want to delete this notification?"
 }
