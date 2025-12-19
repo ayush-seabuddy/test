@@ -121,6 +121,7 @@
   "buddyup": "BuddyUp!",
   "buddyup_description": "Unwind, connect with your crew, and get rewarded for making ship life more fun.",
   "createyourbuddyup": "Create your BuddyUp Event",
+  "createbuddyup": "Create BuddyUp Event",
   "ongoing": "Ongoing",
   "past": "Past",
   "requested": "Requested",
@@ -235,7 +236,7 @@
     "description": "For any issues or questions about these terms, contact:",
     "email": "info@seabuddy.com.sg"
   },
-  "hashtagError": "Hashtags must be at least onPoste character long (excluding #).",
+  "hashtagError": "Hashtags must be at least one character long (excluding #).",
   "hashtagAlreadyAdded": "Hashtag {{tag}} is already added.",
   "camerapermission": "Camera Permission",
   "camerapermission_description": "App needs access to your camera to take photos or videos.",
@@ -585,7 +586,7 @@
   "uploadProfilePhoto": "Upload a profile photo",
   "uploadPhotoDescription": "Please upload a clear and recent photo of yourself. A good profile picture helps others recognize you and personalize your experience.",
   "photoLibraryPermissionRequired": "Photo library permission is required.",
-  "imagePickFailed": "Failed to select or crop image.",
+  "imagePickFailed": "Failed to select image.",
   "selectFile": "Select file to upload",
   "or": "Or",
   "openCamera": "Open Camera",
@@ -826,5 +827,8 @@
   "previewpost":"Preview Post",
   "plusAdd":"+ Add",
   "deletenotification":"Delete Notification",
-  "deletenotification_description":"Are you sure you want to delete this notification?"
+  "deletenotification_description":"Are you sure you want to delete this notification?",
+    "calendar":"Calendar",
+    "removephoto":"Remove Photo",
+    "editbuddyup":"Edit BuddyUp Event"
 }

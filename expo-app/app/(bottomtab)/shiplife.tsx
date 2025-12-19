@@ -15,6 +15,7 @@ import { getUserDetails } from '@/src/utils/helperFunctions'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useNavigation } from '@react-navigation/native'
 import BuddyUpEventCard from '@/src/components/ShipLifeComponent/BuddyUpEventCard'
+import { router } from 'expo-router'
 
 const { height } = Dimensions.get('screen');
 
@@ -288,7 +289,11 @@ const ShipLifeScreen = () => {
 
       case 'createButton':
         return (
-          <TouchableOpacity style={styles.createyourbuddyupButton}>
+          <TouchableOpacity style={styles.createyourbuddyupButton}
+            onPress={() => {
+              router.push('/createyourbuddyupevent')
+            }}
+          >
             <Text style={styles.createyourbuddyupText}>
               {t('createyourbuddyup')}
             </Text>

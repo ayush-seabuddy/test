@@ -43,7 +43,7 @@ type MediaItem = {
   uri: string;
   type: 'image' | 'video';
   id: string;
-  isExisting?: boolean; // true if this media was already uploaded (from existing post)
+  isExisting?: boolean;
 };
 
 const renderBackdrop = (props: any) => (
@@ -168,12 +168,16 @@ const NewPostScreen = () => {
           isExisting: false,
         }));
         setSelectedMedia((prev) => [...prev, ...newMedia]);
-        showToast.success(t('success'), `${newMedia.length} media item(s) added`);
+        showToast.success(
+          t('success'),
+          t('mediaitemsadded', { count: newMedia.length })
+        );
+
       }
     } catch (error: any) {
       if (!error.message?.includes('User cancelled')) {
         console.error('Error picking media:', error);
-        showToast.error(t('error'), 'Failed to select media');
+        showToast.error(t('error'), t('imagePickFailed'));
       }
     } finally {
       setIsLoading(false);
@@ -559,7 +563,7 @@ const NewPostScreen = () => {
 
           <BottomSheetFlatList
             data={allUsers}
-            keyExtractor={(item:any) => item.id}
+            keyExtractor={(item: any) => item.id}
             renderItem={renderUserItem}
             contentContainerStyle={styles.flatListContent}
             showsVerticalScrollIndicator={false}

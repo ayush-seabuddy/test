@@ -71,26 +71,35 @@ export interface SaveAssessmentRequest {
   }>;
 }
 
-export interface EditDeleteBuddyUpEventRequest {
+export interface AddEditDeleteBuddyUpEventRequest {
   groupActivities?: {
     eventId?: string;
-    imageUrls?: string[];
-    eventName?: string;
-    categoryId?: string;
+    eventName?: string | null;
     description?: string;
-    location?: string;
+    categoryId?: string | null;
+    location?: string | null;
     startDateTime?: string;
     endDateTime?: string;
-    points?: number;
-    isPublic?: boolean;
-    joinedPeople?: string[];
-    hashtags?: string[];
-    createdAt?: string;
+    timezone?: string;
+    imageUrls?: string[];
     completionImages?: string[];
+    joinedPeople?: string[];
+    isPublic?: boolean;
+    points?: number;
+    hashtags?: string[] | undefined;
+    shipId?: any;
+    createdAt?: string;
     completionDescription?: string;
-    status?: "ACTIVE" | "BLOCK" | "DELETE" | "COMPLETED" | "REQUESTED" | "REPORTED";
+    status?:
+    | "ACTIVE"
+    | "BLOCK"
+    | "DELETE"
+    | "COMPLETED"
+    | "REQUESTED"
+    | "REPORTED";
   }[];
 }
+
 
 export interface Hangout {
   imageUrls?: string[];
@@ -254,7 +263,9 @@ export interface GetSingleHelplineAnswerParams {
 }
 
 export interface GETALLADMINBUDDYUPCATEGORYParams {
-  isAdmin: boolean;
+  isAdmin?: boolean;
+  page?: number,
+  limit?: number
 }
 
 export interface GetAllBuddyUpEventParams {
@@ -614,12 +625,12 @@ export const GETALLBUDDYUPEVENTS = async (params?: GetAllBuddyUpEventParams): Pr
   });
 };
 
-export const editdeletebuddyupevent = async (
-  payload: EditDeleteBuddyUpEventRequest
+export const addeditdeletebuddyupevent = async (
+  payload: AddEditDeleteBuddyUpEventRequest
 ): Promise<ApiResponse> => {
   return await apiRequest({
     method: "POST",
-    url: ENDPOINTS.EDITDELETEBUDDYUPEVENTS,
+    url: ENDPOINTS.ADDEDITDELETEBUDDYUPEVENTS,
     data: payload,
   });
 };

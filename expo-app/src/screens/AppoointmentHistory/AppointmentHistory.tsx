@@ -304,10 +304,10 @@ const styles = StyleSheet.create({
   },
 
   emptyText: {
-    fontSize: 20,
+    fontSize: 16,
     color: "#000",
     fontFamily: "Poppins-SemiBold",
-    marginTop: 10,
+    marginTop: 20,
   },
 
   bottomCard: {

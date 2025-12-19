@@ -121,6 +121,7 @@
   "buddyup": "BuddyUp!",
   "buddyup_description": "放松身心，与船员互动，举办活动还能赚取奖励，让船上生活更有趣！",
   "createyourbuddyup": "创建你的 BuddyUp 活动",
+  "createbuddyup": "创建 BuddyUp 活动",
   "ongoing": "进行中",
   "past": "已结束",
   "requested": "已申请",
@@ -584,7 +585,7 @@
   "uploadProfilePhoto": "上传个人资料照片",
   "uploadPhotoDescription": "请上传一张清晰且近期的照片。好的个人资料照片有助于他人识别您并个性化您的体验。",
   "photoLibraryPermissionRequired": "需要照片库权限。",
-  "imagePickFailed": "选择或裁剪图像失败。",
+  "imagePickFailed": "图片选择失败。",
   "selectFile": "选择要上传的文件",
   "or": "或者",
   "openCamera": "打开相机",
@@ -824,5 +825,8 @@
   "previewpost": "预览帖",
   "plusAdd": "+ 添加",
   "deletenotification": "删除通知",
-  "deletenotification_description": "您确定要删除此通知吗？"
+  "deletenotification_description": "您确定要删除此通知吗？",
+  "calendar": "日历",
+  "removephoto": "删除照片",
+  "editbuddyup": "编辑 BuddyUp 活动"
 }

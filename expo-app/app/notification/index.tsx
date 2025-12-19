@@ -134,7 +134,6 @@ const NotificationScreen = () => {
                 setNotifications((prev) =>
                     prev.filter((notif) => notif.id !== selectedNotificationId)
                 );
-                showToast.success(t('success'));
             } else {
                 showToast.error(t('oops'), response.message);
             }

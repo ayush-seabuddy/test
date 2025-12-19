@@ -46,7 +46,7 @@ export const ENDPOINTS = {
   GETALLADMINBUDDYUPCATEGORY: `${BASE_URL}/activity/getAllGroupActivityCategories`,
   GETUSERLEADERBOARD: `${BASE_URL}/user/getUserLeaderBoard`,
   GETALLBUDDYUPEVENTS: `${BASE_URL}/activity/getAllGroupActivity`,
-  EDITDELETEBUDDYUPEVENTS: `${BASE_URL}/activity/addUpdateGroupActivity`,
+  ADDEDITDELETEBUDDYUPEVENTS: `${BASE_URL}/activity/addUpdateGroupActivity`,
   VIEWBUDDYUPDETAILS: `${BASE_URL}/activity/viewGroupActivityDetails`,
   LISTALLUSERSFORTAG:`${BASE_URL}/user/listAllUsersForTag`,
   CREATEPOST:`${BASE_URL}/user/createHangoutPost`,
