@@ -24,6 +24,7 @@
     "@expo/vector-icons": "^15.0.3",
     "@gorhom/bottom-sheet": "^5.2.6",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/datetimepicker": "^8.5.1",
     "@react-native-community/netinfo": "11.4.1",
     "@react-native-community/slider": "5.0.1",
     "@react-navigation/bottom-tabs": "^7.3.10",
@@ -60,6 +61,7 @@
     "expo-system-ui": "~6.0.8",
     "expo-video": "~3.0.14",
     "expo-web-browser": "~15.0.9",
+    "formik": "^2.4.9",
     "i18next": "^25.6.1",
     "javascript-time-ago": "^2.5.12",
     "lottie-react-native": "~7.3.1",
@@ -76,7 +78,7 @@
     "react-native-freshchat-sdk": "^4.7.8",
     "react-native-gesture-handler": "~2.28.0",
     "react-native-image-zoom-viewer": "^3.0.1",
-    "react-native-international-phone-number": "^0.11.2",
+    "react-native-international-phone-number": "^0.11.4",
     "react-native-keyboard-aware-scroll-view": "^0.9.5",
     "react-native-localize": "^3.6.0",
     "react-native-orientation-locker": "^1.7.0",
@@ -98,7 +100,8 @@
     "react-native-worklets": "0.5.1",
     "react-redux": "^9.2.0",
     "react-time-ago": "^7.3.5",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "yup": "^1.7.1"
   },
   "devDependencies": {
     "@react-native-community/cli": "^13.6.9",

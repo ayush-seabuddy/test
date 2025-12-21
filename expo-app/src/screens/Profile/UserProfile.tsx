@@ -1,20 +1,26 @@
 import { viewProfile } from '@/src/apis/apiService'
+import BuddyUpEventList from '@/src/components/BuddyUpEventList'
 import { RootState } from '@/src/redux/store'
 import { updateUserField } from '@/src/redux/userDetailsSlice'
 import Colors from '@/src/utils/Colors'
 import { height, width } from '@/src/utils/helperFunctions'
 import { Image } from 'expo-image'
+import { router } from 'expo-router'
 import { t } from 'i18next'
 import { Settings, SquarePen } from 'lucide-react-native'
 import React, { useEffect, useState } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+import AssessmentList from '../health/AssessmentList'
+import About from './About'
 import ProfileTabs from './ProfileTabs'
+import UserPost from './UserPosts'
 
 const UserProfile = () => {
     const userDetails = useSelector((state: RootState) => state.userDetails)
     const dispatch = useDispatch()
-    const [activeTab, setActiveTab] = useState<string>(t('about'));
+    const [activeTab, setActiveTab] = useState<'about' | 'posts' | 'buddyuponprofile' | 'assessments'>('about');
+
     useEffect(() => {
         const fetchProfileDetails = async () => {
             let result = await viewProfile();
@@ -30,9 +36,24 @@ const UserProfile = () => {
         fetchProfileDetails();
     }, []);
 
+    const renderTabs = () => {
+        switch (activeTab) {
+            case 'about':
+                return <About />;
+            case 'posts':
+                return <UserPost />;
+            case 'buddyuponprofile':
+                return <BuddyUpEventList userId={userDetails.id} />;
+            case 'assessments':
+                return <AssessmentList isProfileScreen={true} />;
+            default:
+                return null;
+        }
+    };
+
     return (
-        <View style={{ flex: 1 , backgroundColor: Colors.white }}>
-            <TouchableOpacity style={styles.settingButtonStyle}>
+        <View style={{ flex: 1, backgroundColor: Colors.white }}>
+            <TouchableOpacity style={styles.settingButtonStyle} onPress={() => router.push("/settings")}>
                 <Settings size={30} />
             </TouchableOpacity>
             <View style={{ display: "flex", justifyContent: "center", alignItems: "center", height: height * .35 }}>
@@ -59,18 +80,18 @@ const UserProfile = () => {
                 <TouchableOpacity
                     activeOpacity={0.8}
                     style={styles.editProfileBtn}
-                //   onPress={() =>
-                //     navigation.navigate("EditProfile", { screen: "Profile" })
-                //   }
+                  onPress={() =>
+                    router.push('/editProfile')
+                  }
                 >
                     <Text style={styles.editProfileBtnText}>{t('editprofile')}</Text>
                 </TouchableOpacity>
 
             </View>
 
-           <ProfileTabs activeTab={activeTab} setActiveTab={setActiveTab} />
-           {/* <PostScreen  /> */}
+            <ProfileTabs activeTab={activeTab} setActiveTab={(tabName: 'about' | 'posts' | 'buddyuponprofile' | 'assessments') => setActiveTab(tabName)} />
 
+            {renderTabs()}
 
         </View>
     )

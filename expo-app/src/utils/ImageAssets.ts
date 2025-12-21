@@ -1,4 +1,3 @@
-import { FilterIcon } from "lucide-react-native";
 
 export const ImagesAssets = {
   appLogo: require("../../assets/images/icon.png"),
@@ -73,5 +72,10 @@ export const ImagesAssets = {
   replay10 : require("../../assets/images/replay-10.png"),
   coinStack : require("../../assets/images/coin-stack.png"),
   users: require("../../assets/images/users.png"),
+  expertiseIcon : require("../../assets/images/expertiseIcon.png"),
+  ethnicityIcon : require("../../assets/images/ethnicityIcon.png"),
+  relationshipIcon : require("../../assets/images/relationshipIcon.png"),
+  religionIcon : require("../../assets/images/religionIcon.png"),
+  hobbiesIcon : require("../../assets/images/hobbiesIcon.png"),
 
 };

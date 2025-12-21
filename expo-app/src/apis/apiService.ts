@@ -34,6 +34,7 @@ export interface UploadFileRequest {
 export interface SocialPostParams {
   page?: number;
   limit?: number;
+  userId?: string;
 }
 export interface UpdatePostRequest {
   hangoutId?: string;
@@ -146,13 +147,13 @@ export interface UpdateProfileRequest {
   dob?: string;
 
   workingExperience?: Array<{
-    id: string;
-    companyName: string;
-    role: string;
-    from: string;
-    to: string;
-    status: "DELETE";
-    createdAt: string;
+    id?: string;
+    companyName?: string;
+    role?: string;
+    from?: string;
+    to?: string;
+    status?: string;
+    createdAt?: string;
   }>;
 
   SocialMediaLinks?: Array<{
@@ -251,7 +252,8 @@ export interface GetAllBuddyUpEventParams {
   page: number,
   limit: number,
   eventType?: string,
-  filter?: string
+  filter?: string,
+  userId?: string
 }
 
 export interface ViewBuddyUpDetailsParams {

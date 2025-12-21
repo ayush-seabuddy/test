@@ -1,20 +1,12 @@
 import { RootState } from '@/src/redux/store';
 import Colors from '@/src/utils/Colors';
 import { height, isShipStaff } from '@/src/utils/helperFunctions';
+import { ImagesAssets } from '@/src/utils/ImageAssets';
 import { Image } from 'expo-image';
 import { t } from 'i18next';
 import {
-  Activity,
-  Calendar,
-  Cigarette,
-  Coins,
   ExternalLink,
-  Mail,
-  MapPin,
-  Phone,
-  Trophy,
-  Users,
-  Wine
+  Trophy
 } from 'lucide-react-native';
 import React, { useCallback, useMemo } from 'react';
 import {
@@ -128,14 +120,14 @@ const About = () => {
           <View style={styles.statsRow}>
             <View style={styles.statCard}>
               <View style={styles.statRow}>
-                <Users size={20} color="grey" />
+                  <Image source={ImagesAssets.users} style={styles.icon} />
                 <Text style={styles.countTextOther}>{userDetails?.groupActivityCount || '0'}</Text>
               </View>
               <Text style={styles.labelTextOther}>{t('buddyupevents')}</Text>
             </View>
             <View style={styles.statCard}>
               <View style={styles.statRow}>
-                <Coins size={20} color="grey" />
+                <Image source={ImagesAssets.coinStack} style={styles.icon} />
                 <Text style={styles.countTextOther}>{userDetails?.rewardPoints || '0'}</Text>
               </View>
               <Text style={styles.labelTextOther}>{t('buddyupmiles')}</Text>
@@ -175,10 +167,7 @@ const About = () => {
           {userDetails?.nationality && (
             <View style={styles.section}>
               <Text style={styles.chipTitle}>{t('location')}</Text>
-              <View style={styles.row}>
-                <MapPin size={16} color="#666" />
                 <Text style={styles.chipText}>{capitalize(userDetails.nationality)}</Text>
-              </View>
             </View>
           )}
 
@@ -199,10 +188,7 @@ const About = () => {
                   />
                 </View>
               </View>
-              <View style={styles.row}>
-                <Calendar size={16} color="#666" />
                 <Text style={styles.chipText}>{`${userDetails.dob} (${age})`}</Text>
-              </View>
             </View>
           )}
 
@@ -211,13 +197,13 @@ const About = () => {
               <Text style={styles.chipTitle}>{t('contact')}</Text>
               {userDetails?.mobileNumber && (
                 <View style={styles.row}>
-                  <Phone size={16} color="#666" />
+                 <Text style={styles.chipTitle}>{t('phone')}</Text>
                   <Text style={styles.value}>{userDetails.mobileNumber}</Text>
                 </View>
               )}
               {userDetails?.email && (
                 <View style={styles.row}>
-                  <Mail size={16} color="#666" />
+                   <Text style={styles.chipTitle}>{t('email')}</Text>
                   <Text style={styles.value}>{userDetails.email}</Text>
                 </View>
               )}
@@ -340,19 +326,19 @@ const About = () => {
             )}
             {userDetails?.smoker && (
               <View style={styles.row}>
-                <Cigarette size={18} color="#666" />
+                 <Text style={styles.chipTitle}>{t('smoking')}</Text>
                 <Text style={styles.value}>{capitalize(userDetails.smoker)}</Text>
               </View>
             )}
             {userDetails?.alcohol && (
               <View style={styles.row}>
-                <Wine size={18} color="#666" />
+                 <Text style={styles.chipTitle}>{t('alcohol')}</Text>
                 <Text style={styles.value}>{capitalize(userDetails.alcohol)}</Text>
               </View>
             )}
             {userDetails?.healthCondition && (
               <View style={styles.row}>
-                <Activity size={18} color="#666" />
+                 <Text style={styles.chipTitle}>{t('healthcondition')}</Text>
                 <Text style={styles.value}>{capitalize(userDetails.healthCondition)}</Text>
               </View>
             )}
@@ -427,21 +413,25 @@ const styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: '600',
     fontFamily: 'Poppins-Regular',
+     color: '#666',
   },
   countTextOther: {
     fontSize: 18,
     fontWeight: '600',
+     color: '#666',
     fontFamily: 'Poppins-SemiBold',
   },
   labelText: {
     fontSize: 20,
     fontWeight: '400',
+    color: '#666',
     fontFamily: 'Poppins-Regular',
   },
   labelTextOther: {
     fontSize: 12,
     fontWeight: '400',
     fontFamily: 'Poppins-Regular',
+     color: '#666',
   },
   hashSymbol: {
     fontSize: 16,
@@ -580,7 +570,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: 'Poppins-Regular',
     color: '#555',
-    marginLeft: 8,
+    // marginLeft: 8,
   },
   card: {
     backgroundColor: '#fff',

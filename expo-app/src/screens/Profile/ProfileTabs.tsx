@@ -1,13 +1,13 @@
 // components/ProfileTabs.tsx
 import Colors from '@/src/utils/Colors';
+import { t } from 'i18next';
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import {
-    Dimensions,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -20,17 +20,15 @@ type TabKey = (typeof tabs)[number];
 
 interface ProfileTabsProps {
   activeTab: string;
-  setActiveTab: (tab: string) => void;
+  setActiveTab: (tab: 'about' | 'posts' | 'buddyuponprofile' | 'assessments') => void;
 }
 
 const ProfileTabs: React.FC<ProfileTabsProps> = ({ activeTab, setActiveTab }) => {
-  const { t } = useTranslation();
-
   return (
     <View style={styles.container}>
       <View style={styles.tabsWrapper}>
         {tabs.map((tabKey: TabKey) => {
-          const translatedTab = t(tabKey);
+          const translatedTab = tabKey;
           const isActive = activeTab === translatedTab;
 
           return (
@@ -41,7 +39,7 @@ const ProfileTabs: React.FC<ProfileTabsProps> = ({ activeTab, setActiveTab }) =>
               activeOpacity={0.7}
             >
               <Text style={[styles.tabText, isActive && styles.activeTabText]}>
-                {translatedTab}
+                {t(translatedTab) }
               </Text>
               {isActive && <View style={styles.activeIndicator} />}
             </TouchableOpacity>

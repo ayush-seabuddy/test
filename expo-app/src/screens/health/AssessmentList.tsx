@@ -25,7 +25,7 @@ type TestItem = {
   testName: string;
 };
 
-const AssessmentList: React.FC = () => {
+const AssessmentList = ({isProfileScreen = false}: {isProfileScreen?: boolean}) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const [listOpen, setListOpen] = useState(true);
@@ -141,6 +141,7 @@ const AssessmentList: React.FC = () => {
 
   return (
     <View>
+      {!isProfileScreen &&
       <View style={styles.headerContainer}>
         <View style={styles.headerRow}>
           <View style={styles.titleRow}>
@@ -163,8 +164,9 @@ const AssessmentList: React.FC = () => {
           </View>
         </View>
       </View>
+      }
 
-      {listOpen && (
+      {(listOpen || isProfileScreen) && (
         <View style={styles.listContainer}>
           {isPersonalityTestCompleted !== null && (
             <View style={styles.cardMargin}>
@@ -292,6 +294,7 @@ const styles = StyleSheet.create({
   },
   cardMargin: {
     marginBottom: 10,
+    minHeight:100
   },
   assessmentCard: {
     backgroundColor: 'rgba(180, 180, 180, 0.4)',
