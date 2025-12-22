@@ -24,7 +24,7 @@ const WellnessCard = () => {
     {
       title: t("moodTracker"),
       image: <Smile size={20} color={Colors.white} />,
-      page: "MoodTracker",
+      page: "moodTracker",
     },
     {
       title: t("analytics"),
@@ -55,7 +55,7 @@ const WellnessCard = () => {
       {/* Health Tracker Cards */}
       <View style={styles.healthRow}>
         {healthTrackerArray.map((item, index) => (
-          <TouchableOpacity key={index} style={styles.healthCard}>
+          <TouchableOpacity key={index} style={styles.healthCard} onPress={() => router.push(item.page)}>
             {item.image}
             <Text style={styles.healthCardText}>{item.title}</Text>
           </TouchableOpacity>

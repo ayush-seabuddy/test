@@ -58,9 +58,10 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
     const [company, setCompany] = useState<string>('');
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
-    const [experiences, setExperiences] = useState<WorkExperience[]>([]);
+
     const userDetails = useSelector((state: RootState) => state.userDetails);
     const dispatch = useDispatch();
+    const [experiences, setExperiences] = useState<WorkExperience[]>(userDetails.workingExperience || []);
     const fetchProfileDetails = async () => {
         const result = await viewProfile();
         if (result?.data) {

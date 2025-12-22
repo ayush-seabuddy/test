@@ -77,5 +77,10 @@ export const ImagesAssets = {
   relationshipIcon : require("../../assets/images/relationshipIcon.png"),
   religionIcon : require("../../assets/images/religionIcon.png"),
   hobbiesIcon : require("../../assets/images/hobbiesIcon.png"),
+  Emoji_1 : require("../../assets/images/Emoji_1.png"),
+  Emoji_2 : require("../../assets/images/Emoji_2.png"),
+  Emoji_3 : require("../../assets/images/Emoji_3.png"),
+  Emoji_4 : require("../../assets/images/Emoji_4.png"),
+  Emoji_5 : require("../../assets/images/Emoji_5.png"),
 
 };

@@ -28,7 +28,6 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({
   dropdownStyle,
   renderLeftIcon,
 }) => {
-  console.log("data: ", data);
   const [isFocus, setIsFocus] = useState<boolean>(false);
 
   useEffect(() => {

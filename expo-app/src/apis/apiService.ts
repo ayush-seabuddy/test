@@ -163,12 +163,12 @@ export interface UpdateProfileRequest {
 
   certifications?: Array<{
     id: string;
-    certificateName: string;
-    from: string;
-    to: string;
-    organization: string;
-    status: "DELETE";
-    createdAt: string;
+    certificateName?: string;
+    from?: string;
+    to?: string;
+    organization?: string;
+    status?: "DELETE";
+    createdAt?: string;
   }>;
 
   status?: string;
@@ -264,6 +264,16 @@ export interface GetAllShipsListParams {
   employerId:string
 }
 
+export interface GetMoodTrackerAnalysisParams {
+  month:string,
+  year:string
+}
+
+export interface GetAllMoodTrackerParams {
+  page:number,
+  limit:number,
+}
+
 export interface ListAllUsersForTagParams {
   shipId: string
 }
@@ -273,6 +283,11 @@ export interface GetLeaderboardParams {
    limit:number,
    shipId?:string,
    designation?:string,
+}
+
+export interface ChangePassword {
+  currentPassword: string,
+  newPassword: string,
 }
 
 export const login = async (
@@ -324,6 +339,8 @@ export const resetpassword = async (
     data: payload,
   });
 };
+
+
 
 
 export const uploadfile = async (payload: UploadFileRequest) => {
@@ -628,3 +645,31 @@ export const getallshipslist = async (params?: GetAllShipsListParams): Promise<A
     params,
   });
 };
+
+
+export const getMoodTrackerAnalysis = async (params?: GetMoodTrackerAnalysisParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GET_MOOD_TRACKER_ANALYSIS,
+    params,
+  });
+};
+
+export const getAllMoodTracker = async (params?: GetAllMoodTrackerParams): Promise<ApiResponse> => {
+   return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GET_ALL_MOOD_TRACKER,
+    params,
+  });
+}
+
+
+export const changePassword =async (
+  payload: ChangePassword
+): Promise<ApiResponse> => {
+ return await apiRequest({
+    method: "POST",
+    url: ENDPOINTS.CHANGE_PASSWORD,
+    data: payload,
+  });
+}

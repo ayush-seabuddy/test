@@ -53,18 +53,18 @@ const Settings = () => {
                 <ScrollView style={styles.container}>
                     <Text style={styles.sectionTitle}>{t("profile_information")}</Text>
                     <View style={styles.section}>
-                        {renderSettingItem("name_nationality_contact", () => { })}
+                        {renderSettingItem("name_nationality_contact", () => {router.push("/editProfile") })}
                         {renderSettingItem("profile_photo", () => {router.push("/profilePhoto")})} 
                         {renderSettingItem("shipboard_experience", () => {router.push("/WorkExperience")})} 
                         {renderSettingItem("social_media", () => {router.push("/SocialMediaLinks")})} 
-                        {renderSettingItem("certifications", () => { })}
-                        {renderSettingItem("change_language", () => { })}
+                        {renderSettingItem("certifications", () => { router.push("/Certifications")})}
+                        {renderSettingItem("change_language", () => { router.push("/ChangeLanguage")})}
                     </View>
 
                     <Text style={styles.sectionTitle}>{t("account")}</Text>
                     <View style={styles.section1}>
-                        {renderSettingItem("change_password", () => { }
-                        )}
+                        {renderSettingItem("change_password", () => { router.push("/ChangePassword") })}
+                       
                         {renderSettingItem("log_out", () => setModalVisible(true))}
                     </View>
 

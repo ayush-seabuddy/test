@@ -52,5 +52,8 @@ export const ENDPOINTS = {
   CREATEPOST:`${BASE_URL}/user/createHangoutPost`,
   UPDATEPOST:`${BASE_URL}/user/updateHangoutPost`,
   GETALLSHIPSLIST:`${BASE_URL}/company/getAllShipsList`,
+  CHANGE_PASSWORD:`${BASE_URL}/user/changePassword`,
+  GET_MOOD_TRACKER_ANALYSIS:`${BASE_URL}/user/getMoodTrackerAnalysis`,
+  GET_ALL_MOOD_TRACKER:`${BASE_URL}/user/getAllMoodTracker`,
 
 };
