@@ -100,6 +100,11 @@ export interface AddEditDeleteBuddyUpEventRequest {
   }[];
 }
 
+export interface CreateCustomCategoryRequest {
+  categoryName: string,
+  categoryImage: string,
+}
+
 
 export interface Hangout {
   imageUrls?: string[];
@@ -701,5 +706,15 @@ export const deleteandclearallnotification = async (params?: DeleteAndClearAllNo
     method: "DELETE",
     url: ENDPOINTS.DELETESINGLEANDCLEARALLNOTIFICATION,
     params,
+  });
+};
+
+export const createcustomcategory = async (
+  payload: CreateCustomCategoryRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "POST",
+    url: ENDPOINTS.CREATECUSTOMCATEGORY,
+    data: payload,
   });
 };

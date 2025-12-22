@@ -8,6 +8,7 @@ import {
     TouchableOpacity,
     View,
     ActivityIndicator,
+    Modal,
 } from 'react-native'
 import React, { useRef, useState, useEffect, useCallback } from 'react'
 import { Image } from 'expo-image'
@@ -22,6 +23,7 @@ import {
     MapPin,
     SquarePen,
     Users,
+    Plus,
 } from 'lucide-react-native'
 import * as ImagePicker from 'expo-image-picker'
 import { useTranslation } from 'react-i18next'
@@ -41,11 +43,13 @@ import moment from 'moment'
 import { getUserDetails } from '@/src/utils/helperFunctions'
 import {
     addeditdeletebuddyupevent,
+    createcustomcategory,
     getalladminbuddyupcategories,
     listallusersfortag,
     uploadfile,
 } from '@/src/apis/apiService'
 import BuddyCalendarModal from '@/src/components/Modals/BuddyCalendarModal'
+import CreateCustomCategoryModal from '@/src/components/Modals/CreateCustomCategoryModal'
 
 type AllParticipants = {
     id: string
@@ -96,7 +100,9 @@ const CreateYourBuddyUpEvent = () => {
     const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
     const [defaultEventImage, setDefaultEventImage] = useState<string | null>(null)
     const [calendarModalVisible, setCalendarModalVisible] = useState(false)
+    const [customCategoryModalVisible, setCustomCategoryModalVisible] = useState(false)
     const [dateSelected, setDateSelected] = useState(false)
+    const [customCategories, setCustomCategories] = useState<AllEvents[]>([])
 
     // Edit mode states
     const [isEditMode, setIsEditMode] = useState(false)
@@ -127,6 +133,20 @@ const CreateYourBuddyUpEvent = () => {
 
     const snapPoints = ['25%']
     const participantsSnapPoints = ['70%']
+
+    // Static "Create Your Own" option
+    const CREATE_YOUR_OWN_OPTION = {
+        id: 'create_your_own',
+        categoryName: t('createyourown'),
+        categoryImage: '',
+        points: '0',
+        creatorPoints: '0',
+        isAdmin: false,
+        isDefault: false,
+        label: t('createyourown'),
+        value: 'create_your_own',
+        isCustomOption: true,
+    }
 
     // Initialize component - runs once on mount
     useEffect(() => {
@@ -265,9 +285,12 @@ const CreateYourBuddyUpEvent = () => {
                     isDefault: event.isDefault,
                     label: event.categoryName,
                     value: event.id,
+                    isCustomOption: false,
                 }));
 
-                setAllEvents(formattedEvents);
+                // Combine API events with custom categories and add "Create Your Own" option
+                const allEventsList = [...formattedEvents, ...customCategories, CREATE_YOUR_OWN_OPTION];
+                setAllEvents(allEventsList);
 
                 console.log('DEBUG: API response received. Formatted events count:', formattedEvents.length);
 
@@ -356,6 +379,7 @@ const CreateYourBuddyUpEvent = () => {
     const isFormValid = () => {
         return (
             selectedEventId !== null &&
+            selectedEventId !== 'create_your_own' &&
             eventDescription.trim() !== '' &&
             eventLocation !== null &&
             selectedStartDate !== null &&
@@ -363,104 +387,40 @@ const CreateYourBuddyUpEvent = () => {
         )
     }
 
-    const handleCreateEvent = async () => {
-        if (!isFormValid()) return
-
-        setLoading(true)
-
-        let finalImageUrl: string | null = defaultEventImage || null
-
-        try {
-            if (selectedMedia && selectedMedia.uri) {
-                const uploadResponse = await uploadfile({ file: selectedMedia.uri })
-                if (uploadResponse.success && uploadResponse.status === 200) {
-                    finalImageUrl = uploadResponse.data
-                    showToast.success(t('success'), t('imageuploadedsuccessfully'))
-                } else {
-                    setLoading(false)
-                    showToast.error(t('oops'), uploadResponse.message || t('failedtouploadimage'))
-                    return
-                }
-            }
-
-            const userData = await getUserDetails()
-
-            const startDateTime = moment(selectedStartDate)
-                .hour(selectedStartTime!.getHours())
-                .minute(selectedStartTime!.getMinutes())
-                .second(0)
-                .millisecond(0)
-                .toISOString()
-
-            let endDateTime = startDateTime
-            if (selectedEndDate && selectedEndTime) {
-                endDateTime = moment(selectedEndDate)
-                    .hour(selectedEndTime.getHours())
-                    .minute(selectedEndTime.getMinutes())
-                    .second(0)
-                    .millisecond(0)
-                    .toISOString()
-            }
-
-            const imageUrls: string[] = []
-            if (finalImageUrl) imageUrls.push(finalImageUrl)
-
-            const joinedPeople = selectedParticipants.map(p => p.id)
-
-            const payload = {
-                groupActivities: [{
-                    ...(isEditMode && existingEventId ? { eventId: existingEventId } : {}),
-                    eventName: eventName,
-                    description: eventDescription.trim(),
-                    startDateTime,
-                    endDateTime,
-                    location: eventLocation,
-                    imageUrls,
-                    joinedPeople: eventType === 'Invite Buddy' ? joinedPeople : [],
-                    categoryId: selectedEventId,
-                    hashtags: hashtags.length > 0 ? hashtags : undefined,
-                    isPublic: eventType === 'Public (All Crew)',
-                    shipId: userData.shipId,
-                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                }]
-            }
-
-            const apiResponse = await addeditdeletebuddyupevent(payload)
-
-            if (apiResponse.success && apiResponse.status === 200) {
-                const msg = isEditMode
-                    ? t('activityupdatedsuccessfully') || 'Activity updated successfully'
-                    : t('activitycreatedsuccessfully') || 'Activity created successfully'
-                showToast.success(t('success'), msg)
-                router.back()
-            } else {
-                showToast.error(t('oops'), apiResponse.message || (isEditMode ? 'Failed to update event' : 'Failed to create event'))
-            }
-        } catch (error: any) {
-            console.error('Event operation error:', error)
-            showToast.error(t('oops'), t('somethingwentwrong'))
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    useEffect(() => {
-        if (isEditMode && availableUsers.length > 0 && params.joinedPeople) {
-            try {
-                const joinedIds: string[] = JSON.parse(params.joinedPeople as string)
-                const matchedUsers = availableUsers.filter(user => joinedIds.includes(user.id))
-                setSelectedParticipants(matchedUsers)
-            } catch (e) { }
-        }
-    }, [availableUsers, isEditMode, params.joinedPeople])
-
     const handleEventSelect = (item: AllEvents) => {
         console.log('DEBUG: handleEventSelect called with:', item);
+        
+        // Check if it's the "Create Your Own" option
+        if (item.id === 'create_your_own') {
+            setCustomCategoryModalVisible(true);
+            return;
+        }
+        
         setEventName(item.categoryName)
         setSelectedEventId(item.id)
         if (!selectedMedia) {
             setDefaultEventImage(item.categoryImage)
         }
+    }
+
+    const handleCustomCategoryCreated = (newCategory: AllEvents) => {
+        console.log('DEBUG: New custom category created:', newCategory);
+        
+        // Add the new category to the custom categories list
+        setCustomCategories(prev => [...prev, newCategory]);
+        
+        // Add to all events list
+        setAllEvents(prev => [...prev.filter(item => item.id !== 'create_your_own'), newCategory, CREATE_YOUR_OWN_OPTION]);
+        
+        // Select the new category
+        setEventName(newCategory.categoryName);
+        setSelectedEventId(newCategory.id);
+        setDefaultEventImage(newCategory.categoryImage || null);
+        
+        // Close the modal
+        setCustomCategoryModalVisible(false);
+        
+        showToast.success(t('success'), t('custom_category_created'));
     }
 
     const handleDateSelect = (dates: {
@@ -627,6 +587,112 @@ const CreateYourBuddyUpEvent = () => {
         return ImagesAssets.SeabuddyPlaceholder
     }
 
+    const handleCreateEvent = async () => {
+        if (!isFormValid()) return
+
+        setLoading(true)
+
+        let finalImageUrl: string | null = defaultEventImage || null
+
+        try {
+            if (selectedMedia && selectedMedia.uri) {
+                const uploadResponse = await uploadfile({ file: selectedMedia.uri })
+                if (uploadResponse.success && uploadResponse.status === 200) {
+                    finalImageUrl = uploadResponse.data
+                    showToast.success(t('success'), t('imageuploadedsuccessfully'))
+                } else {
+                    setLoading(false)
+                    showToast.error(t('oops'), uploadResponse.message || t('failedtouploadimage'))
+                    return
+                }
+            }
+
+            const userData = await getUserDetails()
+
+            const startDateTime = moment(selectedStartDate)
+                .hour(selectedStartTime!.getHours())
+                .minute(selectedStartTime!.getMinutes())
+                .second(0)
+                .millisecond(0)
+                .toISOString()
+
+            let endDateTime = startDateTime
+            if (selectedEndDate && selectedEndTime) {
+                endDateTime = moment(selectedEndDate)
+                    .hour(selectedEndTime.getHours())
+                    .minute(selectedEndTime.getMinutes())
+                    .second(0)
+                    .millisecond(0)
+                    .toISOString()
+            }
+
+            const imageUrls: string[] = []
+            if (finalImageUrl) imageUrls.push(finalImageUrl)
+
+            const joinedPeople = selectedParticipants.map(p => p.id)
+
+            const payload = {
+                groupActivities: [{
+                    ...(isEditMode && existingEventId ? { eventId: existingEventId } : {}),
+                    eventName: eventName,
+                    description: eventDescription.trim(),
+                    startDateTime,
+                    endDateTime,
+                    location: eventLocation,
+                    imageUrls,
+                    joinedPeople: eventType === 'Invite Buddy' ? joinedPeople : [],
+                    categoryId: selectedEventId,
+                    hashtags: hashtags.length > 0 ? hashtags : undefined,
+                    isPublic: eventType === 'Public (All Crew)',
+                    shipId: userData.shipId,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                }]
+            }
+
+            const apiResponse = await addeditdeletebuddyupevent(payload)
+
+            if (apiResponse.success && apiResponse.status === 200) {
+                const msg = isEditMode
+                    ? t('activityupdatedsuccessfully') || 'Activity updated successfully'
+                    : t('activitycreatedsuccessfully') || 'Activity created successfully'
+                showToast.success(t('success'), msg)
+                router.back()
+            } else {
+                showToast.error(t('oops'), apiResponse.message || (isEditMode ? 'Failed to update event' : 'Failed to create event'))
+            }
+        } catch (error: any) {
+            console.error('Event operation error:', error)
+            showToast.error(t('oops'), t('somethingwentwrong'))
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const renderDropdownItem = (item: AllEvents) => {
+        // Special styling for "Create Your Own" option
+        if (item.id === 'create_your_own') {
+            return (
+                <View style={[styles.dropdownItem, styles.createYourOwnItem]}>
+                    <Plus color={Colors.lightGreen} size={20} />
+                    <Text style={[styles.dropdownItemText, styles.createYourOwnText]}>{item.categoryName}</Text>
+                </View>
+            )
+        }
+
+        return (
+            <View style={styles.dropdownItem}>
+                {item.categoryImage && (
+                    <Image
+                        source={{ uri: item.categoryImage }}
+                        style={styles.eventImageThumbnail}
+                        contentFit="cover"
+                    />
+                )}
+                <Text style={styles.dropdownItemText}>{item.categoryName}</Text>
+            </View>
+        )
+    }
+
     return (
         <KeyboardAvoidingView
             style={{ flex: 1 }}
@@ -700,18 +766,7 @@ const CreateYourBuddyUpEvent = () => {
                                     placeholder={eventName || t('selectabuddyup')}
                                     value={selectedEventId}
                                     onChange={(item: AllEvents) => handleEventSelect(item)}
-                                    renderItem={(item: AllEvents) => (
-                                        <View style={styles.dropdownItem}>
-                                            {item.categoryImage && (
-                                                <Image
-                                                    source={{ uri: item.categoryImage }}
-                                                    style={styles.eventImageThumbnail}
-                                                    contentFit="cover"
-                                                />
-                                            )}
-                                            <Text style={styles.dropdownItemText}>{item.categoryName}</Text>
-                                        </View>
-                                    )}
+                                    renderItem={renderDropdownItem}
                                 />
                             </View>
                         )}
@@ -917,6 +972,13 @@ const CreateYourBuddyUpEvent = () => {
                     prefillEndTime={selectedEndTime?.toISOString() || undefined}
                 />
 
+                {/* Custom Category Modal */}
+                <CreateCustomCategoryModal
+                    visible={customCategoryModalVisible}
+                    onClose={() => setCustomCategoryModalVisible(false)}
+                    onCategoryCreated={handleCustomCategoryCreated}
+                />
+
                 {/* Media Picker Bottom Sheet */}
                 <BottomSheet
                     ref={mediaSheetRef}
@@ -990,7 +1052,6 @@ const CreateYourBuddyUpEvent = () => {
 
 export default CreateYourBuddyUpEvent
 
-// Styles remain completely unchanged
 const styles = StyleSheet.create({
     removeImageBtn: {
         position: 'absolute',
@@ -1299,6 +1360,13 @@ const styles = StyleSheet.create({
     plusText: {
         color: '#fff',
         fontSize: 11,
+        fontFamily: 'Poppins-SemiBold',
+    },
+    createYourOwnItem: {
+        backgroundColor: Colors.lightGreen + '15',
+    },
+    createYourOwnText: {
+        color: Colors.lightGreen,
         fontFamily: 'Poppins-SemiBold',
     },
 })

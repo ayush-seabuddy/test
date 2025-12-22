@@ -57,5 +57,6 @@ export const ENDPOINTS = {
   READSINGLENOTIFICATION:`${BASE_URL}/user/readSingelNotification`,
   READALLNOTIFICATIONS:`${BASE_URL}/user/readAllNotification`,
   DELETESINGLEANDCLEARALLNOTIFICATION:`${BASE_URL}/user/clearNotifications`,
+  CREATECUSTOMCATEGORY: `${BASE_URL}/activity/createGroupActivityCategories`,
 
 };
