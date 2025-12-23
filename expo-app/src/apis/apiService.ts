@@ -193,17 +193,17 @@ export interface GetAllContentsParams {
   page?: number,
   limit?: number,
   onlyAnnouncement?: boolean,
-  contentCategory?:string,
-  contentType?:string,
-  department?:string,
-  subCategory?:string
+  contentCategory?: string,
+  contentType?: string,
+  department?: string,
+  subCategory?: string
 }
 
 export interface GetAllHelplinesParams {
   helplineType?: string,
 }
 
-export interface ViewContentDetailsParams{
+export interface ViewContentDetailsParams {
   contentId?: string
 }
 
@@ -261,17 +261,17 @@ export interface ViewBuddyUpDetailsParams {
 }
 
 export interface GetAllShipsListParams {
-  employerId:string
+  employerId: string
 }
 
 export interface GetMoodTrackerAnalysisParams {
-  month:string,
-  year:string
+  month: number,
+  year: number
 }
 
 export interface GetAllMoodTrackerParams {
-  page:number,
-  limit:number,
+  page: number,
+  limit: number,
 }
 
 export interface ListAllUsersForTagParams {
@@ -279,15 +279,27 @@ export interface ListAllUsersForTagParams {
 }
 
 export interface GetLeaderboardParams {
-   page:number,
-   limit:number,
-   shipId?:string,
-   designation?:string,
+  page: number,
+  limit: number,
+  shipId?: string,
+  designation?: string,
 }
 
 export interface ChangePassword {
   currentPassword: string,
   newPassword: string,
+}
+
+export interface MoodTrackerPayload {
+  mood?: string,
+  feeling?: string,
+  reason?: string,
+  details?: string,
+  createdAt?: string,
+}
+
+export interface MoodTrackerRequest {
+  moodTrackers: MoodTrackerPayload[],
 }
 
 export const login = async (
@@ -656,7 +668,7 @@ export const getMoodTrackerAnalysis = async (params?: GetMoodTrackerAnalysisPara
 };
 
 export const getAllMoodTracker = async (params?: GetAllMoodTrackerParams): Promise<ApiResponse> => {
-   return await apiRequest({
+  return await apiRequest({
     method: "GET",
     url: ENDPOINTS.GET_ALL_MOOD_TRACKER,
     params,
@@ -664,12 +676,22 @@ export const getAllMoodTracker = async (params?: GetAllMoodTrackerParams): Promi
 }
 
 
-export const changePassword =async (
+export const changePassword = async (
   payload: ChangePassword
 ): Promise<ApiResponse> => {
- return await apiRequest({
+  return await apiRequest({
     method: "POST",
     url: ENDPOINTS.CHANGE_PASSWORD,
+    data: payload,
+  });
+}
+
+export const moodTracker = async (
+  payload: MoodTrackerRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "POST",
+    url: ENDPOINTS.MOOD_TRACKER,
     data: payload,
   });
 }

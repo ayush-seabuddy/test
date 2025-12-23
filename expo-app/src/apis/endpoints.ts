@@ -55,5 +55,7 @@ export const ENDPOINTS = {
   CHANGE_PASSWORD:`${BASE_URL}/user/changePassword`,
   GET_MOOD_TRACKER_ANALYSIS:`${BASE_URL}/user/getMoodTrackerAnalysis`,
   GET_ALL_MOOD_TRACKER:`${BASE_URL}/user/getAllMoodTracker`,
+  MOOD_TRACKER:`${BASE_URL}/user/moodTracker`
+
 
 };
