@@ -34,6 +34,7 @@ export interface UploadFileRequest {
 export interface SocialPostParams {
   page?: number;
   limit?: number;
+  userId?: string;
 }
 export interface UpdatePostRequest {
   hangoutId?: string;
@@ -170,13 +171,13 @@ export interface UpdateProfileRequest {
   dob?: string;
 
   workingExperience?: Array<{
-    id: string;
-    companyName: string;
-    role: string;
-    from: string;
-    to: string;
-    status: "DELETE";
-    createdAt: string;
+    id?: string;
+    companyName?: string;
+    role?: string;
+    from?: string;
+    to?: string;
+    status?: string;
+    createdAt?: string;
   }>;
 
   SocialMediaLinks?: Array<{
@@ -186,12 +187,12 @@ export interface UpdateProfileRequest {
 
   certifications?: Array<{
     id: string;
-    certificateName: string;
-    from: string;
-    to: string;
-    organization: string;
-    status: "DELETE";
-    createdAt: string;
+    certificateName?: string;
+    from?: string;
+    to?: string;
+    organization?: string;
+    status?: "DELETE";
+    createdAt?: string;
   }>;
 
   status?: string;
@@ -216,10 +217,10 @@ export interface GetAllContentsParams {
   page?: number,
   limit?: number,
   onlyAnnouncement?: boolean,
-  contentCategory?: string,
-  contentType?: string,
-  department?: string,
-  subCategory?: string
+  contentCategory?:  string,
+  contentType?:  string,
+  department?:  string,
+  subCategory?:  string
 }
 
 export interface GetAllHelplinesParams {
@@ -277,7 +278,8 @@ export interface GetAllBuddyUpEventParams {
   page: number,
   limit: number,
   eventType?: string,
-  filter?: string
+  filter?: string,
+  userId?: string
 }
 
 export interface ViewBuddyUpDetailsParams {
@@ -285,7 +287,7 @@ export interface ViewBuddyUpDetailsParams {
 }
 
 export interface GetAllShipsListParams {
-  employerId: string
+  employerId:  string
 }
 
 export interface GetAllNotificationsParams {
@@ -301,15 +303,43 @@ export interface DeleteAndClearAllNotificationRequest {
   notificationId?: string,
 }
 
+export interface GetMoodTrackerAnalysisParams {
+  month: number,
+  year: number
+}
+
+export interface GetAllMoodTrackerParams {
+  page: number,
+  limit: number,
+}
+
 export interface ListAllUsersForTagParams {
   shipId: string
 }
 
 export interface GetLeaderboardParams {
-  page: number,
-  limit: number,
+  isZero?:boolean,
+  page?: number,
+  limit?: number,
   shipId?: string,
   designation?: string,
+}
+
+export interface ChangePassword {
+  currentPassword: string,
+  newPassword: string,
+}
+
+export interface MoodTrackerPayload {
+  mood?: string,
+  feeling?: string,
+  reason?: string,
+  details?: string,
+  createdAt?: string,
+}
+
+export interface MoodTrackerRequest {
+  moodTrackers: MoodTrackerPayload[],
 }
 
 export const login = async (
@@ -361,6 +391,8 @@ export const resetpassword = async (
     data: payload,
   });
 };
+
+
 
 
 export const uploadfile = async (payload: UploadFileRequest) => {
@@ -675,6 +707,44 @@ export const getallshipslist = async (params?: GetAllShipsListParams): Promise<A
     params,
   });
 };
+
+
+export const getMoodTrackerAnalysis = async (params?: GetMoodTrackerAnalysisParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GET_MOOD_TRACKER_ANALYSIS,
+    params,
+  });
+};
+
+export const getAllMoodTracker = async (params?: GetAllMoodTrackerParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GET_ALL_MOOD_TRACKER,
+    params,
+  });
+}
+
+
+export const changePassword = async (
+  payload: ChangePassword
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "POST",
+    url: ENDPOINTS.CHANGE_PASSWORD,
+    data: payload,
+  });
+}
+
+export const moodTracker = async (
+  payload: MoodTrackerRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "POST",
+    url: ENDPOINTS.MOOD_TRACKER,
+    data: payload,
+  });
+}
 
 export const getallnotifications = async (params?: GetAllNotificationsParams): Promise<ApiResponse> => {
   return await apiRequest({

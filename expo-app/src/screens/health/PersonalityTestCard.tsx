@@ -7,7 +7,7 @@ import { Dimensions, Image, Pressable, StyleSheet, Text, View } from "react-nati
 const { width, height } = Dimensions.get("window");
 const isProMax = height >= 926;
 const PersonalityTestCard = ({  data, ApiData , testArray }:{data: any; ApiData: any; testArray: any}) => {
-  console.log("ApiData: ", ApiData?.insights);
+ 
   const { t } = useTranslation();
   return (
     <Pressable
@@ -110,6 +110,7 @@ const styles = StyleSheet.create({
   frameGroup: {
     gap: 16,
     alignSelf: "stretch",
+    flex:1
   },
   frameParent: {
     backgroundColor: "rgba(180, 180, 180, 0.4)",
@@ -118,6 +119,8 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 10,
     alignSelf: "stretch",
+   
+    
   },
 });
 

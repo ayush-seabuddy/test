@@ -1,16 +1,18 @@
-import { StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, ScrollView, FlatList } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { router, useLocalSearchParams } from 'expo-router';
-import GlobalHeader from '@/src/components/GlobalHeader';
-import { ChevronLeft } from 'lucide-react-native';
-import { useTranslation } from 'react-i18next';
-import { Image } from 'expo-image';
-import { formatDate } from '@/src/utils/helperFunctions';
-import { ImagesAssets } from '@/src/utils/ImageAssets';
 import { viewbuddyupdetails } from '@/src/apis/apiService';
+import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import MediaPreviewModal from '@/src/components/Modals/MediaPreviewModal';
+import { RootState } from '@/src/redux/store';
 import Colors from '@/src/utils/Colors';
+import { formatDate } from '@/src/utils/helperFunctions';
+import { ImagesAssets } from '@/src/utils/ImageAssets';
+import { Image } from 'expo-image';
+import { router, useLocalSearchParams } from 'expo-router';
+import { ChevronLeft } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSelector } from 'react-redux';
 
 interface GroupActivityDetail {
     id: string;
@@ -58,6 +60,7 @@ interface GroupActivityDetail {
 
 const BuddyUpEventDescription = () => {
     const { eventId } = useLocalSearchParams<{ eventId: string }>();
+    const userDetails = useSelector((state: RootState) => state.userDetails);
     const { t } = useTranslation();
 
     const [loading, setLoading] = useState(true);
@@ -122,6 +125,37 @@ const BuddyUpEventDescription = () => {
     const joinedPeople = buddydetails.enrichedJoinedPeople || [];
     const joinedCount = joinedPeople.length;
     const displayedJoined = joinedPeople.slice(0, 10);
+
+    const isDisable = (): boolean => {
+        return (buddydetails.isStarted && !buddydetails.isEnded) || buddydetails.isJoined;
+    };
+
+    const canApprove = () => {
+        return ["Captain", "Chief engineer"].includes(userDetails.designation)
+    }
+
+    const getButtonText = () => {
+        if (buddydetails.status === "COMPLETED") {
+            return t('completed')
+        } else if (buddydetails.status === "REQUESTED") {
+            return t('requested')
+        } else if (buddydetails.isEnded && buddydetails.userId === userDetails.id) {
+
+            if (buddydetails.joinedPeople.length > 0 && canApprove()) {
+                return t('markascomplete')
+            } else if (buddydetails.joinedPeople.length > 0 && !canApprove()) {
+                return t('requestedForApproval')
+            } else {
+                return t('pendingReschedule')
+            }
+
+        } else if (buddydetails.isJoined) {
+            return t('Joined')
+        } else {
+            return t('join')
+        }
+
+    }
 
     return (
         <View style={styles.main}>
@@ -252,6 +286,56 @@ const BuddyUpEventDescription = () => {
                     type={selectedMedia?.type ?? "image"}
                 />
                 <View style={{ height: 30 }} />
+                {buddydetails.status === 'REQUESTED' && canApprove() && (
+                    <View
+                        style={{
+                            flexDirection: "row",
+                            justifyContent: "space-between",
+                        }}
+                    >
+                        <TouchableOpacity
+                            style={{
+                                width: "48%",
+                                paddingVertical: 13,
+                                borderRadius: 10,
+                                backgroundColor: "red",
+                                alignItems: "center",
+                                marginTop: "75%",
+                            }}
+                        // onPress={() => handleApporvalGivenByUser("REJECTED")}
+                        >
+                            <Text style={styles.submitButtonText}>{t('reject')}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={{
+                                width: "48%",
+                                paddingVertical: 13,
+                                borderRadius: 10,
+                                backgroundColor: "#02130b",
+                                alignItems: "center",
+                                marginTop: "75%",
+                            }}
+                        // onPress={() => handleApporvalGivenByUser("COMPLETED")}
+                        >
+                            <Text style={styles.submitButtonText}>{t('approve')}</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
+                <TouchableOpacity
+                    style={[
+                        styles.submitButton,
+                        isDisable() && {
+                            backgroundColor: "#E6EBE9",
+                            borderWidth: 1,
+                            borderColor: "#676E7629",
+                        },
+                    ]}
+                    disabled={isDisable()}
+                >
+                    <Text style={styles.submitButtonText}>
+                        {getButtonText()}
+                    </Text>
+                </TouchableOpacity>
             </ScrollView>
         </View>
     );
@@ -320,5 +404,18 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#fff',
+    },
+    submitButton: {
+        width: "100%",
+        paddingVertical: 13,
+        borderRadius: 10,
+        backgroundColor: "#02130b",
+        alignItems: "center",
+    },
+    submitButtonText: {
+        fontSize: 14,
+        fontWeight: "600",
+        color: "#fff",
+        fontFamily: "Poppins-SemiBold",
     },
 });

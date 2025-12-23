@@ -1,22 +1,23 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  StyleSheet,
-  Platform,
-  Dimensions,
-  BackHandler,
-} from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useTranslation } from "react-i18next";
-import Colors from "@/src/utils/Colors";
+import { viewProfile } from "@/src/apis/apiService";
 import CustomLottie from "@/src/components/CustomLottie";
-import { useExitOnBack } from '@/src/hooks/useExitOnBack';
 import ExitAppModal from "@/src/components/Modals/ExitAppModal";
 import PDFModal from "@/src/components/Modals/PDFModal";
+import { useExitOnBack } from '@/src/hooks/useExitOnBack';
+import { updateUserField } from "@/src/redux/userDetailsSlice";
 import FeatureFrame from "@/src/screens/home/FeatureFrame";
-import CustomStatusBar from "@/src/components/CustomStatusBar";
 import HeaderBanner from "@/src/screens/home/HeaderBanner";
-import NotificationPermissionModal from "@/src/components/Modals/NotificationPermissionModal";
+import Colors from "@/src/utils/Colors";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  BackHandler,
+  Dimensions,
+  Platform,
+  StyleSheet,
+  View,
+} from "react-native";
+import { useDispatch } from "react-redux";
 
 const { height } = Dimensions.get("window");
 const isProMax = Platform.OS === "ios" && height >= 926;
@@ -66,6 +67,21 @@ const Home = ({ }) => {
     setPdfUrl("");
     setPdfTitle("App Guide");
   };
+const dispatch = useDispatch();
+     useEffect(() => {
+          const fetchProfileDetails = async () => {
+              let result = await viewProfile();
+              if (result?.data) {
+                  const object = result.data
+                  for (const property in object) {
+                      console.log(`${property}: ${object[property]}`);
+                      dispatch(updateUserField({ key: property, value: object[property] }))
+                  }
+  
+              }
+          }
+          fetchProfileDetails();
+      }, []);
 
 
 return (

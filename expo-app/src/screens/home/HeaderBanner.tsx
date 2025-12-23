@@ -57,19 +57,19 @@ const styles = StyleSheet.create({
   topRow: {
     flexDirection: "row",
     width: "100%",
-    marginHorizontal: 15,
+    marginHorizontal: 16,
     justifyContent: "space-between",
-    marginTop: 10,
+    marginTop: 5,
   },
   topRowProMax: {
     marginTop: 35,
   },
   logoContainer: {
-    padding: 20,
+    marginLeft: 16,
   },
   companyLogo: {
-    width: 55,
-    height: 55,
+    width: 60,
+    height: 60,
   },
   partnerContainer: {
     flexDirection: "row",
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     width: 55,
     height: 55,
   },
- illustrativeIcon: {
+  illustrativeIcon: {
     width: "80%",
     height: "75%",
   },

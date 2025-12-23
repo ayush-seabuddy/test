@@ -1,4 +1,3 @@
-import { FilterIcon } from "lucide-react-native";
 
 export const ImagesAssets = {
   appLogo: require("../../assets/images/icon.png"),
@@ -71,5 +70,17 @@ export const ImagesAssets = {
   NoContent : require("../../assets/images/no-content.png"),
   forward10 : require("../../assets/images/forward-10.png"),
   replay10 : require("../../assets/images/replay-10.png"),
+  coinStack : require("../../assets/images/coin-stack.png"),
+  users: require("../../assets/images/users.png"),
+  expertiseIcon : require("../../assets/images/expertiseIcon.png"),
+  ethnicityIcon : require("../../assets/images/ethnicityIcon.png"),
+  relationshipIcon : require("../../assets/images/relationshipIcon.png"),
+  religionIcon : require("../../assets/images/religionIcon.png"),
+  hobbiesIcon : require("../../assets/images/hobbiesIcon.png"),
+  Emoji_1 : require("../../assets/images/Emoji_1.png"),
+  Emoji_2 : require("../../assets/images/Emoji_2.png"),
+  Emoji_3 : require("../../assets/images/Emoji_3.png"),
+  Emoji_4 : require("../../assets/images/Emoji_4.png"),
+  Emoji_5 : require("../../assets/images/Emoji_5.png"),
 
 };

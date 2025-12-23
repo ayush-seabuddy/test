@@ -77,7 +77,7 @@ type ListItem =
 const ShipLifeScreen = () => {
   const { t } = useTranslation();
   const navigation = useNavigation();
-  const [selectedStatus, setSelectedStatus] = useState<'ONGOING' | 'PAST' | 'REQUESTED'>('ONGOING');
+  const [selectedStatus, setSelectedStatus] = useState<'ON_GOING' | 'PAST' | 'REQUESTED'>('ON_GOING');
 
   const [buddyupCategory, setbuddyupCategory] = useState<AdminBuddyUpCategoryType[]>([]);
   const [ongoingEvents, setOngoingEvents] = useState<BuddyUpEvent[]>([]);
@@ -102,7 +102,7 @@ const ShipLifeScreen = () => {
 
   // Currently displayed events (limited to 5)
   const displayedEvents = useMemo(() => {
-    if (selectedStatus === 'ONGOING') return ongoingEvents.slice(0, 5);
+    if (selectedStatus === 'ON_GOING') return ongoingEvents.slice(0, 5);
     if (selectedStatus === 'PAST') return pastEvents.slice(0, 5);
     if (selectedStatus === 'REQUESTED') return requestedEvents.slice(0, 5);
     return [];
@@ -110,7 +110,7 @@ const ShipLifeScreen = () => {
 
   // Full list for "View All" check
   const getFullEventsList = () => {
-    if (selectedStatus === 'ONGOING') return ongoingEvents;
+    if (selectedStatus === 'ON_GOING') return ongoingEvents;
     if (selectedStatus === 'PAST') return pastEvents;
     if (selectedStatus === 'REQUESTED') return requestedEvents;
     return [];
@@ -145,9 +145,9 @@ const ShipLifeScreen = () => {
 
       const [adminbuddyRes, topemployeeRes, ongoingRes, pastRes, viewprofileRes] = await Promise.all([
         getalladminbuddyupcategories({ isAdmin: true }),
-        getleaderboard(),
-        GETALLBUDDYUPEVENTS({ page: 1, limit: 5, eventType: 'ON_GOING' }),
-        GETALLBUDDYUPEVENTS({ page: 1, limit: 5, eventType: 'PAST' }),
+        getleaderboard({ isZero: false }),
+        GETALLBUDDYUPEVENTS({ page: 1, limit: 10, eventType: 'ON_GOING' }),
+        GETALLBUDDYUPEVENTS({ page: 1, limit: 10, eventType: 'PAST' }),
         viewProfile({ userId: loggeduserData?.id })
       ]);
 
@@ -215,7 +215,7 @@ const ShipLifeScreen = () => {
     if (requestedEvents.length > 0) return; // Already loaded
 
     try {
-      const res = await GETALLBUDDYUPEVENTS({ page: 1, limit: 5, filter: 'REQUESTED' });
+      const res = await GETALLBUDDYUPEVENTS({ page: 1, limit: 10, filter: 'REQUESTED' });
       if (res.success && res.status === 200) {
         setRequestedEvents(res.data.groupActivityList ?? []);
       } else {
@@ -226,7 +226,7 @@ const ShipLifeScreen = () => {
     }
   };
 
-  const handleTabChange = (status: 'ONGOING' | 'PAST' | 'REQUESTED') => {
+  const handleTabChange = (status: 'ON_GOING' | 'PAST' | 'REQUESTED') => {
     setSelectedStatus(status);
     if (status === 'REQUESTED' && designation === 'Captain') {
       fetchRequestedEvents();
@@ -234,9 +234,13 @@ const ShipLifeScreen = () => {
   };
 
   const handleViewAll = () => {
-    const fullData = getFullEventsList();
-    // You can navigate to a full list screen here if needed
-    // navigation.navigate('BuddyUpAllEvents', { events: fullData, type: selectedStatus });
+    const eventType = selectedStatus;
+    router.push({
+      pathname: '/viewallbuddyupevents',
+      params: {
+        eventType: eventType,
+      },
+    });
   };
 
   const computeData = (): ListItem[] => {
@@ -305,8 +309,8 @@ const ShipLifeScreen = () => {
           <View style={styles.tabContainer}>
             {isBoarded && (
               <TouchableOpacity
-                style={[styles.tab, selectedStatus === "ONGOING" && styles.activeTab]}
-                onPress={() => handleTabChange("ONGOING")}
+                style={[styles.tab, selectedStatus === "ON_GOING" && styles.activeTab]}
+                onPress={() => handleTabChange("ON_GOING")}
               >
                 <Text style={styles.tabText}>{t('ongoing')}</Text>
               </TouchableOpacity>
@@ -330,7 +334,7 @@ const ShipLifeScreen = () => {
 
       case 'viewall':
         return (
-          <View style={{ alignItems: "flex-end", marginHorizontal: 5, marginBottom: 10 }}>
+          <View style={{ alignItems: "flex-end", marginHorizontal: 5, marginBottom: 5 }}>
             <TouchableOpacity style={styles.ViewAllButton} onPress={handleViewAll}>
               <Text style={styles.ViewAllText}>{t('viewall')}</Text>
             </TouchableOpacity>
@@ -473,7 +477,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: "center",
     alignItems: "center",
-    marginVertical: 20,
+    marginBottom: 16,
   },
   createyourbuddyupText: {
     color: "#fff",

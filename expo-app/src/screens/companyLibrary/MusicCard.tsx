@@ -1,6 +1,6 @@
 // MusicCard.tsx
 import Colors from "@/src/utils/Colors";
-import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { router } from "expo-router";
 import { ArrowUpRight } from "lucide-react-native";
 import React from "react";
 import {
@@ -18,7 +18,7 @@ const { width } = Dimensions.get("window");
 
 // Define the shape of your data item
 interface MusicItem {
-  id?: string | number; // optional, useful for FlatList key
+  id: string ; // optional, useful for FlatList key
   thumbnail?: string;
   contentTitle?: string;
   // Add other properties as needed
@@ -37,9 +37,12 @@ const MusicCard: React.FC<MusicCardProps> = ({  data }) => {
   const renderItem: ListRenderItem<MusicItem> = ({ item }) => (
     <TouchableOpacity
       style={styles.cardContainer}
-    //   onPress={() => {
-    //     navigation.navigate("MusicPlayer", { dataItem: item });
-    //   }}
+      onPress={() => {
+        router.push({
+                    pathname: "/contentDetails/[contentId]",
+                    params: { item: JSON.stringify(item), contentId: item?.id },
+                  })
+      }}
     >
       <View style={styles.cardContent}>
         {/* Thumbnail */}
@@ -77,31 +80,31 @@ const MusicCard: React.FC<MusicCardProps> = ({  data }) => {
         data={slicedData}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
-        ListEmptyComponent={
-          <View
-            style={{
-              justifyContent: "center",
-              alignItems: "center",
-              paddingVertical: 30,
-              width: width,
-            }}
-          >
-            <Image
-              style={{ height: 80, width: 80 }}
-              source={ImagesAssets.NoContent}
-            />
-            <Text
-              style={{
-                fontSize: 14,
-                fontFamily: "Poppins-Regular",
-                color: "#000",
-                marginTop: 10,
-              }}
-            >
-              No Audio Found
-            </Text>
-          </View>
-        }
+        // ListEmptyComponent={
+        //   <View
+        //     style={{
+        //       justifyContent: "center",
+        //       alignItems: "center",
+        //       paddingVertical: 30,
+        //       width: width,
+        //     }}
+        //   >
+        //     <Image
+        //       style={{ height: 80, width: 80 }}
+        //       source={ImagesAssets.NoContent}
+        //     />
+        //     <Text
+        //       style={{
+        //         fontSize: 14,
+        //         fontFamily: "Poppins-Regular",
+        //         color: "#000",
+        //         marginTop: 10,
+        //       }}
+        //     >
+        //       No Audio Found
+        //     </Text>
+        //   </View>
+        // }
       />
     </View>
   );
