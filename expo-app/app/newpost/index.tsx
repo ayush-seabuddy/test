@@ -148,7 +148,7 @@ const NewPostScreen = () => {
       } else if (type === 'video') {
         result = await ImagePicker.launchCameraAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-          videoMaxDuration: 45,
+          videoMaxDuration: 45
         });
       } else {
         result = await ImagePicker.launchImageLibraryAsync({
@@ -161,18 +161,36 @@ const NewPostScreen = () => {
 
       if (!result.canceled) {
         const assets = result.assets || [];
+        const invalidVideos = assets.filter(
+          (asset) =>
+            asset.type === 'video' &&
+            asset.duration &&
+            asset.duration > 45000
+        );
+
+        if (invalidVideos.length > 0) {
+          const longestSeconds = Math.round(
+            Math.max(...invalidVideos.map((v) => v.duration || 0)) / 1000
+          );
+          showToast.error(
+            t('oops'),
+            t('videotoolong', { seconds: longestSeconds, max: 45 })
+          );
+          return;
+        }
+
         const newMedia: MediaItem[] = assets.map((asset) => ({
           uri: asset.uri,
           type: asset.type === 'video' ? 'video' : 'image',
           id: `${asset.uri}-${Date.now()}-${Math.random()}`,
           isExisting: false,
         }));
+
         setSelectedMedia((prev) => [...prev, ...newMedia]);
         showToast.success(
           t('success'),
           t('mediaitemsadded', { count: newMedia.length })
         );
-
       }
     } catch (error: any) {
       if (!error.message?.includes('User cancelled')) {

@@ -269,6 +269,7 @@
   "keepitpositive": "保持积极",
   "keepitpositive_description": "分享安全、尊重、积极向上的内容，营造良好船员社区氛围。",
   "addphotovideo": "+ 添加照片/视频（可选）",
+  "addphotovideorequestScreen": "+ 添加照片/视频",
   "writeacaption": "撰写说明",
   "captionplaceholder": "在想什么？分享你的想法...",
   "tagpeople": "标记人员",
@@ -828,5 +829,9 @@
   "deletenotification_description": "您确定要删除此通知吗？",
   "calendar": "日历",
   "removephoto": "删除照片",
-  "editbuddyup": "编辑 BuddyUp 活动"
+  "editbuddyup": "编辑 BuddyUp 活动",
+  "requestapprovalform": "申请审批表",
+  "writeadescription": "写一个描述",
+  "sharetofeed": "Share to feed",
+      "videotoolong": "视频时长必须不超过45秒。"
 }

@@ -269,6 +269,7 @@
   "keepitpositive": "Keep it positive",
   "keepitpositive_description": "Share content that’s safe, respectful, and uplifting for your crew",
   "addphotovideo": "+ Add Photo/Video (Optional)",
+  "addphotovideorequestScreen": "+ Add Photo/Video",
   "writeacaption": "Write a caption",
   "captionplaceholder": "What's on your mind? Share your thoughts...",
   "tagpeople": "Tag People",
@@ -824,11 +825,16 @@
     "wiper": "Wiper"
   },
   "nomediafileSelected": "No media file selected",
-  "previewpost":"Preview Post",
-  "plusAdd":"+ Add",
-  "deletenotification":"Delete Notification",
-  "deletenotification_description":"Are you sure you want to delete this notification?",
-    "calendar":"Calendar",
-    "removephoto":"Remove Photo",
-    "editbuddyup":"Edit BuddyUp Event"
+  "previewpost": "Preview Post",
+  "plusAdd": "+ Add",
+  "deletenotification": "Delete Notification",
+  "deletenotification_description": "Are you sure you want to delete this notification?",
+  "calendar": "Calendar",
+  "removephoto": "Remove Photo",
+  "editbuddyup": "Edit BuddyUp Event",
+  "requestapprovalform": "Request Approval Form",
+  "writeadescription": "Write a description",
+  "shareforapproval": "Share for Approval",
+  "sharetofeed": "Share to feed",
+  "videotoolong": "Video must be 45 seconds or shorter."
 }
