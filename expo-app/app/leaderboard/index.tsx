@@ -490,7 +490,7 @@ const styles = StyleSheet.create({
         color: '#333', 
         fontFamily: 'Poppins-SemiBold' 
     },
-    bottomSheetContent: { paddingHorizontal: 16, paddingBottom: 24 },
+    bottomSheetContent: { paddingHorizontal: 16, paddingBottom: 30},
     filterItem: { marginBottom: 10 },
     filterLabel: { 
         fontSize: 14, 

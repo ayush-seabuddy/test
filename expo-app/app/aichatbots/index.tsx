@@ -11,6 +11,8 @@ import {
     Animated,
     ActivityIndicator,
     TouchableWithoutFeedback,
+    KeyboardAvoidingView,
+    Platform,
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import GlobalHeader from '@/src/components/GlobalHeader';
@@ -21,6 +23,7 @@ import moment from 'moment';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import LottieView from 'lottie-react-native';
 import socketService from '@/src/utils/socketService';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const AIChatbotScreen = () => {
     const { chatbotType, chatbotName } = useLocalSearchParams();
@@ -251,126 +254,134 @@ const AIChatbotScreen = () => {
                 </TouchableWithoutFeedback>
 
             </Modal>
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === 'ios' ? 'padding' : "height"}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}
+            >
 
-            <FlatList
-                ref={flatListRef}
-                data={chatSections}
-                keyExtractor={(item) => item.title}
-                style={styles.chatList}
-                contentContainerStyle={{
-                    paddingHorizontal: 15,
-                    flexGrow: 1
-                }}
-                renderItem={({ item }) => (
-                    <View>
-                        <View style={styles.dateHeader}>
-                            <Text style={styles.dateText}>{item.title}</Text>
-                        </View>
-                        {item.data.map((msg: any) => (
-                            <View key={msg.id || msg.tempId} style={{ marginVertical: 4 }}>
-                                <View
-                                    style={[
-                                        styles.messageBubble,
-                                        msg.isSender ? styles.userBubble : styles.aiBubble,
-                                    ]}
-                                >
-                                    <Text
+                <FlatList
+                    ref={flatListRef}
+                    data={chatSections}
+                    keyExtractor={(item) => item.title}
+                    style={styles.chatList}
+                    contentContainerStyle={{
+                        paddingHorizontal: 15,
+                        flexGrow: 1
+                    }}
+                    renderItem={({ item }) => (
+                        <View>
+                            <View style={styles.dateHeader}>
+                                <Text style={styles.dateText}>{item.title}</Text>
+                            </View>
+                            {item.data.map((msg: any) => (
+                                <View key={msg.id || msg.tempId} style={{ marginVertical: 4 }}>
+                                    <View
                                         style={[
-                                            styles.messageText,
-                                            msg.isSender ? styles.userText : styles.aiText,
+                                            styles.messageBubble,
+                                            msg.isSender ? styles.userBubble : styles.aiBubble,
                                         ]}
                                     >
-                                        {msg.content}
+                                        <Text
+                                            style={[
+                                                styles.messageText,
+                                                msg.isSender ? styles.userText : styles.aiText,
+                                            ]}
+                                        >
+                                            {msg.content}
+                                        </Text>
+                                    </View>
+                                    <Text
+                                        style={[
+                                            styles.timestamp,
+                                            msg.isSender ? styles.userTimestamp : styles.aiTimestamp,
+                                        ]}
+                                    >
+                                        {moment(msg.createdAt).format('hh:mm A')}
                                     </Text>
                                 </View>
-                                <Text
-                                    style={[
-                                        styles.timestamp,
-                                        msg.isSender ? styles.userTimestamp : styles.aiTimestamp,
-                                    ]}
-                                >
-                                    {moment(msg.createdAt).format('hh:mm A')}
-                                </Text>
-                            </View>
-                        ))}
-                    </View>
-                )}
-                ListFooterComponent={
-                    isTyping ? (
-                        <View style={styles.typingContainer}>
-                            <LottieView
-                                source={require('@/assets/typing-dots.json')}
-                                autoPlay
-                                loop
-                                style={{ width: 60, height: 30 }}
-                            />
-                            <Text style={styles.typingText}>{t('jollieistyping')}</Text>
+                            ))}
                         </View>
-                    ) : (
-                        <View style={{ height: 20 }} />
-                    )
-                }
-            />
-
-            <Modal transparent visible={suggestionsVisible} animationType="fade">
-                <TouchableOpacity
-                    style={styles.modalOverlay}
-                    activeOpacity={1}
-                    onPress={() => setSuggestionsVisible(false)}
-                >
-                    <Animated.View
-                        style={
-                            styles.modalContent}
-                    >
-                        <View style={styles.modalHandle} />
-                        <Text style={styles.bottomTitle}>{questionTitle}</Text>
-
-                        <FlatList
-                            data={questionSuggestions}
-                            keyExtractor={(_, i) => i.toString()}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity
-                                    style={styles.suggestionBox}
-                                    onPress={() => selectSuggestion(item)}
-                                >
-                                    <MessageSquare size={18} color={Colors.lightGreen} />
-                                    <Text style={styles.suggestionText}>{item}</Text>
-                                </TouchableOpacity>
-                            )}
-                        />
-                    </Animated.View>
-                </TouchableOpacity>
-            </Modal>
-
-            <View style={{ height: 80 }}>
-                <View style={[styles.inputBar, { bottom: keyboardHeight > 0 ? 45 : 30 }]}>
-                    <TouchableOpacity style={styles.iconWrap} onPress={toggleSuggestions}>
-                        <Lightbulb size={22} color={Colors.lightGreen} />
-                    </TouchableOpacity>
-
-                    <TextInput
-                        placeholder={questionSuggestions[0]}
-                        value={question}
-                        onChangeText={setQuestion}
-                        multiline
-                        style={styles.inputField}
-                        onSubmitEditing={sendMessage}
-                        returnKeyType="send"
-                    />
-
-                    <TouchableOpacity
-                        style={[styles.sendButton, !question.trim() && styles.sendButtonDisabled]}
-                        onPress={sendMessage}
-                        disabled={!question.trim()}
-                    >
-                        {isTyping ? (
-                            <ActivityIndicator color="#fff" size="small" />
+                    )}
+                    ListFooterComponent={
+                        isTyping ? (
+                            <View style={styles.typingContainer}>
+                                <LottieView
+                                    source={require('@/assets/typing-dots.json')}
+                                    autoPlay
+                                    loop
+                                    style={{ width: 60, height: 30 }}
+                                />
+                                <Text style={styles.typingText}>{t('jollieistyping')}</Text>
+                            </View>
                         ) : (
-                            <SendHorizonal size={20} color="#fff" />
-                        )}
+                            <View style={{ height: 20 }} />
+                        )
+                    }
+                />
+
+                <Modal transparent visible={suggestionsVisible} animationType="fade">
+                    <TouchableOpacity
+                        style={styles.modalOverlay}
+                        activeOpacity={1}
+                        onPress={() => setSuggestionsVisible(false)}
+                    >
+                        <Animated.View
+                            style={
+                                styles.modalContent}
+                        >
+                            <View style={styles.modalHandle} />
+                            <Text style={styles.bottomTitle}>{questionTitle}</Text>
+
+                            <FlatList
+                                data={questionSuggestions}
+                                keyExtractor={(_, i) => i.toString()}
+                                renderItem={({ item }) => (
+                                    <TouchableOpacity
+                                        style={styles.suggestionBox}
+                                        onPress={() => selectSuggestion(item)}
+                                    >
+                                        <MessageSquare size={18} color={Colors.lightGreen} />
+                                        <Text style={styles.suggestionText}>{item}</Text>
+                                    </TouchableOpacity>
+                                )}
+                            />
+                        </Animated.View>
                     </TouchableOpacity>
+                </Modal>
+
+                <View style={{ height: 80 }}>
+                    <View style={[styles.inputBar, { bottom: keyboardHeight > 0 ? 45 : 30 }]}>
+                        <TouchableOpacity style={styles.iconWrap} onPress={toggleSuggestions}>
+                            <Lightbulb size={22} color={Colors.lightGreen} />
+                        </TouchableOpacity>
+
+                        <TextInput
+                            placeholder={questionSuggestions[0]}
+                            value={question}
+                            onChangeText={setQuestion}
+                            multiline
+                            style={styles.inputField}
+                            onSubmitEditing={sendMessage}
+                            returnKeyType="send"
+                        />
+
+                        <TouchableOpacity
+                            style={[styles.sendButton, !question.trim() && styles.sendButtonDisabled]}
+                            onPress={sendMessage}
+                            disabled={!question.trim()}
+                        >
+                            {isTyping ? (
+                                <ActivityIndicator color="#fff" size="small" />
+                            ) : (
+                                <SendHorizonal size={20} color="#fff" />
+                            )}
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View>
+
+            </KeyboardAvoidingView>
+
 
         </View>
     );

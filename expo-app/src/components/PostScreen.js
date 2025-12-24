@@ -569,7 +569,28 @@ const PostScreen = ({ post, index, onPostDeleted }) => {
             <View>
               {yourActivity ? (
                 <>
-                  <TouchableOpacity style={styles.menuRow} onPress={() => { setShowPopover(false); console.log('Edit post'); }}>
+                  <TouchableOpacity
+                    style={styles.menuRow}
+                    onPress={() => {
+                      setShowPopover(false);
+                      router.push({
+                        pathname: '/newpost',
+                        params: {
+                          editMode: 'true',
+                          postId: post.id,
+                          caption: post.caption || '',
+                          imageUrls: JSON.stringify(post.imageUrls || []),
+                          hashtags: JSON.stringify(post.hashtags || []),
+                          taggedUsers: JSON.stringify((post.taggedUsers || []).map(u => ({
+                            id: u.id,
+                            fullName: u.fullName,
+                            profileUrl: u.profileUrl || null,
+                            designation: u.designation || ''
+                          }))),
+                        }
+                      });
+                    }}
+                  >
                     <PencilIcon size={20} color="#1F2937" />
                     <Text style={styles.menuText}>{t('edit')}</Text>
                   </TouchableOpacity>

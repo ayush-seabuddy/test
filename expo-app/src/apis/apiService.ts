@@ -42,6 +42,16 @@ export interface UpdatePostRequest {
   status?: string
 }
 
+export interface UpdatePostByIdRequest {
+  id: string,
+  imageUrls?: string[];
+  caption: string;
+  tags?: string[];
+  hashtags?: string[];
+  ratioValue?: number;
+  imageresizeMode?: string;
+}
+
 export interface LikePostRequest {
   hangoutId: string,
   comment: string,
@@ -62,33 +72,47 @@ export interface SaveAssessmentRequest {
   }>;
 }
 
-export interface EditDeleteBuddyUpEventRequest {
+export interface AddEditDeleteBuddyUpEventRequest {
   groupActivities?: {
     eventId?: string;
-    imageUrls?: string[];
-    eventName?: string;
-    categoryId?: string;
+    eventName?: string | null;
     description?: string;
-    location?: string;
+    categoryId?: string | null;
+    location?: string | null;
     startDateTime?: string;
     endDateTime?: string;
-    points?: number;
-    isPublic?: boolean;
-    joinedPeople?: string[];
-    hashtags?: string[];
-    createdAt?: string;
+    timezone?: string;
+    imageUrls?: string[];
     completionImages?: string[];
+    joinedPeople?: string[];
+    isPublic?: boolean;
+    points?: number;
+    hashtags?: string[] | undefined;
+    shipId?: any;
+    createdAt?: string;
     completionDescription?: string;
-    status?: "ACTIVE" | "BLOCK" | "DELETE" | "COMPLETED" | "REQUESTED" | "REPORTED";
+    status?:
+    | "ACTIVE"
+    | "BLOCK"
+    | "DELETE"
+    | "COMPLETED"
+    | "REQUESTED"
+    | "REPORTED";
   }[];
 }
+
+export interface CreateCustomCategoryRequest {
+  categoryName: string,
+  categoryImage: string,
+}
+
 
 export interface Hangout {
   imageUrls?: string[];
   caption: string;
   tags?: string[];
   hashtags?: string[];
-  ratioValue?: string;
+  ratioValue?: number;
   imageresizeMode?: string;
   createdAt?: string;
 }
@@ -193,10 +217,10 @@ export interface GetAllContentsParams {
   page?: number,
   limit?: number,
   onlyAnnouncement?: boolean,
-  contentCategory?: string,
-  contentType?: string,
-  department?: string,
-  subCategory?: string
+  contentCategory?:  string,
+  contentType?:  string,
+  department?:  string,
+  subCategory?:  string
 }
 
 export interface GetAllHelplinesParams {
@@ -245,7 +269,9 @@ export interface GetSingleHelplineAnswerParams {
 }
 
 export interface GETALLADMINBUDDYUPCATEGORYParams {
-  isAdmin: boolean;
+  isAdmin?: boolean;
+  page?: number,
+  limit?: number
 }
 
 export interface GetAllBuddyUpEventParams {
@@ -261,7 +287,20 @@ export interface ViewBuddyUpDetailsParams {
 }
 
 export interface GetAllShipsListParams {
-  employerId: string
+  employerId:  string
+}
+
+export interface GetAllNotificationsParams {
+  page: number,
+  limit: number,
+}
+
+export interface ReadSingleNotificationRequest {
+  notificationId: string
+}
+
+export interface DeleteAndClearAllNotificationRequest {
+  notificationId?: string,
 }
 
 export interface GetMoodTrackerAnalysisParams {
@@ -409,6 +448,16 @@ export const updatepost = async (
   return await apiRequest({
     method: "PUT",
     url: ENDPOINTS.UPDATEPOST,
+    data: payload,
+  });
+};
+
+export const updatepostbyid = async (
+  payload: UpdatePostByIdRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "PUT",
+    url: ENDPOINTS.UPDATEPOSTBYID,
     data: payload,
   });
 };
@@ -612,12 +661,12 @@ export const GETALLBUDDYUPEVENTS = async (params?: GetAllBuddyUpEventParams): Pr
   });
 };
 
-export const editdeletebuddyupevent = async (
-  payload: EditDeleteBuddyUpEventRequest
+export const addeditdeletebuddyupevent = async (
+  payload: AddEditDeleteBuddyUpEventRequest
 ): Promise<ApiResponse> => {
   return await apiRequest({
     method: "POST",
-    url: ENDPOINTS.EDITDELETEBUDDYUPEVENTS,
+    url: ENDPOINTS.ADDEDITDELETEBUDDYUPEVENTS,
     data: payload,
   });
 };
@@ -693,5 +742,57 @@ export const moodTracker = async (
     method: "POST",
     url: ENDPOINTS.MOOD_TRACKER,
     data: payload,
+  });
+}
+
+export const getallnotifications = async (params?: GetAllNotificationsParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETALLNOTIFICATIONS,
+    params,
+  });
+};
+
+
+export const readsinglenotification = async (params?: ReadSingleNotificationRequest): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "PUT",
+    url: ENDPOINTS.READSINGLENOTIFICATION,
+    params,
+  });
+};
+
+export const readallnotifications = async (): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "PUT",
+    url: ENDPOINTS.READALLNOTIFICATIONS,
+  });
+};
+
+
+export const deleteandclearallnotification = async (params?: DeleteAndClearAllNotificationRequest): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "DELETE",
+    url: ENDPOINTS.DELETESINGLEANDCLEARALLNOTIFICATION,
+    params,
+  });
+};
+
+export const createcustomcategory = async (
+  payload: CreateCustomCategoryRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "POST",
+    url: ENDPOINTS.CREATECUSTOMCATEGORY,
+    data: payload,
+  });
+};
+
+
+export const globalSearch = async (search: string): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GLOBAL_SEARCH,
+    params: { search: search },
   });
 }

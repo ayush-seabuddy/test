@@ -46,16 +46,23 @@ export const ENDPOINTS = {
   GETALLADMINBUDDYUPCATEGORY: `${BASE_URL}/activity/getAllGroupActivityCategories`,
   GETUSERLEADERBOARD: `${BASE_URL}/user/getUserLeaderBoard`,
   GETALLBUDDYUPEVENTS: `${BASE_URL}/activity/getAllGroupActivity`,
-  EDITDELETEBUDDYUPEVENTS: `${BASE_URL}/activity/addUpdateGroupActivity`,
+  ADDEDITDELETEBUDDYUPEVENTS: `${BASE_URL}/activity/addUpdateGroupActivity`,
   VIEWBUDDYUPDETAILS: `${BASE_URL}/activity/viewGroupActivityDetails`,
   LISTALLUSERSFORTAG:`${BASE_URL}/user/listAllUsersForTag`,
   CREATEPOST:`${BASE_URL}/user/createHangoutPost`,
   UPDATEPOST:`${BASE_URL}/user/updateHangoutPost`,
+  UPDATEPOSTBYID:`${BASE_URL}/user/updateHangoutPostById`,
   GETALLSHIPSLIST:`${BASE_URL}/company/getAllShipsList`,
+  GETALLNOTIFICATIONS:`${BASE_URL}/user/getAllNotifications`,
+  READSINGLENOTIFICATION:`${BASE_URL}/user/readSingelNotification`,
+  READALLNOTIFICATIONS:`${BASE_URL}/user/readAllNotification`,
+  DELETESINGLEANDCLEARALLNOTIFICATION:`${BASE_URL}/user/clearNotifications`,
+  CREATECUSTOMCATEGORY: `${BASE_URL}/activity/createGroupActivityCategories`,
   CHANGE_PASSWORD:`${BASE_URL}/user/changePassword`,
   GET_MOOD_TRACKER_ANALYSIS:`${BASE_URL}/user/getMoodTrackerAnalysis`,
   GET_ALL_MOOD_TRACKER:`${BASE_URL}/user/getAllMoodTracker`,
-  MOOD_TRACKER:`${BASE_URL}/user/moodTracker`
+  MOOD_TRACKER:`${BASE_URL}/user/moodTracker`,
+  GLOBAL_SEARCH: `${BASE_URL}/user/globalSearch`
 
 
 };

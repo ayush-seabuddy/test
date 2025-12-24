@@ -91,7 +91,7 @@ return (
         </TouchableOpacity>
 
         {/* Search */}
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={()=> router.push("/globalSearch")}>
           <View style={styles.iconWrapper}>
             <Image source={ImagesAssets.searchLogo} style={styles.iconImage} />
           </View>

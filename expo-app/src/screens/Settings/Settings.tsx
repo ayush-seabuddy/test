@@ -2,6 +2,7 @@ import GlobalHeader from '@/src/components/GlobalHeader'
 import DeleteModal from '@/src/components/Modals/DeleteModal'
 import SignOutModal from '@/src/components/Modals/SignOutModal'
 import { height, width } from '@/src/utils/helperFunctions'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router } from 'expo-router'
 import { t } from 'i18next'
 import { ChevronLeft, CircleArrowRight } from 'lucide-react-native'
@@ -20,6 +21,16 @@ const Settings = () => {
     };
 
     const handleLogout = async () => {
+        try {
+        // Clear all AsyncStorage data
+        await AsyncStorage.clear();
+
+        // Reset navigation stack to Login screen
+        router.replace('/auth/Login');
+    } catch (error) {
+        console.error('Error during logout:', error);
+    }
+        
         setModalVisible(false);
     };
 

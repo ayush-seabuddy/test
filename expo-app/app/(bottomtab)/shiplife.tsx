@@ -1,20 +1,20 @@
 import { getalladminbuddyupcategories, GETALLBUDDYUPEVENTS, getleaderboard, viewProfile } from '@/src/apis/apiService'
 import GlobalPopOver from '@/src/components/GlobalPopover'
 import { showToast } from '@/src/components/GlobalToast'
+import AdminBuddyUpCategory from '@/src/components/ShipLifeComponent/AdminBuddyUpCategory'
+import BuddyUpEventCard from '@/src/components/ShipLifeComponent/BuddyUpEventCard'
+import HowMilesWorkPopup from '@/src/components/ShipLifeComponent/HowMilesWorkPopup'
 import TopThreeEmployees from '@/src/components/ShipLifeComponent/TopThreeEmployees'
 import ShipLifeScreenHeader from '@/src/components/ShipLifeScreenHeader'
-import HowMilesWorkPopup from '@/src/components/ShipLifeComponent/HowMilesWorkPopup'
 import Colors from '@/src/utils/Colors'
-import React, { useEffect, useState, useCallback, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View, FlatList, ListRenderItem, Dimensions } from 'react-native'
-import BuddyUpBuddyUpEventCard from '@/src/components/ShipLifeComponent/BuddyUpEventCard'
-import { InfoIcon } from 'lucide-react-native'
-import AdminBuddyUpCategory from '@/src/components/ShipLifeComponent/AdminBuddyUpCategory'
 import { getUserDetails } from '@/src/utils/helperFunctions'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useNavigation } from '@react-navigation/native'
-import BuddyUpEventCard from '@/src/components/ShipLifeComponent/BuddyUpEventCard'
+import { router } from 'expo-router'
+import { InfoIcon } from 'lucide-react-native'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { ActivityIndicator, Dimensions, FlatList, ListRenderItem, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 const { height } = Dimensions.get('screen');
 
@@ -76,7 +76,7 @@ type ListItem =
 const ShipLifeScreen = () => {
   const { t } = useTranslation();
   const navigation = useNavigation();
-  const [selectedStatus, setSelectedStatus] = useState<'ONGOING' | 'PAST' | 'REQUESTED'>('ONGOING');
+  const [selectedStatus, setSelectedStatus] = useState<'ON_GOING' | 'PAST' | 'REQUESTED'>('ON_GOING');
 
   const [buddyupCategory, setbuddyupCategory] = useState<AdminBuddyUpCategoryType[]>([]);
   const [ongoingEvents, setOngoingEvents] = useState<BuddyUpEvent[]>([]);
@@ -101,7 +101,7 @@ const ShipLifeScreen = () => {
 
   // Currently displayed events (limited to 5)
   const displayedEvents = useMemo(() => {
-    if (selectedStatus === 'ONGOING') return ongoingEvents.slice(0, 5);
+    if (selectedStatus === 'ON_GOING') return ongoingEvents.slice(0, 5);
     if (selectedStatus === 'PAST') return pastEvents.slice(0, 5);
     if (selectedStatus === 'REQUESTED') return requestedEvents.slice(0, 5);
     return [];
@@ -109,7 +109,7 @@ const ShipLifeScreen = () => {
 
   // Full list for "View All" check
   const getFullEventsList = () => {
-    if (selectedStatus === 'ONGOING') return ongoingEvents;
+    if (selectedStatus === 'ON_GOING') return ongoingEvents;
     if (selectedStatus === 'PAST') return pastEvents;
     if (selectedStatus === 'REQUESTED') return requestedEvents;
     return [];
@@ -225,7 +225,7 @@ const ShipLifeScreen = () => {
     }
   };
 
-  const handleTabChange = (status: 'ONGOING' | 'PAST' | 'REQUESTED') => {
+  const handleTabChange = (status: 'ON_GOING' | 'PAST' | 'REQUESTED') => {
     setSelectedStatus(status);
     if (status === 'REQUESTED' && designation === 'Captain') {
       fetchRequestedEvents();
@@ -288,7 +288,11 @@ const ShipLifeScreen = () => {
 
       case 'createButton':
         return (
-          <TouchableOpacity style={styles.createyourbuddyupButton}>
+          <TouchableOpacity style={styles.createyourbuddyupButton}
+            onPress={() => {
+              router.push('/createyourbuddyupevent')
+            }}
+          >
             <Text style={styles.createyourbuddyupText}>
               {t('createyourbuddyup')}
             </Text>
@@ -300,8 +304,8 @@ const ShipLifeScreen = () => {
           <View style={styles.tabContainer}>
             {isBoarded && (
               <TouchableOpacity
-                style={[styles.tab, selectedStatus === "ONGOING" && styles.activeTab]}
-                onPress={() => handleTabChange("ONGOING")}
+                style={[styles.tab, selectedStatus === "ON_GOING" && styles.activeTab]}
+                onPress={() => handleTabChange("ON_GOING")}
               >
                 <Text style={styles.tabText}>{t('ongoing')}</Text>
               </TouchableOpacity>

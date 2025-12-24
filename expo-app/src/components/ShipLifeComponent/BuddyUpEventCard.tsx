@@ -6,7 +6,7 @@ import { ImagesAssets } from '@/src/utils/ImageAssets'
 import { formatDate, getUserDetails } from '@/src/utils/helperFunctions'
 import moment from 'moment-timezone'
 import { Ionicons } from "@expo/vector-icons";
-import { editdeletebuddyupevent } from '@/src/apis/apiService'
+import { addeditdeletebuddyupevent } from '@/src/apis/apiService'
 import { showToast } from '../GlobalToast'
 import { router } from 'expo-router'
 
@@ -44,20 +44,17 @@ const BuddyUpEventCard = ({
 
     const { t } = useTranslation()
     const [loading, setloading] = useState(false)
-
     const [eventList, setEventList] = useState<BuddyUpEvent[]>(buddyupevents)
-
     const [loggeduserData, setloggeduserData] = useState<{ id: string } | null>(null)
 
     const [menuVisibleId, setMenuVisibleId] = useState<string | null>(null)
     const [deleteModalVisible, setDeleteModalVisible] = useState(false)
     const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
 
-
     const deleteBuddyUpEvent = async (eventId: string) => {
         try {
             setloading(true)
-            const apiResponse = await editdeletebuddyupevent({
+            const apiResponse = await addeditdeletebuddyupevent({
                 groupActivities: [{ eventId, status: "DELETE" }]
             })
             setloading(false)
@@ -69,12 +66,10 @@ const BuddyUpEventCard = ({
             } else {
                 showToast.error(t("oops"), apiResponse.message)
             }
-
         } catch (error) {
             showToast.error(t("oops"), t("somethingwentwrong"))
         }
     }
-
 
     const confirmDelete = () => {
         if (selectedEventId) deleteBuddyUpEvent(selectedEventId)
@@ -85,6 +80,27 @@ const BuddyUpEventCard = ({
         setSelectedEventId(id)
         setDeleteModalVisible(true)
         setMenuVisibleId(null)
+    }
+
+    const handleEditClick = (event: BuddyUpEvent) => {
+        setMenuVisibleId(null)
+        router.push({
+            pathname: '/createyourbuddyupevent',
+            params: {
+                editMode: 'true',
+                eventId: event.id,
+                eventName: event.eventName,
+                description: event.description,
+                startDateTime: event.startDateTime,
+                endDateTime: event.endDateTime,
+                location: event.location || '',
+                imageUrl: event.imageUrls[0] || '',
+                categoryId: event.categoryId || '',
+                hashtags: event.hashtags ? JSON.stringify(event.hashtags) : '',
+                isPublic: event.isPublic ? 'Public (All Crew)' : 'Invite Buddy',
+                joinedPeople: event.joinedPeople ? JSON.stringify(event.joinedPeople) : '[]',
+            }
+        })
     }
 
     useEffect(() => {
@@ -102,48 +118,28 @@ const BuddyUpEventCard = ({
         loadUser()
     }, [])
 
-
-
     return (
         <View style={styles.main}>
-
             <FlatList
                 data={eventList}
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 keyExtractor={item => item.id}
                 renderItem={({ item }) => {
-
                     const isCreatedByMe = loggeduserData?.id === item.activityUser.id
                     const couldEditDelete = isCreatedByMe && moment().isBefore(item.startDateTime)
-                    const showSubmitForApproval = (() => {
-                        const isCreatedByMe = String(loggeduserData?.id) === String(item.activityUser.id)
-                        const joinedCount = item?.joinedPeople?.length || 0
-                        const activityStatus = item?.status
-                        const eventEnded = moment().isAfter(item.endDateTime)
-
-                        return (
-                            isCreatedByMe &&
-                            eventEnded &&
-                            joinedCount >= 1 &&
-                            activityStatus !== "COMPLETED" &&
-                            activityStatus !== "REQUESTED"
-                        )
-                    })()
 
                     return (
-                        <TouchableOpacity style={styles.card}
+                        <TouchableOpacity
+                            style={styles.card}
                             onPress={() => {
                                 router.push({
                                     pathname: '/buddyupeventdescription',
-                                    params: {
-                                        eventId: item.id,
-                                    },
+                                    params: { eventId: item.id },
                                 })
                             }}
                         >
-
-                            <Image source={item.imageUrls[0]} style={styles.imageStyle} />
+                            <Image source={item.imageUrls[0] || ImagesAssets.SeabuddyPlaceholder} style={styles.imageStyle} contentFit="cover" />
 
                             {couldEditDelete && (
                                 <View style={styles.menuWrapper}>
@@ -156,12 +152,18 @@ const BuddyUpEventCard = ({
 
                                     {menuVisibleId === item.id && (
                                         <View style={styles.dropdownMenu}>
-                                            <TouchableOpacity style={styles.menuItem}>
+                                            <TouchableOpacity
+                                                style={styles.menuItem}
+                                                onPress={() => handleEditClick(item)}
+                                            >
                                                 <Ionicons name="create-outline" size={20} color="black" />
                                                 <Text style={styles.menuItemText}>{t("edit")}</Text>
                                             </TouchableOpacity>
 
-                                            <TouchableOpacity style={styles.menuItem} onPress={() => handleDeleteClick(item.id)}>
+                                            <TouchableOpacity
+                                                style={styles.menuItem}
+                                                onPress={() => handleDeleteClick(item.id)}
+                                            >
                                                 <Ionicons name="trash-outline" size={20} color="red" />
                                                 <Text style={[styles.menuItemText, { color: "red" }]}>{t("delete")}</Text>
                                             </TouchableOpacity>
@@ -177,16 +179,6 @@ const BuddyUpEventCard = ({
                             <Text style={styles.organizedby}>
                                 {t("startdate")} : {formatDate(item.startDateTime)}
                             </Text>
-                            {showSubmitForApproval && (
-                                <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4, gap: 5 }}>
-                                    <Image
-                                        source={ImagesAssets.LeaderboardIcon}
-                                        style={{ height: 16, width: 16, tintColor: "orange" }}
-                                    />
-                                    <Text style={styles.claimyourmiles}>{t("claimyourmilesnow")}</Text>
-                                </View>
-                            )}
-
                         </TouchableOpacity>
                     )
                 }}
@@ -210,13 +202,11 @@ const BuddyUpEventCard = ({
                     </View>
                 </View>
             </Modal>
-
         </View>
     )
 }
 
 export default BuddyUpEventCard
-
 
 const styles = StyleSheet.create({
     main: { flex: 1, backgroundColor: '#fff' },
@@ -232,7 +222,7 @@ const styles = StyleSheet.create({
         marginRight: 10,
         marginBottom: 60,
     },
-    imageStyle: { height: 180, borderRadius: 10 },
+    imageStyle: { height: 180, borderRadius: 10, width: '100%' },
     buddyupeventName: { marginTop: 8, fontSize: 14, color: "#222", fontFamily: "Poppins-SemiBold" },
     organizedby: { fontSize: 12, color: "grey", fontFamily: "Poppins-Regular" },
 
@@ -254,12 +244,6 @@ const styles = StyleSheet.create({
     modalContainer: { width: "80%", backgroundColor: "#fff", borderRadius: 12, padding: 25, alignItems: "center" },
     modalTitle: { fontSize: 16, fontFamily: "Poppins-SemiBold", marginBottom: 8 },
     modalText: { fontSize: 14, textAlign: "center", color: "#555", marginBottom: 20 },
-    claimyourmiles: {
-        fontSize: 11,
-        color: "orange",
-        marginTop: 7,
-        fontFamily: "Poppins-Regular",
-    },
     modalBtnRow: { flexDirection: "row", width: "100%", justifyContent: "space-between" },
     modalBtn: { width: "48%", paddingVertical: 10, borderRadius: 6, alignItems: "center" },
     cancelBtn: { backgroundColor: "#e6e6e6" },

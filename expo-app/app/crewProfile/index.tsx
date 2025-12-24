@@ -2,7 +2,7 @@ import GlobalHeader from '@/src/components/GlobalHeader';
 import Colors from '@/src/utils/Colors';
 import { router, useLocalSearchParams } from 'expo-router';
 import { t } from 'i18next';
-import { ArrowLeft, ExternalLink, Facebook, Globe, Instagram, Linkedin, Mars, Maximize2, Twitter } from 'lucide-react-native';
+import { ArrowLeft, ChevronLeft, ExternalLink, Facebook, Globe, Instagram, Linkedin, Mars, Maximize2, Twitter } from 'lucide-react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
@@ -173,7 +173,7 @@ const Profile: React.FC = () => {
     <View style={styles.container}>
       <GlobalHeader
         title={t('crew_profile')}
-        leftIcon={<ArrowLeft size={24} color={Colors.black} />}
+        leftIcon={<ChevronLeft size={24} color={Colors.black} />}
         onLeftPress={handleBackPress}
         titleStyle={styles.headerTitle}
       />

@@ -1,0 +1,233 @@
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
+import React from 'react';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Colors from '../utils/Colors';
+import { width } from '../utils/helperFunctions';
+
+const ContentListing =({data}:any) =>{
+
+  const getContentTypeConfig = (contentType: 'ARTICLE' | 'VIDEO' | 'MUSIC') => {
+      switch (contentType) {
+        case "ARTICLE":
+          return {
+            navigationScreen: "contentDetails",
+            emptyMessage: "No Article Found",
+            imageComponent: Image,
+            imageStyle: styles.imageBackground,
+            cardStyle: styles.cardContainer,
+            cardContentStyle: styles.cardContent,
+            textContainerStyle: styles.textContainer,
+            showPlayIcon: false,
+          };
+        case "VIDEO":
+          return {
+            navigationScreen: "contentDetails",
+            emptyMessage: "No Video Found",
+            imageComponent: Image,
+            imageStyle: styles.imageBackground,
+            cardStyle: styles.cardContainer,
+            cardContentStyle: styles.cardContent,
+            textContainerStyle: styles.textContainer,
+            showPlayIcon: false,
+          };
+        case "MUSIC":
+          return {
+            navigationScreen: "contentDetails",
+            emptyMessage: "No Audio Found",
+            imageComponent: Image,
+            imageStyle: styles.imageBackground,
+            cardStyle: styles.cardContainer,
+            cardContentStyle: styles.cardContent,
+            textContainerStyle: styles.textContainer,
+            showPlayIcon: false,
+          };
+        default:
+          return {
+            navigationScreen: "contentDetails",
+            emptyMessage: "No Article Found",
+            imageComponent: Image,
+            imageStyle: styles.imageBackground,
+            cardStyle: styles.cardContainer,
+            cardContentStyle: styles.cardContent,
+            textContainerStyle: styles.textContainer,
+            showPlayIcon: false,
+          };
+      }
+    };
+
+   const RenderData = ({ item, index }: { item: any, index: number }) => {
+  
+      const config = getContentTypeConfig(item.contentType);
+      if (!config) return null;
+  
+  
+  
+      return (
+        <TouchableOpacity style={styles.card} activeOpacity={0.8} key={index} onPress={() =>
+          router.push({
+            pathname: "/contentDetails/[contentId]",
+            params: { item: JSON.stringify(item), contentId: item?.id },
+          })
+        }>
+          <View style={config.cardContentStyle}>
+  
+            <Image
+              style={config.imageStyle}
+              resizeMode="cover"
+              source={{
+                uri: item?.thumbnail
+              }} />
+            <View style={styles.textContainer}>
+              <Text
+                style={[styles.titleText]}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                {item?.contentTitle?.slice(0, 25)}
+              </Text>
+            </View>
+            <LinearGradient
+              colors={['transparent', 'rgba(65, 65, 65, 0.56)']} // adjust opacity as you like
+              style={styles.gradientOverlay}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+            />
+  
+          </View>
+        </TouchableOpacity>
+      );
+    };
+
+
+  return (
+     <FlatList
+            data={data}
+            renderItem={RenderData}
+            keyExtractor={(item) => item.id}
+            numColumns={2}
+            columnWrapperStyle={styles.row}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            // onEndReached={loadMoreItems}
+            // onEndReachedThreshold={0.5}
+            // ListFooterComponent={renderFooter}
+            // ListEmptyComponent={
+    
+            //   <View style={styles.empty}>
+    
+            //     {loading ? <ActivityIndicator size="large" color="#000" /> : <Text>No cars found</Text>}
+            //   </View>
+            // }
+          />
+  )
+}
+
+export default ContentListing
+
+const styles = StyleSheet.create({
+  // container: {
+  //   flex: 1,
+  //   backgroundColor: '#f5f5f5',
+  // },
+  listContent: {
+    padding: 12,
+    flexGrow: 1,
+    flex: 1,
+  },
+  row: {
+    justifyContent: 'space-between',
+  },
+  card: {
+    flex: 1,
+    minHeight: 120,
+    backgroundColor: 'gray',
+    borderRadius: 12,
+    margin: 6,
+    overflow: 'hidden',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    maxWidth: '48%',
+  },
+  // cardImage: {
+  //   width: '100%',
+  //   height: 120,
+  //   resizeMode: 'cover',
+  // },
+  // cardTitle: {
+  //   fontSize: 14,
+  //   fontWeight: '600',
+  //   color: '#222',
+  // },
+  // cardPrice: {
+  //   fontSize: 16,
+  //   fontWeight: 'bold',
+  //   color: '#e74c3c',
+  //   marginVertical: 4,
+  // },
+  // cardDetails: {
+  //   fontSize: 12,
+  //   color: '#777',
+  // },
+  // header: {
+  //   padding: 16,
+  //   paddingBottom: 8,
+  // },
+  // headerTitle: {
+  //   fontSize: 28,
+  //   fontWeight: 'bold',
+  //   color: '#222',
+  // },
+  // headerSubtitle: {
+  //   fontSize: 14,
+  //   color: '#666',
+  //   marginTop: 4,
+  // },
+  // loader: {
+  //   paddingVertical: 20,
+  // },
+  // empty: {
+  //   flex: 1,
+  //   justifyContent: 'center',
+  //   alignItems: 'center',
+  //   paddingTop: 100,
+  // },
+  cardContainer: {
+    borderRadius: 5,
+    alignSelf: "center",
+    marginRight: 10,
+  },
+  cardContent: {
+    borderRadius: 5,
+    overflow: "hidden",
+  },
+  titleText: {
+    fontSize: 12,
+    fontFamily: "Poppins-SemiBold",
+    color: Colors.white
+  },
+  imageBackground: {
+    height: width * 0.5 * (9 / 16),
+    width: width * 0.5,
+    justifyContent: "space-between",
+  },
+  textContainer: {
+    padding: 8,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  gradientOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 50,
+  },
+});
