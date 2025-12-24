@@ -356,7 +356,7 @@ const ReportModal = ({ visible, onClose, onSubmit, loading }) => {
   );
 };
 
-const PostScreen = ({ post, index, onPostDeleted }) => {
+const PostScreen = ({ post, index, onPostDeleted , onPostReported }) => {
   const { t } = useTranslation();
   const router = useRouter();
 
@@ -520,7 +520,7 @@ const PostScreen = ({ post, index, onPostDeleted }) => {
       const res = await updatepost({ hangouts: [{ hangoutId: post.id, reason, status: "REPORTED" }] });
       if (res.success && res.status === 200) {
         showToast.success(t("success"), t('reportsubmitted'));
-        onPostDeleted?.(post.id);
+        onPostReported?.(post.id);
       }
     } catch {
       showToast.error(t("error"), t("somethingwentwrong"));

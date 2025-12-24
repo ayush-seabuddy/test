@@ -4,6 +4,7 @@ import AudioDetails from '@/src/screens/ContentDetails/AudioDetails';
 import VideoDetails from '@/src/screens/ContentDetails/VideoDetails';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Text, View } from 'react-native';
 
 const ContentDetailsScreen = () => {
@@ -40,7 +41,7 @@ const ContentDetailsScreen = () => {
   const [data, setData] = useState<Content | null>(null);
   console.log("data: sdfsdlfsd", data);
   const [loading, setLoading] = useState<boolean>(true);
-
+  const { t } = useTranslation();
   const getVideoDetail = async () => {
     try {
       setLoading(true);
@@ -62,7 +63,6 @@ const ContentDetailsScreen = () => {
     getVideoDetail();
   }, []);
 
-  // 🔵 **Show loader while loading**
   if (loading) {
     return (
       <View
@@ -77,16 +77,14 @@ const ContentDetailsScreen = () => {
     );
   }
 
-  // 🔴 **if no content found**
   if (!data) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>No content found</Text>
+        <Text>{t('nodataavailable')}</Text>
       </View>
     );
   }
 
-  // 🟢 **Render based on content type**
   switch (data.contentType) {
     case "ARTICLE":
       return <ArticleDetails data={data} />;

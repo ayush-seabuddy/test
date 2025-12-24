@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
         flex: 1, 
         justifyContent: 'center', 
         alignItems: 'center', 
-        marginTop: 150,
+        marginTop: 40,
         paddingHorizontal: 20,
     },
     emptyText: { 

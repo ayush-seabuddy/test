@@ -72,7 +72,7 @@ const UserPost = () => {
         // if (!loadingMore) return null;
         return (
             <View style={styles.footerLoader}>
-               {loadingMore && <ActivityIndicator size="large" color="#000" />}
+                {loadingMore && <ActivityIndicator size="large" color="#000" />}
             </View>
         );
     };
@@ -95,7 +95,9 @@ const UserPost = () => {
                         post={item}
                         key={item.id}
                         onPostDeleted={() => {
-                            // Optionally refetch or filter out deleted post
+                            setPost((prev) => prev.filter((p) => p.id !== item.id));
+                        }}
+                        onPostReported={() => {
                             setPost((prev) => prev.filter((p) => p.id !== item.id));
                         }}
                         i18nIsDynamicList={false}

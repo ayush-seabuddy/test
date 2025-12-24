@@ -34,7 +34,9 @@ export interface UploadFileRequest {
 export interface SocialPostParams {
   page?: number;
   limit?: number;
+  postId?: string;
   userId?: string;
+
 }
 export interface UpdatePostRequest {
   hangoutId?: string;
@@ -217,10 +219,10 @@ export interface GetAllContentsParams {
   page?: number,
   limit?: number,
   onlyAnnouncement?: boolean,
-  contentCategory?:  string,
-  contentType?:  string,
-  department?:  string,
-  subCategory?:  string
+  contentCategory?: string,
+  contentType?: string,
+  department?: string,
+  subCategory?: string
 }
 
 export interface GetAllHelplinesParams {
@@ -287,10 +289,17 @@ export interface ViewBuddyUpDetailsParams {
 }
 
 export interface GetAllShipsListParams {
-  employerId:  string
+  employerId: string
 }
 
 export interface GetAllNotificationsParams {
+  page: number,
+  limit: number,
+}
+
+export interface ListAllUsersParams {
+  shipId: string,
+  department?: string,
   page: number,
   limit: number,
 }
@@ -318,7 +327,7 @@ export interface ListAllUsersForTagParams {
 }
 
 export interface GetLeaderboardParams {
-  isZero?:boolean,
+  isZero?: boolean,
   page?: number,
   limit?: number,
   shipId?: string,
@@ -786,5 +795,13 @@ export const createcustomcategory = async (
     method: "POST",
     url: ENDPOINTS.CREATECUSTOMCATEGORY,
     data: payload,
+  });
+};
+
+export const listallusers = async (params?: ListAllUsersParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.LISTALLUSERS,
+    params,
   });
 };

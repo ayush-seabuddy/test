@@ -833,6 +833,12 @@
   "requestapprovalform": "申请审批表",
   "writeadescription": "写一个描述",
   "sharetofeed": "Share to feed",
-      "videotoolong": "视频时长必须不超过45秒。",
-        "activities":"活动"
+  "videotoolong": "视频时长必须不超过45秒。",
+  "activities": "活动",
+  "post": "邮政",
+  "crewlist": "船员名单",
+  "deck": "甲板",
+  "engine": "引擎",
+  "catering": "餐饮",
+  "selectdepartment": "选择部门"
 }

@@ -55,7 +55,7 @@ const AudioDetails = ({ data: fullDetails }: { data: Content }) => {
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-        <ChevronLeft size={32} color="#000" strokeWidth={2} />
+        <ChevronLeft size={24} />
       </TouchableOpacity>
 
       <View style={styles.mainContent}>
@@ -72,20 +72,18 @@ const AudioDetails = ({ data: fullDetails }: { data: Content }) => {
         <View style={styles.controlsContainer}>
           <Text style={styles.title}>{fullDetails?.contentTitle}</Text>
 
-          {/* Loop Toggle */}
           <TouchableOpacity
             onPress={() => (player.loop = !player.loop)}
             disabled={!status.isLoaded}
             style={styles.loopButton}
           >
             {player.loop ? (
-              <Repeat1 size={32} color="#fff" strokeWidth={2} />
+              <Repeat1 size={28} color="#fff" strokeWidth={2} />
             ) : (
-              <Repeat size={32} color="#ccc" strokeWidth={2} />
+              <Repeat size={28} color="#ccc" strokeWidth={2} />
             )}
           </TouchableOpacity>
 
-          {/* Progress Slider */}
           <Slider
             style={styles.slider}
             minimumValue={0}
@@ -98,20 +96,16 @@ const AudioDetails = ({ data: fullDetails }: { data: Content }) => {
             disabled={!status.isLoaded || !status.duration}
           />
 
-          {/* Time Labels */}
           <View style={styles.timeLabels}>
             <Text style={styles.timeText}>{formatTime(status.currentTime)}</Text>
             <Text style={styles.timeText}>{formatTime(status.duration)}</Text>
           </View>
 
-          {/* Controls Row */}
           <View style={styles.playbackControls}>
-            {/* Replay 10 seconds */}
             <TouchableOpacity onPress={() => seekBy(-10)} disabled={!status.isLoaded}>
               <FastForward size={32} color="#fff" strokeWidth={2} style={styles.rewindIcon} />
             </TouchableOpacity>
 
-            {/* Play/Pause Button */}
             <TouchableOpacity
               onPress={togglePlayback}
               disabled={!status.isLoaded}
@@ -120,13 +114,12 @@ const AudioDetails = ({ data: fullDetails }: { data: Content }) => {
               {!status.isLoaded ? (
                 <ActivityIndicator color="#000" size="large" />
               ) : status.playing ? (
-                <Pause size={40} color="#000" />
+                <Pause size={24} color="#000" />
               ) : (
-                <Play size={40} color="#000" />
+                <Play size={24} color="#000" />
               )}
             </TouchableOpacity>
 
-            {/* Forward 10 seconds */}
             <TouchableOpacity onPress={() => seekBy(10)} disabled={!status.isLoaded}>
               <FastForward size={32} color="#fff" strokeWidth={2} />
             </TouchableOpacity>
@@ -149,15 +142,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   backButton: {
-    marginTop: 20,
-    marginLeft: 20,
-    backgroundColor: '#ccc',
+    margin: 20,
+    backgroundColor: '#f5f5f5',
     width: 40,
     height: 40,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 100,
   },
   mainContent: {
     flex: 1,
@@ -189,7 +180,7 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   loopButton: {
-    marginTop: 20,
+    marginVertical: 20,
   },
   slider: {
     width: '100%',
@@ -215,8 +206,8 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '180deg' }],
   },
   playPauseButton: {
-    width: 70,
-    height: 70,
+    width: 60,
+    height: 60,
     borderRadius: 35,
     backgroundColor: '#fff',
     justifyContent: 'center',

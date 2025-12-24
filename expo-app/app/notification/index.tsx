@@ -7,6 +7,9 @@ import {
     TouchableOpacity,
     Modal,
     Alert,
+    Platform,
+    Linking,
+    Dimensions,
 } from 'react-native';
 import React, { useEffect, useState, useCallback } from 'react';
 import { ChevronLeft, CircleCheckBig, CircleX, Trash2 } from 'lucide-react-native';
@@ -20,7 +23,7 @@ import {
     deleteandclearallnotification
 } from '@/src/apis/apiService';
 import { router } from 'expo-router';
-
+const { height, width } = Dimensions.get("screen");
 interface Notification {
     id: string;
     title: string;
@@ -29,7 +32,9 @@ interface Notification {
     data: {
         id: string;
         page: string;
-        contentType: string;
+        type: string;
+        androidUrl: string;
+        iosUrl: string
     };
     createdAt: string;
 }
@@ -45,6 +50,8 @@ const NotificationScreen = () => {
     const [deleteSingleModalVisible, setDeleteSingleModalVisible] = useState(false);
     const [clearAllModalVisible, setClearAllModalVisible] = useState(false);
     const [selectedNotificationId, setSelectedNotificationId] = useState<string | null>(null);
+    const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
+    const [notificationDetailModalVisible, setNotificationDetailModalVisible] = useState(false);
 
     const formatTimeSince = useCallback((createdAt: string) => {
         const diffInMinutes = Math.floor(
@@ -68,9 +75,17 @@ const NotificationScreen = () => {
                 if (response.success && response.status === 200) {
                     const newNotifications = response.data.notificationsList || [];
 
-                    setNotifications((prev) =>
-                        isLoadMore ? [...prev, ...newNotifications] : newNotifications
-                    );
+                    setNotifications((prev) => {
+                        if (!isLoadMore) {
+                            return newNotifications;
+                        }
+
+                        const existingIds = new Set(prev.map(notif => notif.id));
+                        const uniqueNew = newNotifications.filter((notif: Notification) => !existingIds.has(notif.id));
+
+                        return [...prev, ...uniqueNew];
+                    });
+
                     setHasMore(newNotifications.length === 10);
                     setPage(pageNum);
                 } else {
@@ -190,6 +205,72 @@ const NotificationScreen = () => {
         ) : null;
     }, [loadingMore]);
 
+    const handleNotificationPress = useCallback(
+        async (item: Notification) => {
+            if (item.status !== 'READ') {
+                await markAsRead(item.id);
+            }
+
+            if (!item.data?.id && !item.data?.page) {
+                return;
+            }
+
+            const { id, page, type, androidUrl, iosUrl } = item.data;
+
+            try {
+                if (page === 'GROUP_ACTIVITY') {
+                    router.push({
+                        pathname: '/buddyupeventdescription',
+                        params: {
+                            eventId: id,
+                        },
+                    });
+                }
+                else if (page === "CONTENT") {
+                    router.push({
+                        pathname: "/contentDetails/[contentId]",
+                        params: { contentId: id },
+                    })
+
+                }
+                else if (page === "UPDATE" && type === "UPDATE") {
+                    try {
+                        const url = Platform.OS === "ios" ? iosUrl : androidUrl;
+                        if (url) {
+                            await Linking.openURL(url);
+                        } else {
+                            showToast.error(t('oops'), t('somethingwentwrong'));
+                        }
+                    } catch (error) {
+                        console.log("Error opening URL:", error);
+                        showToast.error(t('oops'), t('somethingwentwrong'));
+                    }
+                    return;
+                }
+                else if (page === "HANGOUT") {
+                    router.push({
+                        pathname: "/singlepost",
+                        params: { postId: id },
+                    })
+                }
+                else if (page === "HAPPINESS") {
+                    router.push('/monthlyhappinessindex')
+                } else if (page === "POMS") {
+                    router.push('/monthlywellbeingpulse')
+                }
+                else {
+                    setSelectedNotification(item);
+                    setNotificationDetailModalVisible(true);
+                }
+
+            } catch (error) {
+                console.error('Navigation failed:', error);
+                showToast.error(t('oops'), t('somethingwentwrong'));
+            }
+        },
+        [markAsRead, t]
+    );
+
     const renderItem = useCallback(
         ({ item }: { item: Notification }) => (
             <TouchableOpacity
@@ -200,7 +281,7 @@ const NotificationScreen = () => {
                             item.status === 'READ' ? 'white' : 'rgba(243, 250, 217, 0.7)',
                     },
                 ]}
-                onPress={() => markAsRead(item.id)}
+                onPress={() => handleNotificationPress(item)}
                 onLongPress={() => handleLongPress(item.id)}
                 delayLongPress={800}
                 activeOpacity={0.8}
@@ -212,11 +293,12 @@ const NotificationScreen = () => {
                 <Text style={styles.notificationDescription}>{item.content}</Text>
             </TouchableOpacity>
         ),
-        [markAsRead, formatTimeSince, handleLongPress]
+        [handleNotificationPress, formatTimeSince, handleLongPress]
     );
 
-    const keyExtractor = useCallback((item: Notification) => item.id, []);
-
+    const keyExtractor = useCallback((item: Notification, index: number) => {
+        return item.id ? item.id : `fallback-${index}`;
+    }, []);
     return (
         <View style={styles.main}>
             <View style={styles.header}>
@@ -346,6 +428,27 @@ const NotificationScreen = () => {
                     </View>
                 </View>
             </Modal>
+
+            {/* Detail Modal*/}
+            <Modal
+                visible={notificationDetailModalVisible}
+                transparent
+                animationType="fade"
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.detailModal}>
+                        <Text style={styles.modalTitle}>{selectedNotification?.title}</Text>
+                        <Text style={styles.detailContent}>{selectedNotification?.content}</Text>
+                        <TouchableOpacity
+                            style={styles.closeButton}
+                            onPress={() => setNotificationDetailModalVisible(false)}
+                            activeOpacity={0.7}
+                        >
+                            <Text style={styles.closeText}>{t('close')}</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 };
@@ -362,6 +465,39 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderBottomWidth: 1.5,
         borderColor: '#ededed',
+    },
+    detailModal: {
+        backgroundColor: "#fff",
+        padding: 24,
+        borderRadius: 12,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+        width: "85%",
+        maxHeight: height * 0.6,
+    },
+    detailContent: {
+        fontSize: 14,
+        marginBottom: 20,
+        textAlign: "center",
+        fontFamily: "Poppins-Regular",
+        lineHeight: 22,
+    },
+    closeButton: {
+        backgroundColor: Colors.lightGreen,
+        paddingVertical: 12,
+        borderRadius: 8,
+        width: '100%'
+    },
+    closeText: {
+        fontFamily: "Poppins-SemiBold",
+        color: "white",
+        textAlign: 'center',
+        fontWeight: "600",
+        fontSize: 12,
     },
     headerLeft: { flexDirection: 'row', gap: 10, alignItems: 'center' },
     headerRight: { flexDirection: 'row', gap: 20 },

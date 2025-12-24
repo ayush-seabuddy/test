@@ -837,5 +837,11 @@
   "shareforapproval": "Share for Approval",
   "sharetofeed": "Share to feed",
   "videotoolong": "Video must be 45 seconds or shorter.",
-  "activities":"Activities"
+  "activities":"Activities",
+  "post":"Post",
+  "crewlist":"Crew List",
+  "deck":"Deck",
+  "engine":"Engine",
+  "catering":"Catering",
+  "selectdepartment":"Select Department"
 }

@@ -3,9 +3,10 @@ import { showToast } from '@/src/components/GlobalToast';
 import Colors from '@/src/utils/Colors';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View, StyleSheet, FlatList, Dimensions, Text, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import { View, StyleSheet, FlatList, Dimensions, Text, NativeScrollEvent, NativeSyntheticEvent, TouchableOpacity } from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 20;
@@ -20,6 +21,7 @@ type AnnouncementsProps = {
 };
 
 type Announcement = {
+    id:string;
     alreadySeen: boolean;
     contentTitle: string;
     createdAt: string;
@@ -118,7 +120,12 @@ const Announcements: React.FC<AnnouncementsProps> = ({
     const renderAnnouncement = ({ item }: { item: Announcement }) => {
         const isNew = !item.alreadySeen;
         return (
-            <View style={styles.card}>
+            <TouchableOpacity style={styles.card} onPress={()=>{
+                router.push({
+                                        pathname: "/contentDetails/[contentId]",
+                                        params: { contentId: item.id },
+                                    })
+            }}>
                 <Image source={{ uri: item.thumbnail }} style={styles.image} contentFit="cover" />
                 <LinearGradient
                     colors={["rgba(0, 0, 0, 0.34)", "rgba(0, 0, 0, 0.4)"]}
@@ -135,7 +142,7 @@ const Announcements: React.FC<AnnouncementsProps> = ({
                         {item?.description?.replace(/<[^>]*>/g, "") || ""}
                     </Text>
                 </View>
-            </View>
+            </TouchableOpacity>
         );
     };
 
