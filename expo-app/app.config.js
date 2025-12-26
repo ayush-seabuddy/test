@@ -10,9 +10,6 @@ export default ({ config }) => {
       env,
       API_URL: process.env.API_URL,
       SOCKET_URL: process.env.SOCKET_URL,
-      eas: {
-        projectId: "460b0d77-860d-4116-a777-adae29e8089d"
-      }
     }
   };
 };

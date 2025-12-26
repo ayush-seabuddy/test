@@ -59,7 +59,20 @@ const LoginScreen = () => {
     setLoading(true);
 
     try {
-      const apiResponse = await login({ email, password });
+      const ExpoPushToken = await AsyncStorage.getItem("ExpoPushToken");
+      const payload: {
+        email: string;
+        password: string;
+        deviceToken?: string;
+      } = {
+        email,
+        password,
+      };
+      if (ExpoPushToken) {
+        payload.deviceToken = ExpoPushToken;
+      }
+      const apiResponse = await login(payload);
+
       setLoading(false);
 
       if (apiResponse.success && apiResponse.status === 200) {

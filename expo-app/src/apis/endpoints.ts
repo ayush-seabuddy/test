@@ -63,6 +63,8 @@ export const ENDPOINTS = {
   GET_ALL_MOOD_TRACKER:`${BASE_URL}/user/getAllMoodTracker`,
   MOOD_TRACKER:`${BASE_URL}/user/moodTracker`,
   LISTALLUSERS:`${BASE_URL}/user/listAllUsers`,
+  OFFBOARDONBOARDCREW:`${BASE_URL}/user/updateShipBoardingStatus`,
+  ADDUPDATESHIPSTATUS:`${BASE_URL}/company/addUpdateShip`,
 
 
 };

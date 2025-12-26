@@ -5,6 +5,7 @@ import { ENDPOINTS } from "./endpoints";
 export interface LoginRequest {
   email: string;
   password: string;
+  deviceToken?:string;
 }
 
 export interface RegisterRequest {
@@ -308,6 +309,23 @@ export interface ReadSingleNotificationRequest {
   notificationId: string
 }
 
+export interface OffboardOnboardCrewRequest {
+  shipId: string,
+  boardedStatus: [
+    {
+      userId: string,
+      isBoarded: boolean
+    }
+  ]
+}
+
+export interface AddUpdateShipStatusRequest {
+  shipId?: string;
+  crewMembers?: {
+    userId?: string;
+  }[];
+  employerId?: string;
+}
 export interface DeleteAndClearAllNotificationRequest {
   notificationId?: string,
 }
@@ -803,5 +821,26 @@ export const listallusers = async (params?: ListAllUsersParams): Promise<ApiResp
     method: "GET",
     url: ENDPOINTS.LISTALLUSERS,
     params,
+  });
+};
+
+
+export const offboardonboardcrew = async (
+  payload: OffboardOnboardCrewRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "PUT",
+    url: ENDPOINTS.OFFBOARDONBOARDCREW,
+    data: payload,
+  });
+};
+
+export const addupdateshipstatus = async (
+  payload: AddUpdateShipStatusRequest
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "POST",
+    url: ENDPOINTS.ADDUPDATESHIPSTATUS,
+    data: payload,
   });
 };

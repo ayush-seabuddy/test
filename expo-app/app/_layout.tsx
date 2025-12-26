@@ -4,21 +4,65 @@ import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { StatusBar, StyleSheet } from "react-native";
+import { StatusBar, StyleSheet, useColorScheme } from "react-native";
 import { Provider } from "react-redux";
 import { PaperProvider } from "react-native-paper";
 import { I18nextProvider } from "react-i18next";
 import Toast from "react-native-toast-message";
+import * as Notifications from "expo-notifications";
+import * as TaskManager from "expo-task-manager";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
 
 import Colors from "@/src/utils/Colors";
 import { store } from "@/src/redux/store";
 import { initI18n } from "@/src/localization/i18n";
 import i18n from "i18next";
 import socketService from "@/src/utils/socketService";
+import { NotificationProvider } from "@/Context/NotificationContext";
 
 SplashScreen.preventAutoHideAsync();
 
+// ─────────────────────────────────────────────
+// Notification handler (FOREGROUND)
+// ─────────────────────────────────────────────
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
+
+// ─────────────────────────────────────────────
+// Background notification task
+// ─────────────────────────────────────────────
+const BACKGROUND_NOTIFICATION_TASK = "BACKGROUND-NOTIFICATION-TASK";
+
+TaskManager.defineTask(
+  BACKGROUND_NOTIFICATION_TASK,
+  async ({ data, error }) => {
+    if (error) {
+      console.error("❌ Background notification error:", error);
+      return;
+    }
+
+    console.log("✅ Background notification received:", data);
+  }
+);
+
+Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK).catch(() => {
+  // Avoid crash if already registered
+});
+
 export default function RootLayout() {
+  const colorScheme = useColorScheme();
+
   const [fontsLoaded] = useFonts({
     "Poppins-Regular": require("../assets/fonts/Poppins-Regular.ttf"),
     "Poppins-Medium": require("../assets/fonts/Poppins-Medium.ttf"),
@@ -30,41 +74,55 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    async function prepare() {
+    async function prepareApp() {
       try {
-        await initI18n();                    // ← only initializes i18n
-        socketService.initializeSocket();    // ← connect socket
-      } catch (e) {
-        console.warn("Init failed:", e);
+        await initI18n();
+        socketService.initializeSocket();
+      } catch (error) {
+        console.warn("❌ App init failed:", error);
       } finally {
         await SplashScreen.hideAsync();
       }
     }
 
     if (fontsLoaded) {
-      prepare();
+      prepareApp();
     }
   }, [fontsLoaded]);
 
-  // While loading → show native splash screen
   if (!fontsLoaded) return null;
 
   return (
-    <Provider store={store}>
-      <SafeAreaProvider>
-        <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-          <StatusBar barStyle="dark-content" backgroundColor="#000" />
-          <PaperProvider>
-            <I18nextProvider i18n={i18n}>
-              <GestureHandlerRootView style={{ flex: 1 }}>
-                <Slot />
-                <Toast />
-              </GestureHandlerRootView>
-            </I18nextProvider>
-          </PaperProvider>
-        </SafeAreaView>
-      </SafeAreaProvider>
-    </Provider>
+    <NotificationProvider>
+      <Provider store={store}>
+        <SafeAreaProvider>
+          <SafeAreaView
+            style={styles.container}
+            edges={["top", "left", "right"]}
+          >
+            <StatusBar
+              barStyle={
+                colorScheme === "dark" ? "light-content" : "dark-content"
+              }
+              backgroundColor="#000"
+            />
+
+            <ThemeProvider
+              value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+            >
+              <PaperProvider>
+                <I18nextProvider i18n={i18n}>
+                  <GestureHandlerRootView style={{ flex: 1 }}>
+                    <Slot />
+                    <Toast />
+                  </GestureHandlerRootView>
+                </I18nextProvider>
+              </PaperProvider>
+            </ThemeProvider>
+          </SafeAreaView>
+        </SafeAreaProvider>
+      </Provider>
+    </NotificationProvider>
   );
 }
 

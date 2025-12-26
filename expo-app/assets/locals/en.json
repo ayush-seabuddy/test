@@ -837,11 +837,23 @@
   "shareforapproval": "Share for Approval",
   "sharetofeed": "Share to feed",
   "videotoolong": "Video must be 45 seconds or shorter.",
-  "activities":"Activities",
-  "post":"Post",
-  "crewlist":"Crew List",
-  "deck":"Deck",
-  "engine":"Engine",
-  "catering":"Catering",
-  "selectdepartment":"Select Department"
+  "activities": "Activities",
+  "post": "Post",
+  "crewlist": "Crew List",
+  "deck": "Deck",
+  "engine": "Engine",
+  "catering": "Catering",
+  "selectdepartment": "Select Department",
+  "crew": {
+    "onboardCrew": "Onboard Crew",
+    "offboardCrew": "Offboard Crew",
+    "onboard": "onboard",
+    "offboard": "offboard",
+    "removeFromShip": "Remove from Ship",
+    "statusUpdated": "Crew status updated successfully",
+    "removedFromShip": "Crew member removed from ship",
+    "confirmStatusChange": "Are you sure you want to {{action}} {{name}}?",
+    "confirmRemove": "Are you sure you want to remove {{name}} from the ship?",
+    "thisCrew": "this crew member"
+  }
 }

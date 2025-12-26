@@ -43,9 +43,9 @@ const ShipLifeScreenHeader = () => {
 
 
         {/* Search */}
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={()=>{router.push('/crewlisting')}}>
           <View style={styles.iconWrapper}>
-            <Image source={ImagesAssets.searchLogo} style={styles.iconImage} />
+            <Image source={ImagesAssets.users} style={styles.iconImage} />
           </View>
         </TouchableOpacity>
 
@@ -113,6 +113,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     resizeMode: "contain",
+    tintColor:'#000'
   },
 
   badgeWrapper: {

@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "99688209735",
+    "firebase_url": "https://seabuddy-b46d6-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "seabuddy-b46d6",
+    "storage_bucket": "seabuddy-b46d6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:99688209735:android:903d9303a56e9ce1458062",
+        "android_client_info": {
+          "package_name": "co.seabuddy.platform"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaLxLhYlmYQdIINld9walL9gxdn18LrMk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:99688209735:android:440f97ab360b7029458062",
+        "android_client_info": {
+          "package_name": "com.seekware.seabuddy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaLxLhYlmYQdIINld9walL9gxdn18LrMk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

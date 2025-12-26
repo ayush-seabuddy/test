@@ -840,5 +840,19 @@
   "deck": "甲板",
   "engine": "引擎",
   "catering": "餐饮",
-  "selectdepartment": "选择部门"
+  "selectdepartment": "选择部门",
+  "offboardCrew": "船员下船",
+  "onboardCrew": "船员登船",
+"crew": {
+    "onboardCrew": "上船",
+    "offboardCrew": "下船",
+    "onboard": "上船",
+    "offboard": "下船",
+    "removeFromShip": "从船舶移除",
+    "statusUpdated": "船员状态更新成功",
+    "removedFromShip": "已从船舶移除船员",
+    "confirmStatusChange": "您确定要将 {{name}} {{action}} 吗？",
+    "confirmRemove": "您确定要将 {{name}} 从船舶移除吗？",
+    "thisCrew": "此船员"
+  }
 }
