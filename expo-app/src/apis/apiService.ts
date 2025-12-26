@@ -798,3 +798,10 @@ export const globalSearch = async (search: string): Promise<ApiResponse> => {
   });
 }
 
+export const getUnreadNotificationCount = async (): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GET_UNREAD_NOTIFICATION_COUNT,
+  });
+}
+

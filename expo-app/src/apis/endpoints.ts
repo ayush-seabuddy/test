@@ -63,6 +63,8 @@ export const ENDPOINTS = {
   GET_ALL_MOOD_TRACKER:`${BASE_URL}/user/getAllMoodTracker`,
   MOOD_TRACKER:`${BASE_URL}/user/moodTracker`,
   GLOBAL_SEARCH: `${BASE_URL}/user/globalSearch`,
+  GET_UNREAD_NOTIFICATION_COUNT: `${BASE_URL}/user/getUnreadNotificationCount`,
+
 
 
 
