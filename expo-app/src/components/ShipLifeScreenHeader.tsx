@@ -12,24 +12,26 @@ import { ImagesAssets } from "@/src/utils/ImageAssets";
 import Colors from "@/src/utils/Colors";
 import { House, Trophy } from "lucide-react-native";
 import { router } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 const ShipLifeScreenHeader = () => {
+  const { t } = useTranslation();
   const [Notification, setNotification] = useState([]);
   const [unreadNotification, setUnreadNotification] = useState(0)
   return (
     <View style={styles.container}>
-      <Text style={styles.shiplifetext}>Ship Life</Text>
+      <Text style={styles.shiplifetext}>{t('ship_life')}</Text>
 
       <View style={styles.iconGroup}>
 
         {/* Leaderboard Icon */}
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={()=>{router.push('/leaderboard')}}>
           <View style={styles.iconWrapper}>
             <Image source={ImagesAssets.LeaderboardIcon} style={styles.iconImage} />
           </View>
         </TouchableOpacity>
         {/* Notification Button */}
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={()=>{router.push('/notification')}}>
           <View style={styles.iconWrapper}>
             <Image source={ImagesAssets.notificationBell} style={styles.iconImage} />
             <View style={styles.badgeWrapper}>

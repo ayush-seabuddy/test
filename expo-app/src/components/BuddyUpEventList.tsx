@@ -1,9 +1,9 @@
-import { editdeletebuddyupevent } from '@/src/apis/apiService';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
 import { formatDate, getUserDetails } from '@/src/utils/helperFunctions';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
+import { ChevronLeft } from 'lucide-react-native';
 import moment from 'moment-timezone';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +18,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { GETALLBUDDYUPEVENTS } from '../apis/apiService';
+import { addeditdeletebuddyupevent, GETALLBUDDYUPEVENTS } from '../apis/apiService';
+import Colors from '../utils/Colors';
+import GlobalHeader from './GlobalHeader';
 import { showToast } from './GlobalToast';
 
 const { width } = Dimensions.get('window');
@@ -48,12 +50,13 @@ export interface BuddyUpEvent {
 interface Props {
   userId?: string;
   type?: string;
+  from?: string
+  ActivitiesData?: BuddyUpEvent[];
 }
 
-const BuddyUpEventList = ({ userId, type }: Props) => {
+const BuddyUpEventList = ({ userId, type, from , ActivitiesData}: Props) => {
   const { t } = useTranslation();
-
-  const [groupActivities, setGroupActivities] = useState<BuddyUpEvent[]>([]);
+  const [groupActivities, setGroupActivities] = useState<BuddyUpEvent[]>(ActivitiesData||[]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -78,9 +81,30 @@ const BuddyUpEventList = ({ userId, type }: Props) => {
     loadUser();
   }, []);
 
+  const handleEditClick = (event: BuddyUpEvent) => {
+    setMenuVisibleId(null)
+    router.push({
+      pathname: '/createyourbuddyupevent',
+      params: {
+        editMode: 'true',
+        eventId: event.id,
+        eventName: event.eventName,
+        description: event.description,
+        startDateTime: event.startDateTime,
+        endDateTime: event.endDateTime,
+        location: event.location || '',
+        imageUrl: event.imageUrls[0] || '',
+        categoryId: event.categoryId || '',
+        hashtags: event.hashtags ? JSON.stringify(event.hashtags) : '',
+        isPublic: event.isPublic ? 'Public (All Crew)' : 'Invite Buddy',
+        joinedPeople: event.joinedPeople ? JSON.stringify(event.joinedPeople) : '[]',
+      }
+    })
+  }
+
   const deleteBuddyUpEvent = async (eventId: string) => {
     try {
-      const apiResponse = await editdeletebuddyupevent({
+      const apiResponse = await addeditdeletebuddyupevent({
         groupActivities: [{ eventId, status: 'DELETE' }],
       });
 
@@ -107,8 +131,11 @@ const BuddyUpEventList = ({ userId, type }: Props) => {
     setMenuVisibleId(null);
   };
 
-  const GetDatafromApi = async (isLoadMore = false) => {
+  const GetDatafromApi = async (isLoadMore = false,) => {
     try {
+      if(ActivitiesData && ActivitiesData.length>0){
+        return;
+      }
       if (!isLoadMore) {
         setLoading(true);
       } else {
@@ -116,8 +143,11 @@ const BuddyUpEventList = ({ userId, type }: Props) => {
         setLoadingMore(true);
       }
 
+
       const response = await GETALLBUDDYUPEVENTS({
-        ...(userId ? { userId } : {}),
+        ...(userId ? { userId } : {
+          eventType: type
+        }),
         page,
         limit: 10,
       });
@@ -178,7 +208,7 @@ const BuddyUpEventList = ({ userId, type }: Props) => {
           });
         }}
       >
-        <Image source={item.imageUrls[0]} style={styles.imageStyle} contentFit="cover" />
+        <Image source={item.imageUrls[0]} style={styles.imageStyle} contentFit="cover" placeholder={ImagesAssets.PlaceholderImage} placeholderContentFit='cover' />
 
         {couldEditDelete && (
           <View style={styles.menuWrapper}>
@@ -191,7 +221,7 @@ const BuddyUpEventList = ({ userId, type }: Props) => {
 
             {menuVisibleId === item.id && (
               <View style={styles.dropdownMenu}>
-                <TouchableOpacity style={styles.menuItem}>
+                <TouchableOpacity style={styles.menuItem} onPress={() => handleEditClick(item)}>
                   <Ionicons name="create-outline" size={20} color="black" />
                   <Text style={styles.menuItemText}>{t('edit')}</Text>
                 </TouchableOpacity>
@@ -229,7 +259,7 @@ const BuddyUpEventList = ({ userId, type }: Props) => {
     if (!loadingMore) return null;
     return (
       <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color="#000" />
+        <ActivityIndicator size="small" color={Colors.lightGreen} />
       </View>
     );
   };
@@ -237,31 +267,38 @@ const BuddyUpEventList = ({ userId, type }: Props) => {
   if (loading && groupActivities.length === 0) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={Colors.lightGreen} />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
+      {from === 'shiplifescreen' && (
+        <GlobalHeader
+          title={t('activities')}
+          leftIcon={<ChevronLeft />}
+          onLeftPress={() => router.back()}
+        />
+      )}
       <FlatList
         data={groupActivities}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        numColumns={2} // 2 cards per row
+        numColumns={2}
+        contentContainerStyle={{ paddingBottom: 50 }}
         showsVerticalScrollIndicator={false}
-        columnWrapperStyle={styles.columnWrapper} // Spacing between rows
+        columnWrapperStyle={styles.columnWrapper}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         ListFooterComponent={renderFooter}
         ListEmptyComponent={
           <View style={styles.center}>
-            <Text style={styles.emptyText}>{t('noEventsFound') || 'No events found'}</Text>
+            <Text style={styles.emptyText}>{t('nobuddyupfound')}</Text>
           </View>
         }
       />
 
-      {/* Delete Confirmation Modal */}
       <Modal visible={deleteModalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <StatusBar backgroundColor="rgba(0,0,0,0.6)" />
@@ -296,10 +333,10 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    width: (width - 40) / 2, // 2 cards with spacing
+    marginTop: 10,
+    width: (width - 30) / 2,
     backgroundColor: '#f5f5f5',
     padding: 10,
-    marginVertical: 8,
     borderWidth: 0.5,
     borderColor: '#d5d5d5',
     borderRadius: 12,
@@ -310,7 +347,7 @@ const styles = StyleSheet.create({
   organizedby: { fontSize: 12, color: 'grey', fontFamily: 'Poppins-Regular', marginTop: 4 },
   claimyourmiles: { fontSize: 11, color: 'orange', fontFamily: 'Poppins-Medium' },
 
-  menuWrapper: { position: 'absolute', right: 10, top: 10, zIndex: 10 },
+  menuWrapper: { position: 'absolute', right: 20, top: 20, zIndex: 10 },
   menuIcon: { padding: 7, backgroundColor: '#fff', borderRadius: 40, borderWidth: 0.4, borderColor: 'grey' },
   dropdownMenu: {
     backgroundColor: '#fff',
@@ -325,7 +362,7 @@ const styles = StyleSheet.create({
   menuItem: { flexDirection: 'row', alignItems: 'center', gap: 7, paddingVertical: 7, paddingHorizontal: 10 },
   menuItemText: { fontSize: 13, fontFamily: 'Poppins-Medium' },
 
-  footerLoader: { paddingVertical: 20 , paddingBottom: 100},
+  footerLoader: { paddingVertical: 20, paddingBottom: 100 },
 
   emptyText: { fontSize: 16, color: '#888', fontFamily: 'Poppins-Regular' },
 

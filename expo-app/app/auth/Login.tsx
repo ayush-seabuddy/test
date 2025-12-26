@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import {
   Animated,
   Dimensions,
+  KeyboardAvoidingView,
   Platform,
   StyleSheet,
   Text,
@@ -73,7 +74,7 @@ const LoginScreen = () => {
         apiResponse?.data.employerId && await AsyncStorage.setItem("employerId", apiResponse?.data.employerId);
         const storedData = await AsyncStorage.getItem('userDetails');
 
-if(apiResponse?.data.employerId) return router.push('/home');
+        if (apiResponse?.data.employerId) return router.push('/home');
 
         // const storedData = await AsyncStorage.getItem('userDetails');
         const user = JSON.parse(storedData ?? "");
@@ -110,17 +111,20 @@ if(apiResponse?.data.employerId) return router.push('/home');
   };
 
   return (
-  
-      <View style={{ flex: 1, backgroundColor: Colors.background }}>
-        <View style={styles.wrapper}>
-          <View style={styles.backgroundOverlay} />
-          <View style={styles.topSection} />
 
-          <Animated.Image
-            source={ImagesAssets.splashCaptainImage}
-            style={[styles.logo, { transform: [{ translateY: logoTranslateY }] }]}
-          />
+    <View style={{ flex: 1, backgroundColor: Colors.background }}>
+      <View style={styles.wrapper}>
+        <View style={styles.backgroundOverlay} />
+        <View style={styles.topSection} />
 
+        <Animated.Image
+          source={ImagesAssets.splashCaptainImage}
+          style={[styles.logo, { transform: [{ translateY: logoTranslateY }] }]}
+        />
+
+        <KeyboardAvoidingView style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : "height"}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}>
           <View style={styles.formCard}>
             <View style={styles.formContent}>
               <View style={styles.header}>
@@ -190,9 +194,12 @@ if(apiResponse?.data.employerId) return router.push('/home');
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+
+        </KeyboardAvoidingView>
+
       </View>
- 
+    </View>
+
 
   );
 };

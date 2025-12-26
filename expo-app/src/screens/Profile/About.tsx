@@ -114,7 +114,7 @@ const About = () => {
                 <Text style={styles.hashSymbol}>#</Text>
                 {userDetails?.userLeaderBoardPosition || '0'}
               </Text>
-              <Trophy size={30} color={Colors.lightGreen} />
+              <Image source={ImagesAssets.LeaderboardIcon} style={{height:30,width:30,tintColor:Colors.lightGreen}}></Image>
             </View>
           </View>
           <View style={styles.statsRow}>

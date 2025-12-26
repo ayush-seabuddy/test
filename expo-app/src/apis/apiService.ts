@@ -217,10 +217,10 @@ export interface GetAllContentsParams {
   page?: number,
   limit?: number,
   onlyAnnouncement?: boolean,
-  contentCategory?:  string,
-  contentType?:  string,
-  department?:  string,
-  subCategory?:  string
+  contentCategory?:   string,
+  contentType?:   string,
+  department?:   string,
+  subCategory?:   string
 }
 
 export interface GetAllHelplinesParams {
@@ -318,8 +318,9 @@ export interface ListAllUsersForTagParams {
 }
 
 export interface GetLeaderboardParams {
-  page: number,
-  limit: number,
+  isZero?:boolean,
+  page?: number,
+  limit?: number,
   shipId?: string,
   designation?: string,
 }
@@ -796,3 +797,4 @@ export const globalSearch = async (search: string): Promise<ApiResponse> => {
     params: { search: search },
   });
 }
+

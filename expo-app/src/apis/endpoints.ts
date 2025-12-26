@@ -62,7 +62,8 @@ export const ENDPOINTS = {
   GET_MOOD_TRACKER_ANALYSIS:`${BASE_URL}/user/getMoodTrackerAnalysis`,
   GET_ALL_MOOD_TRACKER:`${BASE_URL}/user/getAllMoodTracker`,
   MOOD_TRACKER:`${BASE_URL}/user/moodTracker`,
-  GLOBAL_SEARCH: `${BASE_URL}/user/globalSearch`
+  GLOBAL_SEARCH: `${BASE_URL}/user/globalSearch`,
+
 
 
 };

@@ -1,4 +1,5 @@
 import { globalSearch } from '@/src/apis/apiService';
+import BuddyUpEventList from '@/src/components/BuddyUpEventList';
 import ContentListing from '@/src/components/ContentListing';
 import PostScreen from '@/src/components/PostScreen';
 import { UserDetails } from '@/src/redux/userDetailsSlice';
@@ -120,7 +121,12 @@ const GlobalSearch = () => {
   const RenderUsers = ({ item }:{item: UserDetails}) => (
     <TouchableOpacity
       style={styles.userContainer}
-      // onPress={() => router.push("/crewProfile")}
+      onPress={() => router.push({
+                              pathname: "/crewProfile",
+                              params: {
+                                crewId: item?.id,
+                              },
+                            })}
     >
       <Image
         source={{
@@ -162,6 +168,9 @@ const GlobalSearch = () => {
   }else if(activeSection === 'watch') {
     const watchData = visibleSections.find(section => section.section.id === 'watch')?.data || [];
     return <ContentListing data={watchData} />
+  }else if(activeSection === 'buddyup') {
+     const buddyupData = visibleSections.find(section => section.section.id === 'buddyup')?.data || [];
+     return <BuddyUpEventList ActivitiesData={buddyupData} />
   }
   return <><Text>{activeSection}</Text></>
  }

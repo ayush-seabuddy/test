@@ -19,6 +19,7 @@ import {
     readsinglenotification,
     deleteandclearallnotification
 } from '@/src/apis/apiService';
+import { router } from 'expo-router';
 
 interface Notification {
     id: string;
@@ -220,7 +221,9 @@ const NotificationScreen = () => {
         <View style={styles.main}>
             <View style={styles.header}>
                 <View style={styles.headerLeft}>
-                    <ChevronLeft size={24} color="#000" />
+                    <TouchableOpacity onPress={() => { router.back() }}>
+                        <ChevronLeft size={24} color="#000" />
+                    </TouchableOpacity>
                     <Text style={styles.headerTitle}>{t('notifications')}</Text>
                 </View>
 
