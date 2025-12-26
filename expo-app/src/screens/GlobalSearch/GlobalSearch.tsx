@@ -26,7 +26,7 @@ const GlobalSearch = () => {
   const [results, setResults] = useState<any>({});
   const [activeSection, setActiveSection] = useState<'users' | 'posts' | 'bulletin' | 'read' | 'buddyup' | 'listen' | 'watch'>("users");
   const [post, setPost] = useState<PostInterface[]>([]);
-  const sections = [
+  const sections: { id: 'users' | 'posts' | 'bulletin' | 'read' | 'buddyup' | 'listen' | 'watch', title: string, dataKey: string }[] = [
     { id: "users", title: "Users", dataKey: "users.usersList" },
     { id: "posts", title: "Posts", dataKey: "posts.hangoutsList" },
     { id: "bulletin", title: "Bulletin", dataKey: "announcements.allAnnouncements" },
@@ -36,24 +36,24 @@ const GlobalSearch = () => {
     { id: "watch", title: "Watch", dataKey: "videos.allContents" },
   ];
 
-  const hasData = (key: string,section:{ id:string, title: string, dataKey: string }): {visible:boolean , section:{ id:string, title: string, dataKey: string }, data:any[]} => {
+  const hasData = (key: string, section: { id: 'users' | 'posts' | 'bulletin' | 'read' | 'buddyup' | 'listen' | 'watch', title: string, dataKey: string }): { visible: boolean, section: { id: string, title: string, dataKey: string }, data: any[] } => {
     try {
       const keys = key.split(".");
       let data = results;
       for (const k of keys) {
         data = data?.[k];
-        if (!data) return {visible:false , section , data:[]};
+        if (!data) return { visible: false, section, data: [] };
       }
       const visible = Array.isArray(data) ? data.length > 0 : !!data;
-      return {visible , section , data};
+      return { visible, section, data };
 
     } catch {
-      return {visible:false , section , data:[]};
+      return { visible: false, section, data: [] };
     }
   };
 
   const visibleSections = useMemo(
-    () => sections.map((section) => hasData(section.dataKey,section)),
+    () => sections.map((section) => hasData(section.dataKey, section)),
     [results]
   );
   const debounceTimeout = useRef<any>(null);
@@ -89,7 +89,7 @@ const GlobalSearch = () => {
     };
   }, [searchText]);
 
-  const renderPosts = (postData: PostInterface[] ) => {
+  const renderPosts = (postData: PostInterface[]) => {
     return <FlatList
       data={postData}
       renderItem={({ item }) => (
@@ -108,7 +108,7 @@ const GlobalSearch = () => {
     />
   }
 
-  const renderUsers = (userData: UserDetails[] ) => {
+  const renderUsers = (userData: UserDetails[]) => {
     return <FlatList
       data={userData}
       renderItem={({ item }) => (
@@ -118,15 +118,16 @@ const GlobalSearch = () => {
       showsVerticalScrollIndicator={false}
     />
   }
-  const RenderUsers = ({ item }:{item: UserDetails}) => (
+  const RenderUsers = ({ item }: { item: UserDetails }) => (
     <TouchableOpacity
       style={styles.userContainer}
-      onPress={() => router.push({
-                              pathname: "/crewProfile",
-                              params: {
-                                crewId: item?.id,
-                              },
-                            })}
+      onPress={() =>
+        router.push({
+          pathname: "/crewProfile",
+          params: {
+            crewId: item?.id,
+          },
+        })}
     >
       <Image
         source={{
@@ -148,32 +149,32 @@ const GlobalSearch = () => {
   );
 
 
- const renderSection = () => {
-  const postData = visibleSections.find(section => section.section.id === 'posts')?.data || [];
-  if(activeSection === 'posts') {
-    return renderPosts(postData);
-  }else if(activeSection === 'users') {
-    const userData = visibleSections.find(section => section.section.id === 'users')?.data || [];
-    return renderUsers(userData);
+  const renderSection = () => {
+    const postData = visibleSections.find(section => section.section.id === 'posts')?.data || [];
+    if (activeSection === 'posts') {
+      return renderPosts(postData);
+    } else if (activeSection === 'users') {
+      const userData = visibleSections.find(section => section.section.id === 'users')?.data || [];
+      return renderUsers(userData);
+    }
+    else if (activeSection === 'bulletin') {
+      const bulletinData = visibleSections.find(section => section.section.id === 'bulletin')?.data || [];
+      return <ContentListing data={bulletinData} />
+    } else if (activeSection === 'read') {
+      const readData = visibleSections.find(section => section.section.id === 'read')?.data || [];
+      return <ContentListing data={readData} />
+    } else if (activeSection === 'listen') {
+      const listenData = visibleSections.find(section => section.section.id === 'listen')?.data || [];
+      return <View style={styles.sectionContainer}><MusicCard data={listenData} /></View>
+    } else if (activeSection === 'watch') {
+      const watchData = visibleSections.find(section => section.section.id === 'watch')?.data || [];
+      return <ContentListing data={watchData} />
+    } else if (activeSection === 'buddyup') {
+      const buddyupData = visibleSections.find(section => section.section.id === 'buddyup')?.data || [];
+      return <BuddyUpEventList ActivitiesData={buddyupData} />
+    }
+    return <><Text>{activeSection}</Text></>
   }
-  else if(activeSection === 'bulletin') {
-    const bulletinData = visibleSections.find(section => section.section.id === 'bulletin')?.data || [];
-    return <ContentListing data={bulletinData} />
-  }else if(activeSection === 'read') {
-    const readData = visibleSections.find(section => section.section.id === 'read')?.data || [];
-    return <ContentListing data={readData} />
-  }else if(activeSection === 'listen') {
-    const listenData = visibleSections.find(section => section.section.id === 'listen')?.data || [];
-    return <View style={styles.sectionContainer}><MusicCard data={listenData} /></View>
-  }else if(activeSection === 'watch') {
-    const watchData = visibleSections.find(section => section.section.id === 'watch')?.data || [];
-    return <ContentListing data={watchData} />
-  }else if(activeSection === 'buddyup') {
-     const buddyupData = visibleSections.find(section => section.section.id === 'buddyup')?.data || [];
-     return <BuddyUpEventList ActivitiesData={buddyupData} />
-  }
-  return <><Text>{activeSection}</Text></>
- }
 
   return (
     <View style={styles.container}>
@@ -214,11 +215,11 @@ const GlobalSearch = () => {
             style={styles.tabsContainer}
             contentContainerStyle={styles.tabsContentContainer}
           >
-            {visibleSections?.filter((section) => section.visible)?.map(({section}) => (
+            {visibleSections?.filter((section) => section.visible)?.map(({ section }) => (
               <TouchableOpacity
                 key={section.id}
                 style={[styles.tab, activeSection === section.id && styles.activeTab]}
-                onPress={() => setActiveSection(section.id)}
+                onPress={() => setActiveSection(section.id as typeof activeSection)}
               >
                 <Text
                   style={[styles.tabText, activeSection === section.id && styles.activeTabText]}
@@ -378,7 +379,7 @@ const styles = StyleSheet.create({
   image: { height: 50, width: 50, borderRadius: 10 },
   name: { color: "#636363", fontFamily: "Poppins-SemiBold", fontSize: 14 },
   designation: { color: "#636363", fontFamily: "Poppins-Regular", fontSize: 12 },
-   userContainer: {
+  userContainer: {
     flexDirection: "row",
     borderBottomWidth: 0.5,
     borderColor: "#E8E8E8",
