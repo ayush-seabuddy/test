@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,7 @@ import {
   SectionList,
   TouchableOpacity,
   TextInput,
-  ScrollView,
+  BackHandler,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { ArrowLeft, Check, TriangleAlert } from 'lucide-react-native';
@@ -17,7 +17,7 @@ import GlobalButton from '@/src/components/GlobalButton';
 import GlobalPopup from '@/src/components/Modals/GlobalPopup';
 import { getallassessments, saveassessmentresponse } from '@/src/apis/apiService';
 import { showToast } from '@/src/components/GlobalToast';
-import { router } from 'expo-router';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 
 type AnswerType = 'Textfield' | 'Radio' | 'Checkbox' | 'Linear Scale' | 'Textarea';
 
@@ -36,27 +36,48 @@ interface SectionData {
   data: Question[];
 }
 
+interface TestData {
+  isRequires?: boolean;
+}
+
 const MonthlyHappinessIndexTestScreen = () => {
   const { t } = useTranslation();
-  const [showPopup, setShowPopup] = useState(true);
+  const router = useRouter();
+  const params = useLocalSearchParams<{ showPopup?: string; testData?: string }>();
+
   const [sections, setSections] = useState<SectionData[]>([]);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
-  const currentDate = new Date();
-  const previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1);
-  const previousMonthName = previousMonth.toLocaleString("default", { month: "long" });
+
+  const parsedTestData = useMemo<TestData | null>(() => {
+    if (!params.testData) return null;
+    try {
+      return JSON.parse(params.testData);
+    } catch {
+      return null;
+    }
+  }, [params.testData]);
+
+  const isRequiredTest = parsedTestData?.isRequires === true;
+  const shouldShowPopup = params.showPopup === 'true';
+
+  const [showPopup, setShowPopup] = useState(shouldShowPopup);
+
+  const previousMonth = new Date();
+  previousMonth.setMonth(previousMonth.getMonth() - 1);
+  const previousMonthName = previousMonth.toLocaleString('default', { month: 'long' });
+
   const transformToSections = (questions: Question[]): SectionData[] => {
     const sectionMap: Record<string, Question[]> = {};
-
     questions.forEach(q => {
       if (!sectionMap[q.section]) sectionMap[q.section] = [];
       sectionMap[q.section].push(q);
     });
 
-    return Object.keys(sectionMap)
-      .map(sectionTitle => ({
-        title: sectionTitle,
-        data: sectionMap[sectionTitle].sort((a, b) => +a.order - +b.order),
+    return Object.entries(sectionMap)
+      .map(([title, data]) => ({
+        title,
+        data: data.sort((a, b) => +a.order - +b.order),
       }))
       .sort((a, b) => +a.data[0].order - +b.data[0].order);
   };
@@ -65,23 +86,56 @@ const MonthlyHappinessIndexTestScreen = () => {
     try {
       const res = await getallassessments({ questionType: 'HAPPINESS' });
       if (res.success && res.status === 200) {
-        setSections(transformToSections(res.data));
+        setSections(transformToSections(res.data || []));
       } else {
-        showToast.error(t('oops'), res.message);
+        showToast.error(t('oops'), res.message || t('somethingwentwrong'));
       }
     } catch (err: any) {
       showToast.error(t('oops'), err.message || t('somethingwentwrong'));
     }
   }, [t]);
 
-  const handleSubmit = async () => {
-    const missing = requiredQuestionIds.filter(id => {
-      const val = answers[id];
-      return val === undefined || val === null || val === '' || (Array.isArray(val) && val.length === 0);
-    });
+  useEffect(() => {
+    fetchQuestions();
+  }, [fetchQuestions]);
 
-    if (missing.length > 0) {
-      showToast.error('Required', 'Please answer all required questions');
+  useFocusEffect(
+    useCallback(() => {
+      if (!isRequiredTest) return;
+
+      const onBackPress = () => true;
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => subscription.remove();
+    }, [isRequiredTest])
+  );
+
+  const updateAnswer = (id: string, value: any) => {
+    setAnswers(prev => ({ ...prev, [id]: value }));
+  };
+
+  const requiredQuestionIds = useMemo(() => {
+    return sections
+      .flatMap(s => s.data)
+      .filter(q => q.required)
+      .map(q => q.id);
+  }, [sections]);
+
+  const calculateProgress = useMemo(() => {
+    const total = requiredQuestionIds.length;
+    if (total === 0) return 1;
+
+    const filled = requiredQuestionIds.filter(id => {
+      const val = answers[id];
+      return val != null && val !== '' && !(Array.isArray(val) && val.length === 0);
+    }).length;
+
+    return filled / total;
+  }, [answers, requiredQuestionIds]);
+
+  const handleSubmit = async () => {
+    if (calculateProgress < 1) {
+      showToast.error(t('required'), t('please_answer_all_required'));
       return;
     }
 
@@ -89,68 +143,32 @@ const MonthlyHappinessIndexTestScreen = () => {
     try {
       const payload = {
         questionType: 'HAPPINESS',
-        month: new Date().toISOString().slice(0, 7),
+        month: previousMonth.toISOString().slice(0, 7),
         answers: Object.entries(answers).map(([questionId, answer]) => ({
           questionId,
-          createdAt: new Date().toISOString(),
           answer: Array.isArray(answer)
-            ? answer.join('')
+            ? answer.join(',')
             : typeof answer === 'number'
               ? answer
-              : String(answer) || '',
+              : String(answer ?? ''),
+          createdAt: new Date().toISOString(),
         })),
       };
 
       const res = await saveassessmentresponse(payload as any);
 
       if (res.success) {
-        showToast.success(t('success'), res.message);
-        router.push('/home');
+        showToast.success(t('success'), res.message || t('assessment_submitted'));
+        router.replace('/home');
       } else {
-        showToast.error(t('oops'), res.message);
+        showToast.error(t('oops'), res.message || t('somethingwentwrong'));
       }
     } catch (err: any) {
-      showToast.error(t('oops'), err.message);
+      showToast.error(t('oops'), err.message || t('somethingwentwrong'));
     } finally {
       setLoading(false);
     }
   };
-  useEffect(() => {
-    fetchQuestions();
-  }, [fetchQuestions]);
-
-  const updateAnswer = (id: string, value: any) => {
-    setAnswers(prev => ({ ...prev, [id]: value }));
-  };
-
-  const requiredQuestionIds = React.useMemo(() => {
-    return sections
-      .flatMap(section => section.data)
-      .filter(q => q.required)
-      .map(q => q.id);
-  }, [sections]);
-
-  const calculateProgress = React.useMemo(() => {
-    const total = requiredQuestionIds.length;
-    if (total === 0) return 0;
-
-    let filled = 0;
-
-    requiredQuestionIds.forEach(id => {
-      const val = answers[id];
-
-      if (
-        val !== undefined &&
-        val !== null &&
-        val !== '' &&
-        !(Array.isArray(val) && val.length === 0)
-      ) {
-        filled += 1;
-      }
-    });
-
-    return filled / total;
-  }, [answers, requiredQuestionIds]);
 
   const renderQuestion = ({ item }: { item: Question }) => {
     const { id, question, answerType, answerOptions, required } = item;
@@ -167,8 +185,8 @@ const MonthlyHappinessIndexTestScreen = () => {
           <TextInput
             style={[styles.textInput, answerType === 'Textarea' && styles.textarea]}
             placeholder={t('enterhere')}
-            value={value || ''}
-            onChangeText={(text) => updateAnswer(id, text)}
+            value={String(value ?? '')}
+            onChangeText={text => updateAnswer(id, text)}
             multiline={answerType === 'Textarea'}
             numberOfLines={answerType === 'Textarea' ? 5 : 1}
           />
@@ -178,14 +196,14 @@ const MonthlyHappinessIndexTestScreen = () => {
           <View style={styles.optionsContainer}>
             {answerOptions.map(opt => (
               <TouchableOpacity
-                key={opt}
+                key={String(opt)}
                 style={styles.radioRow}
                 onPress={() => updateAnswer(id, opt)}
               >
                 <View style={[styles.radioCircle, value === opt && styles.radioSelected]}>
                   {value === opt && <View style={styles.radioDot} />}
                 </View>
-                <Text style={styles.optionText}>{opt}</Text>
+                <Text style={styles.optionText}>{String(opt)}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -193,11 +211,11 @@ const MonthlyHappinessIndexTestScreen = () => {
 
         {answerType === 'Checkbox' && (
           <View style={styles.optionsContainer}>
-            {answerOptions.map(opt => {
+            {(answerOptions || []).map(opt => {
               const checked = (value || []).includes(opt);
               return (
                 <TouchableOpacity
-                  key={opt}
+                  key={String(opt)}
                   style={styles.checkboxRow}
                   onPress={() => {
                     const newVal = checked
@@ -209,7 +227,7 @@ const MonthlyHappinessIndexTestScreen = () => {
                   <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
                     {checked && <Check size={16} color={Colors.white} />}
                   </View>
-                  <Text style={styles.optionText}>{opt}</Text>
+                  <Text style={styles.optionText}>{String(opt)}</Text>
                 </TouchableOpacity>
               );
             })}
@@ -223,15 +241,15 @@ const MonthlyHappinessIndexTestScreen = () => {
               minimumValue={1}
               maximumValue={10}
               step={1}
-              value={value || 5}
-              onValueChange={(val) => updateAnswer(id, val)}
-              minimumTrackTintColor={Colors.white || '#B0DB02'}
+              value={value ?? 5}
+              onValueChange={val => updateAnswer(id, val)}
+              minimumTrackTintColor="#B0DB02"
               maximumTrackTintColor="#555"
               thumbTintColor="#fff"
             />
             <View style={styles.sliderLabels}>
               <Text style={styles.sliderText}>Very Unhappy</Text>
-              <Text style={styles.sliderText}>{value || 5}</Text>
+              <Text style={styles.sliderText}>{value ?? 5}</Text>
               <Text style={styles.sliderText}>Very Happy</Text>
             </View>
           </View>
@@ -250,42 +268,45 @@ const MonthlyHappinessIndexTestScreen = () => {
     <View style={styles.main}>
       <View style={styles.HeaderView}>
         <View style={styles.titleView}>
-          <ArrowLeft size={20} color={Colors.primary} />
-          <Text style={styles.title}>{t('monthlyhappinessindex')}</Text>
+          {!isRequiredTest && (
+            <TouchableOpacity onPress={() => router.back()}>
+              <ArrowLeft size={20} color={Colors.primary} />
+            </TouchableOpacity>
+          )}
+          <Text style={[styles.title, !isRequiredTest && { marginLeft: 10 }]}>
+            {t('monthlyhappinessindex')}
+          </Text>
         </View>
         <Text style={styles.description}>{t('happinessindexdescription')}</Text>
       </View>
 
       <SectionList
         sections={sections}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         renderItem={renderQuestion}
         renderSectionHeader={renderSectionHeader}
         stickySectionHeadersEnabled
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
-          <>
-            <View style={styles.briefdescriptionView}>
-              <Text style={styles.briefdescription}>{t('survey.intro')}{'\n'}</Text>
-              <Text style={styles.briefdescription}>{t('survey.anonymous')}{'\n'}</Text>
-              <Text style={styles.briefdescription}>{t('survey.impactful')}</Text>
+          <View style={styles.briefdescriptionView}>
+            <Text style={styles.briefdescription}>{t('survey.intro')}{'\n'}</Text>
+            <Text style={styles.briefdescription}>{t('survey.anonymous')}{'\n'}</Text>
+            <Text style={styles.briefdescription}>{t('survey.impactful')}</Text>
 
-              <Text style={styles.undertenminute}>{t('undertenminutes')}</Text>
-              <Progress.Bar
-                progress={calculateProgress}
-                color="rgba(132, 164, 2, 1)"
-                height={7}
-                unfilledColor={Colors.iconColor}
-                borderWidth={0}
-                width={null}
-                style={styles.progressbar}
-              />
-
-              <Text style={styles.progresspercentage}>
-                {Math.round(calculateProgress * 100)}%
-              </Text>
-            </View>
-          </>
+            <Text style={styles.undertenminute}>{t('undertenminutes')}</Text>
+            <Progress.Bar
+              progress={calculateProgress}
+              color="#84A402"
+              height={7}
+              unfilledColor="#E0E0E0"
+              borderWidth={0}
+              width={null}
+              style={styles.progressbar}
+            />
+            <Text style={styles.progresspercentage}>
+              {Math.round(calculateProgress * 100)}%
+            </Text>
+          </View>
         }
         ListFooterComponent={
           <View style={styles.footer}>
@@ -297,14 +318,13 @@ const MonthlyHappinessIndexTestScreen = () => {
               onPress={handleSubmit}
               buttonStyle={[
                 styles.submitButton,
-                (calculateProgress < 1 || loading) && { opacity: 0.5 },
+                (calculateProgress < 1 || loading) && styles.disabledButton,
               ]}
               textStyle={styles.submitText}
             />
           </View>
         }
       />
-
 
       <GlobalPopup
         visible={showPopup}
@@ -329,12 +349,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
   titleView: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   title: { fontSize: 16, fontFamily: 'Poppins-Regular', color: '#262626' },
   description: { fontSize: 11, fontFamily: 'Poppins-Regular', color: '#262626', marginTop: 5 },
-
-  scrollContainer: { flex: 1, backgroundColor: '#00000080' },
 
   briefdescriptionView: {
     paddingHorizontal: 16,
@@ -351,8 +371,8 @@ const styles = StyleSheet.create({
   progressbar: { marginTop: 16 },
   progresspercentage: { marginTop: 10, textAlign: 'right', color: '#161616', fontSize: 14 },
 
-  sectionHeader: { paddingHorizontal:16,paddingVertical:10, backgroundColor: '#CCCCCC' },
-  sectionTitle: { color: '#fff', fontSize: 18, fontFamily: 'Poppins-SemiBold' },
+  sectionHeader: { paddingHorizontal: 16, paddingVertical: 10, backgroundColor: '#CCCCCC' },
+  sectionTitle: { color: '#000', fontSize: 16, fontFamily: 'Poppins-SemiBold' },
 
   questionBlock: {
     backgroundColor: 'rgba(0,0,0,0.4)',
@@ -393,7 +413,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioDot: { width: 14, height: 14, borderRadius: 50, backgroundColor: Colors.lightGreen },
+  radioDot: { width: 14, height: 14, borderRadius: 7, backgroundColor: Colors.lightGreen },
 
   checkboxRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 10 },
   checkbox: {
@@ -420,10 +440,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingHorizontal: 8,
   },
-  sliderText: { fontSize: 13, color: Colors.white, fontFamily: 'Poppins-Regular' },
+  sliderText: { fontSize: 13, color: '#fff', fontFamily: 'Poppins-Regular' },
 
   footer: { padding: 20, paddingBottom: 40 },
-  disclaimerText: {fontStyle: 'italic', marginBottom: 20, fontSize: 14 },
+  disclaimerText: { fontStyle: 'italic', marginBottom: 20, fontSize: 14, color: '#fff' },
   submitButton: { backgroundColor: 'white', borderRadius: 12, width: '100%' },
+  disabledButton: { opacity: 0.5 },
   submitText: { color: Colors.darkGreen, fontFamily: 'Poppins-SemiBold' },
 });

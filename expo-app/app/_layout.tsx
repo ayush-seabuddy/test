@@ -1,7 +1,7 @@
-import { Slot } from "expo-router";
+import { Stack, router, useRootNavigationState } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar, StyleSheet, useColorScheme } from "react-native";
@@ -26,42 +26,36 @@ import { NotificationProvider } from "@/Context/NotificationContext";
 
 SplashScreen.preventAutoHideAsync();
 
-// ─────────────────────────────────────────────
-// Notification handler (FOREGROUND)
-// ─────────────────────────────────────────────
+/* ─────────────── Types ─────────────── */
+type NotificationData = {
+  screen?: string;
+};
+
+/* ───────── Foreground notifications (NO nav) ───────── */
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    shouldShowBanner:true,
+    shouldShowList:true,
   }),
 });
 
-// ─────────────────────────────────────────────
-// Background notification task
-// ─────────────────────────────────────────────
+/* ───────── Background task (NO nav) ───────── */
 const BACKGROUND_NOTIFICATION_TASK = "BACKGROUND-NOTIFICATION-TASK";
+TaskManager.defineTask(BACKGROUND_NOTIFICATION_TASK, async () => {});
+Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK).catch(() => {});
 
-TaskManager.defineTask(
-  BACKGROUND_NOTIFICATION_TASK,
-  async ({ data, error }) => {
-    if (error) {
-      console.error("❌ Background notification error:", error);
-      return;
-    }
-
-    console.log("✅ Background notification received:", data);
-  }
-);
-
-Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK).catch(() => {
-  // Avoid crash if already registered
-});
-
+/* ───────────── Root Layout ───────────── */
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const rootNavigationState = useRootNavigationState();
+
+  const hasHandledKilled = useRef(false);
+  const hasNavigated = useRef(false);
+
+  const [pendingScreen, setPendingScreen] = useState<string | null>(null);
 
   const [fontsLoaded] = useFonts({
     "Poppins-Regular": require("../assets/fonts/Poppins-Regular.ttf"),
@@ -73,22 +67,62 @@ export default function RootLayout() {
     "WhyteInktrap-Medium": require("../assets/fonts/WhyteInktrap-Medium.ttf"),
   });
 
+  /* ───────── App init ───────── */
   useEffect(() => {
-    async function prepareApp() {
+    if (!fontsLoaded) return;
+
+    (async () => {
       try {
         await initI18n();
         socketService.initializeSocket();
-      } catch (error) {
-        console.warn("❌ App init failed:", error);
       } finally {
         await SplashScreen.hideAsync();
       }
+    })();
+  }, [fontsLoaded]);
+
+  /* ───── Notification TAP (store intent only) ───── */
+  useEffect(() => {
+    const sub =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        const data =
+          response.notification.request.content.data as NotificationData;
+
+        if (typeof data?.screen === "string") {
+          setPendingScreen(data.screen);
+        }
+      });
+
+    if (!hasHandledKilled.current) {
+      const response = Notifications.getLastNotificationResponse();
+      if (response) {
+        hasHandledKilled.current = true;
+
+        const data =
+          response.notification.request.content.data as NotificationData;
+
+        if (typeof data?.screen === "string") {
+          setPendingScreen(data.screen);
+        }
+      }
     }
 
-    if (fontsLoaded) {
-      prepareApp();
+    return () => sub.remove();
+  }, []);
+
+  /* ───── Navigate ONCE when router is ready ───── */
+  useEffect(() => {
+    if (!rootNavigationState?.key) return;
+    if (!pendingScreen) return;
+    if (hasNavigated.current) return;
+
+    hasNavigated.current = true;   // 🔒 LOCK FIRST
+    setPendingScreen(null);        // 🔒 CLEAR STATE FIRST
+
+    if (pendingScreen === "monthlyhappinessindex") {
+      router.replace("/monthlyhappinessindex");
     }
-  }, [fontsLoaded]);
+  }, [rootNavigationState, pendingScreen]);
 
   if (!fontsLoaded) return null;
 
@@ -96,24 +130,21 @@ export default function RootLayout() {
     <NotificationProvider>
       <Provider store={store}>
         <SafeAreaProvider>
-          <SafeAreaView
-            style={styles.container}
-            edges={["top", "left", "right"]}
-          >
+          <SafeAreaView style={styles.container}>
             <StatusBar
               barStyle={
                 colorScheme === "dark" ? "light-content" : "dark-content"
               }
-              backgroundColor="#000"
             />
-
             <ThemeProvider
               value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
             >
               <PaperProvider>
                 <I18nextProvider i18n={i18n}>
                   <GestureHandlerRootView style={{ flex: 1 }}>
-                    <Slot />
+                    <Stack screenOptions={{ headerShown: false }}>
+                      <Stack.Screen name="(bottomtab)" />
+                    </Stack>
                     <Toast />
                   </GestureHandlerRootView>
                 </I18nextProvider>

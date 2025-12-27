@@ -1,4 +1,3 @@
-import SocialHeader from "@/src/screens/community/SocialHeader";
 import Colors from "@/src/utils/Colors";
 import { router, Tabs, usePathname } from "expo-router";
 import React from "react";
@@ -7,15 +6,15 @@ import { Text, TouchableOpacity, View } from "react-native";
 export default function CommunityLayout() {
   const unreadCount = 5;
   const pathname = usePathname();
-  console.log("pathname: ", pathname);
-  const routes = ["/community/social", "/community/chats"] as const;
+  const routes = ["/social", "/chats"] as const;
+  
 
 
   return (
     <View style={{ flex: 1, backgroundColor: Colors.white }}>
 
 
-      {['/community/chats', '/community/social'].includes(pathname) && <View
+      <View
         style={{
           flexDirection: "row",
           alignSelf: "center",
@@ -30,10 +29,13 @@ export default function CommunityLayout() {
         }}
       >
         {['social', 'chat'].map((name, index) => {
-          const isFocused = pathname.includes(name);
-
-
-          console.log("routes[index]: ", routes[index]);
+          const isFocused =
+          () => {
+            if(name === 'social' && pathname === '/') {
+              return true;
+            }
+            return pathname.includes(name);
+          };
           return (
             <TouchableOpacity
               key={name}
@@ -44,7 +46,7 @@ export default function CommunityLayout() {
                 borderRadius: 25,
                 justifyContent: "center",
                 alignItems: "center",
-                backgroundColor: isFocused
+                backgroundColor: isFocused()
                   ? Colors.lightGreen
                   : "transparent",
                 position: "relative",
@@ -92,11 +94,12 @@ export default function CommunityLayout() {
             </Text>
           </View>
         )}
-      </View>}
+      </View>
 
       {/* ✅ Tabs below header */}
       <Tabs
         initialRouteName="social"
+        backBehavior="history"
         screenOptions={{
           tabBarPosition: "top",
           headerShown: false,

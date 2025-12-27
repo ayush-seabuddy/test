@@ -2,7 +2,8 @@ import { ImagesAssets } from '@/src/utils/ImageAssets';
 import { formatDate, getUserDetails } from '@/src/utils/helperFunctions';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { ChevronLeft } from 'lucide-react-native';
 import moment from 'moment-timezone';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,10 +19,9 @@ import {
   View,
 } from 'react-native';
 import { addeditdeletebuddyupevent, GETALLBUDDYUPEVENTS } from '../apis/apiService';
-import { showToast } from './GlobalToast';
-import GlobalHeader from './GlobalHeader';
-import { ChevronLeft } from 'lucide-react-native';
 import Colors from '../utils/Colors';
+import GlobalHeader from './GlobalHeader';
+import { showToast } from './GlobalToast';
 
 const { width } = Dimensions.get('window');
 
@@ -51,11 +51,12 @@ interface Props {
   userId?: string;
   type?: string;
   from?: string
+  ActivitiesData?: BuddyUpEvent[];
 }
 
-const BuddyUpEventList = ({ userId, type, from }: Props) => {
+const BuddyUpEventList = ({ userId, type, from , ActivitiesData}: Props) => {
   const { t } = useTranslation();
-  const [groupActivities, setGroupActivities] = useState<BuddyUpEvent[]>([]);
+  const [groupActivities, setGroupActivities] = useState<BuddyUpEvent[]>(ActivitiesData||[]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -132,12 +133,16 @@ const BuddyUpEventList = ({ userId, type, from }: Props) => {
 
   const GetDatafromApi = async (isLoadMore = false,) => {
     try {
+      if(ActivitiesData && ActivitiesData.length>0){
+        return;
+      }
       if (!isLoadMore) {
         setLoading(true);
       } else {
         if (page > totalPages) return;
         setLoadingMore(true);
       }
+
 
       const response = await GETALLBUDDYUPEVENTS({
         ...(userId ? { userId } : {

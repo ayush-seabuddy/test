@@ -21,6 +21,7 @@ import { ImagesAssets } from '@/src/utils/ImageAssets'
 import socketService from '@/src/utils/socketService'
 import { router } from 'expo-router'
 import { t } from 'i18next'
+import ChatHeader from './chatListHeader'
 
 const ChatLoungeList = () => {
   const dispatch = useDispatch()
@@ -149,10 +150,13 @@ const ChatLoungeList = () => {
   }, [])
 
   return (
+    <View style={styles.container}>
+      <ChatHeader />
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
     >
+      
       {loungeSections.map((section) => {
         if (section.rooms.length === 0) return null
 
@@ -177,6 +181,7 @@ const ChatLoungeList = () => {
         )
       })}
     </ScrollView>
+    </View>
   )
 }
 
@@ -184,7 +189,7 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   contentContainer: {
     paddingBottom: 150,
-    marginTop: 70,
+    marginTop: 80,
     gap: 25,
   },
   sectionContainer: {

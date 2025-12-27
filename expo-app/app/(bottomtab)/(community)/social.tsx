@@ -4,7 +4,7 @@ import Posts from '@/src/components/Posts';
 import SocialHeader from '@/src/screens/community/SocialHeader';
 import Colors from '@/src/utils/Colors';
 import React from 'react';
-import { View, StyleSheet, FlatList, Text } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 
 const HomeTab = () => {
   return (

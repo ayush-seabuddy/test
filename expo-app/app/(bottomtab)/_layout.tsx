@@ -8,12 +8,13 @@ import { Platform, StyleSheet, View } from 'react-native';
 const BottomTabbarLayout = () => {
   return (
     <Tabs
+    backBehavior="history"
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused }) => {
           let iconSource;
 
-          if (route.name === "community") {
+          if (route.name === "(community)") {
             iconSource = focused
               ? ImagesAssets.selectedHome
               : ImagesAssets.unselectedHome;
@@ -62,7 +63,7 @@ const BottomTabbarLayout = () => {
       })}
     >
       {/* 👇 Replaced index with community */}
-      <Tabs.Screen name="community" />
+      <Tabs.Screen name="(community)" />
       <Tabs.Screen name="health" />
       <Tabs.Screen name="helpline" />
       <Tabs.Screen name="shiplife" />

@@ -65,6 +65,10 @@ export const ENDPOINTS = {
   LISTALLUSERS:`${BASE_URL}/user/listAllUsers`,
   OFFBOARDONBOARDCREW:`${BASE_URL}/user/updateShipBoardingStatus`,
   ADDUPDATESHIPSTATUS:`${BASE_URL}/company/addUpdateShip`,
+  GLOBAL_SEARCH: `${BASE_URL}/user/globalSearch`,
+  GET_UNREAD_NOTIFICATION_COUNT: `${BASE_URL}/user/getUnreadNotificationCount`,
+
+
 
 
 };

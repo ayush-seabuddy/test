@@ -1,6 +1,6 @@
-import { viewbuddyupdetails } from '@/src/apis/apiService';
+import { addeditdeletebuddyupevent, viewbuddyupdetails } from '@/src/apis/apiService';
 import GlobalHeader from '@/src/components/GlobalHeader';
-import { showToast } from '@/src/components/GlobalToast';
+import Toast, { showToast } from '@/src/components/GlobalToast';
 import MediaPreviewModal from '@/src/components/Modals/MediaPreviewModal';
 import { RootState } from '@/src/redux/store';
 import Colors from '@/src/utils/Colors';
@@ -64,7 +64,7 @@ const BuddyUpEventDescription = () => {
     const { t } = useTranslation();
 
     const [loading, setLoading] = useState(true);
-    const [buddydetails, setBuddydetails] = useState<GroupActivityDetail | null>(null);
+    const [buddyUpDetails, setBuddydetails] = useState<GroupActivityDetail | null>(null);
     const [previewVisible, setPreviewVisible] = useState(false);
     const [selectedMedia, setSelectedMedia] = useState<{ uri: string; type: "image" | "video" } | null>(null);
     const getMediaType = (url: string): "image" | "video" => {
@@ -107,7 +107,7 @@ const BuddyUpEventDescription = () => {
         );
     }
 
-    if (!buddydetails) {
+    if (!buddyUpDetails) {
         return (
             <View style={styles.main}>
                 <GlobalHeader
@@ -122,40 +122,205 @@ const BuddyUpEventDescription = () => {
         );
     }
 
-    const joinedPeople = buddydetails.enrichedJoinedPeople || [];
+    const joinedPeople = buddyUpDetails.enrichedJoinedPeople || [];
     const joinedCount = joinedPeople.length;
     const displayedJoined = joinedPeople.slice(0, 10);
+    const YourEvent = buddyUpDetails.userId === userDetails.id;
 
     const isDisable = (): boolean => {
-        return (buddydetails.isStarted && !buddydetails.isEnded) || buddydetails.isJoined;
+        const { status, isEnded, userId, joinedPeople = [], isJoined } = buddyUpDetails;
+        if (YourEvent) {
+            if (buddyUpDetails.status === "COMPLETED" || buddyUpDetails.status === "REQUESTED" || !buddyUpDetails.isEnded) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+
+            return (buddyUpDetails.isStarted && !buddyUpDetails.isEnded) || buddyUpDetails.isJoined || isEnded;
+        }
     };
 
     const canApprove = () => {
         return ["Captain", "Chief engineer"].includes(userDetails.designation)
     }
 
-    const getButtonText = () => {
-        if (buddydetails.status === "COMPLETED") {
-            return t('completed')
-        } else if (buddydetails.status === "REQUESTED") {
-            return t('requested')
-        } else if (buddydetails.isEnded && buddydetails.userId === userDetails.id) {
 
-            if (buddydetails.joinedPeople.length > 0 && canApprove()) {
-                return t('markascomplete')
-            } else if (buddydetails.joinedPeople.length > 0 && !canApprove()) {
-                return t('requestedForApproval')
-            } else {
-                return t('pendingReschedule')
-            }
 
-        } else if (buddydetails.isJoined) {
-            return t('Joined')
-        } else {
-            return t('join')
+     const handleApporvalGivenByUser = async (status) => {
+        // setLoading(true);
+        try {
+            const response = await addeditdeletebuddyupevent( {
+                groupActivities: [
+                  {
+                    eventId: buddyUpDetails.id,
+                    status: status,
+                  },
+                ],
+              })
+        //   const response = await axios({
+        //     method: "POST",
+        //     url: `${apiServerUrl}/activity/addUpdateGroupActivity`,
+        //     headers: {
+        //       authToken: authToken,
+        //     },
+        //     data: {
+        //       groupActivities: [
+        //         {
+        //           eventId: activity.id,
+        //           status: status,
+        //         },
+        //       ],
+        //     },
+        //   });
+    
+       
+          if (response.status === 200) {
+            router.back();
+          }else{
+             Toast.show({
+              type: "error",
+              text1: "Error",
+              text2:
+                response.data.responseMessage ||
+                "No offline data found. Please connect to the internet.",
+              autoHide: true,
+              visibilityTime: 2000,
+              text1Style: {
+                fontFamily: "WhyteInkTrap-Bold",
+                fontSize: 16,
+                color: "#000",
+              },
+              text2Style: {
+                fontFamily: "WhyteInkTrap-Regular",
+                fontSize: 14,
+                color: "#000",
+              },
+            });
+
+          }
+        } catch (error) {
+            console.log("error: ", error);
+          
+        } finally {
+          setLoading(false);
         }
+      };
+    // const getButtonText = () => {
+    //     if (buddyUpDetails.status === "COMPLETED") {
+    //         return t('completed')
+    //     } else if (buddyUpDetails.status === "REQUESTED") {
+    //         return t('requested')
+    //     } else if (buddyUpDetails.isEnded && buddyUpDetails.userId === userDetails.id) {
 
-    }
+    //         if (buddyUpDetails.joinedPeople.length > 0 && canApprove()) {
+    //             return t('markascomplete')
+    //         } else if (buddyUpDetails.joinedPeople.length > 0 && !canApprove()) {
+    //             return t('requestedForApproval')
+    //         } else {
+    //             return t('pendingreschedule')
+    //         }
+
+    //     } else if (buddyUpDetails.isJoined) {
+    //         return t('Joined')
+    //     } else {
+    //         return t('join')
+    //     }
+
+    // }
+
+
+    const getButtonText = (): string => {
+        const { status, isEnded, userId, joinedPeople = [], isJoined } = buddyUpDetails;
+        const isCreator = userId === userDetails.id;
+        const hasParticipants = joinedPeople.length > 0;
+
+        const conditions = [
+            { check: status === "COMPLETED", text: t('completed') },
+            { check: status === "REQUESTED", text: t('requested') },
+            { check: status === "REJECTED", text: t('rejected') },
+            { check: isEnded && isCreator && hasParticipants && canApprove(), text: t('markascomplete') },
+            { check: isEnded && isCreator && hasParticipants && !canApprove(), text: t('shareforapproval') },
+            { check: isEnded && isCreator && !hasParticipants, text: t('pendingreschedule') },
+            { check: isJoined, text: t('Joined') },
+        ];
+
+        const match = conditions.find(cond => cond.check);
+        return match ? match.text : t('join');
+    };
+
+
+    const getButtonHandle = (): void => {
+        const { status, isEnded, userId, joinedPeople = [], isJoined } = buddyUpDetails;
+        const isCreator = userId === userDetails.id;
+        const hasParticipants = joinedPeople.length > 0;
+
+        const conditions = [
+            { check: status === "COMPLETED", page: () => { } },
+            { check: status === "REQUESTED", page: () => { } },
+            { check: isEnded && isCreator && hasParticipants && canApprove(),  page: () => {
+                    router.push({
+                        pathname: '/buddyuprequestapproval',
+                        params: { eventId: buddyUpDetails.id }
+                    })
+                } },
+            {
+                check: isEnded && isCreator && hasParticipants && !canApprove(),
+                page: () => {
+                    router.push({
+                        pathname: '/buddyuprequestapproval',
+                        params: { eventId: buddyUpDetails.id }
+                    })
+                }
+
+            },
+            {
+                check: isEnded && isCreator && !hasParticipants,
+                page: () => {
+                    const data = { eventId: buddyUpDetails.id, editMode: 'true', ...buddyUpDetails }
+                    router.push({
+                        pathname: '/createyourbuddyupevent',
+                        params: data
+                    })
+                }
+            },
+            { check: isJoined, text: t('Joined') },
+        ];
+
+        const match = conditions.find(cond => cond.check);
+        if (match && match.page) {
+            match.page();
+        }else{
+            handleJoinButtonPress();
+        }
+        // return match ? match.text : t('join');
+    };
+
+      const handleJoinButtonPress = async () => {
+        try {
+    
+          const joinPeople = [...buddyUpDetails.joinedPeople, userDetails.id];
+
+          const response = await addeditdeletebuddyupevent( {
+              groupActivities: [
+                {
+                  eventId: buddyUpDetails.id,
+                  joinedPeople: joinPeople,
+                },
+              ],
+            })
+    
+
+    
+          if (response.status === 200) {
+            // setReload(true);
+            // GetDetails();
+            fetchbuddyupDetails();
+          }
+        } catch (error) {
+          console.log("API Error:", error.response?.data || error.message);
+        }
+      };
 
     return (
         <View style={styles.main}>
@@ -165,10 +330,10 @@ const BuddyUpEventDescription = () => {
                 onLeftPress={() => router.back()}
             />
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
                 <View style={styles.imageView}>
                     <Image
-                        source={buddydetails.imageUrls?.[0] || ImagesAssets.SeabuddyPlaceholder}
+                        source={buddyUpDetails.imageUrls?.[0] || ImagesAssets.SeabuddyPlaceholder}
                         style={styles.buddyupImage}
                         placeholder={ImagesAssets.SeabuddyPlaceholder}
                         contentFit="cover"
@@ -177,16 +342,16 @@ const BuddyUpEventDescription = () => {
                 </View>
 
                 <View style={styles.section}>
-                    <Text style={styles.title}>{buddydetails.eventName}</Text>
+                    <Text style={styles.title}>{buddyUpDetails.eventName}</Text>
 
                     <View style={styles.rowBetween}>
                         <Text style={styles.organizerText}>
-                            {t('organizedBy')} {buddydetails.activityUser.fullName}
+                            {t('organizedBy')} {buddyUpDetails.activityUser.fullName}
                         </Text>
 
                         <View style={styles.pointsView}>
                             <Text style={styles.pointsText}>
-                                {buddydetails.groupActivityCategory.points} Points
+                                {buddyUpDetails.groupActivityCategory.points} Points
                             </Text>
                         </View>
                     </View>
@@ -198,14 +363,14 @@ const BuddyUpEventDescription = () => {
                     <View style={styles.rowBetween}>
                         <Text style={styles.label}>{t('starttime')}</Text>
                         <Text style={styles.time}>
-                            {formatDate(buddydetails.startDateTime)}
+                            {formatDate(buddyUpDetails.startDateTime)}
                         </Text>
                     </View>
 
                     <View style={styles.rowBetween}>
                         <Text style={styles.label}>{t('endtime')}</Text>
                         <Text style={styles.time}>
-                            {formatDate(buddydetails.endDateTime)}
+                            {formatDate(buddyUpDetails.endDateTime)}
                         </Text>
                     </View>
                 </View>
@@ -213,7 +378,7 @@ const BuddyUpEventDescription = () => {
                 <View style={styles.section}>
                     <Text style={styles.heading}>{t('description')}</Text>
                     <Text style={styles.descriptionText}>
-                        {buddydetails.description || t('nodescription')}
+                        {buddyUpDetails.description || t('nodescription')}
                     </Text>
                 </View>
 
@@ -256,12 +421,12 @@ const BuddyUpEventDescription = () => {
                 </View>
 
                 {/* Uploaded Content Section */}
-                {buddydetails.completionImages?.length > 0 && (
+                {buddyUpDetails.completionImages?.length > 0 && (
                     <View style={styles.section}>
                         <Text style={styles.heading}>{t('uploadedcontent')}</Text>
-                        <Text style={styles.descriptionText}>{buddydetails.completionDescription}</Text>
+                        <Text style={styles.descriptionText}>{buddyUpDetails.completionDescription}</Text>
                         <FlatList
-                            data={buddydetails.completionImages}
+                            data={buddyUpDetails.completionImages}
                             horizontal
                             showsHorizontalScrollIndicator={false}
                             style={{ width: "100%" }}
@@ -286,11 +451,12 @@ const BuddyUpEventDescription = () => {
                     type={selectedMedia?.type ?? "image"}
                 />
                 <View style={{ height: 30 }} />
-                {buddydetails.status === 'REQUESTED' && canApprove() && (
+                {buddyUpDetails.status === 'REQUESTED' && canApprove() ? (
                     <View
                         style={{
                             flexDirection: "row",
                             justifyContent: "space-between",
+                            paddingHorizontal: 16
                         }}
                     >
                         <TouchableOpacity
@@ -302,7 +468,7 @@ const BuddyUpEventDescription = () => {
                                 alignItems: "center",
                                 marginTop: "75%",
                             }}
-                        // onPress={() => handleApporvalGivenByUser("REJECTED")}
+                        onPress={() => handleApporvalGivenByUser("REJECTED")}
                         >
                             <Text style={styles.submitButtonText}>{t('reject')}</Text>
                         </TouchableOpacity>
@@ -315,27 +481,30 @@ const BuddyUpEventDescription = () => {
                                 alignItems: "center",
                                 marginTop: "75%",
                             }}
-                        // onPress={() => handleApporvalGivenByUser("COMPLETED")}
+                        onPress={() => handleApporvalGivenByUser("COMPLETED")}
                         >
                             <Text style={styles.submitButtonText}>{t('approve')}</Text>
                         </TouchableOpacity>
                     </View>
-                )}
-                <TouchableOpacity
-                    style={[
-                        styles.submitButton,
-                        isDisable() && {
-                            backgroundColor: "#E6EBE9",
-                            borderWidth: 1,
-                            borderColor: "#676E7629",
-                        },
-                    ]}
-                    disabled={isDisable()}
-                >
-                    <Text style={styles.submitButtonText}>
-                        {getButtonText()}
-                    </Text>
-                </TouchableOpacity>
+                ): <View style={{ paddingHorizontal: 16 }} >
+                    <TouchableOpacity
+                        style={[
+                            styles.submitButton,
+                            isDisable() && {
+                                backgroundColor: "#bcbcbc",
+                                borderWidth: 1,
+                                borderColor: "#676E7629",
+                            },
+                        ]}
+                        onPress={() => getButtonHandle()}
+                        disabled={isDisable()}
+                    >
+                        <Text style={styles.submitButtonText}>
+                            {getButtonText()}
+                        </Text>
+                    </TouchableOpacity>
+                </View>}
+               
             </ScrollView>
         </View>
     );

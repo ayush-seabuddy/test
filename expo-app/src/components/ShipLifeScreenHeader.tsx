@@ -1,5 +1,5 @@
 // CustomHeader.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,47 +10,89 @@ import {
 } from "react-native";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import Colors from "@/src/utils/Colors";
-import { House, Trophy } from "lucide-react-native";
+import { House } from "lucide-react-native";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { getUserDetails } from "../utils/helperFunctions";
 
 const ShipLifeScreenHeader = () => {
   const { t } = useTranslation();
-  const [Notification, setNotification] = useState([]);
-  const [unreadNotification, setUnreadNotification] = useState(0)
+
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [userDetails, setUserDetails] = useState<any>(null);
+
+  useEffect(() => {
+    const init = async () => {
+      const user = await getUserDetails();
+      setUserDetails(user);
+    };
+
+    init();
+  }, []);
+
+  const isCaptain = userDetails?.designation === "Captain";
+
   return (
     <View style={styles.container}>
-      <Text style={styles.shiplifetext}>{t('ship_life')}</Text>
+      <Text style={styles.shiplifetext}>{t("ship_life")}</Text>
 
       <View style={styles.iconGroup}>
-
-        {/* Leaderboard Icon */}
-        <TouchableOpacity style={styles.iconButton} onPress={()=>{router.push('/leaderboard')}}>
+        {/* Leaderboard */}
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => router.push("/leaderboard")}
+        >
           <View style={styles.iconWrapper}>
-            <Image source={ImagesAssets.LeaderboardIcon} style={styles.iconImage} />
-          </View>
-        </TouchableOpacity>
-        {/* Notification Button */}
-        <TouchableOpacity style={styles.iconButton} onPress={()=>{router.push('/notification')}}>
-          <View style={styles.iconWrapper}>
-            <Image source={ImagesAssets.notificationBell} style={styles.iconImage} />
-            <View style={styles.badgeWrapper}>
-              <Text style={styles.badgeText}>{Notification.length}</Text>
-            </View>
+            <Image
+              source={ImagesAssets.LeaderboardIcon}
+              style={styles.iconImage}
+            />
           </View>
         </TouchableOpacity>
 
-
-
-        {/* Search */}
-        <TouchableOpacity style={styles.iconButton} onPress={()=>{router.push('/crewlisting')}}>
+        {/* Notifications */}
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => router.push("/notification")}
+        >
           <View style={styles.iconWrapper}>
-            <Image source={ImagesAssets.users} style={styles.iconImage} />
+            <Image
+              source={ImagesAssets.notificationBell}
+              style={styles.iconImage}
+            />
+
+            {notifications.length > 0 && (
+              <View style={styles.badgeWrapper}>
+                <Text style={styles.badgeText}>
+                  {notifications.length}
+                </Text>
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
+
+        {/* Crew Listing / Search */}
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => router.push("/crewlisting")}
+        >
+          <View style={styles.iconWrapper}>
+            <Image
+              source={
+                isCaptain
+                  ? ImagesAssets.crewListLogo
+                  : ImagesAssets.searchLogo
+              }
+              style={styles.iconImage}
+            />
           </View>
         </TouchableOpacity>
 
         {/* Home */}
-        <TouchableOpacity style={styles.homeButton} onPress={() => router.push("/home")}>
+        <TouchableOpacity
+          style={styles.homeButton}
+          onPress={() => router.push("/home")}
+        >
           <House size={22} color="#000" />
         </TouchableOpacity>
       </View>
@@ -80,6 +122,7 @@ const styles = StyleSheet.create({
       },
     }),
   },
+
   shiplifetext: {
     fontSize: 22,
     lineHeight: 25,
@@ -87,11 +130,6 @@ const styles = StyleSheet.create({
     color: "#262626",
     fontWeight: "500",
     fontFamily: "WhyteInktrap-Medium",
-  },
-  titleLogo: {
-    height: 22,
-    width: 115,
-    resizeMode: "contain",
   },
 
   iconGroup: {
@@ -113,7 +151,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     resizeMode: "contain",
-    tintColor:'#000'
+    tintColor: "#000",
   },
 
   badgeWrapper: {

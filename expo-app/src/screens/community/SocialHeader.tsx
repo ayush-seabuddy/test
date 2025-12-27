@@ -1,15 +1,15 @@
 // CustomHeader.js
+import { getUnreadNotificationCount } from "@/src/apis/apiService";
 import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import { useNavigation } from "@react-navigation/native";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { House } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Image,
   Platform,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View
 } from "react-native";
@@ -17,7 +17,6 @@ import {
 const SocialHeader = () => {
   const navigation = useNavigation();
 
-  const [Notification, setNotification] = useState([]);
   const [unreadNotification, setUnreadNotification] = useState(0)
 
 
@@ -43,30 +42,23 @@ const SocialHeader = () => {
 //     }
 //   };
 
-//   const unReadNotification = async () => {
-//     const dbResult = await AsyncStorage.getItem("userDetails");
-//     const userDetails = JSON.parse(dbResult);
-//     try {
-//       var response = await apiCallWithToken(
-//         apiServerUrl + "/user/getUnreadNotificationCount?",
-//         "GET",
-//         null,
-//         userDetails.authToken
-//       );
-//       setUnreadNotification(response.result.allNotifications);
-//     } catch (error) {
-//       console.log(error);
-//     }
-//   };
+  const unReadNotification = async () => {
+    try {
+      var response = await getUnreadNotificationCount();
+      setUnreadNotification(response.data.allNotifications);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-//   useFocusEffect(
-//     useCallback(() => {
-//       GetAllNotification();
-//       unReadNotification();
-//       return () => {
-//       };
-//     }, [])
-//   );
+  useFocusEffect(
+    useCallback(() => {
+      // GetAllNotification();
+      unReadNotification();
+      return () => {
+      };
+    }, [])
+  );
 
 return (
     <View style={styles.container}>
@@ -77,9 +69,9 @@ return (
         <TouchableOpacity style={styles.iconButton}>
           <View style={styles.iconWrapper}>
             <Image source={ImagesAssets.notificationBell} style={styles.iconImage} />
-            <View style={styles.badgeWrapper}>
-              <Text style={styles.badgeText}>{Notification.length}</Text>
-            </View>
+            {unreadNotification > 0 && <View style={styles.badgeWrapper}>
+              {/* <Text style={styles.badgeText}>{unreadNotification}</Text> */}
+            </View>}
           </View>
         </TouchableOpacity>
 
@@ -91,7 +83,7 @@ return (
         </TouchableOpacity>
 
         {/* Search */}
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={()=> router.push("/globalSearch")}>
           <View style={styles.iconWrapper}>
             <Image source={ImagesAssets.searchLogo} style={styles.iconImage} />
           </View>
@@ -158,12 +150,12 @@ const styles = StyleSheet.create({
 
   badgeWrapper: {
     position: "absolute",
-    top: -5,
-    right: -5,
+    top: 2,
+    right: 2,
     backgroundColor: Colors.lightGreen,
     borderRadius: 10,
-    minWidth: 18,
-    height: 18,
+    minWidth: 10,
+    height: 10,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 4,

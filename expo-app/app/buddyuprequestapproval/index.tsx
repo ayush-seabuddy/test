@@ -1,21 +1,22 @@
-import { StyleSheet, Text, TextInput, TouchableOpacity, View, ScrollView, Alert, FlatList, ActivityIndicator } from 'react-native'
-import React, { useEffect, useState, useRef, useCallback } from 'react'
-import GlobalHeader from '@/src/components/GlobalHeader'
-import { useTranslation } from 'react-i18next'
-import { ChevronLeft, Play, X } from 'lucide-react-native'
-import { router } from 'expo-router'
-import { Image } from 'expo-image'
-import { ImagesAssets } from '@/src/utils/ImageAssets'
-import GlobalButton from '@/src/components/GlobalButton'
-import { getUserDetails } from '@/src/utils/helperFunctions'
-import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet'
-import * as ImagePicker from 'expo-image-picker'
-import axios from 'axios'
-import { showToast } from '@/src/components/GlobalToast'
-import { BASE_URL } from '@/src/apis/endpoints'
-import { Video, ResizeMode } from 'expo-av'
-import Colors from '@/src/utils/Colors'
 import { addeditdeletebuddyupevent } from '@/src/apis/apiService'
+import { BASE_URL } from '@/src/apis/endpoints'
+import GlobalButton from '@/src/components/GlobalButton'
+import GlobalHeader from '@/src/components/GlobalHeader'
+import { showToast } from '@/src/components/GlobalToast'
+import Colors from '@/src/utils/Colors'
+import { getUserDetails } from '@/src/utils/helperFunctions'
+import { ImagesAssets } from '@/src/utils/ImageAssets'
+import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet'
+import axios from 'axios'
+import { ResizeMode, Video } from 'expo-av'
+import { Image } from 'expo-image'
+import * as ImagePicker from 'expo-image-picker'
+import { router } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router/build/hooks'
+import { ChevronLeft, Play, X } from 'lucide-react-native'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 
 const getMimeType = (uri: string, type: 'image' | 'video'): string => {
     if (type === 'video') return 'video/mp4';
@@ -42,6 +43,8 @@ type MediaItem = {
 
 const BuddyUpRequestApprovalScreen = () => {
     const { t } = useTranslation();
+    const { eventId }:{eventId:string} = useLocalSearchParams();
+
     const [userDetails, setUserDetails] = useState<UserDetails>({});
     const [description, setDescription] = useState('');
     const [selectedMedia, setSelectedMedia] = useState<MediaItem[]>([]);
@@ -56,25 +59,30 @@ const BuddyUpRequestApprovalScreen = () => {
     }
 
 
-    const editbuddyupevent = async (eventId: string) => {
+    const editbuddyupevent = async (eventId: string , completionImages: string[], completionDescription: string) => {
         try {
             setLoading(true)
             const apiResponse = await addeditdeletebuddyupevent({
                 groupActivities: [
                     {
-                        eventId: '',
-                        completionImages: [],
-                        completionDescription: '',
-                        status: userDetails.designation === "Captain" ||
-                            userDetails.designation === "Chief engineer" ? "COMPLETED" : "REQUESTED",
-                    },
-                ],
-            })
+                        eventId: eventId,
+                        completionImages: completionImages,
+                        completionDescription: completionDescription,
+                        status: (userDetails.designation === "Captain" ||
+                            userDetails.designation === "Chief engineer") ? "COMPLETED" : "REQUESTED",
+                        },
+                    ],
+                })
+                console.log("userDetails: sdfkjsdklfsjdflkd", (userDetails.designation === "Captain" ||
+                            userDetails.designation === "Chief engineer") );
             setLoading(false)
 
             if (apiResponse.success && apiResponse.status === 200) {
 
                 showToast.success(t("success"), apiResponse.message)
+                setTimeout(() => {
+                    router.back()
+                }, 1500);
             } else {
                 showToast.error(t("oops"), apiResponse.message)
             }
@@ -239,6 +247,10 @@ const BuddyUpRequestApprovalScreen = () => {
         console.log("Description:", description);
         console.log("Uploaded Media URLs:", uploadedUrls);
         // TODO: Call your actual share/post API here
+        if(eventId){
+             editbuddyupevent(eventId, uploadedUrls, description)
+        }
+       
     }
 
     const allUploadedSuccessfully = selectedMedia.length > 0 &&

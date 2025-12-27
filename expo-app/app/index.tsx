@@ -1,71 +1,44 @@
-import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
-import i18next from "i18next";
-import { useEffect } from "react";
-import { I18nextProvider } from "react-i18next";
-import { StyleSheet, View } from "react-native";
+import React, { useEffect } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { I18nextProvider } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import AppContainer from "@/src/components/AppContainer";
-import CustomStatusBar from "@/src/components/CustomStatusBar";
-import { createTables } from "@/src/database/chatSchema";
-import { initI18n } from "@/src/localization/i18n";
-import Colors from "@/src/utils/Colors";
-import Splash from "./onboarding/Splash";
-import { useNotification } from "@/Context/NotificationContext";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import AppContainer from '@/src/components/AppContainer';
+import CustomStatusBar from '@/src/components/CustomStatusBar';
+import Splash from './onboarding/Splash';
+import { createTables } from '@/src/database/chatSchema';
+import { initI18n } from '@/src/localization/i18n';
+import Colors from '@/src/utils/Colors';
+import i18next from 'i18next';
+import { useNotification } from '@/Context/NotificationContext';
 
 export default function Index() {
-  const router = useRouter();
-
   const { notification, expoPushToken, error } = useNotification();
 
   useEffect(() => {
-    const init = async () => {
+    const initialize = async () => {
       await initI18n();
-
-      setTimeout(() => {
-        router.replace("/auth/Login");
-      }, 2500);
+      createTables();
     };
 
-    init();
+    initialize();
   }, []);
 
   useEffect(() => {
-    createTables();
-  }, []);
-
-  useEffect(() => {
-    console.log("📲 App Opened");
-    console.log("🔑 Expo Push Token:", expoPushToken);
-
     if (expoPushToken) {
-      const saveToken = async () => {
-        try {
-          await AsyncStorage.setItem("ExpoPushToken", expoPushToken);
-          console.log("✅ Expo Push Token saved to AsyncStorage");
-        } catch (err) {
-          console.error("❌ Failed to save push token", err);
-        }
-      };
-
-      saveToken();
+      console.log('🔔 Expo Push Token :', expoPushToken);
+      AsyncStorage.setItem('ExpoPushToken', expoPushToken).catch((err) =>
+        console.error('Failed to save Expo Push Token:', err)
+      );
     }
 
     if (notification) {
-      console.log(
-        "🔔 Last Notification:",
-        JSON.stringify(notification, null, 2)
-      );
-
-      console.log(
-        "📦 Notification Data:",
-        JSON.stringify(notification.request.content.data, null, 2)
-      );
+      console.log('🔔 Notification received:', notification);
     }
 
     if (error) {
-      console.error("❌ Notification Error:", error);
+      console.error('❌ Notification Error:', error);
     }
   }, [expoPushToken, notification, error]);
 
@@ -74,9 +47,9 @@ export default function Index() {
       <AppContainer>
         <CustomStatusBar />
         <LinearGradient
-          colors={[Colors.white, "#06361F"]}
-          style={styles.container}
+          colors={[Colors.white, '#06361F']}
           locations={[0.65, 1]}
+          style={styles.container}
         >
           <View style={styles.splashOverlay}>
             <Splash />
@@ -92,8 +65,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   splashOverlay: {
-    position: "absolute",
+    ...StyleSheet.absoluteFillObject,
     zIndex: 5,
-    top: 0,
   },
 });

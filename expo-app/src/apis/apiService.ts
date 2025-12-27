@@ -220,10 +220,10 @@ export interface GetAllContentsParams {
   page?: number,
   limit?: number,
   onlyAnnouncement?: boolean,
-  contentCategory?: string,
-  contentType?: string,
-  department?: string,
-  subCategory?: string
+  contentCategory?:  string,
+  contentType?:  string,
+  department?:  string,
+  subCategory?:  string
 }
 
 export interface GetAllHelplinesParams {
@@ -844,3 +844,19 @@ export const addupdateshipstatus = async (
     data: payload,
   });
 };
+
+export const globalSearch = async (search: string): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GLOBAL_SEARCH,
+    params: { search: search },
+  });
+}
+
+export const getUnreadNotificationCount = async (): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GET_UNREAD_NOTIFICATION_COUNT,
+  });
+}
+
