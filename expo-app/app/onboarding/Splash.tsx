@@ -93,52 +93,53 @@ const Splash: React.FC = () => {
         const response = await viewUserTest();
 
         if (response?.status === 200 && Array.isArray(response?.data)) {
-          const tests: TestItem[] = response.data;
+          // const tests: TestItem[] = response.data;
 
-          // Find test in priority order: Happiness → POMS → Personality
-          let targetTest: TestItem | undefined;
+          // // Find test in priority order: Happiness → POMS → Personality
+          // let targetTest: TestItem | undefined;
 
-          // Order matters: check index 0, then 1, then 2 (same as old code)
-          if (tests[0]?.open && tests[0]?.isSplash) {
-            targetTest = tests[0];
-          } else if (tests[1]?.open && tests[1]?.isSplash) {
-            targetTest = tests[1];
-          } else if (tests[2]?.open && tests[2]?.isSplash) {
-            targetTest = tests[2];
-          }
+          // // Order matters: check index 0, then 1, then 2 (same as old code)
+          // if (tests[0]?.open && tests[0]?.isSplash) {
+          //   targetTest = tests[0];
+          // } else if (tests[1]?.open && tests[1]?.isSplash) {
+          //   targetTest = tests[1];
+          // } else if (tests[2]?.open && tests[2]?.isSplash) {
+          //   targetTest = tests[2];
+          // }
 
-          // Map testName to route
-          const getRoute = (testName: string) => {
-            switch (testName) {
-              case 'Happiness':
-                return '/monthlyhappinessindex';
-              case 'POMS':
-                return '/monthlywellbeingpulse';
-              case 'Personality':
-                return '/personalitymap';
-              default:
-                return '/home';
-            }
-          };
+          // // Map testName to route
+          // const getRoute = (testName: string) => {
+          //   switch (testName) {
+          //     case 'Happiness':
+          //       return '/monthlyhappinessindex';
+          //     case 'POMS':
+          //       return '/monthlywellbeingpulse';
+          //     case 'Personality':
+          //       return '/personalitymap';
+          //     default:
+          //       return '/home';
+          //   }
+          // };
 
-          // Navigate after splash animation
-          setTimeout(() => {
-            if (targetTest) {
-              const route = getRoute(targetTest.testName);
+          // // Navigate after splash animation
+          // setTimeout(() => {
+          //   if (targetTest) {
+          //     const route = getRoute(targetTest.testName);
 
-              router.replace({
-                pathname: route,
-                params: {
-                  showPopup: targetTest.isRequires.toString(),
-                  testName: targetTest.testName,
-                  testData: JSON.stringify(targetTest),
-                },
-              });
-            } else {
-              // No test to show → Go to main dashboard
-              router.replace('/home');
-            }
-          }, 3000);
+          //     router.replace({
+          //       pathname: route,
+          //       params: {
+          //         showPopup: targetTest.isRequires.toString(),
+          //         testName: targetTest.testName,
+          //         testData: JSON.stringify(targetTest),
+          //       },
+          //     });
+          //   } else {
+          //     // No test to show → Go to main dashboard
+          //     router.replace('/home');
+          //   }
+          // }, 3000);
+          router.push('/(bottomtab)/(community)/social')
         } else {
           showToast.error(t('oops'), response?.message);
           setTimeout(() => router.replace('/home'), 3000);

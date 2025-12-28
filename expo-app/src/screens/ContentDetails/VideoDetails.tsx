@@ -30,7 +30,7 @@ interface ContentDetails {
   createdAt?: string;
 }
 
-export default function VideosDetails({data:fullDetails}:{data:Content}) {
+export default function VideosDetails({ data: fullDetails }: { data: Content }) {
   const { dataItem, fromHome } = useLocalSearchParams<{
     dataItem: string;
     fromHome?: string;
@@ -46,7 +46,7 @@ export default function VideosDetails({data:fullDetails}:{data:Content}) {
   const videoRef = useRef<Video>(null);
   const appState = useRef(AppState.currentState);
 
- 
+
   useEffect(() => {
     const subscription = AppState.addEventListener("change", async (nextAppState) => {
       if (appState.current === "active" && nextAppState !== "active") {
@@ -102,7 +102,7 @@ export default function VideosDetails({data:fullDetails}:{data:Content}) {
         title={fullDetails?.contentTitle}
         leftIcon={<ChevronLeft />}
         onLeftPress={() => router.back()}
-         />
+      />
 
 
 
@@ -115,7 +115,7 @@ export default function VideosDetails({data:fullDetails}:{data:Content}) {
             style={{ position: "absolute", top: "40%", left: "40%", zIndex: 2 }}
           />
         )}
-       <VideoPlayer uri={fullDetails?.contentUrl[0]} />
+        <VideoPlayer uri={fullDetails?.contentUrl[0]} />
         {/* <Video
           ref={videoRef}
           source={{ uri: fullDetails?.contentUrl?.[0] || "" }}
@@ -215,12 +215,12 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     fontFamily: "Poppins-Regular",
-    lineHeight:22,
+    lineHeight: 22,
     color: "#444",
   },
   postedOn: { fontSize: 12, color: "#06361f" },
   relatedTitle: {
-    marginTop: 20,
+    marginVertical: 10,
     marginLeft: 16,
     fontSize: 18,
     fontWeight: "600",
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   closeText: { color: "#fff", fontWeight: "700" },
-  relatedContentContainer:{paddingHorizontal:16}
+  relatedContentContainer: { paddingHorizontal: 16 }
 });
 
 

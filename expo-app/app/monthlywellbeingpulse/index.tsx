@@ -312,7 +312,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 13,
         borderBottomWidth: 1,
         borderBottomColor: '#ededed',
-        elevation: 5,
     },
     backButton: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center', marginRight: 8 },
     titleStyle: { fontSize: 15, fontFamily: 'Poppins-SemiBold', color: Colors.textPrimary || '#000' },

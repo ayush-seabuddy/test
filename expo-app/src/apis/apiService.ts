@@ -75,6 +75,15 @@ export interface SaveAssessmentRequest {
   }>;
 }
 
+export type BuddyUpStatus =
+  | "ACTIVE"
+  | "BLOCK"
+  | "DELETE"
+  | "REJECTED"
+  | "COMPLETED"
+  | "REQUESTED"
+  | "REPORTED";
+
 export interface AddEditDeleteBuddyUpEventRequest {
   groupActivities?: {
     eventId?: string;
@@ -94,13 +103,7 @@ export interface AddEditDeleteBuddyUpEventRequest {
     shipId?: any;
     createdAt?: string;
     completionDescription?: string;
-    status?:
-    | "ACTIVE"
-    | "BLOCK"
-    | "DELETE"
-    | "COMPLETED"
-    | "REQUESTED"
-    | "REPORTED";
+    status?: BuddyUpStatus;
   }[];
 }
 
