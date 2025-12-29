@@ -74,7 +74,7 @@ const ShipLifeScreenHeader = () => {
         {/* Crew Listing / Search */}
         <TouchableOpacity
           style={styles.iconButton}
-          onPress={() => router.push("/crewlisting")}
+          onPress={() => isCaptain ? router.push("/crewlisting") : null}
         >
           <View style={styles.iconWrapper}>
             <Image

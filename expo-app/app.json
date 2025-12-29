@@ -4,20 +4,23 @@
     "slug": "SeaBuddy",
     "version": "1.0.0",
     "orientation": "portrait",
+
     "icon": "./assets/images/icon.png",
+
     "scheme": "seabuddy",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "co.seabuddy.platform"
     },
+
     "android": {
       "package": "co.seabuddy.platform",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#E6F4FE",
         "monochromeImage": "./assets/images/adaptive-icon.png"
       },
       "edgeToEdgeEnabled": true,
@@ -25,10 +28,12 @@
       "softwareKeyboardLayoutMode": "resize",
       "googleServicesFile": "./google-services.json"
     },
+
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+
     "plugins": [
       "expo-router",
       "expo-localization",
@@ -43,7 +48,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/splash-icon.png",
+          "icon": "./assets/images/icon.png",
           "defaultChannel": "default",
           "enableBackgroundRemoteNotifications": false
         }
@@ -51,10 +56,7 @@
       [
         "expo-screen-orientation",
         {
-          "supportedOrientations": [
-            "portrait",
-            "landscape"
-          ]
+          "supportedOrientations": ["portrait", "landscape"]
         }
       ],
       [
@@ -87,10 +89,12 @@
         }
       ]
     ],
+
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
+
     "extra": {
       "env": "local",
       "router": {},
@@ -98,6 +102,7 @@
         "projectId": "33075db5-0613-49bf-9175-a35ef2e794f7"
       }
     },
+
     "owner": "prince26lmp"
   }
 }

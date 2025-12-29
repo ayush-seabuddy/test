@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
   },
   postedOn: { fontSize: 12, color: "#06361f" },
   relatedTitle: {
-    marginTop: 20,
+    marginVertical:10,
     fontSize: 18,
     fontWeight: "600",
   },
