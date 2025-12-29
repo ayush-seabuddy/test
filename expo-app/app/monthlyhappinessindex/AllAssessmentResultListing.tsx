@@ -108,7 +108,7 @@ const AllAssessmentResultListing = () => {
 
     const renderItem = ({ item }: { item: any }) => {
         const score = Number(item?.questionsAndAnswers?.[0]?.result ?? 0);
-        const formattedDate = moment(item.month).format('MMM YYYY');
+        const formattedDate = moment(item.month, 'MM-YYYY').format('MMM YYYY');
         const { bg, text } = getScoreStyle(score, assessmentType as 'HAPPINESS' | 'POMS');
 
         let infoContent;

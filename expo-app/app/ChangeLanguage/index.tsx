@@ -7,12 +7,12 @@ import { CheckCircle2, ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-    Dimensions,
-    FlatList,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 
@@ -125,7 +125,7 @@ const ChangeLanguageScreen = () => {
 
       {/* Background Lottie */}
       <View style={styles.backgroundLottie}>
-        <CustomLottie />
+        <CustomLottie isBlurView={false} />
       </View>
     </>
   );
@@ -183,9 +183,9 @@ const styles = StyleSheet.create({
   },
   saveButtonText: {
     color: '#fff',
-    fontFamily: 'WhyteInktrap-Medium',
+    fontFamily: 'Poppins-SemiBold',
     fontWeight: '500',
-    fontSize: 16,
+    fontSize: 14,
   },
   backgroundLottie: {
     position: 'absolute',

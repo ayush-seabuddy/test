@@ -134,7 +134,7 @@ const MonthlyWellbeingPulseTestScreen = () => {
         try {
             const payload = {
                 questionType: 'POMS',
-                month: previousMonth.format('YYYY-MM'),
+                month: previousMonth.format('MM-YYYY'),
                 answers: Object.entries(responses).map(([questionId, answer]) => ({
                     questionId,
                     answer,

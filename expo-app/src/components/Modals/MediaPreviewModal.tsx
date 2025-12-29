@@ -269,11 +269,6 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
         {/* Media Content */}
         <View style={styles.mediaWrapper}>
           {renderContent()}
-          {isLoading && (
-            <View style={styles.loader}>
-              <ActivityIndicator size="large" color="#fff" />
-            </View>
-          )}
         </View>
 
         {/* Send Button */}

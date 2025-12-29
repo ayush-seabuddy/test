@@ -323,13 +323,13 @@ const BuddyUpEventDescription = () => {
                             <Text style={styles.noParticipants}>{t('noparticipantsjoined')}</Text>
                         ) : (
                             <>
-                                {displayedJoined.map((person) => (
+                                {displayedJoined.map((person, index) => (
                                     <TouchableOpacity
                                         key={person.id}
                                         onPress={() => navigateToProfile(person.id)}
                                     >
                                         <Image
-                                            style={styles.avatar}
+                                            style={[styles.avatar, { marginLeft: index > 0 ? -20 : 0 },]}
                                             source={person.profileUrl || ImagesAssets.userIcon}
                                             placeholder={ImagesAssets.userIcon}
                                             contentFit="cover"
@@ -462,7 +462,7 @@ const styles = StyleSheet.create({
         fontFamily: 'WhyteInktrap-Bold',
         color: '#000',
         marginBottom: 8,
-        lineHeight:20,
+        lineHeight: 20,
     },
 
     rowBetween: {
@@ -517,7 +517,6 @@ const styles = StyleSheet.create({
     joinedList: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 10,
     },
     avatar: {
         width: 50,
@@ -534,6 +533,7 @@ const styles = StyleSheet.create({
 
     moreContainer: {
         position: 'relative',
+        marginLeft: -20
     },
     moreOverlay: {
         ...StyleSheet.absoluteFillObject,
@@ -557,7 +557,7 @@ const styles = StyleSheet.create({
 
     bottomButton: {
         paddingHorizontal: 16,
-        paddingBottom: 20,
+        paddingBottom: 40,
         paddingTop: 10,
         backgroundColor: '#fff',
     },

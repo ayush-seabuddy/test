@@ -23,12 +23,20 @@ const MonthlyHappinessIndexResultScreen = () => {
     }
   }, [assessmentData]);
 
-  const monthFormatted = parsedData?.month
-    ? new Date(parsedData.month + '-01').toLocaleDateString('en-US', {
-      month: 'short',
-      year: 'numeric',
-    })
-    : 'Unknown';
+const monthFormatted = useMemo(() => {
+  if (!parsedData?.month) return 'Unknown';
+
+  const [month, year] = parsedData.month.split('-');
+
+  if (!month || !year) return 'Unknown';
+
+  const date = new Date(Number(year), Number(month) - 1);
+
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    year: 'numeric',
+  });
+}, [parsedData]);
 
   const happinessScore = useMemo(() => {
     if (!parsedData?.questionsAndAnswers) return 'N/A';

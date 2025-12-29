@@ -68,19 +68,19 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
             icon: ImagesAssets.UsersLogo,
             title: t("ship_life"),
             description: t("ship_life_description"),
-            onPress: () => router.push("/(bottomtab)/health"),
+            onPress: () => router.push("/(bottomtab)/shiplife"),
         },
         {
             icon: ImagesAssets.ShipAnchorLogo,
             title: t("wellness_hub"),
             description: t("wellness_description"),
-            onPress: () => console.log("Wellness Hub Pressed"),
+            onPress: () => {router.push('/(bottomtab)/health')}
         },
         {
             icon: ImagesAssets.MusicLogo,
             title: t("helplines"),
             description: t("helplines_description"),
-            onPress: () => console.log("Helplines Pressed"),
+            onPress: () => {router.push('/(bottomtab)/helpline')}
         },
     ];
 

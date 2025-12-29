@@ -21,6 +21,7 @@ import { updateprofile, viewProfile } from '@/src/apis/apiService';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import CustomDateTimePicker from '@/src/components/Modals/CustomDateTimePicker';
 import { RootState } from '@/src/redux/store';
+import CustomLottie from '@/src/components/CustomLottie';
 
 const { height, width } = Dimensions.get('screen');
 
@@ -420,9 +421,9 @@ const CertificationsScreen = () => {
         </View>
       </Modal>
 
-      {/* <View style={styles.background}>
-        <CustomLottie />
-      </View> */}
+      <View style={styles.background}>
+        <CustomLottie isBlurView={false}/>
+      </View>
     </>
   );
 };
@@ -449,8 +450,8 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     color: '#fff',
-    fontFamily: 'WhyteInktrap-Medium',
-    fontSize: 18,
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 14,
   },
   experienceCard: {
     flexDirection: 'row',
@@ -534,8 +535,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: height * 0.5,
-    backgroundColor: '#c1c1c1',
+    height: height,
+    backgroundColor: '#fff',
     borderTopLeftRadius: 50,
     borderTopRightRadius: 50,
     overflow: 'hidden',

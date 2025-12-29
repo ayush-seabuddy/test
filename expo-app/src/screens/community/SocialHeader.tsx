@@ -66,7 +66,7 @@ return (
 
       <View style={styles.iconGroup}>
         {/* Notification Button */}
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={()=>{router.push('/notification')}}>
           <View style={styles.iconWrapper}>
             <Image source={ImagesAssets.notificationBell} style={styles.iconImage} />
             {unreadNotification > 0 && <View style={styles.badgeWrapper}>

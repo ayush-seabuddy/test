@@ -8,6 +8,8 @@ import { getallcomplainthistory } from '@/src/apis/apiService'
 import { showToast } from '@/src/components/GlobalToast'
 import { formatDate, formatStatus } from '@/src/utils/helperFunctions'
 import Colors from '@/src/utils/Colors'
+import { Image } from 'expo-image'
+import { ImagesAssets } from '@/src/utils/ImageAssets'
 
 interface Complaint {
     id: string,
@@ -84,33 +86,49 @@ const ComplaintHistoryScreen = () => {
                 onLeftPress={() => router.back()}
             />
 
-            <FlatList
-                data={complaintdata}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.complaintHistoryView}
-                        onPress={() => {
-                            router.push({
-                                pathname: '/helplineform',
-                                params: {
-                                    complaintId: item.id,
-                                    complaintStatus:item.status
-                                }
-                            })
-                        }}
-                    >
-                        <Text style={styles.helplineName}>{item?.helpline?.helplineName}</Text>
+            {complaintdata && complaintdata.length > 0 ? (
+                <FlatList
+                    data={complaintdata}
+                    keyExtractor={(item) => item.id.toString()}
+                    renderItem={({ item }) => (
+                        <TouchableOpacity
+                            style={styles.complaintHistoryView}
+                            onPress={() => {
+                                router.push({
+                                    pathname: '/helplineform',
+                                    params: {
+                                        complaintId: item.id,
+                                        complaintStatus: item.status,
+                                    },
+                                });
+                            }}
+                        >
+                            <Text style={styles.helplineName}>
+                                {item?.helpline?.helplineName}
+                            </Text>
 
-                        <View style={styles.rowView}>
-                            <Text style={styles.helplineStatus}>{formatStatus(item.status)}</Text>
-                            <Text style={styles.helplineStatus}>{formatDate(item.createdAt)}</Text>
-                        </View>
-                    </TouchableOpacity>
-                )}
-                onEndReached={loadMore}
-                onEndReachedThreshold={0.2}
-                ListFooterComponent={<ListFooter />}
-            />
+                            <View style={styles.rowView}>
+                                <Text style={styles.helplineStatus}>
+                                    {formatStatus(item.status)}
+                                </Text>
+                                <Text style={styles.helplineStatus}>
+                                    {formatDate(item.createdAt)}
+                                </Text>
+                            </View>
+                        </TouchableOpacity>
+                    )}
+                    onEndReached={loadMore}
+                    onEndReachedThreshold={0.2}
+                    ListFooterComponent={<ListFooter />}
+                />
+            ) : (
+                <View style={styles.nodatafoundView}>
+                    <Image source={ImagesAssets.nodatafound} style={styles.nodatafoundImage} />
+                    <Text style={styles.noDataText}>{t('nocomplaintHistoryFound')}</Text>
+
+                </View>
+            )}
+
         </View>
     );
 };
@@ -133,6 +151,20 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: "space-between",
         alignItems: 'center'
+    },
+    nodatafoundView: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 30,
+        marginTop: "50%"
+    },
+    noDataText: {
+        fontSize: 15,
+        fontFamily: 'Poppins-SemiBold'
+    },
+    nodatafoundImage: {
+        height: 100,
+        width: 100,
     },
     helplineStatus: { fontFamily: 'Poppins-SemiBold' }
 });
