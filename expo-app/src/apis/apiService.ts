@@ -5,7 +5,7 @@ import { ENDPOINTS } from "./endpoints";
 export interface LoginRequest {
   email: string;
   password: string;
-  deviceToken?:string;
+  deviceToken?: string;
 }
 
 export interface RegisterRequest {
@@ -223,10 +223,10 @@ export interface GetAllContentsParams {
   page?: number,
   limit?: number,
   onlyAnnouncement?: boolean,
-  contentCategory?:  string,
-  contentType?:  string,
-  department?:  string,
-  subCategory?:  string
+  contentCategory?: string,
+  contentType?: string,
+  department?: string,
+  subCategory?: string
 }
 
 export interface GetAllHelplinesParams {
@@ -370,6 +370,17 @@ export interface MoodTrackerPayload {
 
 export interface MoodTrackerRequest {
   moodTrackers: MoodTrackerPayload[],
+}
+
+export interface BookAppointmentWithDoctorRequest {
+  doctorId: string,
+  description: string,
+  dateTime: string,
+  images?: string[],
+}
+
+export interface GetDataUsageParams {
+  month: string,
 }
 
 export const login = async (
@@ -860,6 +871,29 @@ export const getUnreadNotificationCount = async (): Promise<ApiResponse> => {
   return await apiRequest({
     method: "GET",
     url: ENDPOINTS.GET_UNREAD_NOTIFICATION_COUNT,
+  });
+}
+
+export const getUnreadMessageCount = async (): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GET_UNREAD_MESSAGE_COUNT,
+  });
+}
+
+export const bookAppointmentWithDoctor = async (payload: BookAppointmentWithDoctorRequest): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "POST",
+    url: ENDPOINTS.BOOK_APPOINTMENT_WITH_DOCTOR,
+    data: payload,
+  });
+}
+
+export const getDataUsage = async (params?: GetDataUsageParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GET_DATA_USAGE,
+    params,
   });
 }
 

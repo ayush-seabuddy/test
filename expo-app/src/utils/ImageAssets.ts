@@ -84,4 +84,7 @@ export const ImagesAssets = {
   Emoji_4: require("../../assets/images/Emoji_4.png"),
   Emoji_5: require("../../assets/images/Emoji_5.png"),
 
+  linkedin: require("../../assets/images/linkedin.png"),
+  twitter: require("../../assets/images/twitter.png"),
+
 };

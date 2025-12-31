@@ -3,7 +3,8 @@ import EmergencyModal from "@/src/components/Modals/EmergencySosModal";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { ArrowLeft, History } from "lucide-react-native";
+import { t } from "i18next";
+import { ChevronLeft, History } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   Platform,
@@ -27,11 +28,11 @@ const Header = ({  }) => {
           style={styles.headerButton}
         >
           <View style={styles.iconBackground}>
-            <ArrowLeft size={20} color="black" />
+           <ChevronLeft size={20} />
           </View>
         </TouchableOpacity>
 
-        <Text style={styles.health}>Book Appointment</Text>
+        <Text style={styles.health}>{t("Book_Appointment")}</Text>
       </View>
       <View style={styles.headerButtonsContainer}>
         <TouchableOpacity

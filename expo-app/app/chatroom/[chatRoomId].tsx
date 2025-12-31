@@ -12,13 +12,13 @@ import socketService from '@/src/utils/socketService';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import * as ImagePicker from "expo-image-picker";
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Camera, Check, Edit, Paperclip, Reply, SendHorizonal, Trash2, X } from 'lucide-react-native';
 import moment from 'moment-timezone';
 import { useCallback, useRef, useState } from 'react';
 import { Dimensions, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
-import { ActivityIndicator, TextInput, } from 'react-native-paper';
+import { ActivityIndicator, TextInput } from 'react-native-paper';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import { useDispatch, useSelector } from 'react-redux';
 // import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
@@ -27,12 +27,11 @@ type ChatRoomScreenParams = {
   chatRoomDetails: ChatRoom
 }
 type ChatRoomRouteProp = RouteProp<{ ChatRoom: ChatRoomScreenParams }, 'ChatRoom'>
-const { width , height } = Dimensions.get("screen");
+const { width, height } = Dimensions.get("screen");
 const ChatRoomScreen = () => {
   const route = useRoute<ChatRoomRouteProp>()
   const chatRoomDetails = typeof route.params?.chatRoomDetails === 'string' ? JSON.parse(route.params?.chatRoomDetails) : route.params?.chatRoomDetails
-  const {chatRoomId} =  useLocalSearchParams();
-  console.log("chatRoomId: ", chatRoomId);
+  const chatRoomId = chatRoomDetails.id;
   const headerPops = {
     navigation: () => router.back(),
     data: chatRoomDetails,
@@ -46,7 +45,7 @@ const ChatRoomScreen = () => {
   const dispatch = useDispatch();
   // const { chatList, typingStatus } = useSelector(selectChat);
   const [typingTimeout, setTypingTimeout] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [chatLoading, setChatLoading] = useState(true);
   const [content, setContent] = useState("");
   const [contentImage, setContentImage] = useState("");
@@ -70,14 +69,14 @@ const ChatRoomScreen = () => {
   const [selectedMedia, setSelectedMedia] = useState<{ uri: string; isVideo: boolean }>({ uri: "", isVideo: false });
   const [imageLoading, setImageLoading] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [editingMessage, setEditingMessage] = useState<ChatMessage|null>(null);
+  const [editingMessage, setEditingMessage] = useState<ChatMessage | null>(null);
   const [editedContent, setEditedContent] = useState("");
   const [editingMessageId, setEditingMessageId] = useState<string>("");
   const [inputHeight, setInputHeight] = useState(55);
   const [editModal, setEditModal] = useState(false);
-  const [replyingTo, setReplyingTo] = useState<ChatMessage|null>(null);
+  const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   const [myReaction, setMyReaction] = useState('');
-  const textInputRef = useRef(null);
+  const textInputRef = useRef<TextInput>(null);
   const PAGE_SIZE = 50;
   const bottomSheetRef = useRef<typeof RBSheet | null>(null);
   const [reactionCountList, setReactionCountList] = useState<ReactionData[]>([]);
@@ -89,15 +88,15 @@ const ChatRoomScreen = () => {
 
   const { id: senderId, shipId } = useSelector((state: RootState) => state.userDetails)
 
- interface ReactionData {
-  createdAt: string;
-  id: string;
-  messageId: string;
-  reactUsers: any; // you can replace `any` with a proper type if you know the shape
-  reaction: string; // e.g. "❤️"
-  updatedAt: string;
-  userId: string;
-}
+  interface ReactionData {
+    createdAt?: string;
+    id?: string;
+    messageId: string;
+    reactUsers: any; // you can replace `any` with a proper type if you know the shape
+    reaction: string; // e.g. "❤️"
+    updatedAt?: string;
+    userId: string;
+  }
 
 
 
@@ -116,7 +115,7 @@ const ChatRoomScreen = () => {
     }
   };
 
-  const handleDeleteMessage = (message) => {
+  const handleDeleteMessage = (message: ChatMessage) => {
     socketService.emit("userEditMessage", {
       senderId,
       ChatId: message.id,
@@ -124,7 +123,7 @@ const ChatRoomScreen = () => {
     });
   };
 
-  const handleReplyMessage = (message) => {
+  const handleReplyMessage = (message: ChatMessage) => {
     setReplyingTo(message);
     setEditModal(false);
     if (textInputRef.current) {
@@ -132,7 +131,7 @@ const ChatRoomScreen = () => {
     }
   };
 
-  const handleEmojiReaction = (message, emoji) => {
+  const handleEmojiReaction = (message: ChatMessage, emoji: string) => {
 
 
     socketService.emit("userReactMessage", {
@@ -165,7 +164,7 @@ const ChatRoomScreen = () => {
     setEditModal(false);
   };
 
-  const handleDelteReaction = (messageId, emoji) => {
+  const handleDeleteReaction = (messageId: string, emoji: string) => {
     const message = chatListState.find((msg) => String(msg.id) === String(messageId));
     if (!message) return;
     socketService.emit("userReactMessage", {
@@ -211,11 +210,11 @@ const ChatRoomScreen = () => {
           type: "UPDATE",
         };
         socketService.emit("userEditMessage", editPayload);
-        setEditingMessageId(null);
+        setEditingMessageId("");
       } else {
         const createdAt = new Date().toUTCString();
         const createdAtId = Date.now();
-        const chat_payload = {
+        const chat_payload: { senderId: string; chatRoomId: string; content: string; createdAt: string; createdAtId: number; replyTo: string | null; parentMessage?: ChatMessage | null; } = {
           senderId,
           chatRoomId,
           content,
@@ -235,7 +234,7 @@ const ChatRoomScreen = () => {
     }
   };
 
-  const handleUserEditMessage = (data) => {
+  const handleUserEditMessage = (data: ChatMessage) => {
     setChatList((prevMessageList) =>
       prevMessageList.map((msg) =>
         msg.id === data.id
@@ -245,54 +244,54 @@ const ChatRoomScreen = () => {
     );
   };
 
-    const fetchChatReactions = async (id:string) => {
-      try {
-        const response = await getReactionsOnMessage({messageId:id});
-        if (response.data && response.data.length > 0) {
-            let myReaction:ReactionData = response.data.find((reaction:ReactionData) => String(reaction.userId) == senderId);
-            let reactionWithoutMy = response.data.filter((reaction:ReactionData) => String(reaction.userId) != senderId);
-            if (myReaction) {
-              setReactionCountList([myReaction, ...reactionWithoutMy]);
-            } else {
-              setReactionCountList(response.data);
-            }
-             bottomSheetRef?.current?.open()
-        }
-      } catch (error) {
-        if (error instanceof Error) {
-          console.error("Error fetching data:", error.message);
+  const fetchChatReactions = async (id: string) => {
+    try {
+      const response = await getReactionsOnMessage({ messageId: id });
+      if (response.data && response.data.length > 0) {
+        let myReaction: ReactionData = response.data.find((reaction: ReactionData) => String(reaction.userId) == senderId);
+        let reactionWithoutMy = response.data.filter((reaction: ReactionData) => String(reaction.userId) != senderId);
+        if (myReaction) {
+          setReactionCountList([myReaction, ...reactionWithoutMy]);
         } else {
-          console.error("Error fetching data:", error);
+          setReactionCountList(response.data);
         }
+        bottomSheetRef?.current?.open()
       }
-    };
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Error fetching data:", error.message);
+      } else {
+        console.error("Error fetching data:", error);
+      }
+    }
+  };
 
-    const handleReceiveChatReaction = (data:ReactionData) => {
-        if (data.messageId) {
-          setChatList((prevMessageList) => {
-            return prevMessageList.map((msg) => {
-              if (String(msg.id) == String(data.messageId)) {
-                let chatReactionDetails = msg.chatReactionDetails || [];
-                let alreadyReacted = msg?.chatReactionDetails?.find((item) => item.userId === data.userId);
-                if (alreadyReacted) {
-                  if (alreadyReacted.reaction == data.reaction) {
-                    chatReactionDetails = chatReactionDetails?.filter((item) => item.userId !== data.userId);
-                  } else {
-                    chatReactionDetails = chatReactionDetails?.filter((item) => item.userId !== data.userId);
-                    chatReactionDetails?.push(data);
-                  }
-                } else {
-                  chatReactionDetails.push(data);
-                }
-                return { ...msg, chatReactionDetails: chatReactionDetails };
+  const handleReceiveChatReaction = (data: ReactionData) => {
+    if (data.messageId) {
+      setChatList((prevMessageList) => {
+        return prevMessageList.map((msg) => {
+          if (String(msg.id) == String(data.messageId)) {
+            let chatReactionDetails = msg.chatReactionDetails || [];
+            let alreadyReacted = msg?.chatReactionDetails?.find((item) => item.userId === data.userId);
+            if (alreadyReacted) {
+              if (alreadyReacted.reaction == data.reaction) {
+                chatReactionDetails = chatReactionDetails?.filter((item) => item.userId !== data.userId);
+              } else {
+                chatReactionDetails = chatReactionDetails?.filter((item) => item.userId !== data.userId);
+                chatReactionDetails?.push(data);
               }
-              return msg;
-            });
-          });
-        }
-      }
- 
-    useFocusEffect(
+            } else {
+              chatReactionDetails.push(data);
+            }
+            return { ...msg, chatReactionDetails: chatReactionDetails };
+          }
+          return msg;
+        });
+      });
+    }
+  }
+
+  useFocusEffect(
     useCallback(() => {
 
 
@@ -304,7 +303,7 @@ const ChatRoomScreen = () => {
       socketService.on("getUserEditMessage", handleUserEditMessage);
       // socketService.on("receiveUserReactMessage", handleUserReactMessage);
       // socketService.on("getUserMessage", handleGetUserMessage);
-      socketService.on("receiveChatReaction",handleReceiveChatReaction);
+      socketService.on("receiveChatReaction", handleReceiveChatReaction);
       // socketService.on("getChatReaction", f3);
 
       return () => {
@@ -325,26 +324,42 @@ const ChatRoomScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
-
+      let timeoutId = setTimeout(() => {
+        setLoading(false);
+        setLoadingMore(false);
+      }, 5000);
       const payload = {
         userId: senderId,
-        chatRoomId: chatRoomId|| chatRoomDetails.id,
-        page: 1,
-        limit: 50,
+        chatRoomId: chatRoomDetails.id,
+        page: currentPage,
+        limit: 30,
       };
+      setLastPageDataWaiting(currentPage);
 
       socketService.emit("joinChatRoom", payload);
-      console.log("payload: ", payload);
-      socketService.on("userPreviousMessages", (data) => {
-        console.log("data: ", JSON.stringify(data.previousMessages));
-        setChatList(data.previousMessages);
-        saveMessage(data.previousMessages)
 
+      socketService.on("userPreviousMessages", (data) => {
+        console.log("data: ", data);
+        const newChatList = [...chatListState, ...data.previousMessages];
+        setChatList(newChatList);
+        saveMessage(newChatList)
+        setTotalPage(data.totalPage);
+        setLoading(false);
+        setLoadingMore(false);
+        clearTimeout(timeoutId);
       });
 
-
-    }, [])
+    }, [currentPage])
   );
+
+
+  const handleLoadMore = () => {
+    console.log("Load more triggered", currentPage, totalPage);
+
+    if (loadingMore || currentPage >= totalPage) return;
+    setLoadingMore(true);
+    setCurrentPage(prev => prev + 1)
+  }
 
 
 
@@ -417,26 +432,9 @@ const ChatRoomScreen = () => {
   };
 
 
-  // const selectImage = async (type: "camera" | "library") => {
-  //   const hasPermission = await requestPermissions(type);
-  //   if (!hasPermission) return;
 
 
-  //   const { loadPage } = useLoadPreviousMessages(chatRoomDetails.id, 30);
-
-
-  // const [messages, setMessages] = useState<ChatMessage[]>([]);
-  // const [page, setPage] = useState(1);
-  // const [hasMore, setHasMore] = useState(true);
-
-  // // Load page 1 (newest)
-  // useEffect(() => {
-  //   loadPage(1).then(msgs => {
-  //     setMessages(msgs);
-  //     setHasMore(msgs.length === 30);
-  //   });
-  // }, [loadPage]);
-
+  
   const getGroupedChatList = () => {
     const groupedMessages: (ChatMessage | { type: string; date: Date; id: string })[] = [];
     let currentDateKey: string | null = null;
@@ -479,6 +477,7 @@ const ChatRoomScreen = () => {
 
     return groupedMessages;
   };
+  console.log("getGroupedChatList: ", getGroupedChatList().length);
 
   const renderMessageContent = (content: string, senderId: string, item: ChatMessage, isSearchResult = false, searchQuery = ""): React.ReactNode => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -488,7 +487,7 @@ const ChatRoomScreen = () => {
       const regex = new RegExp(`(${searchQuery})`, "gi");
       return content.split(regex).map((part, index) =>
         regex.test(part.toLowerCase()) ? (
-          <Text key={index} style={{ backgroundColor: item.senderId === senderId ? Colors.secondary : Colors.secondary, color: senderId === item.senderId ? "#fff" : "#000" }}>
+          <Text key={index} style={{ backgroundColor: item.senderId === senderId ? Colors.lightGreen : Colors.lightGreen, color: senderId === item.senderId ? "#fff" : "#000" }}>
             {part}
           </Text>
         ) : (
@@ -503,7 +502,7 @@ const ChatRoomScreen = () => {
           <Text
             key={index}
             style={{
-              color: item.senderId === senderId ? "#fff" : Colors.secondary,
+              color: item.senderId === senderId ? "#fff" : Colors.lightGreen,
               textDecorationLine: "underline",
             }}
             onPress={() => Linking.openURL(part)}
@@ -516,74 +515,87 @@ const ChatRoomScreen = () => {
     });
   };
 
- 
+  const emptyChatView = () => {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        {loading ? (
+          <ActivityIndicator size="large" color={Colors.darkGreen} />
+        ) : (
+          <Text style={{ color: Colors.lightGreen }}>No messages yet</Text>
+        )}
+      </View>
+    );
+  };
+
+
   return (
     <KeyboardAvoidingWrapper
       style={{ flex: 1 }}
     >
 
-    <View style={styles.container}>
-      <ChatRoomHeader  {...headerPops} />
-      <FlatList
-        ref={flatListRef}
-        data={getGroupedChatList()}
-        style={{ flex: 1 }}
-        contentContainerStyle={{ flexGrow: 1 }}
-        renderItem={({ item,index }) =>
-        <Chats 
-        item={item} 
-        index={index}
-        handleReplyMessage={handleReplyMessage}
-        imageLoading={imageLoading}
-        renderMessageContent={renderMessageContent}
-        senderId={senderId}
-        searchQuery={searchQuery}
-        searchResults={searchResults}
-        setEditModal={setEditModal}
-        setEditingMessage={setEditingMessage}
-        setImageLoading={setImageLoading}
-        setSelectedMedia={setSelectedMedia}
-        setLoading={setLoading}
-        setMediaModalVisible={setMediaModalVisible}
-        setMyReaction={setMyReaction}
-        fetchChatReactions={fetchChatReactions}
-        styles={styles}
-        />
-        }
-        keyExtractor={(item, index) => item.id + index.toString()}
-        inverted
-        // onEndReached={handleLoadMore}
-        showsVerticalScrollIndicator={false}
-        onEndReachedThreshold={0.2}
-        ListFooterComponent={loadingMore ? <ActivityIndicator size="small" color={Colors.darkGreen} /> : null}
-      />
 
-      {replyingTo && (
-        <View style={styles.replyContainer}>
-          <Text style={styles.replyText}>
-            Replying to {replyingTo.messageUser?.fullName || "Unknown"}
-          </Text>
-          <TouchableOpacity
-            onPress={() => setReplyingTo(null)}
-            style={styles.replyCloseButton}
-          >
-            <X size={20} color="black" />
-          </TouchableOpacity>
-        </View>
-      )}
-      <View style={[styles.inputContainer]}>
-        <View style={styles.inputInnerContainer}>
-          <TouchableOpacity
-            style={styles.iconContainer}
-            onPress={() => selectImageFromCamera("camera")}
-          >
-            <Camera size={26} color="grey" style={styles.icon} />
-          </TouchableOpacity>
-      
+      <View style={styles.container}>
+        <ChatRoomHeader  {...headerPops} />
+        <FlatList
+          ref={flatListRef}
+          data={getGroupedChatList()}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ flexGrow: 1 }}
+          renderItem={({ item, index }) =>
+            <Chats
+              item={item}
+              index={index}
+              handleReplyMessage={handleReplyMessage}
+              imageLoading={imageLoading}
+              renderMessageContent={renderMessageContent}
+              senderId={senderId}
+              searchQuery={searchQuery}
+              searchResults={searchResults}
+              setEditModal={setEditModal}
+              setEditingMessage={setEditingMessage}
+              setImageLoading={setImageLoading}
+              setSelectedMedia={setSelectedMedia}
+              setLoading={setLoading}
+              setMediaModalVisible={setMediaModalVisible}
+              setMyReaction={setMyReaction}
+              fetchChatReactions={fetchChatReactions}
+              styles={styles}
+            />
+          }
+          keyExtractor={(item, index) => item.id + index.toString()}
+          inverted
+          onEndReached={handleLoadMore}
+          showsVerticalScrollIndicator={false}
+          onEndReachedThreshold={0.2}
+          ListEmptyComponent={emptyChatView()}
+          ListFooterComponent={loadingMore ? <View style={styles.footerLoader}><ActivityIndicator size="small" color={Colors.darkGreen} /></View> : null}
+        />
+
+        {replyingTo && (
+          <View style={styles.replyContainer}>
+            <Text style={styles.replyText}>
+              Replying to {replyingTo.messageUser?.fullName || "Unknown"}
+            </Text>
+            <TouchableOpacity
+              onPress={() => setReplyingTo(null)}
+              style={styles.replyCloseButton}
+            >
+              <X size={20} color="black" />
+            </TouchableOpacity>
+          </View>
+        )}
+        <View style={[styles.inputContainer]}>
+          <View style={styles.inputInnerContainer}>
+            <TouchableOpacity
+              style={styles.iconContainer}
+              onPress={() => selectImageFromCamera("camera")}
+            >
+              <Camera size={26} color="grey" style={styles.icon} />
+            </TouchableOpacity>
+
             <View style={{ flex: 1, flexDirection: "row" }}>
 
               <TextInput
-                // style={[styles.textInput, { maxHeight: 180 }]}
                 style={{
                   flex: 1,
                   paddingHorizontal: 10,
@@ -614,7 +626,7 @@ const ChatRoomScreen = () => {
               {editingMessageId && (
                 <TouchableOpacity
                   onPress={() => {
-                    setEditingMessageId(null);
+                    setEditingMessageId("");
                     setContent("");
                     setEditModal(false);
                     setInputHeight(55);
@@ -628,228 +640,228 @@ const ChatRoomScreen = () => {
                 </TouchableOpacity>
               )}
             </View>
-       
+
+            <TouchableOpacity
+              style={styles.iconContainer}
+              onPress={() => selectImageFromCamera("library")}
+            >
+              <Paperclip size={24} color="grey" style={styles.icon} />
+            </TouchableOpacity>
+          </View>
+
           <TouchableOpacity
-            style={styles.iconContainer}
-            onPress={() => selectImageFromCamera("library")}
+            onPress={() => {
+              sendMessage();
+            }}
+            style={styles.microphoneButton}
           >
-            <Paperclip size={24} color="grey" style={styles.icon} />
+            {editingMessageId ?
+              <Check size={25} color="#fff" />
+              : <SendHorizonal size={25} color="#fff" />}
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
-          onPress={() => {
-            sendMessage();
+        <RBSheet
+          ref={bottomSheetRef}
+          // closeOnDragDown={true}
+          closeOnPressMask={true}
+          height={height * 0.5}
+          customStyles={{
+            container: {
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              backgroundColor: "white",
+            },
+            draggableIcon: {
+              display: "none",
+            },
           }}
-          style={styles.microphoneButton}
         >
-          {editingMessageId ?
-            <Check size={25} color="#fff" />
-            : <SendHorizonal size={25} color="#fff" />}
-        </TouchableOpacity>
-      </View>
-
- <RBSheet
-        ref={bottomSheetRef}
-        // closeOnDragDown={true}
-        closeOnPressMask={true}
-        height={height * 0.5}
-        customStyles={{
-          container: {
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
-            backgroundColor: "white",
-          },
-          draggableIcon: {
-            display: "none",
-          },
-        }}
-      >
-        <View style={styles.sheetContent}>
-          <Text style={styles.sheetTitle}>
-            {reactionCountList?.length} Reactions
-          </Text>
-          <ScrollView contentContainerStyle={{ paddingBottom: 50 }}>
-            {reactionCountList.length > 0 ? (
-              reactionCountList.map((user) => (
-                <View key={user.id}>
-                  <View style={styles.userItemContainer}>
-                    <View style={{ position: "relative" }}>
-                      {/* <Image
+          <View style={styles.sheetContent}>
+            <Text style={styles.sheetTitle}>
+              {reactionCountList?.length} Reactions
+            </Text>
+            <ScrollView contentContainerStyle={{ paddingBottom: 50 }}>
+              {reactionCountList.length > 0 ? (
+                reactionCountList.map((user) => (
+                  <View key={user.id}>
+                    <View style={styles.userItemContainer}>
+                      <View style={{ position: "relative" }}>
+                        {/* <Image
                         source={require("../assets/images/AnotherImage/Man.png")}
                         style={[styles.userImage, { position: "absolute" }]}
                       /> */}
-                      <Image
-                        style={styles.userImage}
-                        source={user?.reactUsers?.profileUrl ? { uri: user?.reactUsers?.profileUrl } : null}
-                        resizeMode="cover"
-                        onTouchEnd={() => {
-                          if (user?.userId !== senderId) {
-                            // closeSheet();
-                            router.push({
-                              pathname: "/crewProfile",
-                              params: {
-                                crewId: user?.userId,
-                              },
-                            })
-                          }
-                        }}
-                      />
-                    </View>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        flex: 1,
-                      }}
-                    >
-                      {user?.userId == senderId ? (
-                        <TouchableOpacity
-                          style={{}}
-                          onPress={() => {
-                            handleDelteReaction(user.messageId, user.reaction);
-                            setReactionCountList(prev => prev.filter(item => String(item.userId) != senderId));
+                        <Image
+                          style={styles.userImage}
+                          source={user?.reactUsers?.profileUrl ? { uri: user?.reactUsers?.profileUrl } : null}
+                          resizeMode="cover"
+                          onTouchEnd={() => {
+                            if (user?.userId !== senderId) {
+                              // closeSheet();
+                              router.push({
+                                pathname: "/crewProfile",
+                                params: {
+                                  crewId: user?.userId,
+                                },
+                              })
+                            }
                           }}
-                        >
-                          <Text style={[styles.userItem, { paddingVertical: 2 }]}>
-                            You
-                          </Text>
-                          <Text style={{ fontSize: 12, color: "gray" }}>
-                            Tap to remove
-                          </Text>
-                        </TouchableOpacity>
-                      ) : (
-                        <Text
-                          style={styles.userItem}
-                          onPress={() => {
-                            // closeSheet();
-                            router.push({
-                              pathname: "/crewProfile",
-                              params: {
-                                crewId: user?.userId,
-                              },
-                            })
+                        />
+                      </View>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          flex: 1,
+                        }}
+                      >
+                        {user?.userId == senderId ? (
+                          <TouchableOpacity
+                            style={{}}
+                            onPress={() => {
+                              handleDelteReaction(user.messageId, user.reaction);
+                              setReactionCountList(prev => prev.filter(item => String(item.userId) != senderId));
+                            }}
+                          >
+                            <Text style={[styles.userItem, { paddingVertical: 2 }]}>
+                              You
+                            </Text>
+                            <Text style={{ fontSize: 12, color: "gray" }}>
+                              Tap to remove
+                            </Text>
+                          </TouchableOpacity>
+                        ) : (
+                          <Text
+                            style={styles.userItem}
+                            onPress={() => {
+                              // closeSheet();
+                              router.push({
+                                pathname: "/crewProfile",
+                                params: {
+                                  crewId: user?.userId,
+                                },
+                              })
                             }}
                           >
                             {user?.reactUsers?.fullName}
                           </Text>
-                      )}
-                      <Text style={{ fontSize: 18 }}>{user?.reaction}</Text>
+                        )}
+                        <Text style={{ fontSize: 18 }}>{user?.reaction}</Text>
+                      </View>
                     </View>
                   </View>
-                </View>
-              ))
-            ) : (
-              <Text style={styles.noLikesText}>
-                {'No Reaction found'}
-              </Text>
-            )}
-          </ScrollView>
-        </View>
-      </RBSheet>
+                ))
+              ) : (
+                <Text style={styles.noLikesText}>
+                  {'No Reaction found'}
+                </Text>
+              )}
+            </ScrollView>
+          </View>
+        </RBSheet>
 
-      {selectedMedia && (
-        <MediaPreviewModal
-          visible={mediaModalVisible}
-          onClose={() => setMediaModalVisible(false)}
-          uri={selectedMedia.uri}
-          type={selectedMedia.isVideo ? "video" : "image"}
-          canSend={!!selectedMedia.imageUri}
-          uploadImageToCloudinary={() => {
-            console.log("selectedMedia: ", selectedMedia);
-            if (selectedMedia.imageUri) {
-              setLoading(true);
-              setMediaModalVisible(false);
-              uploadImage(selectedMedia.imageUri);
-              // uploadImageToCloudinary(selectedMedia.imageUri);
-            }
-          }}
-        />
-      )}
-      {editModal && (
-        <Modal
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setEditModal(false)}
-        >
-          <View style={styles.modalContainerForEdit}>
-            <View style={styles.modalContentForEdit}>
-              <Text style={styles.modalMessage}>This action is for your chat message</Text>
-              {senderId === editingMessage?.senderId && editingMessage?.messageType !== "IMAGE" && (
+        {selectedMedia && (
+          <MediaPreviewModal
+            visible={mediaModalVisible}
+            onClose={() => setMediaModalVisible(false)}
+            uri={selectedMedia.uri}
+            type={selectedMedia.isVideo ? "video" : "image"}
+            canSend={!!selectedMedia.imageUri}
+            uploadImageToCloudinary={() => {
+              console.log("selectedMedia: ", selectedMedia);
+              if (selectedMedia.imageUri) {
+                setLoading(true);
+                setMediaModalVisible(false);
+                uploadImage(selectedMedia.imageUri);
+                // uploadImageToCloudinary(selectedMedia.imageUri);
+              }
+            }}
+          />
+        )}
+        {editModal && (
+          <Modal
+            transparent={true}
+            animationType="fade"
+            onRequestClose={() => setEditModal(false)}
+          >
+            <View style={styles.modalContainerForEdit}>
+              <View style={styles.modalContentForEdit}>
+                <Text style={styles.modalMessage}>This action is for your chat message</Text>
+                {senderId === editingMessage?.senderId && editingMessage?.messageType !== "IMAGE" && (
+                  <TouchableOpacity
+                    style={styles.modalOptionForEdit}
+                    onPress={() => {
+                      handleEditMessage(editingMessage);
+                      setEditModal(false);
+                    }}
+                  >
+                    <Edit size={20} color="#82934b" style={styles.modalIcon} />
+                    <Text style={[styles.modalOptionTextForEdit, { color: "#82934b" }]}>Edit</Text>
+                  </TouchableOpacity>
+                )}
+                {senderId === editingMessage?.senderId && (
+                  <TouchableOpacity
+                    style={styles.modalOptionForEdit}
+                    onPress={() => {
+                      handleDeleteMessage(editingMessage);
+                      setContent("");
+                      setEditingMessageId("");
+                      setEditModal(false);
+                      setInputHeight(55);
+                    }}
+                  >
+                    <Trash2 size={20} color="#FF4D4D" style={styles.modalIcon} />
+                    <Text style={[styles.modalOptionTextForEdit, { color: "#FF4D4D" }]}>Delete</Text>
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity
                   style={styles.modalOptionForEdit}
                   onPress={() => {
-                    handleEditMessage(editingMessage);
-                    setEditModal(false);
+                    handleReplyMessage(editingMessage);
                   }}
                 >
-                  <Edit size={20} color="#82934b" style={styles.modalIcon} />
-                  <Text style={[styles.modalOptionTextForEdit, { color: "#82934b" }]}>Edit</Text>
+                  <Reply size={20} color="#82934b" style={styles.modalIcon} />
+                  <Text style={[styles.modalOptionTextForEdit, { color: "#82934b" }]}>Reply</Text>
                 </TouchableOpacity>
-              )}
-              {senderId === editingMessage?.senderId && (
+                <FlatList
+                  data={emojis}
+                  renderItem={({ item: emoji }) => (
+                    <TouchableOpacity
+                      style={[styles.emojiOption, {
+                        ...myReaction == emoji ?
+                          {
+                            backgroundColor: "rgba(192, 190, 190, 0.5)",
+                            borderRadius: 30,
+                          }
+                          : {}
+                      }]}
+                      onPress={() => handleEmojiReaction(editingMessage, emoji)}
+                    >
+                      <Text style={styles.emojiText}>{emoji}</Text>
+                    </TouchableOpacity>
+                  )}
+                  keyExtractor={(item) => item}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={{ marginTop: 10 }}
+                />
                 <TouchableOpacity
                   style={styles.modalOptionForEdit}
                   onPress={() => {
-                    handleDeleteMessage(editingMessage);
-                    setContent("");
-                    setEditingMessageId(null);
                     setEditModal(false);
                     setInputHeight(55);
                   }}
                 >
-                  <Trash2 size={20} color="#FF4D4D" style={styles.modalIcon} />
-                  <Text style={[styles.modalOptionTextForEdit, { color: "#FF4D4D" }]}>Delete</Text>
+                  <X size={20} color="#808080" style={styles.modalIcon} />
+                  <Text style={[styles.modalOptionTextForEdit, { color: "#808080" }]}>Cancel</Text>
                 </TouchableOpacity>
-              )}
-              <TouchableOpacity
-                style={styles.modalOptionForEdit}
-                onPress={() => {
-                  handleReplyMessage(editingMessage);
-                }}
-              >
-                <Reply size={20} color="#82934b" style={styles.modalIcon} />
-                <Text style={[styles.modalOptionTextForEdit, { color: "#82934b" }]}>Reply</Text>
-              </TouchableOpacity>
-              <FlatList
-                data={emojis}
-                renderItem={({ item: emoji }) => (
-                  <TouchableOpacity
-                    style={[styles.emojiOption, {
-                      ...myReaction == emoji ?
-                        {
-                          backgroundColor: "rgba(192, 190, 190, 0.5)",
-                          borderRadius: 30,
-                        }
-                        : {}
-                    }]}
-                    onPress={() => handleEmojiReaction(editingMessage, emoji)}
-                  >
-                    <Text style={styles.emojiText}>{emoji}</Text>
-                  </TouchableOpacity>
-                )}
-                keyExtractor={(item) => item}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={{ marginTop: 10 }}
-              />
-              <TouchableOpacity
-                style={styles.modalOptionForEdit}
-                onPress={() => {
-                  setEditModal(false);
-                  setInputHeight(55);
-                }}
-              >
-                <X size={20} color="#808080" style={styles.modalIcon} />
-                <Text style={[styles.modalOptionTextForEdit, { color: "#808080" }]}>Cancel</Text>
-              </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        </Modal>
-      )}
-    </View>
-     </KeyboardAvoidingWrapper>
+          </Modal>
+        )}
+      </View>
+    </KeyboardAvoidingWrapper>
   )
 }
 
@@ -1040,6 +1052,10 @@ const styles = StyleSheet.create({
   searchNavButtons: {
     flexDirection: "row",
     gap: 10,
+  },
+  footerLoader: {
+    marginVertical: 10,
+    paddingVertical: 10,
   },
 });
 

@@ -1,6 +1,7 @@
 import { globalSearch } from '@/src/apis/apiService';
 import BuddyUpEventList from '@/src/components/BuddyUpEventList';
 import ContentListing from '@/src/components/ContentListing';
+import { showToast } from '@/src/components/GlobalToast';
 import PostScreen from '@/src/components/PostScreen';
 import { UserDetails } from '@/src/redux/userDetailsSlice';
 import Colors from '@/src/utils/Colors';
@@ -8,7 +9,7 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { t } from 'i18next';
 import { ChevronLeft, Search } from 'lucide-react-native';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Platform,
   StyleSheet,
@@ -72,6 +73,11 @@ const GlobalSearch = () => {
 
     }
   }
+
+     const handlePostReported = useCallback(() => {
+          showToast.success(t('success'), t('reportsubmitted'));
+          router.back();
+      }, [t]);
   useEffect(() => {
     if (debounceTimeout.current) {
       clearTimeout(debounceTimeout.current);
@@ -82,7 +88,7 @@ const GlobalSearch = () => {
 
       searchQuery(query);
       // -----------------------------------------
-    }, 3000); // 3 seconds
+    }, 2000); // 2 seconds
 
     return () => {
       if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
@@ -101,6 +107,8 @@ const GlobalSearch = () => {
             setPost((prev) => prev.filter((p) => p.id !== item.id));
           }}
           i18nIsDynamicList={false}
+          onPostReported={handlePostReported}
+          
         />
       )}
       keyExtractor={(item) => item.id.toString()}
@@ -320,7 +328,7 @@ const styles = StyleSheet.create({
   contentContainer: { paddingHorizontal: 16, paddingTop: 8 },
   contentContainerNoPadding: { paddingHorizontal: 0 },
   tabsContainer: { marginVertical: 10 },
-  tabsContentContainer: { flexDirection: "row" },
+  tabsContentContainer: { flexDirection: "row" , marginHorizontal: 20 , paddingRight:20 },
   tab: {
     paddingHorizontal: 16,
     paddingVertical: 8,

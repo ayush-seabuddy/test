@@ -1,4 +1,4 @@
-// screens/SocialMediaLinks.tsx
+
 import { updateprofile, viewProfile } from '@/src/apis/apiService';
 import CustomLottie from '@/src/components/CustomLottie';
 import GlobalHeader from '@/src/components/GlobalHeader';
@@ -8,58 +8,54 @@ import { ChevronLeft, Edit, Trash2 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-    Alert,
-    Dimensions,
-    FlatList,
-    TextInput as NativeTextInput,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Dimensions,
+  FlatList,
+  TextInput as NativeTextInput,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import { useSelector } from 'react-redux';
 
-const { height, width } = Dimensions.get('screen');
+const { height } = Dimensions.get('screen');
 
 interface SocialLink {
   platform: string;
   link: string;
 }
 
-interface UserDetails {
-  id: string;
-  authToken: string;
-}
-
 const SocialMediaLinks = () => {
   const { t } = useTranslation();
-
   const userDetails = useSelector((state: RootState) => state.userDetails);
+
   const [links, setLinks] = useState({
     linkedin: '',
     instagram: '',
     facebook: '',
-    telegram: '',
+    X: '',
   });
+
+  const [savedLinks, setSavedLinks] = useState<SocialLink[]>(
+    userDetails.SocialMediaLinks || []
+  );
+  const [loading, setLoading] = useState(false);
+  const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
+
+  useEffect(() => {
+    getProfileDetails();
+  }, []);
 
   useEffect(() => {
     const initialLinks = userDetails.SocialMediaLinks || [];
-    const mapped = initialLinks.reduce((acc: any, { platform, link }: any) => {
+    const mapped = initialLinks.reduce((acc: any, { platform, link }: SocialLink) => {
       acc[platform.toLowerCase()] = link || '';
       return acc;
     }, {});
     setLinks((prev) => ({ ...prev, ...mapped }));
   }, [userDetails.SocialMediaLinks]);
-
-  const [savedLinks, setSavedLinks] = useState<SocialLink[]>(userDetails.SocialMediaLinks || []);
-  const [loading, setLoading] = useState(false);
-  const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
-
-
-  useEffect(() => {
-    getProfileDetails();
-  }, []);
 
   const getProfileDetails = async () => {
     try {
@@ -70,11 +66,11 @@ const SocialMediaLinks = () => {
         const fetchedLinks = response.data.SocialMediaLinks || [];
         setSavedLinks(fetchedLinks);
 
-        // Map saved links to input fields
         const mappedLinks = fetchedLinks.reduce((acc: any, { platform, link }: SocialLink) => {
-          acc[platform.toLowerCase()] = link;
+          acc[platform.toLowerCase()] = link || '';
           return acc;
         }, {});
+
         setLinks((prev) => ({ ...prev, ...mappedLinks }));
       }
     } catch (error) {
@@ -88,7 +84,10 @@ const SocialMediaLinks = () => {
   const updateSocialMediaLinks = async () => {
     const validLinks = Object.entries(links)
       .filter(([, value]) => value.trim() !== '')
-      .map(([platform, link]) => ({ platform: platform.charAt(0).toUpperCase() + platform.slice(1), link }));
+      .map(([platform, link]) => ({
+        platform: platform.charAt(0).toUpperCase() + platform.slice(1),
+        link: link.trim(),
+      }));
 
     if (validLinks.length === 0) {
       Toast.show({ type: 'error', text1: t('atleastOneLinkRequired') });
@@ -114,7 +113,13 @@ const SocialMediaLinks = () => {
       if (response.status === 200) {
         setSavedLinks(updatedLinks);
         setEditingPlatform(null);
-        setLinks({ linkedin: '', instagram: '', facebook: '', telegram: '' });
+        // Clear input fields after successful save
+        setLinks({
+          linkedin: '',
+          instagram: '',
+          facebook: '',
+          X: '',
+        });
         Toast.show({
           type: 'success',
           text1: t('socialmediaaddedsuccessfully') || 'Links saved successfully!',
@@ -139,7 +144,6 @@ const SocialMediaLinks = () => {
   const handleDelete = (platformToDelete: string) => {
     const platformLower = platformToDelete.toLowerCase();
 
-    // Show confirmation
     Alert.alert(
       t('deletelink'),
       `${t('remove')} ${platformToDelete}?`,
@@ -181,32 +185,6 @@ const SocialMediaLinks = () => {
     );
   };
 
-  // Reusable Black Input Component
-  const BlackInput = ({
-    label,
-    value,
-    onChangeText,
-  }: {
-    label: string;
-    value: string;
-    onChangeText: (text: string) => void;
-  }) => (
-    <View style={{ marginBottom: 16 }}>
-      <Text style={styles.label}>{label}</Text>
-      <View style={styles.inputWrapper}>
-        <NativeTextInput
-          value={value}
-          onChangeText={onChangeText}
-          style={styles.nativeInput}
-          placeholderTextColor="#666"
-          keyboardType="url"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-      </View>
-    </View>
-  );
-
   return (
     <>
       <GlobalHeader
@@ -215,48 +193,56 @@ const SocialMediaLinks = () => {
         leftIcon={<ChevronLeft size={24} color="#000" />}
       />
 
-      {/* {loading && <Loader />} */}
-
       <View style={{ flex: 1, padding: 14 }}>
         {/* Input Fields */}
         <BlackInput
           label={t('linkedin')}
           value={links.linkedin}
-          onChangeText={(text) => setLinks({ ...links, linkedin: text })}
+          onChangeText={(text) =>
+            setLinks((prev) => ({ ...prev, linkedin: text }))
+          }
+          placeholder="https://www.linkedin.com/in/username"
         />
 
         <BlackInput
           label={t('instagram')}
           value={links.instagram}
-          onChangeText={(text) => setLinks({ ...links, instagram: text })}
+          onChangeText={(text) =>
+            setLinks((prev) => ({ ...prev, instagram: text }))
+          }
+          placeholder="https://www.instagram.com/username"
         />
 
         <BlackInput
           label={t('facebook')}
           value={links.facebook}
-          onChangeText={(text) => setLinks({ ...links, facebook: text })}
+          onChangeText={(text) =>
+            setLinks((prev) => ({ ...prev, facebook: text }))
+          }
+          placeholder="https://www.facebook.com/username"
         />
 
         <BlackInput
-          label={t('telegram')}
-          value={links.telegram}
-          onChangeText={(text) => setLinks({ ...links, telegram: text })}
+          label={t('X')}
+          value={links.X}
+          onChangeText={(text) =>
+            setLinks((prev) => ({ ...prev, X: text }))
+          }
+          placeholder="https://X.com/username"
         />
 
-        <TouchableOpacity
-          onPress={updateSocialMediaLinks}
-          style={styles.saveButton}
-        >
+        <TouchableOpacity onPress={updateSocialMediaLinks} style={styles.saveButton}>
           <Text style={styles.saveButtonText}>
             {editingPlatform ? t('updatelink') : t('savesocialmedialinks')}
           </Text>
         </TouchableOpacity>
 
-        {/* Saved Links */}
+        {/* Saved Links List */}
         {savedLinks.length > 0 && (
           <FlatList
             data={savedLinks}
             keyExtractor={(item) => item.platform}
+            showsVerticalScrollIndicator={false}
             renderItem={({ item }) => (
               <View style={styles.savedCard}>
                 <View>
@@ -290,6 +276,35 @@ const SocialMediaLinks = () => {
   );
 };
 
+// === BlackInput Component (Moved Outside to Prevent Re-creation) ===
+const BlackInput = ({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder?: string;
+}) => (
+  <View style={{ marginBottom: 16 }}>
+    <Text style={styles.label}>{label}</Text>
+    <View style={styles.inputWrapper}>
+      <NativeTextInput
+        value={value}
+        onChangeText={onChangeText}
+        style={styles.nativeInput}
+        placeholder={placeholder}
+        placeholderTextColor="#666"
+        keyboardType="url"
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
+    </View>
+  </View>
+);
+
 const styles = StyleSheet.create({
   label: {
     fontFamily: 'Poppins-SemiBold',
@@ -308,7 +323,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
     fontFamily: 'Poppins-Regular',
-    color: '#000', // Black text when typing
+    color: '#000',
   },
   saveButton: {
     borderRadius: 8,

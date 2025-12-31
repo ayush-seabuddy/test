@@ -13,15 +13,11 @@ import {
 } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
-// // import api from '../CustomAxios';
-// import Loader from '../component/Loader';
-// import CustomLottie from '../component/CustomLottie';
-// import CustomDateTimePicker from '../component/Modals/CustomDateTimePicker';
-// import ProfileSettingHeader from '../component/headers/ProfileHeader/ProfleSettingHeader';
 
 // Lucide Icons
 import { updateprofile, viewProfile } from '@/src/apis/apiService';
 import GlobalHeader from '@/src/components/GlobalHeader';
+import { showToast } from '@/src/components/GlobalToast';
 import CustomDateTimePicker from '@/src/components/Modals/CustomDateTimePicker';
 import { RootState } from '@/src/redux/store';
 import { router } from 'expo-router';
@@ -108,6 +104,14 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
         }
 
         return actualDate.toLocaleDateString('en-GB'); // dd/mm/yyyy
+    };
+
+    // Utility to parse 'dd/mm/yyyy' to Date
+    const parseDDMMYYYY = (dateStr: string): Date | null => {
+        if (!dateStr) return null;
+        const [day, month, year] = dateStr.split('/').map(Number);
+        if (!day || !month || !year) return null;
+        return new Date(year, month - 1, day);
     };
 
     const handleJobTitleChange = (text: string) => {
@@ -199,14 +203,11 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
 
             if (response.status === 200) {
                 await fetchProfileDetails();
-                Toast.show({
-                    type: 'success',
-                    text1: isUpdate ? t('workingexperienceupdated') : t('workingexperienceaddedsuccessfully'),
-                });
+                showToast.success(t('workingexperienceupdated'),t('workingexperienceaddedsuccessfully'))
             }
         } catch (error: any) {
             console.error('Update error:', error.response?.data || error.message);
-            Toast.show({ type: 'error', text1: t('somethingWentWrong') });
+            showToast.error(t('somethingWentWrong'));
         } finally {
             setLoading(false);
         }
@@ -242,17 +243,14 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
         }
     };
 
-
-
     return (
         <>
             <GlobalHeader title={t('shipboard_experience')} onLeftPress={() => router.back()} leftIcon={<ChevronLeft />} />
 
-
             {/* {loading && <Loader />} */}
 
-            <View style={{ flex: 1, padding: 14 }}>
-                <View style={{ marginBottom: 12 }}>
+            <View style={styles.screenContainer}>
+                <View style={styles.inputContainer}>
                     <TextInput
                         label={t('jobtitle')}
                         value={jobTitle}
@@ -274,7 +272,7 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
                     {errors.jobTitle && <Text style={styles.error}>{errors.jobTitle}</Text>}
                 </View>
 
-                <View style={{ marginBottom: 12 }}>
+                <View style={styles.inputContainer}>
                     <TextInput
                         label={t('companyname')}
                         value={company}
@@ -303,7 +301,7 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
                         mode="outlined"
                         editable={false}
                         pointerEvents="none"
-                        textColor="#000"   // 👈 THIS is required
+                        textColor="#000"  
                         style={styles.input}
                         theme={{
                             colors: {
@@ -378,7 +376,7 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
                     showsVerticalScrollIndicator={false}
                     renderItem={({ item }) => (
                         <View style={styles.experienceCard}>
-                            <View style={{ flex: 1 }}>
+                            <View style={styles.flex1}>
                                 <Text style={styles.companyName}>{item.companyName}</Text>
                                 <Text style={styles.role}>{item.role}</Text>
                                 <Text style={styles.duration}>{item.from} - {item.to}</Text>
@@ -390,8 +388,8 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
                                         setEditId(item.id);
                                         setCompany(item.companyName);
                                         setJobTitle(item.role);
-                                        setStartDate(new Date(item.from));
-                                        setEndDate(new Date(item.to));
+                                        setStartDate(parseDDMMYYYY(item.from));
+                                        setEndDate(parseDDMMYYYY(item.to));
                                         setIsUpdate(true);
                                     }}
                                 >
@@ -502,54 +500,54 @@ const styles = StyleSheet.create({
         gap: 16,
     },
     modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  modalContent: {
-    width: width * 0.85,
-    padding: 20,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  modalText: {
-    fontSize: 16,
-    fontFamily: 'Poppins-Regular',
-    textAlign: 'center',
-    marginBottom: 24,
-    color: '#000',
-  },
-  modalActions: {
-    flexDirection: 'row',
-    width: '100%',
-    gap: 12,
-  },
-  cancelButton: {
-    flex: 1,
-    paddingVertical: 12,
-    backgroundColor: '#ccc',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  deleteButton: {
-    flex: 1,
-    paddingVertical: 12,
-    backgroundColor: 'red',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  cancelText: {
-    color: '#000',
-    fontFamily: 'Poppins-Medium',
-    fontSize: 15,
-  },
-  deleteText: {
-    color: '#fff',
-    fontFamily: 'Poppins-Medium',
-    fontSize: 15,
-  },
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    modalContent: {
+        width: width * 0.85,
+        padding: 20,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+    modalText: {
+        fontSize: 16,
+        fontFamily: 'Poppins-Regular',
+        textAlign: 'center',
+        marginBottom: 24,
+        color: '#000',
+    },
+    modalActions: {
+        flexDirection: 'row',
+        width: '100%',
+        gap: 12,
+    },
+    cancelButton: {
+        flex: 1,
+        paddingVertical: 12,
+        backgroundColor: '#ccc',
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    deleteButton: {
+        flex: 1,
+        paddingVertical: 12,
+        backgroundColor: 'red',
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    cancelText: {
+        color: '#000',
+        fontFamily: 'Poppins-Medium',
+        fontSize: 15,
+    },
+    deleteText: {
+        color: '#fff',
+        fontFamily: 'Poppins-Medium',
+        fontSize: 15,
+    },
     background: {
         position: 'absolute',
         bottom: 0,
@@ -561,6 +559,16 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 50,
         overflow: 'hidden',
         zIndex: -1,
+    },
+    screenContainer: {
+        flex: 1,
+        padding: 14,
+    },
+    inputContainer: {
+        marginBottom: 12,
+    },
+    flex1: {
+        flex: 1,
     },
 });
 

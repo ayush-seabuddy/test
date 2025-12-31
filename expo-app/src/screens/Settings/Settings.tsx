@@ -1,6 +1,7 @@
 import GlobalHeader from '@/src/components/GlobalHeader'
 import DeleteModal from '@/src/components/Modals/DeleteModal'
 import SignOutModal from '@/src/components/Modals/SignOutModal'
+import { clearAllChatLists } from '@/src/redux/chatListSlice'
 import { height, width } from '@/src/utils/helperFunctions'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router } from 'expo-router'
@@ -8,8 +9,11 @@ import { t } from 'i18next'
 import { ChevronLeft, CircleArrowRight } from 'lucide-react-native'
 import React, { useState } from 'react'
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { useDispatch } from 'react-redux'
 
 const Settings = () => {
+
+    const dispatch = useDispatch();
 
 
     const [modalVisible, setModalVisible] = useState(false);
@@ -24,6 +28,8 @@ const Settings = () => {
         try {
         // Clear all AsyncStorage data
         await AsyncStorage.clear();
+         dispatch(clearAllChatLists()); // Dispatch an action to reset Redux state
+
 
         // Reset navigation stack to Login screen
         router.replace('/auth/Login');

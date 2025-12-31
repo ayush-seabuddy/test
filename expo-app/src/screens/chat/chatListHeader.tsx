@@ -3,12 +3,13 @@ import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
+import { router } from "expo-router";
 import { House } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-const ChatHeader = ({  }) => {
+const ChatHeader = ({ }) => {
   const [profile, setProfile] = useState({});
   const [unreadNotification, setUnreadNotification] = useState(0);
   const { t } = useTranslation();
@@ -50,39 +51,12 @@ const ChatHeader = ({  }) => {
       <Text style={styles.chatroom}>
         <Text style={styles.chat}>{t('chatRoom')}</Text>
       </Text>
-
       <View style={styles.headerButtonsContainer}>
-        {/* {profile?.designation === "Captain" && (
-          <TouchableOpacity
-            style={styles.headerButton}
-            onPress={() => navigation.navigate("CrewList")}
-          >
-            <Image source={ImagesAssets.userGrup} style={styles.headerIcon} />
-          </TouchableOpacity>
-        )} */}
         <TouchableOpacity
           style={styles.headerButton}
-        //   onPress={() => navigation.navigate("Notifications")}
+          onPress={() => router.push('/notification')}
         >
           <Image source={ImagesAssets.notificationBell} style={styles.headerIcon} />
-          {/* {unreadNotification > 0 ? (
-              <Badge size={10}
-                style={{
-                  backgroundColor: Colors.secondary,
-                  color: Colors.white,
-                  borderRadius: 50,
-                  position: "absolute",
-                  top: 5,
-                  right: 5,
-                  paddingHorizontal: 0,
-                  paddingVertical: 0,
-
-                  fontSize: 1,
-                }}
-              > */}
-          {/* {unreadNotification>99?`99+`:unreadNotification} */}
-          {/* </Badge>
-            ) : null} */}
           {unreadNotification > 0 ? (
             <View
               style={{
@@ -97,25 +71,19 @@ const ChatHeader = ({  }) => {
                 height: 10,
               }}
             >
-              {/* {unreadNotification > 99 ? `99+` : unreadNotification} */}
             </View>
           ) : null}
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.headerButton}
-        //   onPress={() => navigation.navigate("PublicScreen")}
+          onPress={() => router.push('/company-library')}
         >
           <Image source={ImagesAssets.companyLibraryLogo} style={styles.headerIcon} />
         </TouchableOpacity>
-        {/* <TouchableOpacity
-          style={styles.headerButton}
-          onPress={() => navigation.navigate("Search")}
-        >
-          <Image source={ImagesAssets.search} style={styles.headerIcon} />
-        </TouchableOpacity> */}
+
         <TouchableOpacity
           style={styles.homeButton}
-        //   onPress={() => navigation.replace("AppNav", { screen: "HelperLanding" })}
+          onPress={() => router.push("/home")}
         >
           <House size={22} color="#000" />
         </TouchableOpacity>
@@ -131,6 +99,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     height: 60,
     paddingHorizontal: 10,
+    borderBottomWidth: 0.5,
     backgroundColor: "#FFFFFF",
     ...Platform.select({
       ios: {

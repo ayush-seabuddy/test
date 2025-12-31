@@ -13,7 +13,7 @@ import {
 // import { ImagesAssets } from "../../assets/ImagesAssets";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import { router } from "expo-router";
-import { ArrowLeft, Search } from "lucide-react-native";
+import { ChevronLeft, Search } from "lucide-react-native";
 import RBSheet from "react-native-raw-bottom-sheet";
 import ChatSearchComponent from "./ChatSearchComponent";
 
@@ -158,7 +158,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
             }
             style={{ padding: 12 }}
           >
-            <ArrowLeft color="black" size={25} />
+            <ChevronLeft color="black" size={25} />
           </TouchableOpacity>
 
           {/* Group Name + Members Count – NO onPress */}

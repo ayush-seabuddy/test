@@ -58,15 +58,15 @@ interface ApiResponse {
 }
 
 interface listAllContent {
-    [department: string]: ApiResponse;
+  [department: string]: ApiResponse;
 }
 
 
 interface ContentState {
-    categoryList:Category[],
-    error: string | null;
-    loading: boolean
-    contentList: listAllContent
+  categoryList: Category[],
+  error: string | null;
+  loading: boolean
+  contentList: listAllContent
 }
 // Initial state
 const initialState: ContentState = {
@@ -77,57 +77,59 @@ const initialState: ContentState = {
 };
 
 export const listAllCategory = createAsyncThunk(
-    'user/listAllCategory',
-    async (arg, { rejectWithValue }) => {
-        try {
-            const response = await getAllCategory();
-            console.log("response: sdflksdklfdslkf", response);
-            return response.data;
-        } catch (error: any) {
-            return rejectWithValue(error.response?.data || 'Error fetching data');
-        }
+  'user/listAllCategory',
+  async (arg, { rejectWithValue }) => {
+    try {
+      const response = await getAllCategory();
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || 'Error fetching data');
     }
+  }
 );
 
 
 // Redux slice
 const contentSlice = createSlice({
-    name: 'content',
-    initialState,
-    reducers: {
-        clearError: (state) => {
-            state.error = null; // Reset error state
-        },
-        clearAllCategory: (state) => {
-          state.categoryList = [];
-        },
-        updateContentList: (state, action) => {
-          state.contentList[action.payload.id] = action.payload.data;
+  name: 'content',
+  initialState,
+  reducers: {
+    clearError: (state) => {
+      state.error = null; // Reset error state
+    },
+    clearAllCategory: (state) => {
+      state.categoryList = [];
+    },
+    updateContentList: (state, action) => {
+      state.contentList[action.payload.id] = action.payload.data;
+    },
+    setContentsLoading: (state, action) => {
+      state.loading = action.payload;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(listAllCategory.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        listAllCategory.fulfilled,
+        (state, action: PayloadAction<Category[]>) => {
+          state.loading = false;
+          state.categoryList = action.payload;
+
         }
-    },
-    extraReducers: (builder) => {
-        builder
-            .addCase(listAllCategory.pending, (state) => {
-                state.loading = true;
-                state.error = null; 
-            })
-            .addCase(
-                listAllCategory.fulfilled,
-                (state, action: PayloadAction<Category[]>) => {
-                    state.loading = false;
-                    state.categoryList = action.payload;
-                    
-                }
-            )
-            .addCase(listAllCategory.rejected, (state, action) => {
-                state.loading = false;
-                state.error = action.payload as string;
-            })
+      )
+      .addCase(listAllCategory.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
 
 
 
-    },
+  },
 });
 
-export const { clearError, clearAllCategory , updateContentList} = contentSlice.actions;
+export const { clearError, clearAllCategory, updateContentList , setContentsLoading} = contentSlice.actions;
 export default contentSlice.reducer;

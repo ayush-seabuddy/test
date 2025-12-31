@@ -1,12 +1,35 @@
+import { getUnreadMessageCount } from "@/src/apis/apiService";
+import { updateUnreadMessageCount, updateUnreadNotificationCount } from "@/src/redux/chatListSlice";
+import { RootState } from "@/src/redux/store";
 import Colors from "@/src/utils/Colors";
-import { router, Tabs, usePathname } from "expo-router";
-import React from "react";
+import { router, Tabs, useFocusEffect, usePathname } from "expo-router";
+import React, { useCallback } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function CommunityLayout() {
   const unreadCount = 5;
   const pathname = usePathname();
   const routes = ["/social", "/chats"] as const;
+
+    const { unreadMessageCount } = useSelector((state: RootState) => state.chatList);
+
+    const dispatch = useDispatch();
+
+      const getUnReadCounts = async () => {
+          const response = await getUnreadMessageCount();
+          if (response.status === 200) {
+              dispatch(updateUnreadMessageCount(response.data.unReadCount));
+              dispatch(updateUnreadNotificationCount(response.data.unSeenCount));
+          }
+      }
+
+      
+  useFocusEffect(
+    useCallback(() => {
+      getUnReadCounts();
+    }, [])
+  );
   
 
 
@@ -66,7 +89,7 @@ export default function CommunityLayout() {
             </TouchableOpacity>
           );
         })}
-        {unreadCount > 0 && (
+        {unreadMessageCount > 0 && (
           <View
             style={{
               position: "absolute",
@@ -90,7 +113,7 @@ export default function CommunityLayout() {
                 fontWeight: "bold",
               }}
             >
-              {unreadCount}
+              {unreadMessageCount > 9 ? "9+" : unreadMessageCount}
             </Text>
           </View>
         )}

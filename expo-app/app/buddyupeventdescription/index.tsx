@@ -11,9 +11,9 @@ import Colors from '@/src/utils/Colors';
 import { formatDate } from '@/src/utils/helperFunctions';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
 import { Image } from 'expo-image';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     ActivityIndicator,
@@ -121,6 +121,10 @@ const BuddyUpEventDescription = () => {
     useEffect(() => {
         fetchBuddyUpDetails();
     }, [eventId]);
+
+    useFocusEffect(useCallback(() => {
+        fetchBuddyUpDetails();
+    }, []));
 
     const canApprove = () => ['Captain', 'Chief engineer'].includes(userDetails.designation);
     const isCreator = buddyUpDetails?.userId === userDetails.id;

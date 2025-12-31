@@ -1,6 +1,5 @@
-import { getallassessmentsResult, getallcontents, viewProfile, viewUserTest } from '@/src/apis/apiService';
+import { getallassessmentsResult, viewProfile, viewUserTest } from '@/src/apis/apiService';
 import { showToast } from '@/src/components/GlobalToast';
-import { listAllCategory, updateContentList } from '@/src/redux/ContentSlice';
 import { AppDispatch } from '@/src/redux/store';
 import { UserDetails } from '@/src/types/userTypes';
 import Colors from '@/src/utils/Colors';
@@ -89,29 +88,7 @@ const AssessmentList = ({isProfileScreen = false}: {isProfileScreen?: boolean}) 
     fetchQuestions();
   }, [t]);
 
-  // Fetch all contents by category
-  useEffect(() => {
-    const loadCategoriesAndContents = async () => {
-      try {
-        const categoryList = await dispatch(listAllCategory()).unwrap();
-        await Promise.all(
-          categoryList.map(async (item: { id: any }) => {
-            try {
-              const response = await getallcontents({ subCategory: item.id });
-              if (response?.data) {
-                dispatch(updateContentList({ data: response.data, id: item.id }));
-              }
-            } catch (err) {
-              console.error(`Failed to load contents for category ${item.id}:`, err);
-            }
-          })
-        );
-      } catch (error) {
-        console.error('Failed to load categories:', error);
-      }
-    };
-    loadCategoriesAndContents();
-  }, [dispatch]);
+
 
   const currentMonth = new Date().toLocaleString('en', { month: 'long' });
   const lastDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();

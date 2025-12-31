@@ -87,12 +87,12 @@ export interface MessageUser {
 }
 
 export interface MessageReaction {
-  id: string;
+  id?: string;
   userId: string;
   messageId: string;
   reaction: string;       // "❤️" | "😂" | "😊" etc.
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ParentMessage {

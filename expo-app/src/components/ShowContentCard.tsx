@@ -1,6 +1,7 @@
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
 import React from "react";
 import {
     Dimensions,
@@ -54,7 +55,7 @@ const ShowContentCard = ({ data, keyId }: { data: any, keyId: any }) => {
         }
     };
 
-    const RenderData = ({ item,index }:{item:any,index:number}) => {
+    const RenderData = ({ item, index }: { item: any, index: number }) => {
 
         const config = getContentTypeConfig(item.contentType);
         if (!config) return null;
@@ -67,9 +68,12 @@ const ShowContentCard = ({ data, keyId }: { data: any, keyId: any }) => {
         return (
             <TouchableOpacity
                 style={config.cardStyle}
-            // onPress={() =>
-            //    navigation.navigate(config.navigationScreen, { dataItem: item })
-            // }
+                onPress={() =>
+                    router.push({
+                        pathname: "/contentDetails/[contentId]",
+                        params: { contentId: item.id },
+                    })
+                }
             >
                 <View style={config.cardContentStyle}>
 
@@ -120,7 +124,7 @@ const ShowContentCard = ({ data, keyId }: { data: any, keyId: any }) => {
     const [displayData, setDisplayData] = React.useState(
         data.allContents || data
     );
-  
+
 
     return (
         <View style={{ flex: 1 }}>

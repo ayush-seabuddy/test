@@ -1,28 +1,28 @@
-import { Slot, Stack, router } from "expo-router";
-import * as SplashScreen from "expo-splash-screen";
-import { useFonts } from "expo-font";
-import { useEffect, useRef } from "react";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { StatusBar, StyleSheet, useColorScheme } from "react-native";
-import { Provider } from "react-redux";
-import { PaperProvider } from "react-native-paper";
-import { I18nextProvider } from "react-i18next";
-import Toast from "react-native-toast-message";
-import * as Notifications from "expo-notifications";
-import * as TaskManager from "expo-task-manager";
 import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import * as Notifications from "expo-notifications";
+import { Stack, router } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import * as TaskManager from "expo-task-manager";
+import { useEffect, useRef } from "react";
+import { I18nextProvider } from "react-i18next";
+import { StatusBar, StyleSheet, useColorScheme } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { PaperProvider } from "react-native-paper";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
+import { Provider } from "react-redux";
 
-import Colors from "@/src/utils/Colors";
-import { store } from "@/src/redux/store";
-import { initI18n } from "@/src/localization/i18n";
-import i18n from "i18next";
-import socketService from "@/src/utils/socketService";
 import { NotificationProvider } from "@/Context/NotificationContext";
+import { initI18n } from "@/src/localization/i18n";
+import { store } from "@/src/redux/store";
+import Colors from "@/src/utils/Colors";
+import socketService from "@/src/utils/socketService";
+import i18n from "i18next";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -141,11 +141,11 @@ export default function RootLayout() {
     const checkLastNotification = async () => {
       try {
         const response = await Notifications.getLastNotificationResponseAsync();
-        
+
         if (response) {
           console.log("📱 App opened from killed state");
           const data = response.notification.request.content.data;
-          
+
           // Add delay to ensure app is fully initialized
           setTimeout(() => {
             handleNotificationNavigation(data);
@@ -192,7 +192,13 @@ export default function RootLayout() {
               <PaperProvider>
                 <I18nextProvider i18n={i18n}>
                   <GestureHandlerRootView style={{ flex: 1 }}>
-                   <Stack screenOptions={{ headerShown: false }}>
+                    <Stack
+                      screenOptions={{
+                        headerShown: false,
+                        contentStyle: { backgroundColor: '#ffffff' }
+                      }}
+                    >
+                      <Stack.Screen name="index" />
                       <Stack.Screen name="(bottomtab)" />
                     </Stack>
                     <Toast />

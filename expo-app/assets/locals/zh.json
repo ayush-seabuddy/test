@@ -855,5 +855,8 @@
     "confirmStatusChange": "您确定要将 {{name}} {{action}} 吗？",
     "confirmRemove": "您确定要将 {{name}} 从船舶移除吗？",
     "thisCrew": "此船员"
-  }
+  },
+  "Book_an_appointment": "预约",
+  "WellnessOfficerProfile":"健康官员简介",
+  "Book_Appointment":"预订预约"
 }

@@ -4,12 +4,16 @@ import { ChatRoom } from '../screens/chat/types/chatRoom'
 
 export interface CounterState {
   shipChatList: ChatRoom[],
-  fleetChatList: ChatRoom[]
+  fleetChatList: ChatRoom[],
+  unreadMessageCount: number,
+  unreadNotificationCount: number
 }
 
 const initialState: CounterState = {
   shipChatList: [],
-  fleetChatList: []
+  fleetChatList: [],
+  unreadMessageCount: 0,
+  unreadNotificationCount: 0
 }
 
 export const chatListSlice = createSlice({
@@ -25,7 +29,9 @@ export const chatListSlice = createSlice({
       );
       if (index !== -1) {
         state.shipChatList[index] = action.payload;
-      }
+      }else{
+        state.shipChatList.push(action.payload);
+      } 
     },
 
     updateFleetList: (state, action: PayloadAction<ChatRoom[]>) => {
@@ -38,12 +44,26 @@ export const chatListSlice = createSlice({
       );
       if (index !== -1) {
         state.fleetChatList[index] = action.payload;
+      }else{
+        state.fleetChatList.push(action.payload);
       }
+    },
+    updateUnreadMessageCount: (state, action: PayloadAction<number>) => {
+      state.unreadMessageCount = action.payload;
+    },
+    updateUnreadNotificationCount: (state, action: PayloadAction<number>) => {
+      state.unreadNotificationCount = action.payload;
+    },
+    clearAllChatLists: (state) => {
+      state.shipChatList = []
+      state.fleetChatList = []
+      state.unreadMessageCount = 0
+      state.unreadNotificationCount = 0
     },
   },
 })
 
 // Action creators are generated for each case reducer function
-export const { updateShipList, updateFleetList , updateOneShipChat , updateOneFleetChat } = chatListSlice.actions
+export const { updateShipList, updateFleetList , updateOneShipChat , updateOneFleetChat , clearAllChatLists , updateUnreadMessageCount , updateUnreadNotificationCount} = chatListSlice.actions
 
 export default chatListSlice.reducer

@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     padding: 12,
     // paddingTop: 65,
     flexGrow: 1,
-    flex: 1,
+    // flex: 1,
     // backgroundColor:"red"
   },
   row: {

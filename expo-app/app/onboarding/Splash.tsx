@@ -1,20 +1,20 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  View,
-  StyleSheet,
-  Image,
   Animated,
   Dimensions,
+  Image,
   StatusBar,
+  StyleSheet,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useTranslation } from 'react-i18next';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { viewUserTest } from '@/src/apis/apiService';
 import AppContainer from '@/src/components/AppContainer';
 import { showToast } from '@/src/components/GlobalToast';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
-import { viewUserTest } from '@/src/apis/apiService';
 
 const { height } = Dimensions.get('window');
 
@@ -139,7 +139,7 @@ const Splash: React.FC = () => {
           //     router.replace('/home');
           //   }
           // }, 3000);
-          router.push('/(bottomtab)/(community)/social')
+          router.push('/auth/Login'); 
         } else {
           showToast.error(t('oops'), response?.message);
           setTimeout(() => router.replace('/home'), 3000);

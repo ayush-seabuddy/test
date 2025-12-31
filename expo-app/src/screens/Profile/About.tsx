@@ -5,8 +5,7 @@ import { ImagesAssets } from '@/src/utils/ImageAssets';
 import { Image } from 'expo-image';
 import { t } from 'i18next';
 import {
-  ExternalLink,
-  Trophy
+  ExternalLink
 } from 'lucide-react-native';
 import React, { useCallback, useMemo } from 'react';
 import {
@@ -252,19 +251,23 @@ const About = () => {
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>{t('social_media')}</Text>
           <Divider style={{ marginVertical: 10 }} />
-          {userDetails.SocialMediaLinks.map((item: SocialLink) => (
-            <TouchableOpacity
+          {userDetails.SocialMediaLinks.map((item: SocialLink) => {
+            {console.log(item.platform,"item.platform")}
+           return    <TouchableOpacity
               key={item.platform}
               style={styles.socialMediaButton}
               onPress={() => handleSocialPress(item)}
             >
-              <Image source={{ uri: `https://cdn.simpleicons.org/${platformIconName(item.platform)}` }} style={styles.icon} />
+
+              {["linkedin","twitter"].includes(platformIconName(item.platform)) ? <Image source={platformIconName(item.platform) === "linkedin" ? ImagesAssets.linkedin : ImagesAssets.twitter} style={styles.icon} /> : (
+                <Image source={{ uri: `https://cdn.simpleicons.org/${platformIconName(item.platform)}` }} style={styles.icon} />
+              )}
               <Text style={styles.socialMediaText}>
                 {capitalize(item.platform)}
               </Text>
               <ExternalLink size={18} color="#B0DB02" />
             </TouchableOpacity>
-          ))}
+})}
         </View>
       )}
 

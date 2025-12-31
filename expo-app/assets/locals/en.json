@@ -856,5 +856,8 @@
     "confirmStatusChange": "Are you sure you want to {{action}} {{name}}?",
     "confirmRemove": "Are you sure you want to remove {{name}} from the ship?",
     "thisCrew": "this crew member"
-  }
+  },
+  "Book_an_appointment": "Book an appointment",
+  "WellnessOfficerProfile":"Wellness Officer Profile",
+  "Book_Appointment":"Book Appointment"
 }

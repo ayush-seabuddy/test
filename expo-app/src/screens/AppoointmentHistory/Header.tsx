@@ -3,7 +3,7 @@ import EmergencyModal from "@/src/components/Modals/EmergencySosModal";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { ArrowLeft } from "lucide-react-native";
+import { ChevronLeft } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   Platform,
@@ -27,7 +27,7 @@ const Header = ({  }) => {
           style={styles.headerButton}
         >
           <View style={styles.iconBackground}>
-            <ArrowLeft size={20} color="black" />
+            <ChevronLeft size={20} />
           </View>
         </TouchableOpacity>
 

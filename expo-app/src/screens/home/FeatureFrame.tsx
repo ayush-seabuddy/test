@@ -1,3 +1,7 @@
+import { getUnreadMessageCount } from "@/src/apis/apiService";
+import { updateUnreadMessageCount, updateUnreadNotificationCount } from "@/src/redux/chatListSlice";
+import { RootState } from "@/src/redux/store";
+import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
@@ -13,6 +17,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 
 const { height, width } = Dimensions.get("screen");
 const isProMax = height >= 926;
@@ -31,6 +36,9 @@ type Feature = {
 const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
     const { t } = useTranslation();
     const [name, setName] = useState<string>("");
+    const dispatch = useDispatch();
+    const { unreadMessageCount } = useSelector((state: RootState) => state.chatList);
+
 
     const pdfUrl =
         "https://seabuddy.s3.amazonaws.com/1752225459197_CrewAppGuide_SeaBuddy.pdf";
@@ -43,8 +51,17 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
         }
     };
 
+    const getUnReadCounts = async () => {
+        const response = await getUnreadMessageCount();
+        if (response.status === 200) {
+            dispatch(updateUnreadMessageCount(response.data.unReadCount));
+            dispatch(updateUnreadNotificationCount(response.data.unSeenCount));
+        }
+    }
+
     useEffect(() => {
         fetchUserDetails();
+        getUnReadCounts();
     }, []);
 
     const FeatureCard = ({ icon, title, description, onPress }: Feature) => (
@@ -68,19 +85,19 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
             icon: ImagesAssets.UsersLogo,
             title: t("ship_life"),
             description: t("ship_life_description"),
-            onPress: () => router.push("/(bottomtab)/health"),
+            onPress: () => router.push("/(bottomtab)/shiplife"),
         },
         {
             icon: ImagesAssets.ShipAnchorLogo,
             title: t("wellness_hub"),
             description: t("wellness_description"),
-            onPress: () => console.log("Wellness Hub Pressed"),
+            onPress: () => router.push("/(bottomtab)/health"),
         },
         {
             icon: ImagesAssets.MusicLogo,
             title: t("helplines"),
             description: t("helplines_description"),
-            onPress: () => console.log("Helplines Pressed"),
+            onPress: () => router.push("/(bottomtab)/helpline"),
         },
     ];
 
@@ -90,7 +107,7 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
                 <BlurView style={StyleSheet.absoluteFill} tint="regular" intensity={800} />
 
                 <View style={styles.greetingSection}>
-                    <TouchableOpacity style={styles.greetingCard}>
+                    <TouchableOpacity style={styles.greetingCard} onPress={() => { router.push("/(bottomtab)/(community)/chats") }}>
                         <View style={styles.greetingRow}>
                             <View style={styles.greetingTextWrapper}>
                                 <Text style={styles.greetingText}>
@@ -109,6 +126,14 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
                                 resizeMode="cover"
                                 source={ImagesAssets.ChatLogo}
                             />
+                            {unreadMessageCount > 0 && (
+                                <View style={styles.badge}>
+                                    <Text style={styles.badgeText}>
+                                      
+                                        {unreadMessageCount > 9 ? "9+" : unreadMessageCount}
+                                    </Text>
+                                </View>
+                            )}
                         </View>
                     </TouchableOpacity>
                 </View>
@@ -171,7 +196,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderColor: "rgba(255,255,255,0.6)",
         paddingVertical: 10,
-        marginTop:16,
+        marginTop: 16,
         alignItems: "center",
         width: "100%",
         marginBottom: isProMax ? -15 : -10,
@@ -188,6 +213,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         gap: 12,
         width: "92%",
+        position: "relative",
     },
     greetingTextWrapper: {
         flexDirection: "column",
@@ -216,7 +242,7 @@ const styles = StyleSheet.create({
     },
     featuresGrid: {
         flex: 1,
-        marginTop:20,
+        marginTop: 20,
         alignItems: "center",
         justifyContent: "center",
         gap: 8,
@@ -263,5 +289,22 @@ const styles = StyleSheet.create({
         height: 20,
         width: 20,
         marginBottom: 10,
+    },
+    badge: {
+        backgroundColor: Colors.lightGreen,
+        borderRadius: 50,
+        position: "absolute",
+        top: 8,
+        right: -18,
+        minWidth: 18,
+        height: 18,
+        justifyContent: "center",
+        alignItems: "center",
+        paddingHorizontal: 4,
+    },
+    badgeText: {
+        color: Colors.white,
+        fontSize: 10,
+        fontFamily: "Poppins-Regular",
     },
 });

@@ -1,16 +1,20 @@
 // components/Cards/CategorySection.tsx
+import { getallcontents } from "@/src/apis/apiService";
 import ShowContentCard from "@/src/components/ShowContentCard";
-import { RootState } from "@/src/redux/store";
+import { listAllCategory, setContentsLoading, updateContentList } from "@/src/redux/ContentSlice";
+import { AppDispatch, RootState } from "@/src/redux/store";
+import Colors from "@/src/utils/Colors";
 import { ChevronRight } from "lucide-react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import {
+  ActivityIndicator,
   Dimensions,
   StyleSheet,
   Text,
   TouchableOpacity,
   View
 } from "react-native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 const { height } = Dimensions.get("window");
 const isProMax = height >= 926;
@@ -32,10 +36,46 @@ interface CategorySectionProps {
 const CategorySection: React.FC<CategorySectionProps> = ({
   onCategoryPress,
 }) => {
-    const {contentList, categoryList} = useSelector((state: RootState) => state.content)
+  const { contentList, categoryList , loading: contentLoading  } = useSelector((state: RootState) => state.content)
+
+  const dispatch = useDispatch<AppDispatch>();
+    // Fetch all contents by category
+    useEffect(() => {
+      const loadCategoriesAndContents = async () => {
+        try {
+          dispatch(setContentsLoading(true));
+          const categoryList = await dispatch(listAllCategory()).unwrap();
+          if (categoryList.length === 0) {
+            dispatch(setContentsLoading(false));
+            return;
+          }
+          await Promise.all(
+            categoryList.map(async (item: { id: any }) => {
+              try {
+                const response = await getallcontents({ subCategory: item.id });
+                if (response?.data) {
+                  dispatch(updateContentList({ data: response.data, id: item.id }));
+                }
+              } catch (err) {
+                console.error(`Failed to load contents for category ${item.id}:`, err);
+              }
+            })
+          );
+          dispatch(setContentsLoading(false));
+        } catch (error) {
+          console.error('Failed to load categories:', error);
+        }
+      };
+      loadCategoriesAndContents();
+    }, [dispatch]);
   return (
     <>
-      {categoryList?.map((item) => {
+      {contentLoading ?
+      <View style={{marginVertical: 20}}>
+        <ActivityIndicator size="large" color={Colors.lightGreen} />
+      </View> 
+      :
+      categoryList?.map((item) => {
         const contents = contentList?.[item.id]?.allContents || contentList?.[item.id] || [];
         if (!contents.length) return null;
         const [mainTitle, subtitle] = item.Name.includes("(")
@@ -44,23 +84,23 @@ const CategorySection: React.FC<CategorySectionProps> = ({
 
         return (
           <View key={item.id} style={styles.sectionContainer}>
-          
+
             <View style={styles.header}>
               <View>
                 <Text style={styles.categoryTitle}>{mainTitle}</Text>
-                 {item.description && (
-            <Text style={styles.categorySub}>{item.description}</Text>
-          )}
+                {item.description && (
+                  <Text style={styles.categorySub}>{item.description}</Text>
+                )}
               </View>
               <TouchableOpacity onPress={() => onCategoryPress(item)}>
                 <ChevronRight size={20} color="#404040" />
               </TouchableOpacity>
             </View>
-              <ShowContentCard
-                keyId={item.id}
-                data={contentList[item.id] || {}}
-              />
-          
+            <ShowContentCard
+              keyId={item.id}
+              data={contentList[item.id] || {}}
+            />
+
           </View>
         );
       })}
@@ -71,7 +111,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
 const styles = StyleSheet.create({
   sectionContainer: {
     marginBottom: 20,
-     paddingHorizontal: 15,
+    paddingHorizontal: 15,
   },
   header: {
     flex: 1,
@@ -86,7 +126,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     fontFamily: "Poppins-SemiBold",
     color: "#404040",
-  
+
   },
   categorySub: {
     fontSize: isProMax ? 13 : 12,
@@ -94,7 +134,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     fontFamily: "Poppins-Regular",
     color: "#404040",
-      marginBottom: 10
+    marginBottom: 10
   },
   scrollView: {
     marginTop: 10,
