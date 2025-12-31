@@ -29,9 +29,6 @@ import { Content } from "./type";
 const { width, height } = Dimensions.get("window");
 
 export default function ArticleDetails({ data: fullDetails }: { data: Content }) {
-  console.log("fullDetails: ", fullDetails);
-
-
   const [notificationDetailModalVisible, setNotificationDetailModalVisible] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState<any>(null);
   const [RecommendedData, setRecommendedData] = useState<any[]>([]);
@@ -259,7 +256,7 @@ const styles = StyleSheet.create({
   },
   postedOn: { fontSize: 12, color: "#06361f" },
   relatedTitle: {
-    marginTop: 20,
+    marginVertical:10,
     fontSize: 18,
     fontWeight: "600",
   },

@@ -7,6 +7,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import PostScreen from '@/src/components/PostScreen';
 import { getallposts } from '@/src/apis/apiService';
 import { showToast } from '@/src/components/GlobalToast';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const SinglePostScreen = () => {
     const { t } = useTranslation();
@@ -81,12 +82,15 @@ const SinglePostScreen = () => {
                     <Text style={styles.loadingText}>{t('loading')}...</Text>
                 </View>
             ) : (
-                <PostScreen
-                    post={post}
-                    index={0}
-                    onPostDeleted={handlePostDeleted}
-                    onPostReported={handlePostReported}
-                />
+                <ScrollView style={styles.postView}>
+                    <PostScreen
+                        post={post}
+                        index={0}
+                        onPostDeleted={handlePostDeleted}
+                        onPostReported={handlePostReported}
+                    />
+                </ScrollView>
+
             )}
         </View>
     );
@@ -110,4 +114,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#6B7280',
     },
+    postView: {
+        marginBottom: 20,
+    }
 });

@@ -86,6 +86,7 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
             title: t("ship_life"),
             description: t("ship_life_description"),
             onPress: () => router.push("/(bottomtab)/shiplife"),
+            onPress: () => router.push("/(bottomtab)/shiplife"),
         },
         {
             icon: ImagesAssets.ShipAnchorLogo,

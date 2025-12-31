@@ -1,8 +1,10 @@
 // Context/NotificationContext.tsx
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState, useTransition } from "react";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import { Platform } from "react-native";
+import { showToast } from "@/src/components/GlobalToast";
+import { useTranslation } from "react-i18next";
 
 type NotificationContextType = {
   expoPushToken: string | null;
@@ -23,6 +25,8 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   const [notification, setNotification] =
     useState<Notifications.Notification | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
+  const toastShownRef = useRef(false);
 
   useEffect(() => {
     const registerForPushNotifications = async () => {
@@ -45,6 +49,15 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
         if (finalStatus !== "granted") {
           setError("Notification permission not granted");
+
+          if (!toastShownRef.current) {
+            toastShownRef.current = true;
+            showToast.error(
+              t("enable_notifications"),
+              t("enable_notifications_description")
+            );
+          }
+
           return;
         }
 

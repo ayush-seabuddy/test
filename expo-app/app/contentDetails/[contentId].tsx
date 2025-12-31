@@ -39,7 +39,6 @@ const ContentDetailsScreen = () => {
 
   const { contentId } = useLocalSearchParams();
   const [data, setData] = useState<Content | null>(null);
-  console.log("data: sdfsdlfsd", data);
   const [loading, setLoading] = useState<boolean>(true);
   const { t } = useTranslation();
   const getVideoDetail = async () => {

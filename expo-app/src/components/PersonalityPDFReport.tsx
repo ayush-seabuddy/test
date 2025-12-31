@@ -16,7 +16,7 @@ interface PersonalityInsight {
   big_five_type_full: string;
   famous_individuals: string[];
   description: string;
-  personality_traits: Record<string, string>[];
+  personality_traits: Record<string, string> | Record<string, string>[];
   career_path: Record<string, string>;
   red_flags: string[];
   corrective_actions: CorrectiveAction[];
@@ -27,21 +27,52 @@ interface GeneratePDFProps {
   userName: string;
   onPdfReady?: (uri: string) => void;
 }
+const normalizeObjectOrArray = (
+  input?: Record<string, string> | Record<string, string>[]
+): { title: string; value: string }[] => {
+  if (!input) return [];
+
+  // Case 1: Array of objects
+  if (Array.isArray(input)) {
+    return input.flatMap((obj) =>
+      Object.entries(obj).map(([title, value]) => ({
+        title,
+        value,
+      }))
+    );
+  }
+
+  // Case 2: Single object
+  if (typeof input === "object") {
+    return Object.entries(input).map(([title, value]) => ({
+      title,
+      value,
+    }));
+  }
+
+  return [];
+};
 
 export const generateAndSharePersonalityPDF = async ({
   data,
   userName,
   onPdfReady,
 }: GeneratePDFProps): Promise<string | null> => {
-  const traitsList = Array.isArray(data.personality_traits) ? data.personality_traits : [];
+  const normalizedTraits = normalizeObjectOrArray(data.personality_traits);
+
   const careerObj = typeof data.career_path === "object" && !Array.isArray(data.career_path) ? data.career_path : {};
 
-  const traitsHtml = traitsList
-    .map((trait) => {
-      const [title, value] = Object.entries(trait)[0] as [string, string];
-      return `<div class="trait"><span class="traitTitle">${title}</span><br>${value.replace(/\n/g, "<br>")}</div>`;
-    })
+  const traitsHtml = normalizedTraits
+    .map(
+      ({ title, value }) => `
+      <div class="trait">
+        <span class="traitTitle">${title}</span>
+        ${value.replace(/\n/g, "<br>")}
+      </div>
+    `
+    )
     .join("");
+
 
   const careerHtml = Object.entries(careerObj)
     .map(([title, value]) => `<div class="trait"><span class="traitTitle">${title}</span><br>${value.replace(/\n/g, "<br>")}</div>`)

@@ -25,10 +25,13 @@ const MonthlyWellbeingPulseResultScreen = () => {
 
     const monthRaw = parsedData?.month || '';
     const formattedMonth = monthRaw
-        ? new Date(monthRaw + '-01').toLocaleString('en-US', {
-            month: 'short',
-            year: 'numeric',
-        })
+        ? (() => {
+            const [month, year] = monthRaw.split('-');
+            return new Date(`${year}-${month}-01`).toLocaleString('en-US', {
+                month: 'short',
+                year: 'numeric',
+            });
+        })()
         : '';
 
     const totalQuestions = parsedData?.questionsAndAnswers?.length || 0;

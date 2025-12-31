@@ -20,7 +20,7 @@ const Terms = () => {
     };
 
     return (
-        <View>
+        <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
@@ -155,9 +155,10 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        paddingBottom:30,
     },
     header: {
-        paddingTop: Platform.OS === 'ios' ? 30 : 0,
+        paddingTop: Platform.OS === 'ios' ? 30 : 10,
         paddingHorizontal: 16,
         paddingBottom: 12,
         flexDirection: 'row',

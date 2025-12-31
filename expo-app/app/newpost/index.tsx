@@ -31,6 +31,7 @@ import { listallusersfortag } from '@/src/apis/apiService';
 import { getUserDetails } from '@/src/utils/helperFunctions';
 import { BASE_URL } from '@/src/apis/endpoints';
 import axios from 'axios';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 type AllUsers = {
   id: string;
@@ -402,7 +403,12 @@ const NewPostScreen = () => {
           </View>
         )}
 
-        <ScrollView showsVerticalScrollIndicator={false}>
+        <KeyboardAwareScrollView
+  showsVerticalScrollIndicator={false}
+  enableOnAndroid
+  keyboardShouldPersistTaps="handled"
+  extraScrollHeight={120}
+>
           <Text style={styles.headingText}>
             {t('keepitpositive')}{'\n'}
             {t('keepitpositive_description')}
@@ -526,7 +532,7 @@ const NewPostScreen = () => {
               {selectedMedia.length === 0 ? t('share') : t('preview')}
             </Text>
           </TouchableOpacity>
-        </ScrollView>
+        </KeyboardAwareScrollView>
 
         {/* Media Selection Bottom Sheet */}
         <BottomSheetModal

@@ -32,10 +32,8 @@ const PDFModal:React.FC<PDFModalProps> = ({
   title = "App Guide",
   
 }) => {
-  console.log("pdfUrl: ", pdfUrl);
   const navigation = useNavigation();
   const [useWebView, setUseWebView] = useState(false);
-
   const pdfModalStyle = {
     backgroundColor: "#fff",
     alignItems: "center",

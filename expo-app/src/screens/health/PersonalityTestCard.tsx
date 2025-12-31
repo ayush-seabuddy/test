@@ -1,4 +1,5 @@
 import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { router } from "expo-router";
 import { ArrowUpRight } from "lucide-react-native";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
@@ -12,14 +13,14 @@ const PersonalityTestCard = ({  data, ApiData , testArray }:{data: any; ApiData:
   return (
     <Pressable
       style={styles.frameParent}
-      // onPress={() => {
-      //   console.log(data);
-      //   {
-      //     testArray && testArray[2] && testArray[2].open
-      //       ?  navigation.navigate("Mbti_Test_2", { from: "HelthScreen" ,isRequired: testArray[2]?.isRequires })
-      //       : navigation.navigate("PersonaResult", { from: "HelthScreen" });
-      //   }
-      // }}
+      onPress={() => {
+        console.log(data);
+        {
+          testArray && testArray[2] && testArray[2].open
+            ?  router.push('/personalitymap/PersonalityMapTestScreen')
+            : router.push('/personalitymap/PersonalityMapResultScreen')
+        }
+      }}
     >
       <View style={[styles.frameGroup, styles.frameGroupFlexBox]}>
         <Image
@@ -34,7 +35,7 @@ const PersonalityTestCard = ({  data, ApiData , testArray }:{data: any; ApiData:
             {ApiData?.insights?.maritime_title &&
               <View style={[styles.frameView, styles.frameFlexBox]}>
                 <View style={[styles.musicWrapper, styles.frameGroupFlexBox]}>
-                  <Text style={styles.music}>{ApiData?.insights?.maritime_title || "Discover your working style and strengths at sea"}</Text>
+                  <Text style={styles.music}>{ApiData?.insights?.maritime_title}</Text>
                 </View>
 
               </View>
@@ -78,7 +79,6 @@ const styles = StyleSheet.create({
   },
   music: {
     fontSize: 10,
-    // lineHeight: 10,
     fontFamily: "Poppins-Regular",
     color: "#fff",
     textAlign: "left",

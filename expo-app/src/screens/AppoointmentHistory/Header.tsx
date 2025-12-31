@@ -1,5 +1,4 @@
-// CustomHeader.js
-import EmergencyModal from "@/src/components/Modals/EmergencySosModal";
+import EmergencyModal from "@/src/components/Modals/EmergencyModal";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -12,7 +11,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-// import EmergencyModal from "../../Modals/EmergencyModal";
 
 const Header = ({  }) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -56,7 +54,6 @@ const Header = ({  }) => {
 
 const styles = StyleSheet.create({
   container: {
-    // flex:1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",

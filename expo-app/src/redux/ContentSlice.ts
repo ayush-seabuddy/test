@@ -77,15 +77,15 @@ const initialState: ContentState = {
 };
 
 export const listAllCategory = createAsyncThunk(
-  'user/listAllCategory',
-  async (arg, { rejectWithValue }) => {
-    try {
-      const response = await getAllCategory();
-      return response.data;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data || 'Error fetching data');
+    'user/listAllCategory',
+    async (arg, { rejectWithValue }) => {
+        try {
+            const response = await getAllCategory();
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data || 'Error fetching data');
+        }
     }
-  }
 );
 
 

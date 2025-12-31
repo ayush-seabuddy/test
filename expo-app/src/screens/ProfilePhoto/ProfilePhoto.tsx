@@ -1,109 +1,12 @@
-
-// import { viewProfile } from '@/src/apis/apiService'
-// import GlobalHeader from '@/src/components/GlobalHeader'
-// import { RootState } from '@/src/redux/store'
-// import { updateUserField } from '@/src/redux/userDetailsSlice'
-// import { width } from '@/src/utils/helperFunctions'
-// import { Image } from 'expo-image'
-// import { router } from 'expo-router'
-// import { t } from 'i18next'
-// import { ChevronLeft } from 'lucide-react-native'
-// import React, { useEffect } from 'react'
-// import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-// import { useDispatch, useSelector } from 'react-redux'
-
-// const ProfilePhoto = () => {
-//   const userDetails = useSelector((state: RootState) => state.userDetails)
-//   const dispatch = useDispatch()
-
-//   useEffect(() => {
-//     const fetchProfileDetails = async () => {
-//       let result = await viewProfile();
-//       if (result?.data) {
-//         const object = result.data
-//         for (const property in object) {
-//           console.log(`${property}: ${object[property]}`);
-//           dispatch(updateUserField({ key: property, value: object[property] }))
-//         }
-
-//       }
-//     }
-//     fetchProfileDetails();
-//   }, []);
-//   return (
-//     <>
-//       <GlobalHeader title="Profile Photo"
-//         leftIcon={<ChevronLeft />}
-//         onLeftPress={() => router.back()}
-
-//       />
-//       <View style={styles.container}>
-//         <View style={styles.profilePhotoContainer}>
-//           <Image source={userDetails?.profileUrl} style={styles.profilePhoto} />
-//         </View>
-
-//         <TouchableOpacity
-//           style={styles.replaceButton}
-//         // onPress={() => refRBSheet.current.open()}
-//         >
-//           <Text style={styles.replaceButtonText}>
-//             {userDetails?.profilePhoto ? t('replace') : t('update')}
-//           </Text>
-//         </TouchableOpacity>
-
-//       </View>
-//     </>
-//   )
-// }
-
-// export default ProfilePhoto
-
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     alignItems: "center",
-//     justifyContent: "center",
-//   },
-//   profilePhotoContainer: {
-//     justifyContent: "center",
-//     marginBottom: 100,
-//     alignItems: "center",
-//   },
-//   profilePhoto: {
-//     borderRadius: 175,
-//     width: 350,
-//     height: 350,
-//     borderColor: "#ccc",
-//     borderWidth: 1,
-//   },
-//   replaceButton: {
-//     position: "absolute",
-//     bottom: 50,
-//     width: width * 0.9,
-//     backgroundColor: "#02130B",
-//     paddingVertical: 10,
-//     paddingHorizontal: 30,
-//     borderWidth: 1,
-//     borderColor: "#fff",
-//     borderRadius: 5,
-//     alignItems: "center",
-//   },
-//   replaceButtonText: {
-//     color: "#fff",
-//     fontSize: 16,
-//     fontWeight: "bold",
-//   },
-// })
-
-
 import { updateprofile, viewProfile } from '@/src/apis/apiService';
 import { BASE_URL } from '@/src/apis/endpoints';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import { RootState } from '@/src/redux/store';
 import { updateUserField } from '@/src/redux/userDetailsSlice';
+import Colors from '@/src/utils/Colors';
 import { getUserDetails, width } from '@/src/utils/helperFunctions';
+import { ImagesAssets } from '@/src/utils/ImageAssets';
 import {
   BottomSheetBackdrop,
   BottomSheetModal,
@@ -156,7 +59,7 @@ const ProfilePhoto = () => {
   const pickImage = async (source: 'camera' | 'library') => {
     const hasPermission = await requestPermissions();
     if (!hasPermission) {
-      Alert.alert('Permission denied', 'We need camera and gallery access to update your profile photo.');
+      showToast.error(t('permissiondenied'), t('camerapermission_description'));
       return;
     }
 
@@ -185,7 +88,7 @@ const ProfilePhoto = () => {
       }
     } catch (error) {
       console.error('Image Picker Error:', error);
-      showToast.error(t('error'), 'Failed to select photo');
+      showToast.error(t('error'), t('imagePickFailed'));
     } finally {
       setIsLoading(false);
     }
@@ -222,6 +125,7 @@ const ProfilePhoto = () => {
       );
       if (response.data?.responseCode === 200 && response.data.result) {
         console.log("response.data.result: ", response.data.result);
+        showToast.success(t('success'), t('profileupdatedsuccessfully'))
         const updateProfilePhoto = await updateprofile({
           profileUrl: response.data.result, userId: userDetails.id
         })
@@ -253,9 +157,8 @@ const ProfilePhoto = () => {
 
   return (
     <>
-      {/* ← Wrap the entire component here */}
       <GlobalHeader
-        title="Profile Photo"
+        title={t('profile_photo')}
         leftIcon={<ChevronLeft />}
         onLeftPress={() => router.back()}
       />
@@ -263,11 +166,13 @@ const ProfilePhoto = () => {
       <View style={styles.container}>
         <View style={styles.profilePhotoContainer}>
           {isLoading ? (
-            <ActivityIndicator size="large" color="#02130B" />
+            <ActivityIndicator size="large" color={Colors.lightGreen} />
           ) : (
             <Image
               source={{ uri: userDetails?.profileUrl || 'https://via.placeholder.com/350' }}
               style={styles.profilePhoto}
+              placeholder={ImagesAssets.userIcon}
+              placeholderContentFit='cover'
               contentFit="cover"
             />
           )}
@@ -355,26 +260,23 @@ const styles = StyleSheet.create({
   },
   replaceButtonText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontFamily: 'Poppins-SemiBold',
   },
-  // Bottom Sheet Styles
   sheetContent: {
-    padding: 24,
     paddingBottom: 40,
   },
   modalTitle: {
-    fontSize: 18,
+    fontSize: 16,
+    fontFamily: 'Poppins-SemiBold',
     fontWeight: '600',
     textAlign: 'center',
-    marginBottom: 24,
-    color: '#333',
   },
   modalButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
+    padding: 16,
+    borderBottomWidth: 0.5,
     borderBottomColor: '#f0f0f0',
     gap: 12,
   },

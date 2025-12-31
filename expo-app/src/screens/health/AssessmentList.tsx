@@ -24,7 +24,7 @@ type TestItem = {
   testName: string;
 };
 
-const AssessmentList = ({isProfileScreen = false}: {isProfileScreen?: boolean}) => {
+const AssessmentList = ({ isProfileScreen = false }: { isProfileScreen?: boolean }) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const [listOpen, setListOpen] = useState(true);
@@ -107,11 +107,24 @@ const AssessmentList = ({isProfileScreen = false}: {isProfileScreen?: boolean}) 
     const path = profileDetails?.isHappinessIndex
       ? '/monthlyhappinessindex'
       : '/monthlyhappinessindex/AllAssessmentResultListing';
-    router.push(path);
+    router.push({
+      pathname: path,
+      params: {
+        assessmentType: "HAPPINESS"
+      }
+    });
   };
 
   const handlePOMSPress = () => {
-    router.push('/monthlywellbeingpulse');
+    const path = profileDetails?.isPOMSAssessment
+      ? '/monthlywellbeingpulse'
+      : '/monthlyhappinessindex/AllAssessmentResultListing';
+    router.push({
+      pathname: path,
+      params: {
+        assessmentType: "POMS"
+      }
+    });
   };
 
   const hasPendingAssessment = profileDetails?.isPOMSAssessment || profileDetails?.isHappinessIndex;
@@ -119,28 +132,28 @@ const AssessmentList = ({isProfileScreen = false}: {isProfileScreen?: boolean}) 
   return (
     <View>
       {!isProfileScreen &&
-      <View style={styles.headerContainer}>
-        <View style={styles.headerRow}>
-          <View style={styles.titleRow}>
-            <Text style={styles.sectionTitle}>{t('myassessments')}</Text>
-            {hasPendingAssessment && <TriangleAlert size={18} color="red" />}
+        <View style={styles.headerContainer}>
+          <View style={styles.headerRow}>
+            <View style={styles.titleRow}>
+              <Text style={styles.sectionTitle}>{t('myassessments')}</Text>
+              {hasPendingAssessment && <TriangleAlert size={18} color="red" />}
+            </View>
+            <TouchableOpacity onPress={() => setListOpen(!listOpen)}>
+              {listOpen ? <ChevronUp size={20} color="black" /> : <ChevronDown size={20} color="black" />}
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity onPress={() => setListOpen(!listOpen)}>
-            {listOpen ? <ChevronUp size={20} color="black" /> : <ChevronDown size={20} color="black" />}
-          </TouchableOpacity>
-        </View>
 
-        <Text style={styles.subText}>{t('myassessments_description')}</Text>
+          <Text style={styles.subText}>{t('myassessments_description')}</Text>
 
-        <View style={styles.tagContainer}>
-          <View style={styles.tag}>
-            <Text style={[styles.tagText, testArray[0]?.open && styles.opentesttagText]}>{t('monthlyhappinessindex')}</Text>
-          </View>
-          <View style={styles.tag}>
-            <Text style={[styles.tagText, testArray[1]?.open && styles.opentesttagText]}>{t('monthlywellbeingpulse')}</Text>
+          <View style={styles.tagContainer}>
+            <View style={styles.tag}>
+              <Text style={[styles.tagText, testArray[0]?.open && styles.opentesttagText]}>{t('monthlyhappinessindex')}</Text>
+            </View>
+            <View style={styles.tag}>
+              <Text style={[styles.tagText, testArray[1]?.open && styles.opentesttagText]}>{t('monthlywellbeingpulse')}</Text>
+            </View>
           </View>
         </View>
-      </View>
       }
 
       {(listOpen || isProfileScreen) && (
@@ -271,7 +284,7 @@ const styles = StyleSheet.create({
   },
   cardMargin: {
     marginBottom: 10,
-    minHeight:100
+    minHeight: 100
   },
   assessmentCard: {
     backgroundColor: 'rgba(180, 180, 180, 0.4)',

@@ -126,7 +126,6 @@ const HelplineAndAICards = () => {
         };
     }, []);
 
-    /** API load */
     const getHelplines = async () => {
         try {
             setLoading(true);

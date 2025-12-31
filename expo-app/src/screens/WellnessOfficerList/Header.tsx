@@ -1,5 +1,5 @@
 // CustomHeader.js
-import EmergencyModal from "@/src/components/Modals/EmergencySosModal";
+import EmergencyModal from "@/src/components/Modals/EmergencyModal";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import { Image } from "expo-image";
 import { router } from "expo-router";

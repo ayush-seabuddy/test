@@ -1,4 +1,3 @@
-// components/ProfileTabs.tsx
 import Colors from '@/src/utils/Colors';
 import { t } from 'i18next';
 import React from 'react';
@@ -12,35 +11,40 @@ import {
 
 const { width } = Dimensions.get('window');
 
-// List of tab keys (must match your i18n keys)
 const tabs = ['about', 'posts', 'buddyuponprofile', 'assessments'] as const;
-
-// Type for the tab keys
 type TabKey = (typeof tabs)[number];
 
 interface ProfileTabsProps {
-  activeTab: string;
-  setActiveTab: (tab: 'about' | 'posts' | 'buddyuponprofile' | 'assessments') => void;
+  activeTab: TabKey;
+  setActiveTab: (tab: TabKey) => void;
 }
 
-const ProfileTabs: React.FC<ProfileTabsProps> = ({ activeTab, setActiveTab }) => {
+const ProfileTabs: React.FC<ProfileTabsProps> = ({
+  activeTab,
+  setActiveTab,
+}) => {
   return (
     <View style={styles.container}>
       <View style={styles.tabsWrapper}>
-        {tabs.map((tabKey: TabKey) => {
-          const translatedTab = tabKey;
-          const isActive = activeTab === translatedTab;
+        {tabs.map((tabKey) => {
+          const isActive = activeTab === tabKey;
 
           return (
             <TouchableOpacity
               key={tabKey}
-              style={[styles.tab, isActive && styles.activeTab]}
-              onPress={() => setActiveTab(translatedTab)}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.tabText, isActive && styles.activeTabText]}>
-                {t(translatedTab) }
+              activeOpacity={0.8}
+              onPress={() => setActiveTab(tabKey)}
+              style={styles.tab}>
+              <Text
+                style={[
+                  styles.tabText,
+                  isActive && styles.activeTabText,
+                ]}
+                numberOfLines={1}
+              >
+                {t(tabKey)}
               </Text>
+
               {isActive && <View style={styles.activeIndicator} />}
             </TouchableOpacity>
           );
@@ -50,41 +54,40 @@ const ProfileTabs: React.FC<ProfileTabsProps> = ({ activeTab, setActiveTab }) =>
   );
 };
 
+export default ProfileTabs;
+
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 10,
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
+
   tabsWrapper: {
     flexDirection: 'row',
-    width: width,
-    justifyContent: 'space-around',
+    padding: 10,
   },
+
   tab: {
-    alignItems: 'center',
     flex: 1,
-  },
-  activeTab: {
-    // You can add a subtle background here if desired
-    // backgroundColor: '#f5f5f5',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   tabText: {
     fontSize: 12,
-    color: '#666',
-    fontWeight: '500',
+    fontFamily: 'Poppins-SemiBold',
+    color: '#8a8a8a',
   },
+
   activeTabText: {
     color: '#000',
-    fontWeight: '700',
+    fontFamily: 'Poppins-SemiBold',
   },
+
   activeIndicator: {
-    marginTop: 8,
-    height: 3,
-    width: '60%',
-    backgroundColor: Colors.lightGreen || '#000', // fallback to black if Colors.secondary is undefined
+    height: 2,
+    width: '80%',
     borderRadius: 2,
+    backgroundColor: Colors.lightGreen || '#000',
   },
 });
-
-export default ProfileTabs;

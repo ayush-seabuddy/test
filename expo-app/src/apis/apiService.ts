@@ -63,6 +63,9 @@ export interface LikePostRequest {
 
 export interface ViewProfileParams {
   userId?: string;
+  version?: string;
+  os?: string;
+  packageName?: string
 }
 
 export interface SaveAssessmentRequest {
@@ -897,3 +900,9 @@ export const getDataUsage = async (params?: GetDataUsageParams): Promise<ApiResp
   });
 }
 
+export const getapplastversion = async (): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETAPPLASTVERSION,
+  });
+}

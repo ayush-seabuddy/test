@@ -54,7 +54,7 @@ const UserProfile = () => {
     return (
         <View style={{ flex: 1, backgroundColor: Colors.white }}>
             <TouchableOpacity style={styles.settingButtonStyle} onPress={() => router.push("/settings")}>
-                <Settings size={30} />
+                <Settings size={24} />
             </TouchableOpacity>
             <View style={{ display: "flex", justifyContent: "center", alignItems: "center", height: height * .35 }}>
                 <View style={{ position: "relative" }}>
@@ -66,8 +66,12 @@ const UserProfile = () => {
                         backgroundColor: 'white',
                         padding: 7,
                         borderRadius: 50
-                    }}>
-                        <SquarePen size={20} />
+                    }}
+                        onPress={() => {
+                            router.push('/profilePhoto')
+                        }}
+                    >
+                        <SquarePen size={16} />
                     </TouchableOpacity>
                 </View>
                 <Text style={styles.fullName}>
@@ -80,9 +84,9 @@ const UserProfile = () => {
                 <TouchableOpacity
                     activeOpacity={0.8}
                     style={styles.editProfileBtn}
-                  onPress={() =>
-                    router.push('/editProfile')
-                  }
+                    onPress={() =>
+                        router.push('/editProfile')
+                    }
                 >
                     <Text style={styles.editProfileBtnText}>{t('editprofile')}</Text>
                 </TouchableOpacity>

@@ -19,6 +19,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import PersonalityMapResultModal from '@/src/components/PersonalityMapResultModal';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { BackHandler } from 'react-native';
+import moment from 'moment-timezone';
 
 type AnswerOption = { option: string; score: number };
 type Question = {
@@ -36,7 +37,7 @@ const PersonalityMapTestScreen = () => {
   const router = useRouter();
   const params = useLocalSearchParams<{ testData?: string }>();
   const flatListRef = useRef<FlatList>(null);
-
+  const previousMonth = moment().subtract(1, 'month');
   const [allQuestions, setAllQuestions] = useState<Question[]>([]);
   const [displayedQuestions, setDisplayedQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -135,7 +136,7 @@ const PersonalityMapTestScreen = () => {
     try {
       const payload = {
         questionType: 'PERSONALITY',
-        month: new Date().toISOString().slice(0, 7),
+        month: previousMonth.format('MM-YYYY'),
         answers: Object.entries(answers).map(([questionId, answer]) => ({
           questionId,
           answer,
@@ -155,7 +156,7 @@ const PersonalityMapTestScreen = () => {
             user.isPersonalityTestCompleted = true;
             await AsyncStorage.setItem('userDetails', JSON.stringify(user));
           }
-        } catch (_) {}
+        } catch (_) { }
 
         setShowResultPopup(true);
       } else {

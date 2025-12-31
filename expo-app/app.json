@@ -15,9 +15,8 @@
     "android": {
       "package": "co.seabuddy.platform",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#E6F4FE",
         "monochromeImage": "./assets/images/adaptive-icon.png"
       },
       "edgeToEdgeEnabled": true,
@@ -43,7 +42,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/splash-icon.png",
+          "icon": "./assets/images/icon.png",
           "defaultChannel": "default",
           "enableBackgroundRemoteNotifications": false
         }
@@ -61,7 +60,7 @@
         "expo-build-properties",
         {
           "android": {
-            "extraMavenRepos": [],
+            "minSdkVersion": 26,
             "compileSdkVersion": 35,
             "targetSdkVersion": 35
           }
@@ -95,9 +94,9 @@
       "env": "local",
       "router": {},
       "eas": {
-        "projectId": "33075db5-0613-49bf-9175-a35ef2e794f7"
+        "projectId": "130f7684-8e60-49eb-8e4c-746ee8b1ff0b"
       }
     },
-    "owner": "prince26lmp"
+    "owner": "seabuddyco1"
   }
 }

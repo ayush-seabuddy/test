@@ -67,6 +67,7 @@ export const ENDPOINTS = {
   ADDUPDATESHIPSTATUS:`${BASE_URL}/company/addUpdateShip`,
   GLOBAL_SEARCH: `${BASE_URL}/user/globalSearch`,
   GET_UNREAD_NOTIFICATION_COUNT: `${BASE_URL}/user/getUnreadNotificationCount`,
+  GETAPPLASTVERSION:`${BASE_URL}/user/getLastVersion`,
 
   GET_UNREAD_MESSAGE_COUNT: `${BASE_URL}/user/getUnreadMessageCount`,
   BOOK_APPOINTMENT_WITH_DOCTOR: `${BASE_URL}/helpline/bookAppointmentWithDoctor`,

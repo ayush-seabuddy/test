@@ -23,12 +23,20 @@ const MonthlyHappinessIndexResultScreen = () => {
     }
   }, [assessmentData]);
 
-  const monthFormatted = parsedData?.month
-    ? new Date(parsedData.month + '-01').toLocaleDateString('en-US', {
-      month: 'short',
-      year: 'numeric',
-    })
-    : 'Unknown';
+const monthFormatted = useMemo(() => {
+  if (!parsedData?.month) return 'Unknown';
+
+  const [month, year] = parsedData.month.split('-');
+
+  if (!month || !year) return 'Unknown';
+
+  const date = new Date(Number(year), Number(month) - 1);
+
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    year: 'numeric',
+  });
+}, [parsedData]);
 
   const happinessScore = useMemo(() => {
     if (!parsedData?.questionsAndAnswers) return 'N/A';
@@ -37,11 +45,11 @@ const MonthlyHappinessIndexResultScreen = () => {
   }, [parsedData]);
 
   const getMeaning = (score: number) => {
-    if (score >= 80) return 'Very Happy — Life feels good, strong well-being.';
-    if (score >= 60) return 'Happy — Generally satisfied, things are going well.';
-    if (score >= 40) return 'Moderate — Average satisfaction, some challenges exist.';
-    if (score >= 20) return 'Low — People face difficulties, well-being is below average.';
-    return 'Very Low — Major challenges, low satisfaction.';
+    if (score >= 80) return t('monthlyhappinessindex_resultdescription.veryhappy');
+    if (score >= 60) return t('monthlyhappinessindex_resultdescription.happy');
+    if (score >= 40) return t('monthlyhappinessindex_resultdescription.moderate');
+    if (score >= 20) return t('monthlyhappinessindex_resultdescription.low');
+    return t('monthlyhappinessindex_resultdescription.verylow');
   };
 
   const scoreNumber = parseFloat(happinessScore);
@@ -59,8 +67,8 @@ const MonthlyHappinessIndexResultScreen = () => {
           <Text style={styles.briefdescription}>{t('survey.intro')}{'\n'}</Text>
           <Text style={styles.briefdescription}>{t('survey.anonymous')}{'\n'}</Text>
           <Text style={styles.briefdescription}>{t('survey.impactful')}{'\n'}</Text>
-          <Text style={styles.monthlabel}>Month : {monthFormatted}</Text>
-          <Text style={styles.monthlabel}>Result : {happinessScore}</Text>
+          <Text style={styles.monthlabel}>{t('month')} {monthFormatted}</Text>
+          <Text style={styles.monthlabel}>{t('result')} {happinessScore}</Text>
           <Text style={styles.meaning}>({getMeaning(scoreNumber)})</Text>
         </View>
 
@@ -122,9 +130,9 @@ const MonthlyHappinessIndexResultScreen = () => {
                   thumbTintColor="#fff"
                 />
                 <View style={styles.sliderLabels}>
-                  <Text style={styles.sliderText}>Very Unhappy</Text>
+                  <Text style={styles.sliderText}>{t('veryhappy')}</Text>
                   <Text style={styles.sliderText}>{q.answer || 5}</Text>
-                  <Text style={styles.sliderText}>Very Happy</Text>
+                  <Text style={styles.sliderText}>{t('happy')}</Text>
                 </View>
               </View>
             )}

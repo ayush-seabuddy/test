@@ -60,7 +60,11 @@ const MonthlyHappinessIndexTestScreen = () => {
 
   const isRequiredTest = parsedTestData?.isRequires === true;
   const shouldShowPopup = params.showPopup === 'true';
-
+  const formatMonthMMYYYY = (date: Date) => {
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${month}-${year}`;
+  };
   const [showPopup, setShowPopup] = useState(shouldShowPopup);
 
   const previousMonth = new Date();
@@ -143,7 +147,7 @@ const MonthlyHappinessIndexTestScreen = () => {
     try {
       const payload = {
         questionType: 'HAPPINESS',
-        month: previousMonth.toISOString().slice(0, 7),
+        month: formatMonthMMYYYY(previousMonth),
         answers: Object.entries(answers).map(([questionId, answer]) => ({
           questionId,
           answer: Array.isArray(answer)
@@ -154,6 +158,7 @@ const MonthlyHappinessIndexTestScreen = () => {
           createdAt: new Date().toISOString(),
         })),
       };
+
 
       const res = await saveassessmentresponse(payload as any);
 

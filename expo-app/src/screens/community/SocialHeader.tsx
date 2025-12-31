@@ -20,27 +20,27 @@ const SocialHeader = () => {
   const [unreadNotification, setUnreadNotification] = useState(0)
 
 
-//   const GetAllNotification = async () => {
-//     const dbResult = await AsyncStorage.getItem("userDetails");
-//     const userDetails = JSON.parse(dbResult);
-//     try {
-//       const queryParams = new URLSearchParams({
-//         page: 1,
-//         limit: 100,
-//       }).toString();
-//       var response = await apiCallWithToken(
-//         apiServerUrl + "/user/getAllNotifications?" + queryParams,
-//         "GET",
-//         null,
-//         userDetails.authToken
-//       );
+  //   const GetAllNotification = async () => {
+  //     const dbResult = await AsyncStorage.getItem("userDetails");
+  //     const userDetails = JSON.parse(dbResult);
+  //     try {
+  //       const queryParams = new URLSearchParams({
+  //         page: 1,
+  //         limit: 100,
+  //       }).toString();
+  //       var response = await apiCallWithToken(
+  //         apiServerUrl + "/user/getAllNotifications?" + queryParams,
+  //         "GET",
+  //         null,
+  //         userDetails.authToken
+  //       );
 
 
-//       setNotification(response.result.notificationsList);
-//     } catch (error) {
-//       console.log(error);
-//     }
-//   };
+  //       setNotification(response.result.notificationsList);
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   };
 
   const unReadNotification = async () => {
     try {
@@ -60,13 +60,13 @@ const SocialHeader = () => {
     }, [])
   );
 
-return (
+  return (
     <View style={styles.container}>
       <Image source={ImagesAssets.appTitleLogo} style={styles.titleLogo} />
 
       <View style={styles.iconGroup}>
         {/* Notification Button */}
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => { router.push('/notification') }}>
           <View style={styles.iconWrapper}>
             <Image source={ImagesAssets.notificationBell} style={styles.iconImage} />
             {unreadNotification > 0 && <View style={styles.badgeWrapper}>
@@ -83,14 +83,14 @@ return (
         </TouchableOpacity>
 
         {/* Search */}
-        <TouchableOpacity style={styles.iconButton} onPress={()=> router.push("/globalSearch")}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => router.push("/globalSearch")}>
           <View style={styles.iconWrapper}>
             <Image source={ImagesAssets.searchLogo} style={styles.iconImage} />
           </View>
         </TouchableOpacity>
 
         {/* Home */}
-        <TouchableOpacity style={styles.homeButton} onPress={() => router.push("/home")}>
+        <TouchableOpacity style={styles.homeButton} onPress={() => router.replace("/home")}>
           <House size={22} color="#000" />
         </TouchableOpacity>
       </View>

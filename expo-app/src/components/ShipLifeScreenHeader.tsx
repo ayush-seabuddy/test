@@ -74,7 +74,7 @@ const ShipLifeScreenHeader = () => {
         {/* Crew Listing / Search */}
         <TouchableOpacity
           style={styles.iconButton}
-          onPress={() => router.push("/crewlisting")}
+          onPress={() => isCaptain ? router.push("/crewlisting") : null}
         >
           <View style={styles.iconWrapper}>
             <Image
@@ -91,7 +91,7 @@ const ShipLifeScreenHeader = () => {
         {/* Home */}
         <TouchableOpacity
           style={styles.homeButton}
-          onPress={() => router.push("/home")}
+          onPress={() => router.replace("/home")}
         >
           <House size={22} color="#000" />
         </TouchableOpacity>
