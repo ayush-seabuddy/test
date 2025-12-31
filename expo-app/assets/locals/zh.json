@@ -844,7 +844,7 @@
   "selectdepartment": "选择部门",
   "offboardCrew": "船员下船",
   "onboardCrew": "船员登船",
-"crew": {
+  "crew": {
     "onboardCrew": "上船",
     "offboardCrew": "下船",
     "onboard": "上船",
@@ -855,5 +855,16 @@
     "confirmStatusChange": "您确定要将 {{name}} {{action}} 吗？",
     "confirmRemove": "您确定要将 {{name}} 从船舶移除吗？",
     "thisCrew": "此船员"
+  },
+  "month": "月份：",
+  "result": "结果：",
+  "veryunhappy": "非常不开心",
+  "happy": "快乐",
+  "monthlyhappinessindex_resultdescription": {
+    "veryhappy": "非常快乐 — 生活感觉良好，幸福感很强。",
+    "happy": "快乐 — 总体满意，生活进展顺利。",
+    "moderate": "一般 — 满意度中等，存在一些挑战。",
+    "low": "较低 — 面临一定困难，幸福感低于平均水平。",
+    "verylow": "非常低 — 面临重大挑战，幸福感较低。"
   }
 }

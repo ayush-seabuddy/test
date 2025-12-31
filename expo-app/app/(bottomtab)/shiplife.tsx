@@ -10,7 +10,7 @@ import Colors from '@/src/utils/Colors'
 import { getUserDetails } from '@/src/utils/helperFunctions'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useNavigation } from '@react-navigation/native'
-import { router } from 'expo-router'
+import { router, useFocusEffect } from 'expo-router'
 import { InfoIcon } from 'lucide-react-native'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -130,6 +130,45 @@ const ShipLifeScreen = () => {
     };
     loadUser();
   }, []);
+
+
+  const fetchEventsOnFocus = async () => {
+    try {
+      const [ongoingRes, pastRes] = await Promise.all([
+        GETALLBUDDYUPEVENTS({ page: 1, limit: 10, eventType: 'ON_GOING' }),
+        GETALLBUDDYUPEVENTS({ page: 1, limit: 10, eventType: 'PAST' }),
+      ]);
+
+      if (ongoingRes.success && ongoingRes.status === 200) {
+        setOngoingEvents(ongoingRes.data.groupActivityList ?? []);
+      }
+
+      if (pastRes.success && pastRes.status === 200) {
+        setPastEvents(pastRes.data.groupActivityList ?? []);
+      }
+      if (designation === 'Captain') {
+        const requestedRes = await GETALLBUDDYUPEVENTS({
+          page: 1,
+          limit: 10,
+          filter: 'REQUESTED',
+        });
+
+        if (requestedRes.success && requestedRes.status == 200) {
+          setRequestedEvents(requestedRes.data.groupActivityList ?? []);
+        }
+      }
+    } catch (err) {
+      showToast.error(t('oops'), t('somethingwentwrong'));
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (loggeduserData?.id) {
+        fetchEventsOnFocus();
+      }
+    }, [loggeduserData?.id])
+  );
 
   // Load all initial data when user is available
   useEffect(() => {

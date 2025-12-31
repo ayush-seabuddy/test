@@ -157,7 +157,7 @@ const PreviewPostScreen: React.FC = () => {
 
             if (apiResponse.success && apiResponse.status === 200) {
                 showToast.success(t('success'), t('postcreatedsuccessfully'));
-                router.push('/(bottomtab)/community/social');
+                router.push('/(bottomtab)/(community)/social');
             } else {
                 showToast.error(t('oops'), apiResponse.message);
             }
@@ -188,7 +188,7 @@ const PreviewPostScreen: React.FC = () => {
 
             if (apiResponse.success && apiResponse.status === 200) {
                 showToast.success(t('success'), t('postupdatedsuccessfully'));
-                router.push('/(bottomtab)/community/social');
+                router.push('/(bottomtab)/(community)/social');
             } else {
                 showToast.error(t('oops'), apiResponse.message);
             }

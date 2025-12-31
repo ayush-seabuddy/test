@@ -356,12 +356,13 @@ const ReportModal = ({ visible, onClose, onSubmit, loading }) => {
   );
 };
 
-const PostScreen = ({ post, index, onPostDeleted , onPostReported }) => {
+const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
   const { t } = useTranslation();
   const router = useRouter();
 
   const navigateToProfile = useCallback((userId) => {
     if (!userId) return;
+    setCommentSheetVisible(false);
     router.push({ pathname: '/crewProfile', params: { crewId: userId } });
   }, [router]);
 
@@ -721,7 +722,7 @@ const styles = StyleSheet.create({
   avatarRow: { flexDirection: 'row', alignItems: 'center' },
   avatar1: { width: 30, height: 30, borderRadius: 15, borderWidth: 1, borderColor: '#E5E7EB' },
   additionalUsers: { width: 30, height: 30, borderRadius: 15, backgroundColor: '#D1D5DB', justifyContent: 'center', alignItems: 'center', marginLeft: -15 },
-  additionalUsersText: { fontSize: 12, color: '#374151', fontWeight: '600' , fontFamily:'Poppins-SemiBold' },
+  additionalUsersText: { fontSize: 12, color: '#374151', fontWeight: '600', fontFamily: 'Poppins-SemiBold' },
   pagination: { flexDirection: 'row', justifyContent: 'center', marginTop: 10 },
   menuRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 20 },
   menuText: { marginLeft: 10, fontSize: 12, fontFamily: 'Poppins-SemiBold', color: '#1F2937' },

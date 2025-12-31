@@ -20,31 +20,6 @@ import moment from 'moment';
 
 const { width, height } = Dimensions.get('window');
 
-const getScoreMeaning = (score: number) => {
-    if (score >= 80) return 'Very Happy — Life feels good, strong well-being.';
-    if (score >= 60) return 'Happy — Generally satisfied, things are going well.';
-    if (score >= 40) return 'Moderate — Average satisfaction, some challenges exist.';
-    if (score >= 20) return 'Low — People face difficulties, well-being is below average.';
-    return 'Very Low — Major challenges, low satisfaction.';
-};
-
-const classifyTMD = (tmd: number) => {
-    if (!tmd || isNaN(tmd)) {
-        return { mood: 'No Data', message: 'No mood data available.' };
-    }
-
-    tmd = Math.round(tmd);
-    if (tmd < 6) {
-        return { mood: 'Stable Mood', message: 'Great job! Your mood is stable, keep up the positive vibes!' };
-    } else if (tmd < 21) {
-        return { mood: 'Mild Mood Disturbance', message: "You're doing well, but there's room to boost your mood even further." };
-    } else if (tmd <= 35) {
-        return { mood: 'Moderate Mood Disturbance', message: 'Your mood is showing some disturbance. Try stress-relief techniques.' };
-    } else {
-        return { mood: 'High Mood Disturbance', message: 'It looks like you’re experiencing high stress. Consider support.' };
-    }
-};
-
 const getScoreStyle = (score: number, assessmentType: 'HAPPINESS' | 'POMS') => {
     if (assessmentType === 'HAPPINESS') {
         if (score >= 75) return { bg: '#A9DFBF', text: '#145A32' };
@@ -64,6 +39,31 @@ const AllAssessmentResultListing = () => {
     const [assessmentData, setAssessmentData] = useState<any[]>([]);
     const router = useRouter();
     const { t } = useTranslation();
+
+    const getScoreMeaning = (score: number) => {
+        if (score >= 80) return t('monthlyhappinessindex_resultdescription.veryhappy');
+        if (score >= 60) return t('monthlyhappinessindex_resultdescription.happy');
+        if (score >= 40) return t('monthlyhappinessindex_resultdescription.moderate');
+        if (score >= 20) return t('monthlyhappinessindex_resultdescription.low');
+        return t('monthlyhappinessindex_resultdescription.verylow');
+    };
+
+    const classifyTMD = (tmd: number) => {
+        if (!tmd || isNaN(tmd)) {
+            return { mood: 'No Data', message: 'No mood data available.' };
+        }
+
+        tmd = Math.round(tmd);
+        if (tmd < 6) {
+            return { mood: t('mood_stable'), message: t('mood_stable_message') };
+        } else if (tmd < 21) {
+            return { mood: t('mood_mild'), message: t('mood_mild_message') };
+        } else if (tmd <= 35) {
+            return { mood: t('mood_moderate'), message: t('mood_moderate_message') };
+        } else {
+            return { mood: t('mood_high'), message: t('mood_high_message') };
+        }
+    };
 
     const fetchAssessments = useCallback(async () => {
         setLoading(true);
@@ -140,7 +140,7 @@ const AllAssessmentResultListing = () => {
 
                         <View style={[styles.scoreBadge, { backgroundColor: bg }]}>
                             <Text style={[styles.scoreText, { color: text }]}>
-                                Score: {score}
+                                {t('score')}: {score}
                             </Text>
                         </View>
 
@@ -184,10 +184,6 @@ const AllAssessmentResultListing = () => {
                     <Text style={styles.emptyText}>{noDataMessage}</Text>
                 </View>
             )}
-
-            <View style={styles.lottieBackground}>
-                <CustomLottie isBlurView={false} />
-            </View>
         </View>
     );
 };
@@ -207,8 +203,7 @@ const styles = StyleSheet.create({
     },
     listContent: {
         paddingHorizontal: 16,
-        paddingTop: 12,
-        paddingBottom: height * 0.5,
+        paddingVertical: 10,
     },
     card: {
         backgroundColor: 'rgba(180, 180, 180, 0.4)',
@@ -282,16 +277,5 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontFamily: 'Poppins-Regular',
         lineHeight: 22,
-    },
-    lottieBackground: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: '50%',
-        borderTopLeftRadius: 30,
-        borderTopRightRadius: 30,
-        overflow: 'hidden',
-        backgroundColor: 'rgba(193, 193, 193, 0.9)',
-    },
+    }
 });

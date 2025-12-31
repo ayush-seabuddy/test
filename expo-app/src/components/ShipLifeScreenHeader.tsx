@@ -91,7 +91,7 @@ const ShipLifeScreenHeader = () => {
         {/* Home */}
         <TouchableOpacity
           style={styles.homeButton}
-          onPress={() => router.push("/home")}
+          onPress={() => router.replace("/home")}
         >
           <House size={22} color="#000" />
         </TouchableOpacity>

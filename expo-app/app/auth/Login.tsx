@@ -87,7 +87,7 @@ const LoginScreen = () => {
         apiResponse?.data.employerId && await AsyncStorage.setItem("employerId", apiResponse?.data.employerId);
         const storedData = await AsyncStorage.getItem('userDetails');
 
-        if (apiResponse?.data.employerId) return router.push('/home');
+        if (apiResponse?.data.employerId) return router.replace('/home');
 
         // const storedData = await AsyncStorage.getItem('userDetails');
         const user = JSON.parse(storedData ?? "");
@@ -95,16 +95,16 @@ const LoginScreen = () => {
         console.log("Stored user data:", storedData);
 
         if (user.isProfileCompleted === true && user?.department === "Shore_Staff") {
-          router.push('/home');
+          router.replace('/home');
         } else if (
           user.isPersonalityTestCompleted === true &&
           user.isProfileCompleted === true
         ) {
-          router.push('/home');
+          router.replace('/home');
         } else if (user.isProfileCompleted === true) {
-          router.push('/personalitymap')
+          router.replace('/personalitymap')
         } else {
-          router.push("/onboarding");
+          router.replace("/onboarding");
         }
       }
 

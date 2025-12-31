@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
     },
     featuresGrid: {
         flex: 1,
-        marginTop:20,
+        marginTop:14,
         alignItems: "center",
         justifyContent: "center",
         gap: 8,

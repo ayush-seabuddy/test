@@ -856,5 +856,16 @@
     "confirmStatusChange": "Are you sure you want to {{action}} {{name}}?",
     "confirmRemove": "Are you sure you want to remove {{name}} from the ship?",
     "thisCrew": "this crew member"
+  },
+  "month": "Month :",
+  "result": "Result :",
+  "veryunhappy": "Very Unhappy",
+  "happy": "Happy",
+  "monthlyhappinessindex_resultdescription": {
+    "veryhappy": "Very Happy — Life feels good, strong well-being.",
+    "happy": "Happy — Generally satisfied, things are going well.",
+    "moderate": "Moderate — Average satisfaction, some challenges exist.",
+    "low": "Low — People face difficulties, well-being is below average.",
+    "verylow": "Very Low — Major challenges, low satisfaction."
   }
 }

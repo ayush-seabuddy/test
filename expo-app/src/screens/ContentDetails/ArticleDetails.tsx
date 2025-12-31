@@ -29,9 +29,6 @@ import { Content } from "./type";
 const { width, height } = Dimensions.get("window");
 
 export default function ArticleDetails({ data: fullDetails }: { data: Content }) {
-  console.log("fullDetails: ", fullDetails);
-
-
   const [notificationDetailModalVisible, setNotificationDetailModalVisible] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState<any>(null);
   const [RecommendedData, setRecommendedData] = useState<any[]>([]);

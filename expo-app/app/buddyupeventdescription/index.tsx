@@ -255,7 +255,12 @@ const BuddyUpEventDescription = () => {
                     leftIcon={<ChevronLeft />}
                     onLeftPress={() => router.back()}
                 />
-                <Text style={styles.notFoundText}>{t('eventNotFound')}</Text>
+                <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: '60%' }}>
+                    <Image source={ImagesAssets.nodatafound} style={{ height: 120, width: 120 }} />
+                    <Text style={styles.notFoundText}>{t('nodataavailable')}</Text>
+
+                </View>
+
             </View>
         );
     }
@@ -278,6 +283,7 @@ const BuddyUpEventDescription = () => {
                         source={buddyUpDetails.imageUrls?.[0] || ImagesAssets.SeabuddyPlaceholder}
                         style={styles.buddyupImage}
                         placeholder={ImagesAssets.SeabuddyPlaceholder}
+                        placeholderContentFit='cover'
                         contentFit="cover"
                         transition={300}
                     />
@@ -435,7 +441,7 @@ const styles = StyleSheet.create({
     },
     notFoundText: {
         textAlign: 'center',
-        marginTop: 50,
+        marginTop: 20,
         fontSize: 16,
         fontFamily: 'Poppins-Regular',
         color: '#666',

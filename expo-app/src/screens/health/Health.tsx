@@ -1,10 +1,8 @@
-// CustomHeader.js
-import React, { useState } from "react";
+import React from "react";
 import {
   StyleSheet,
   View
 } from "react-native";
-// import EmergencyModal from "../Modals/EmergencyModal";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native-gesture-handler";
@@ -14,8 +12,6 @@ import HealthHeader from "./HealthHeader";
 import WellnessCard from "./WellnessCard";
 
 const Health = ({ }) => {
-  const { t } = useTranslation();
-  const [modalVisible, setModalVisible] = useState(false);
   return (
     <View style={styles.container}>
       <HealthHeader />

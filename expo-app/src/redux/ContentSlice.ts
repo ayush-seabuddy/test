@@ -81,7 +81,6 @@ export const listAllCategory = createAsyncThunk(
     async (arg, { rejectWithValue }) => {
         try {
             const response = await getAllCategory();
-            console.log("response: sdflksdklfdslkf", response);
             return response.data;
         } catch (error: any) {
             return rejectWithValue(error.response?.data || 'Error fetching data');
