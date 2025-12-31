@@ -74,7 +74,7 @@ const Analytics = () => {
       ...(typeof activity === 'object' && activity !== null ? activity : {}),
       color: colors[index] || '#000',
     }));
-    setData(updatedActivities);
+    // setData(updatedActivities);
   }, [groupActivities]);
   
 
