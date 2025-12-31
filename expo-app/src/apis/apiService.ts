@@ -5,7 +5,7 @@ import { ENDPOINTS } from "./endpoints";
 export interface LoginRequest {
   email: string;
   password: string;
-  deviceToken?:string;
+  deviceToken?: string;
 }
 
 export interface RegisterRequest {
@@ -63,6 +63,9 @@ export interface LikePostRequest {
 
 export interface ViewProfileParams {
   userId?: string;
+  version?: string;
+  os?: string;
+  packageName?: string
 }
 
 export interface SaveAssessmentRequest {
@@ -223,10 +226,10 @@ export interface GetAllContentsParams {
   page?: number,
   limit?: number,
   onlyAnnouncement?: boolean,
-  contentCategory?:  string,
-  contentType?:  string,
-  department?:  string,
-  subCategory?:  string
+  contentCategory?: string,
+  contentType?: string,
+  department?: string,
+  subCategory?: string
 }
 
 export interface GetAllHelplinesParams {
@@ -863,3 +866,9 @@ export const getUnreadNotificationCount = async (): Promise<ApiResponse> => {
   });
 }
 
+export const getapplastversion = async (): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.GETAPPLASTVERSION,
+  });
+}

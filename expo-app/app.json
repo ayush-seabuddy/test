@@ -4,18 +4,14 @@
     "slug": "SeaBuddy",
     "version": "1.0.0",
     "orientation": "portrait",
-
     "icon": "./assets/images/icon.png",
-
     "scheme": "seabuddy",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "co.seabuddy.platform"
     },
-
     "android": {
       "package": "co.seabuddy.platform",
       "adaptiveIcon": {
@@ -28,12 +24,10 @@
       "softwareKeyboardLayoutMode": "resize",
       "googleServicesFile": "./google-services.json"
     },
-
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-
     "plugins": [
       "expo-router",
       "expo-localization",
@@ -56,14 +50,16 @@
       [
         "expo-screen-orientation",
         {
-          "supportedOrientations": ["portrait", "landscape"]
+          "supportedOrientations": [
+            "portrait",
+            "landscape"
+          ]
         }
       ],
       [
         "expo-build-properties",
         {
           "android": {
-            "extraMavenRepos": [],
             "compileSdkVersion": 35,
             "targetSdkVersion": 35
           }
@@ -89,20 +85,17 @@
         }
       ]
     ],
-
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
-
     "extra": {
       "env": "local",
       "router": {},
       "eas": {
-        "projectId": "33075db5-0613-49bf-9175-a35ef2e794f7"
+        "projectId": "130f7684-8e60-49eb-8e4c-746ee8b1ff0b"
       }
     },
-
-    "owner": "prince26lmp"
+    "owner": "seabuddyco1"
   }
 }

@@ -6,15 +6,17 @@ import {
   Animated,
   Dimensions,
   StatusBar,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Application from 'expo-application';
 
 import AppContainer from '@/src/components/AppContainer';
 import { showToast } from '@/src/components/GlobalToast';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
-import { viewUserTest } from '@/src/apis/apiService';
+import { viewProfile, viewUserTest } from '@/src/apis/apiService';
 
 const { height } = Dimensions.get('window');
 
@@ -25,18 +27,46 @@ interface TestItem {
   open: boolean;
 }
 
+type AppRoute =
+  | '/auth/Login'
+  | '/onboarding'
+  | '/home'
+  | '/monthlyhappinessindex'
+  | '/monthlywellbeingpulse'
+  | '/personalitymap';
+
 const Splash: React.FC = () => {
   const { t } = useTranslation();
   const router = useRouter();
 
-  // Animation refs
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const translateAnim = useRef(new Animated.Value(-height)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
   const headingSlideAnim = useRef(new Animated.Value(0)).current;
 
+  const viewUserProfile = async (userId: string) => {
+    try {
+      const packageName = Application.applicationId || 'co.seabuddy.platform';
+      const version = Application.nativeApplicationVersion || '1.0.0';
+      const os = Platform.OS === 'ios' ? 'ios' : 'android';
+
+      const apiResponse = await viewProfile({
+        userId,
+        os,
+        packageName,
+        version,
+      });
+
+      if (apiResponse.success && apiResponse.status == 200) {
+      } else {
+        showToast.error(t('oops'), apiResponse.message);
+      }
+    } catch {
+      showToast.error(t('oops'), t('somethingwentwrong'));
+    }
+  };
+
   useEffect(() => {
-    // Logo fade-in + slide down
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -50,7 +80,6 @@ const Splash: React.FC = () => {
       }),
     ]).start();
 
-    // Captain slide-in → Heading slide-out
     Animated.sequence([
       Animated.timing(slideAnim, {
         toValue: 1,
@@ -74,22 +103,27 @@ const Splash: React.FC = () => {
         const userDetailsStr = await AsyncStorage.getItem('userDetails');
         if (!userDetailsStr) {
           // No user → Go to login
-          setTimeout(() => router.replace('/auth/Login'), 3000);
+          setTimeout(() => router.replace('/auth/Login' as any), 3000);
           return;
         }
 
         const userDetails = JSON.parse(userDetailsStr);
-        const { isProfileCompleted } = userDetails;
+        const { isProfileCompleted, id: userId } = userDetails;
 
-        // 2. If profile not completed → Force onboarding
+        // 2. Call viewUserProfile API with all required parameters
+        if (userId) {
+          await viewUserProfile(userId);
+        }
+
+        // 3. If profile not completed → Force onboarding
         if (isProfileCompleted !== true) {
           setTimeout(() => {
-            router.replace('/onboarding'); 
+            router.replace('/onboarding' as any);
           }, 3000);
           return;
         }
 
-        // 3. Fetch test status from API
+        // 4. Fetch test status from API
         const response = await viewUserTest();
 
         if (response?.status === 200 && Array.isArray(response?.data)) {
@@ -98,17 +132,16 @@ const Splash: React.FC = () => {
           // Find test in priority order: Happiness → POMS → Personality
           let targetTest: TestItem | undefined;
 
-          // Order matters: check index 0, then 1, then 2 (same as old code)
-          if (tests[0]?.open && tests[0]?.isSplash) {
-            targetTest = tests[0];
-          } else if (tests[1]?.open && tests[1]?.isSplash) {
-            targetTest = tests[1];
-          } else if (tests[2]?.open && tests[2]?.isSplash) {
-            targetTest = tests[2];
+          // Check tests in priority order
+          for (let i = 0; i < Math.min(tests.length, 3); i++) {
+            if (tests[i]?.open && tests[i]?.isSplash) {
+              targetTest = tests[i];
+              break;
+            }
           }
 
-          // Map testName to route
-          const getRoute = (testName: string) => {
+          // Map testName to route with proper typing
+          const getRoute = (testName: string): AppRoute => {
             switch (testName) {
               case 'Happiness':
                 return '/monthlyhappinessindex';
@@ -126,8 +159,9 @@ const Splash: React.FC = () => {
             if (targetTest) {
               const route = getRoute(targetTest.testName);
 
+              // Type assertion to fix TypeScript error
               router.replace({
-                pathname: route,
+                pathname: route as any,
                 params: {
                   showPopup: targetTest.isRequires.toString(),
                   testName: targetTest.testName,
@@ -136,17 +170,17 @@ const Splash: React.FC = () => {
               });
             } else {
               // No test to show → Go to main dashboard
-              router.replace('/home');
+              router.replace('/home' as any);
             }
           }, 3000);
         } else {
           showToast.error(t('oops'), response?.message);
-          setTimeout(() => router.replace('/home'), 3000);
+          setTimeout(() => router.replace('/home' as any), 3000);
         }
       } catch (error) {
         console.error('Splash Initialization Error:', error);
         showToast.error(t('oops'), t('somethingwentwrong'));
-        setTimeout(() => router.replace('/auth/Login'), 3000);
+        setTimeout(() => router.replace('/auth/Login' as any), 3000);
       }
     };
 

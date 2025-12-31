@@ -139,7 +139,10 @@ const BuddyUpEventCard = ({
                                 })
                             }}
                         >
-                            <Image source={item.imageUrls[0] || ImagesAssets.SeabuddyPlaceholder} style={styles.imageStyle} contentFit="cover" />
+                            <Image source={item.imageUrls[0] || ImagesAssets.SeabuddyPlaceholder}
+                                placeholder={ImagesAssets.PlaceholderImage}
+                                placeholderContentFit='cover'
+                                style={styles.imageStyle} contentFit="cover" />
 
                             {couldEditDelete && (
                                 <View style={styles.menuWrapper}>

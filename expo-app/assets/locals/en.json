@@ -36,7 +36,7 @@
   "seabuddy": "SeaBuddy",
   "inpartnershipwith": "In partnership with",
   "enable_notifications": "Enable Notifications",
-  "enable_notifications_description": "Please enable notifications to receive important updates and alerts.",
+  "enable_notifications_description": "Please enable notifications to receive important updates.",
   "skip": "Skip",
   "gotosettings": "Go to settings",
   "exitApp": "Exit App",
@@ -867,5 +867,9 @@
     "moderate": "Moderate — Average satisfaction, some challenges exist.",
     "low": "Low — People face difficulties, well-being is below average.",
     "verylow": "Very Low — Major challenges, low satisfaction."
-  }
+  },
+  "updaterequired":"Update Required",
+  "updateavailable":"Update Available",
+  "later":"Later",
+  "cannotOpenUrl":"Unable to open url"
 }
