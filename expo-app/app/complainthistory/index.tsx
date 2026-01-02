@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         backgroundColor: '#ededed'
     },
-    helplineName: { fontSize: 15, fontFamily: 'WhyteInktrap-Bold' },
+    helplineName: { fontSize: 15, fontFamily: 'WhyteInktrap-Bold', lineHeight: 20 },
     rowView: {
         marginTop: 10,
         flexDirection: 'row',

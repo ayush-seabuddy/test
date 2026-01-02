@@ -58,6 +58,10 @@ const Posts: React.FC = () => {
     setPosts(prev => prev.filter(p => p.id !== deletedId));
   }, []);
 
+  const handlePostReported = useCallback((deletedId: string | number) => {
+    setPosts(prev => prev.filter(p => p.id !== deletedId));
+  }, []);
+
   const fetchPosts = useCallback(async (pageNum = 1, isRefresh = false) => {
     if (isFetchingMore.current && !isRefresh) return;
     if (!hasMore && !isRefresh) return;
@@ -122,7 +126,7 @@ const Posts: React.FC = () => {
         ...item,
         imageUrls: item.imageUrls || item.images || [],
       };
-      return <PostScreen post={normalizedPost} index={index} onPostDeleted={handlePostDeleted} />;
+      return <PostScreen post={normalizedPost} index={index} onPostDeleted={handlePostDeleted} onPostReported={handlePostReported} />;
     },
     [handlePostDeleted]
   );
@@ -187,7 +191,7 @@ const Posts: React.FC = () => {
 const styles = StyleSheet.create({
   centerLoader: {
     flex: 1,
-    marginTop:200,
+    marginTop: 200,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',

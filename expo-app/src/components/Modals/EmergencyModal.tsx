@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
 
     helloText: { fontSize: 16, fontFamily: "Poppins-SemiBold", color: '#333' },
     name: { color: "#D32F2F", fontFamily: "WhyteInktrap-Bold" },
-    heading: { fontSize: 18, marginBottom: 10, fontFamily: "WhyteInktrap-Bold" },
+    heading: { fontSize: 18, marginVertical: 5, fontFamily: "WhyteInktrap-Bold", lineHeight: 30 },
     noData: { textAlign: 'center', color: '#666', marginTop: 20 },
 
     row: {

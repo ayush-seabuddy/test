@@ -116,6 +116,7 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 16,
+        lineHeight: 30,
         textAlign: "center",
         color: "#262626",
         fontWeight: "500",
@@ -142,6 +143,7 @@ const styles = StyleSheet.create({
     },
     label: {
         fontSize: 14,
+        lineHeight: 20,
         color: "#262626",
         fontFamily: "WhyteInktrap-Medium",
     },

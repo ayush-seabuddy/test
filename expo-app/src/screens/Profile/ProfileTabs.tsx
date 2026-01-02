@@ -59,8 +59,6 @@ export default ProfileTabs;
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
   },
 
   tabsWrapper: {
@@ -88,6 +86,7 @@ const styles = StyleSheet.create({
     height: 2,
     width: '80%',
     borderRadius: 2,
+    marginTop: 5,
     backgroundColor: Colors.lightGreen || '#000',
   },
 });

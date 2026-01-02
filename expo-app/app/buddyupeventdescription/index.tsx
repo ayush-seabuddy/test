@@ -501,6 +501,7 @@ const styles = StyleSheet.create({
 
     heading: {
         fontSize: 16,
+        lineHeight: 20,
         fontFamily: 'WhyteInktrap-Bold',
         color: '#000',
         marginBottom: 8,
@@ -508,6 +509,8 @@ const styles = StyleSheet.create({
 
     label: {
         fontSize: 13,
+        lineHeight: 20,
+        marginBottom: 10,
         fontFamily: 'Poppins-Regular',
         color: '#666',
     },

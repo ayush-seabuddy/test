@@ -639,6 +639,7 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 46,
     maxHeight: 114,
+    paddingTop: Platform.OS === 'ios' ? 13 : 0,
     paddingHorizontal: 16,
     borderRadius: 10,
     marginRight: 10,

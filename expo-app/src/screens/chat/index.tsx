@@ -243,7 +243,8 @@ const styles = StyleSheet.create({
   sectionIcon: { width: 50, height: 50 },
   headerText: { flex: 1 },
   sectionTitle: {
-    fontSize: 21,
+    fontSize: 20,
+    lineHeight: 25,
     fontFamily: 'WhyteInktrap-Bold',
     color: 'black',
   },
@@ -269,6 +270,7 @@ const styles = StyleSheet.create({
   chatMiddle: { flex: 1, },
   groupName: {
     fontSize: 16,
+    lineHeight: 20,
     fontFamily: 'WhyteInktrap-Bold',
     color: '#052B19',
     marginBottom: 4,
@@ -279,6 +281,7 @@ const styles = StyleSheet.create({
   },
   lastMessage: {
     fontSize: 13,
+    lineHeight: 20,
     fontFamily: 'Poppins-Regular',
     color: '#555',
   },
