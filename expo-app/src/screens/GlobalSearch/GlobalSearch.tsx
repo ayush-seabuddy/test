@@ -74,10 +74,10 @@ const GlobalSearch = () => {
     }
   }
 
-     const handlePostReported = useCallback(() => {
-          showToast.success(t('success'), t('reportsubmitted'));
-          router.back();
-      }, [t]);
+  const handlePostReported = useCallback(() => {
+    showToast.success(t('success'), t('reportsubmitted'));
+    router.back();
+  }, [t]);
   useEffect(() => {
     if (debounceTimeout.current) {
       clearTimeout(debounceTimeout.current);
@@ -108,7 +108,7 @@ const GlobalSearch = () => {
           }}
           i18nIsDynamicList={false}
           onPostReported={handlePostReported}
-          
+
         />
       )}
       keyExtractor={(item) => item.id.toString()}
@@ -156,33 +156,56 @@ const GlobalSearch = () => {
     </TouchableOpacity>
   );
 
-
   const renderSection = () => {
-    const postData = visibleSections.find(section => section.section.id === 'posts')?.data || [];
     if (activeSection === 'posts') {
+      const postData =
+        visibleSections.find(s => s.section.id === 'posts')?.data || [];
       return renderPosts(postData);
-    } else if (activeSection === 'users') {
-      const userData = visibleSections.find(section => section.section.id === 'users')?.data || [];
+    }
+
+    if (activeSection === 'users') {
+      const userData =
+        visibleSections.find(s => s.section.id === 'users')?.data || [];
       return renderUsers(userData);
     }
-    else if (activeSection === 'bulletin') {
-      const bulletinData = visibleSections.find(section => section.section.id === 'bulletin')?.data || [];
-      return <ContentListing data={bulletinData} />
-    } else if (activeSection === 'read') {
-      const readData = visibleSections.find(section => section.section.id === 'read')?.data || [];
-      return <ContentListing data={readData} />
-    } else if (activeSection === 'listen') {
-      const listenData = visibleSections.find(section => section.section.id === 'listen')?.data || [];
-      return <View style={styles.sectionContainer}><MusicCard data={listenData} /></View>
-    } else if (activeSection === 'watch') {
-      const watchData = visibleSections.find(section => section.section.id === 'watch')?.data || [];
-      return <ContentListing data={watchData} />
-    } else if (activeSection === 'buddyup') {
-      const buddyupData = visibleSections.find(section => section.section.id === 'buddyup')?.data || [];
-      return <BuddyUpEventList ActivitiesData={buddyupData} />
+
+    if (activeSection === 'bulletin') {
+      const data =
+        visibleSections.find(s => s.section.id === 'bulletin')?.data || [];
+      return <ContentListing data={data} />;
     }
-    return <><Text>{activeSection}</Text></>
-  }
+
+    if (activeSection === 'read') {
+      const data =
+        visibleSections.find(s => s.section.id === 'read')?.data || [];
+      return <ContentListing data={data} />;
+    }
+
+    if (activeSection === 'listen') {
+      const data =
+        visibleSections.find(s => s.section.id === 'listen')?.data || [];
+      return (
+        <View style={styles.sectionContainer}>
+          <MusicCard data={data} />
+        </View>
+      );
+    }
+
+    if (activeSection === 'watch') {
+      const data =
+        visibleSections.find(s => s.section.id === 'watch')?.data || [];
+      return <ContentListing data={data} />;
+    }
+
+    if (activeSection === 'buddyup') {
+      const data =
+        visibleSections.find(s => s.section.id === 'buddyup')?.data || [];
+      return <BuddyUpEventList ActivitiesData={data} />;
+    }
+
+    return null; // ✅ IMPORTANT
+  };
+
 
   return (
     <View style={styles.container}>
@@ -328,7 +351,7 @@ const styles = StyleSheet.create({
   contentContainer: { paddingHorizontal: 16, paddingTop: 8 },
   contentContainerNoPadding: { paddingHorizontal: 0 },
   tabsContainer: { marginVertical: 10 },
-  tabsContentContainer: { flexDirection: "row" , marginHorizontal: 20 , paddingRight:20 },
+  tabsContentContainer: { flexDirection: "row", marginHorizontal: 20, paddingRight: 20 },
   tab: {
     paddingHorizontal: 16,
     paddingVertical: 8,

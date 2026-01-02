@@ -1,4 +1,3 @@
-// screens/ChangeLanguageScreen.tsx
 import CustomLottie from '@/src/components/CustomLottie';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -27,20 +26,22 @@ const ChangeLanguageScreen = () => {
   const { t, i18n } = useTranslation();
   const [selectedLanguage, setSelectedLanguage] = useState<string>(i18n.language);
 
-  // Load saved language on mount
   useEffect(() => {
     const loadSaved = async () => {
       try {
         const saved = await AsyncStorage.getItem('userLanguage');
         if (saved && (saved === 'en' || saved === 'zh')) {
           setSelectedLanguage(saved);
+          if (i18n.language !== saved) {
+            await i18n.changeLanguage(saved);
+          }
         }
       } catch (e) {
         console.warn('Error loading saved language:', e);
       }
     };
     loadSaved();
-  }, []);
+  }, [i18n]);
 
   const handleSelectLanguage = (code: string) => {
     setSelectedLanguage(code);
@@ -49,8 +50,6 @@ const ChangeLanguageScreen = () => {
   const handleSave = async () => {
     try {
       await AsyncStorage.setItem('userLanguage', selectedLanguage);
-
-      // Change language in i18next
       await i18n.changeLanguage(selectedLanguage);
 
       Toast.show({
@@ -123,7 +122,6 @@ const ChangeLanguageScreen = () => {
 
       <Toast />
 
-      {/* Background Lottie */}
       <View style={styles.backgroundLottie}>
         <CustomLottie isBlurView={false} />
       </View>

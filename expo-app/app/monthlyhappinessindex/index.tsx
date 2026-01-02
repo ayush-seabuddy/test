@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   Text,
   StyleSheet,
-  SectionList,
   TouchableOpacity,
   TextInput,
   BackHandler,
+  Platform,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { ArrowLeft, Check, TriangleAlert } from 'lucide-react-native';
@@ -18,6 +18,7 @@ import GlobalPopup from '@/src/components/Modals/GlobalPopup';
 import { getallassessments, saveassessmentresponse } from '@/src/apis/apiService';
 import { showToast } from '@/src/components/GlobalToast';
 import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 type AnswerType = 'Textfield' | 'Radio' | 'Checkbox' | 'Linear Scale' | 'Textarea';
 
@@ -48,6 +49,7 @@ const MonthlyHappinessIndexTestScreen = () => {
   const [sections, setSections] = useState<SectionData[]>([]);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
+  const scrollRef = useRef<any>(null);
 
   const parsedTestData = useMemo<TestData | null>(() => {
     if (!params.testData) return null;
@@ -159,11 +161,10 @@ const MonthlyHappinessIndexTestScreen = () => {
         })),
       };
 
-
       const res = await saveassessmentresponse(payload as any);
 
       if (res.success) {
-        showToast.success(t('success'), res.message || t('assessment_submitted'));
+        showToast.success(t('success'), res.message);
         router.replace('/home');
       } else {
         showToast.error(t('oops'), res.message || t('somethingwentwrong'));
@@ -175,12 +176,12 @@ const MonthlyHappinessIndexTestScreen = () => {
     }
   };
 
-  const renderQuestion = ({ item }: { item: Question }) => {
+  const renderQuestion = (item: Question) => {
     const { id, question, answerType, answerOptions, required } = item;
     const value = answers[id];
 
     return (
-      <View style={styles.questionBlock}>
+      <View key={id} style={styles.questionBlock}>
         <Text style={styles.questionText}>
           {question}
           {required && <Text style={{ color: '#ff6b6b' }}>*</Text>}
@@ -246,16 +247,16 @@ const MonthlyHappinessIndexTestScreen = () => {
               minimumValue={1}
               maximumValue={10}
               step={1}
-              value={value ?? 5}
+              value={value ?? 0}  // Changed from 5 to 0
               onValueChange={val => updateAnswer(id, val)}
               minimumTrackTintColor="#B0DB02"
               maximumTrackTintColor="#555"
               thumbTintColor="#fff"
             />
             <View style={styles.sliderLabels}>
-              <Text style={styles.sliderText}>Very Unhappy</Text>
-              <Text style={styles.sliderText}>{value ?? 5}</Text>
-              <Text style={styles.sliderText}>Very Happy</Text>
+              <Text style={styles.sliderText}>{t('veryunhappy')}</Text>
+              <Text style={styles.sliderText}>{value ?? 0}</Text>
+              <Text style={styles.sliderText}>{t('veryhappy')}</Text>
             </View>
           </View>
         )}
@@ -263,9 +264,12 @@ const MonthlyHappinessIndexTestScreen = () => {
     );
   };
 
-  const renderSectionHeader = ({ section }: { section: SectionData }) => (
-    <View style={styles.sectionHeader}>
-      <Text style={styles.sectionTitle}>{section.title}</Text>
+  const renderSection = (section: SectionData) => (
+    <View key={section.title}>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>{section.title}</Text>
+      </View>
+      {section.data.map(renderQuestion)}
     </View>
   );
 
@@ -274,7 +278,11 @@ const MonthlyHappinessIndexTestScreen = () => {
       <View style={styles.HeaderView}>
         <View style={styles.titleView}>
           {!isRequiredTest && (
-            <TouchableOpacity onPress={() => router.back()}>
+            <TouchableOpacity
+              onPress={() =>
+                router.canGoBack?.() ? router.back() : router.replace('/home')
+              }
+            >
               <ArrowLeft size={20} color={Colors.primary} />
             </TouchableOpacity>
           )}
@@ -285,51 +293,52 @@ const MonthlyHappinessIndexTestScreen = () => {
         <Text style={styles.description}>{t('happinessindexdescription')}</Text>
       </View>
 
-      <SectionList
-        sections={sections}
-        keyExtractor={item => item.id}
-        renderItem={renderQuestion}
-        renderSectionHeader={renderSectionHeader}
-        stickySectionHeadersEnabled
+      <KeyboardAwareScrollView
+        ref={scrollRef}
+        enableOnAndroid={true}
+        extraHeight={120}
+        extraScrollHeight={120}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={
-          <View style={styles.briefdescriptionView}>
-            <Text style={styles.briefdescription}>{t('survey.intro')}{'\n'}</Text>
-            <Text style={styles.briefdescription}>{t('survey.anonymous')}{'\n'}</Text>
-            <Text style={styles.briefdescription}>{t('survey.impactful')}</Text>
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
+        <View style={styles.briefdescriptionView}>
+          <Text style={styles.briefdescription}>{t('survey.intro')}{'\n'}</Text>
+          <Text style={styles.briefdescription}>{t('survey.anonymous')}{'\n'}</Text>
+          <Text style={styles.briefdescription}>{t('survey.impactful')}</Text>
 
-            <Text style={styles.undertenminute}>{t('undertenminutes')}</Text>
-            <Progress.Bar
-              progress={calculateProgress}
-              color="#84A402"
-              height={7}
-              unfilledColor="#E0E0E0"
-              borderWidth={0}
-              width={null}
-              style={styles.progressbar}
-            />
-            <Text style={styles.progresspercentage}>
-              {Math.round(calculateProgress * 100)}%
-            </Text>
-          </View>
-        }
-        ListFooterComponent={
-          <View style={styles.footer}>
-            <Text style={styles.disclaimerText}>{t('happinessindexdisclaimer')}</Text>
-            <GlobalButton
-              title={loading ? t('pleasewait') : t('submit')}
-              loading={loading}
-              disabled={calculateProgress < 1 || loading}
-              onPress={handleSubmit}
-              buttonStyle={[
-                styles.submitButton,
-                (calculateProgress < 1 || loading) && styles.disabledButton,
-              ]}
-              textStyle={styles.submitText}
-            />
-          </View>
-        }
-      />
+          <Text style={styles.undertenminute}>{t('undertenminutes')}</Text>
+          <Progress.Bar
+            progress={calculateProgress}
+            color="#84A402"
+            height={7}
+            unfilledColor="#E0E0E0"
+            borderWidth={0}
+            width={null}
+            style={styles.progressbar}
+          />
+          <Text style={styles.progresspercentage}>
+            {Math.round(calculateProgress * 100)}%
+          </Text>
+        </View>
+
+        {sections.map(renderSection)}
+
+        <View style={styles.footer}>
+          <Text style={styles.disclaimerText}>{t('happinessindexdisclaimer')}</Text>
+          <GlobalButton
+            title={loading ? t('pleasewait') : t('submit')}
+            loading={loading}
+            disabled={calculateProgress < 1 || loading}
+            onPress={handleSubmit}
+            buttonStyle={[
+              styles.submitButton,
+              (calculateProgress < 1 || loading) && styles.disabledButton,
+            ]}
+            textStyle={styles.submitText}
+          />
+        </View>
+      </KeyboardAwareScrollView>
 
       <GlobalPopup
         visible={showPopup}

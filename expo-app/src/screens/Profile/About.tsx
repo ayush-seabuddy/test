@@ -1,15 +1,13 @@
+import { showToast } from '@/src/components/GlobalToast';
 import { RootState } from '@/src/redux/store';
 import Colors from '@/src/utils/Colors';
 import { height, isShipStaff } from '@/src/utils/helperFunctions';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
 import { Image } from 'expo-image';
 import { t } from 'i18next';
-import {
-  ExternalLink
-} from 'lucide-react-native';
+import { ExternalLink } from 'lucide-react-native';
 import React, { useCallback, useMemo } from 'react';
 import {
-  Alert,
   Dimensions,
   Linking,
   ScrollView,
@@ -21,6 +19,7 @@ import {
 } from 'react-native';
 import { Divider } from 'react-native-paper';
 import { useSelector } from 'react-redux';
+import { AntDesign, Entypo, MaterialIcons } from '@expo/vector-icons'; // Added vector icons
 
 const { width } = Dimensions.get('window');
 
@@ -28,7 +27,6 @@ interface SocialLink {
   platform: string;
   link: string;
 }
-
 const About = () => {
   const userDetails = useSelector((state: RootState) => state.userDetails);
 
@@ -80,21 +78,29 @@ const About = () => {
   const handleSocialPress = useCallback((item: SocialLink) => {
     if (item.link) {
       Linking.openURL(item.link).catch(() => {
-        Alert.alert('Error', `Unable to open URL: ${item.link}`);
+        showToast.error('Error', `Unable to open URL: ${item.link}`);
       });
     } else {
-      Alert.alert('Invalid URL', `No URL provided for ${item.platform}`);
+      showToast.error('Invalid URL', `No URL provided for ${item.platform}`);
     }
   }, []);
 
-  const platformIconName = (platform: string) => {
+  const getSocialMediaIcon = useCallback((platform: string) => {
     const lower = platform.toLowerCase();
-    if (lower.includes('facebook')) return 'facebook';
-    if (lower.includes('twitter') || lower.includes('x')) return 'twitter';
-    if (lower.includes('instagram')) return 'instagram';
-    if (lower.includes('linkedin')) return 'linkedin';
-    return 'globe';
-  };
+    if (lower.includes('facebook')) {
+      return <Entypo name="facebook" size={18} color={Colors.primary} />;
+    }
+    if (lower.includes('twitter') || lower.includes('x')) {
+      return <AntDesign name="x" size={18} color={Colors.primary} />;
+    }
+    if (lower.includes('instagram')) {
+      return <Entypo name="instagram" size={18} color={Colors.primary} />;
+    }
+    if (lower.includes('linkedin')) {
+      return <Entypo name="linkedin" size={18} color={Colors.primary} />;
+    }
+    return <MaterialIcons name="language" size={18} color={Colors.primary} />;
+  }, []);
 
   return (
     <ScrollView showsVerticalScrollIndicator={false} style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -104,6 +110,7 @@ const About = () => {
         </View>
       )}
 
+      {/* Leaderboard Section */}
       {isShipStaff(userDetails?.department) && userDetails && (
         <View style={styles.leaderboardContainer}>
           <View style={styles.headerCard}>
@@ -113,13 +120,13 @@ const About = () => {
                 <Text style={styles.hashSymbol}>#</Text>
                 {userDetails?.userLeaderBoardPosition || '0'}
               </Text>
-              <Image source={ImagesAssets.LeaderboardIcon} style={{height:30,width:30,tintColor:Colors.lightGreen}}></Image>
+              <Image source={ImagesAssets.LeaderboardIcon} style={{ height: 30, width: 30, tintColor: Colors.lightGreen }} />
             </View>
           </View>
           <View style={styles.statsRow}>
             <View style={styles.statCard}>
               <View style={styles.statRow}>
-                  <Image source={ImagesAssets.users} style={styles.icon} />
+                <Image source={ImagesAssets.users} style={styles.icon} />
                 <Text style={styles.countTextOther}>{userDetails?.groupActivityCount || '0'}</Text>
               </View>
               <Text style={styles.labelTextOther}>{t('buddyupevents')}</Text>
@@ -135,6 +142,7 @@ const About = () => {
         </View>
       )}
 
+      {/* Hobbies */}
       {combinedHobbies.length > 0 && (
         <View style={styles.section}>
           <View style={styles.hobbiesContainer}>
@@ -152,6 +160,7 @@ const About = () => {
         </View>
       )}
 
+      {/* Personal Info Card */}
       {(userDetails?.bio || userDetails?.nationality || userDetails?.dob || userDetails?.mobileNumber || userDetails?.email) && (
         <View style={styles.chipCard}>
           {userDetails?.bio && (
@@ -164,30 +173,18 @@ const About = () => {
           )}
 
           {userDetails?.nationality && (
-            <View style={styles.section}>
+            <View style={[styles.section, { flexDirection: 'row', justifyContent: 'space-between' }]}>
               <Text style={styles.chipTitle}>{t('location')}</Text>
-                <Text style={styles.chipText}>{capitalize(userDetails.nationality)}</Text>
+              <Text style={styles.chipText}>{capitalize(userDetails.nationality)}</Text>
             </View>
           )}
 
           {userDetails?.dob && (
-            <View style={styles.section}>
+            <View style={[styles.section, { flexDirection: 'row', justifyContent: 'space-between' }]}>
               <View style={styles.switchRow}>
                 <Text style={styles.chipTitle}>{t('age')}</Text>
-                <View style={styles.switchContainer}>
-                  <Text style={styles.switchLabel}>
-                    {userDetails.showAge ? t('shown') : t('hidden')}
-                  </Text>
-                  <Switch
-                    trackColor={{ false: '#ccc', true: '#4cd137' }}
-                    thumbColor="#ffffff"
-                    ios_backgroundColor="#ccc"
-                    value={userDetails.showAge || false}
-                    disabled // Read-only in view mode
-                  />
-                </View>
               </View>
-                <Text style={styles.chipText}>{`${userDetails.dob} (${age})`}</Text>
+              <Text style={styles.chipText}>{`${userDetails.dob} (${age})`}</Text>
             </View>
           )}
 
@@ -196,13 +193,13 @@ const About = () => {
               <Text style={styles.chipTitle}>{t('contact')}</Text>
               {userDetails?.mobileNumber && (
                 <View style={styles.row}>
-                 <Text style={styles.chipTitle}>{t('phone')}</Text>
+                  <Text style={styles.chipTitle}>{t('phone')}</Text>
                   <Text style={styles.value}>{userDetails.mobileNumber}</Text>
                 </View>
               )}
               {userDetails?.email && (
                 <View style={styles.row}>
-                   <Text style={styles.chipTitle}>{t('email')}</Text>
+                  <Text style={styles.chipTitle}>{t('email')}</Text>
                   <Text style={styles.value}>{userDetails.email}</Text>
                 </View>
               )}
@@ -211,6 +208,7 @@ const About = () => {
         </View>
       )}
 
+      {/* Shipboard Experience */}
       {userDetails?.workingExperience?.length > 0 && (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>{t('shipboard_experience')}</Text>
@@ -220,15 +218,16 @@ const About = () => {
               <Text style={styles.shipText}>{item?.companyName || 'N/A'}</Text>
               <Text style={styles.yearText}>
                 {item.from && item.to
-                  ? `${item.from.split('/').reverse().join('/')} - ${item.to.split('/').reverse().join('/')} (Formatted)`
+                  ? `${item.from.split('/').reverse().join('/')} - ${item.to.split('/').reverse().join('/')} `
                   : 'N/A'}
               </Text>
-              <Text style={styles.roleText}>{item?.role?.slice(0, 30) || 'N/A'}</Text>
+              <Text style={styles.roleText}>{(item?.role || 'N/A').slice(0, 30)}{item?.role?.length > 30 ? '...' : ''}</Text>
             </View>
           ))}
         </View>
       )}
 
+      {/* Certifications */}
       {userDetails?.certifications?.length > 0 && (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>{t('certifications')}</Text>
@@ -238,7 +237,7 @@ const About = () => {
               <Text style={styles.shipText}>{item?.role || 'N/A'}</Text>
               <Text style={styles.yearText}>
                 {item.from && item.to
-                  ? `${item.from.split('/').reverse().join('/')} - ${item.to.split('/').reverse().join('/')} (Formatted)`
+                  ? `${item.from.split('/').reverse().join('/')} - ${item.to.split('/').reverse().join('/')} `
                   : 'N/A'}
               </Text>
               <Text style={styles.roleText}>{item?.companyName || 'N/A'}</Text>
@@ -247,30 +246,26 @@ const About = () => {
         </View>
       )}
 
+      {/* Social Media Links - Now with Vector Icons */}
       {userDetails?.SocialMediaLinks?.length > 0 && (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>{t('social_media')}</Text>
           <Divider style={{ marginVertical: 10 }} />
-          {userDetails.SocialMediaLinks.map((item: SocialLink) => {
-            {console.log(item.platform,"item.platform")}
-           return    <TouchableOpacity
+          {userDetails.SocialMediaLinks.map((item: SocialLink) => (
+            <TouchableOpacity
               key={item.platform}
               style={styles.socialMediaButton}
               onPress={() => handleSocialPress(item)}
             >
-
-              {["linkedin","twitter"].includes(platformIconName(item.platform)) ? <Image source={platformIconName(item.platform) === "linkedin" ? ImagesAssets.linkedin : ImagesAssets.twitter} style={styles.icon} /> : (
-                <Image source={{ uri: `https://cdn.simpleicons.org/${platformIconName(item.platform)}` }} style={styles.icon} />
-              )}
-              <Text style={styles.socialMediaText}>
-                {capitalize(item.platform)}
-              </Text>
+              {getSocialMediaIcon(item.platform)}
+              <Text style={styles.socialMediaText}>{capitalize(item.platform)}</Text>
               <ExternalLink size={18} color="#B0DB02" />
             </TouchableOpacity>
-})}
+          ))}
         </View>
       )}
 
+      {/* More Information */}
       {hasMoreInfo && (
         <View style={styles.card}>
           <Text style={styles.sectionTitle}>{t('moreinformation')}</Text>
@@ -313,35 +308,24 @@ const About = () => {
                 <Text style={styles.title}>{t('religion')}</Text>
                 <View style={styles.switchRow}>
                   <Text style={styles.value}>{capitalize(userDetails.religion)}</Text>
-                  <View style={styles.switchContainer}>
-                    <Text style={styles.switchLabel}>
-                      {userDetails.showReligion ? t('shown') : t('hidden')}
-                    </Text>
-                    <Switch
-                      trackColor={{ false: '#ccc', true: '#4cd137' }}
-                      thumbColor="#ffffff"
-                      value={userDetails.showReligion || false}
-                      disabled
-                    />
-                  </View>
                 </View>
               </View>
             )}
             {userDetails?.smoker && (
               <View style={styles.row}>
-                 <Text style={styles.chipTitle}>{t('smoking')}</Text>
+                <Text style={styles.chipTitle}>{t('smoking')}</Text>
                 <Text style={styles.value}>{capitalize(userDetails.smoker)}</Text>
               </View>
             )}
             {userDetails?.alcohol && (
               <View style={styles.row}>
-                 <Text style={styles.chipTitle}>{t('alcohol')}</Text>
+                <Text style={styles.chipTitle}>{t('alcohol')}</Text>
                 <Text style={styles.value}>{capitalize(userDetails.alcohol)}</Text>
               </View>
             )}
             {userDetails?.healthCondition && (
               <View style={styles.row}>
-                 <Text style={styles.chipTitle}>{t('healthcondition')}</Text>
+                <Text style={styles.chipTitle}>{t('healthcondition')}</Text>
                 <Text style={styles.value}>{capitalize(userDetails.healthCondition)}</Text>
               </View>
             )}
@@ -352,7 +336,9 @@ const About = () => {
   );
 };
 
+// Styles remain unchanged
 const styles = StyleSheet.create({
+  // ... (your existing styles - unchanged)
   container: {
     flex: 1,
     paddingHorizontal: 14,
@@ -416,12 +402,12 @@ const styles = StyleSheet.create({
     fontSize: 25,
     fontWeight: '600',
     fontFamily: 'Poppins-Regular',
-     color: '#666',
+    color: '#666',
   },
   countTextOther: {
     fontSize: 18,
     fontWeight: '600',
-     color: '#666',
+    color: '#666',
     fontFamily: 'Poppins-SemiBold',
   },
   labelText: {
@@ -434,7 +420,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '400',
     fontFamily: 'Poppins-Regular',
-     color: '#666',
+    color: '#666',
   },
   hashSymbol: {
     fontSize: 16,
@@ -447,14 +433,14 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     color: '#454545',
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: 'Poppins-SemiBold',
     fontWeight: '600',
     marginBottom: 8,
   },
   sectionText: {
     color: '#949494',
-    fontSize: 12,
+    fontSize: 14,
     fontFamily: 'Poppins-Regular',
   },
   itemContainer: {
@@ -467,13 +453,13 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   yearText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#949494',
     fontFamily: 'Poppins-Regular',
     marginVertical: 4,
   },
   roleText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#949494',
     fontFamily: 'Poppins-Regular',
   },
@@ -486,15 +472,16 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   icon: {
-    width: 24,
-    height: 24,
+    width: 20,
+    height: 20,
     marginRight: 10,
   },
   socialMediaText: {
     flex: 1,
     color: '#636363',
-    fontSize: 16,
+    fontSize: 14,
     fontFamily: 'Poppins-Regular',
+    marginLeft: 10,
   },
   containerText: {
     paddingVertical: 10,
@@ -573,7 +560,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: 'Poppins-Regular',
     color: '#555',
-    // marginLeft: 8,
   },
   card: {
     backgroundColor: '#fff',
