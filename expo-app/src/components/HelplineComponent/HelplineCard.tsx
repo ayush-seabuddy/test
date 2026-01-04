@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
     FlatList,
     StyleSheet,
@@ -41,23 +41,8 @@ const HelplineAndAICards = () => {
     const { t } = useTranslation();
     const router = useRouter();
     const [loading, setLoading] = useState(true);
-    const [helplineData, setHelplineData] = useState<Helpline[]>([]);
+    const [dynamicHelplines, setDynamicHelplines] = useState<Helpline[]>([]);
     const [emergencyModalVisible, setEmergencyModalVisible] = useState(false);
-
-    const staticHelpline: Helpline[] = [
-        {
-            id: 'static-1',
-            helplineName: t('emergencyandsos'),
-            helplineDescription: t('emergencyandsos_description'),
-            iconUrl: ImagesAssets.sosImage,
-        },
-        {
-            id: 'static-2',
-            helplineName: t('sailorssocietylive'),
-            helplineDescription: t('sailorssocietylive_description'),
-            iconUrl: ImagesAssets.sailorsIcon,
-        },
-    ];
 
     useEffect(() => {
         const setupFreshchat = async () => {
@@ -131,15 +116,15 @@ const HelplineAndAICards = () => {
             setLoading(true);
             const res = await getallhelplines({ helplineType: "HELPLINE" });
 
-            if (res.success && res.status === 200)
-                setHelplineData([...staticHelpline, ...(res.data || [])]);
-            else {
+            if (res.success && res.status === 200) {
+                setDynamicHelplines(res.data || []);
+            } else {
                 showToast.error(t('oops'), res.message || t('somethingwentwrong'));
-                setHelplineData(staticHelpline);
+                setDynamicHelplines([]);
             }
         } catch (e) {
             showToast.error(t('oops'), t('somethingwentwrong'));
-            setHelplineData(staticHelpline);
+            setDynamicHelplines([]);
         } finally {
             setLoading(false);
         }
@@ -148,6 +133,25 @@ const HelplineAndAICards = () => {
     useEffect(() => {
         getHelplines();
     }, []);
+
+    const helplineData = useMemo(() => {
+        const staticHelplines: Helpline[] = [
+            {
+                id: 'static-1',
+                helplineName: t('emergencyandsos'),
+                helplineDescription: t('emergencyandsos_description'),
+                iconUrl: ImagesAssets.sosImage,
+            },
+            {
+                id: 'static-2',
+                helplineName: t('sailorssocietylive'),
+                helplineDescription: t('sailorssocietylive_description'),
+                iconUrl: ImagesAssets.sailorsIcon,
+            },
+        ];
+
+        return [...staticHelplines, ...dynamicHelplines];
+    }, [t, dynamicHelplines]);
 
     const openEmergencyModal = () => {
         Haptics.selectionAsync();
@@ -201,12 +205,13 @@ const HelplineAndAICards = () => {
         );
     };
 
-    if (loading)
+    if (loading) {
         return (
             <View style={styles.centerContainer}>
                 <ActivityIndicator size="large" color={Colors.lightGreen} />
             </View>
         );
+    }
 
     return (
         <>

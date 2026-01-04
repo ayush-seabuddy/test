@@ -640,7 +640,7 @@ const styles = StyleSheet.create({
   galleryIcon: { height: 40, width: 40 },
   addphotovideoText: {
     fontFamily: 'Poppins-Regular',
-    fontSize: 12,
+    fontSize: 11,
     marginTop: 10,
     color: 'grey',
   },

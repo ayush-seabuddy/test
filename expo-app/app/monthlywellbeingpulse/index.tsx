@@ -182,7 +182,9 @@ const MonthlyWellbeingPulseTestScreen = () => {
             <View style={styles.headerStyle}>
                 {!isRequiredTest && (
                     <TouchableOpacity
-                        onPress={() => router.back()}
+                        onPress={() =>
+                            router.canGoBack?.() ? router.back() : router.replace('/home')
+                        }
                         style={styles.backButton}
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >

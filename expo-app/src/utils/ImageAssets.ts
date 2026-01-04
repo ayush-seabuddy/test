@@ -36,6 +36,7 @@ export const ImagesAssets = {
   FilterIcon: require("../../assets/images/FilterIcon.png"),
   crewListLogo: require("../../assets/images/userIcon.png"),
   PlusImage:require("../../assets/images/plus.png"),
+  Norse:require("../../assets/images/Norse.png"),
 
 
 
