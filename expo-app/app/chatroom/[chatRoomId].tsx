@@ -48,6 +48,7 @@ const ChatRoomScreen = () => {
   // const { chatList, typingStatus } = useSelector(selectChat);
   const [typingTimeout, setTypingTimeout] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [imageUploading, setImageUploading] = useState(false)
   const [chatLoading, setChatLoading] = useState(true);
   const [content, setContent] = useState("");
   const [contentImage, setContentImage] = useState("");
@@ -414,24 +415,22 @@ const ChatRoomScreen = () => {
 
 
 
-  const sendMessageImageUrl = async (contentImage: string) => {
+  const sendMessageImageUrl = async (contentImage: string  , chat_payload: {
+        senderId: string,
+        chatRoomId: string,
+        content: string,
+        createdAt: string,
+        messageType: string,
+        createdAtId: number,
+        replyTo: string | null,
+      }) => {
     if (!contentImage || contentImage.trim() === "") return;
 
     try {
-      const createdAt = new Date().toISOString();
-      const createdAtId = Date.now();
-      const chat_payload = {
-        senderId,
-        chatRoomId,
-        content: contentImage,
-        createdAt,
-        messageType: "IMAGE",
-        createdAtId: Number(createdAtId),
-        replyTo: replyingTo ? replyingTo.id : null,
-      };
+
 
       socketService.emit("userSendMessage", chat_payload);
-      setChatList((prevMessageList) => [chat_payload as ChatMessage, ...prevMessageList]);
+      
       setContentImage("");
       setReplyingTo(null);
     } catch (error) {
@@ -444,16 +443,31 @@ const ChatRoomScreen = () => {
     if (!photo) return;
     setLoading(true);
     try {
+      const createdAt = new Date().toISOString();
+      const createdAtId = Date.now();
+      const chat_payload = {
+        senderId,
+        chatRoomId,
+        content: photo,
+        createdAt,
+        messageType: "IMAGE",
+        createdAtId: Number(createdAtId),
+        replyTo: replyingTo ? replyingTo.id : null,
+      };
+      setChatList((prevMessageList) => [chat_payload as ChatMessage, ...prevMessageList]);
+
       const apiResponse = await uploadfile({ file: photo });
       if (apiResponse.success && apiResponse.status == 200) {
         setContentImage(apiResponse.data);
-        await sendMessageImageUrl(apiResponse.data);
+        await sendMessageImageUrl(apiResponse.data , chat_payload);
 
       } else {
       }
     } catch (err) {
+      
     } finally {
       setLoading(false);
+      setImageLoading(false);
     }
   };
   const selectImageFromCamera = async (type: "camera" | "library" = "camera") => {
@@ -609,6 +623,7 @@ const ChatRoomScreen = () => {
               setMediaModalVisible={setMediaModalVisible}
               setMyReaction={setMyReaction}
               fetchChatReactions={fetchChatReactions}
+              imageUploading={imageUploading}
               styles={styles}
             />
           }
@@ -820,6 +835,7 @@ const ChatRoomScreen = () => {
             canSend={!!selectedMedia.imageUri}
             uploadImageToCloudinary={() => {
               if (selectedMedia.imageUri) {
+                setImageUploading(true);
                 setLoading(true);
                 setMediaModalVisible(false);
                 uploadImage(selectedMedia.imageUri);
