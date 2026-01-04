@@ -106,7 +106,6 @@ const ChatLoungeList = () => {
     const hasUnread = room.isUnReadMessage && room.unReadMessages > 0
     const lastMsg = room.lastMessage
     const handChatListPress = (room: ChatRoom) => {
-      console.log("room.id: ", room.id);
       router.push({
         pathname: `/chatroom/[chatRoomId]`,
         params: { chatRoomId: room.id, chatRoomDetails: JSON.stringify(room) },

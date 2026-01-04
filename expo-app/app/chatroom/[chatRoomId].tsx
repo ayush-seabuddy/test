@@ -16,7 +16,8 @@ import { router, useFocusEffect } from 'expo-router';
 import { Camera, Check, Edit, Paperclip, Reply, SendHorizonal, Trash2, X } from 'lucide-react-native';
 import moment from 'moment-timezone';
 import { useCallback, useRef, useState } from 'react';
-import { Dimensions, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import type { TextInput as RNTextInput } from 'react-native';
+import { Dimensions, Linking, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import { ActivityIndicator, TextInput } from 'react-native-paper';
 import RBSheet from 'react-native-raw-bottom-sheet';
@@ -32,6 +33,7 @@ const ChatRoomScreen = () => {
   const route = useRoute<ChatRoomRouteProp>()
   const chatRoomDetails = typeof route.params?.chatRoomDetails === 'string' ? JSON.parse(route.params?.chatRoomDetails) : route.params?.chatRoomDetails
   const chatRoomId = chatRoomDetails.id;
+  console.log("chatRoomId: ", chatRoomId);
   const headerPops = {
     navigation: () => router.back(),
     data: chatRoomDetails,
@@ -66,7 +68,7 @@ const ChatRoomScreen = () => {
   const [keyboardPadding, setKeyboardPadding] = useState(0);
   const [chatItemPadding, setChatItemPadding] = useState(0);
   const [mediaModalVisible, setMediaModalVisible] = useState(false);
-  const [selectedMedia, setSelectedMedia] = useState<{ uri: string; isVideo: boolean }>({ uri: "", isVideo: false });
+  const [selectedMedia, setSelectedMedia] = useState<{ uri: string; isVideo: boolean; imageUri?: string }>({ uri: "", isVideo: false });
   const [imageLoading, setImageLoading] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingMessage, setEditingMessage] = useState<ChatMessage | null>(null);
@@ -76,9 +78,9 @@ const ChatRoomScreen = () => {
   const [editModal, setEditModal] = useState(false);
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   const [myReaction, setMyReaction] = useState('');
-  const textInputRef = useRef<TextInput>(null);
+  const textInputRef = useRef<RNTextInput>(null);
   const PAGE_SIZE = 50;
-  const bottomSheetRef = useRef<typeof RBSheet | null>(null);
+  const bottomSheetRef = useRef<any>(null);
   const [reactionCountList, setReactionCountList] = useState<ReactionData[]>([]);
   const [searchResults, setSearchResults] = useState([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
@@ -213,18 +215,37 @@ const ChatRoomScreen = () => {
         setEditingMessageId("");
       } else {
         const createdAt = new Date().toUTCString();
-        const createdAtId = Date.now();
-        const chat_payload: { senderId: string; chatRoomId: string; content: string; createdAt: string; createdAtId: number; replyTo: string | null; parentMessage?: ChatMessage | null; } = {
+        const createdAtId = Date.now().toString(); // must be string for ChatMessage
+        const chat_payload: Partial<ChatMessage> = {
+          id: createdAtId, // temp id until server returns real one
           senderId,
           chatRoomId,
           content,
           createdAt,
-          createdAtId: Number(createdAtId),
+          createdAtId,
           replyTo: replyingTo ? replyingTo.id : null,
+          messageType: "MESSAGE",
+          caption: null,
+          fileName: null,
+          thumbnail: null,
+          status: "ACTIVE",
+          updatedAt: createdAt,
+          messageUser: {
+            id: senderId,
+            fullName: '',
+            email: '',
+            profileUrl: null,
+            designation: '',
+            department: '',
+          },
+          parentMessage: replyingTo ? {
+            ...replyingTo,
+            createdAtId: String(replyingTo.createdAtId),
+          } : null,
+          chatReactionDetails: [],
         };
         socketService.emit("userSendMessage", chat_payload);
-        chat_payload.parentMessage = replyingTo;
-        setChatList((prevMessageList) => [chat_payload, ...prevMessageList]);
+        setChatList((prevMessageList) => [chat_payload as ChatMessage, ...prevMessageList]);
       }
       setContent("");
       setReplyingTo(null);
@@ -266,22 +287,22 @@ const ChatRoomScreen = () => {
     }
   };
 
-  const handleReceiveChatReaction = (data: ReactionData) => {
-    if (data.messageId) {
+  const handleReceiveChatReaction = (reaction: ReactionData) => {
+    if (reaction.messageId) {
       setChatList((prevMessageList) => {
         return prevMessageList.map((msg) => {
-          if (String(msg.id) == String(data.messageId)) {
+          if (String(msg.id) == String(reaction.messageId)) {
             let chatReactionDetails = msg.chatReactionDetails || [];
-            let alreadyReacted = msg?.chatReactionDetails?.find((item) => item.userId === data.userId);
+            let alreadyReacted = msg?.chatReactionDetails?.find((item) => item.userId === reaction.userId);
             if (alreadyReacted) {
-              if (alreadyReacted.reaction == data.reaction) {
-                chatReactionDetails = chatReactionDetails?.filter((item) => item.userId !== data.userId);
+              if (alreadyReacted.reaction == reaction.reaction) {
+                chatReactionDetails = chatReactionDetails?.filter((item) => item.userId !== reaction.userId);
               } else {
-                chatReactionDetails = chatReactionDetails?.filter((item) => item.userId !== data.userId);
-                chatReactionDetails?.push(data);
+                chatReactionDetails = chatReactionDetails?.filter((item) => item.userId !== reaction.userId);
+                chatReactionDetails?.push(reaction);
               }
             } else {
-              chatReactionDetails.push(data);
+              chatReactionDetails.push(reaction);
             }
             return { ...msg, chatReactionDetails: chatReactionDetails };
           }
@@ -291,31 +312,58 @@ const ChatRoomScreen = () => {
     }
   }
 
+  const handleReceiveUserMessage = (message: ChatMessage) => {
+    if (message.chatRoomId == chatRoomId) {
+      setChatList((prevMessageList) => [message, ...prevMessageList]);
+      const payload = {
+        userId: senderId,
+        chatRoomId: message.chatRoomId,
+      };
+      socketService.emit("userReadMessage", payload);
+    }
+    setChatLoading(false);
+  };
+
+  const handleUserReactMessage = (reaction: ReactionData) => {
+    setChatList((prevMessageList) =>
+      prevMessageList.map((msg) => {
+        return msg.id === reaction.messageId
+          ? { ...msg, reaction: reaction.reaction }
+          : msg
+      }
+      )
+    );
+  };
+
+  const handleGetUserMessage = (message: ChatMessage) => {
+    setChatList((prevMessageList) =>
+      prevMessageList.map((msg) =>
+        String(msg.createdAtId) === String(message.createdAtId) ? { ...message, id: message.id } : msg
+      )
+    );
+  };
+
+
   useFocusEffect(
     useCallback(() => {
-
-
-
-      // socketService.on("userPreviousMessages", handleUserChatInitiated);
-      // socketService.on("receiveUserMessage", handleReceiveUserMessage);
-      // socketService.on("typingStatusUpdated", f1);
+      socketService.on("receiveUserMessage", handleReceiveUserMessage);
       socketService.on("receiveUserEditMessage", handleUserEditMessage);
       socketService.on("getUserEditMessage", handleUserEditMessage);
-      // socketService.on("receiveUserReactMessage", handleUserReactMessage);
-      // socketService.on("getUserMessage", handleGetUserMessage);
+      socketService.on("receiveUserReactMessage", handleUserReactMessage);
+      socketService.on("getUserMessage", handleGetUserMessage);
       socketService.on("receiveChatReaction", handleReceiveChatReaction);
-      // socketService.on("getChatReaction", f3);
+      socketService.on("getChatReaction", (data) => {
+        console.log("getChatReaction: ", data);
+      });
 
       return () => {
-        // socketService.off("userPreviousMessages", handleUserChatInitiated);
-        // socketService.off("receiveUserMessage", handleReceiveUserMessage);
-        // socketService.off("typingStatusUpdated");
-        socketService.off("receiveUserEditMessage", handleUserEditMessage);
-        socketService.off("getUserEditMessage", handleUserEditMessage);
-        // socketService.off("receiveUserReactMessage", handleUserReactMessage);
-        // socketService.off("getUserMessage", handleGetUserMessage);
-        // socketService.off("receiveChatReaction");
-        // socketService.off("getChatReaction");
+        socketService.off("receiveUserMessage");
+        socketService.off("receiveUserEditMessage");
+        socketService.off("getUserEditMessage");
+        socketService.off("receiveUserReactMessage");
+        socketService.off("getUserMessage");
+        socketService.off("receiveChatReaction");
+        socketService.off("getChatReaction");
       };
     }, [])
   );
@@ -339,7 +387,6 @@ const ChatRoomScreen = () => {
       socketService.emit("joinChatRoom", payload);
 
       socketService.on("userPreviousMessages", (data) => {
-        console.log("data: ", data);
         const newChatList = [...chatListState, ...data.previousMessages];
         setChatList(newChatList);
         saveMessage(newChatList)
@@ -348,6 +395,10 @@ const ChatRoomScreen = () => {
         setLoadingMore(false);
         clearTimeout(timeoutId);
       });
+
+      return () => {
+        socketService.off("userPreviousMessages");
+      }
 
     }, [currentPage])
   );
@@ -380,7 +431,7 @@ const ChatRoomScreen = () => {
       };
 
       socketService.emit("userSendMessage", chat_payload);
-      setChatList((prevMessageList) => [chat_payload, ...prevMessageList]);
+      setChatList((prevMessageList) => [chat_payload as ChatMessage, ...prevMessageList]);
       setContentImage("");
       setReplyingTo(null);
     } catch (error) {
@@ -434,7 +485,7 @@ const ChatRoomScreen = () => {
 
 
 
-  
+
   const getGroupedChatList = () => {
     const groupedMessages: (ChatMessage | { type: string; date: Date; id: string })[] = [];
     let currentDateKey: string | null = null;
@@ -477,7 +528,6 @@ const ChatRoomScreen = () => {
 
     return groupedMessages;
   };
-  console.log("getGroupedChatList: ", getGroupedChatList().length);
 
   const renderMessageContent = (content: string, senderId: string, item: ChatMessage, isSearchResult = false, searchQuery = ""): React.ReactNode => {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -720,7 +770,7 @@ const ChatRoomScreen = () => {
                           <TouchableOpacity
                             style={{}}
                             onPress={() => {
-                              handleDelteReaction(user.messageId, user.reaction);
+                              handleDeleteReaction(user.messageId, user.reaction);
                               setReactionCountList(prev => prev.filter(item => String(item.userId) != senderId));
                             }}
                           >
@@ -769,12 +819,10 @@ const ChatRoomScreen = () => {
             type={selectedMedia.isVideo ? "video" : "image"}
             canSend={!!selectedMedia.imageUri}
             uploadImageToCloudinary={() => {
-              console.log("selectedMedia: ", selectedMedia);
               if (selectedMedia.imageUri) {
                 setLoading(true);
                 setMediaModalVisible(false);
                 uploadImage(selectedMedia.imageUri);
-                // uploadImageToCloudinary(selectedMedia.imageUri);
               }
             }}
           />
@@ -792,7 +840,7 @@ const ChatRoomScreen = () => {
                   <TouchableOpacity
                     style={styles.modalOptionForEdit}
                     onPress={() => {
-                      handleEditMessage(editingMessage);
+                      if (editingMessage) handleEditMessage(editingMessage);
                       setEditModal(false);
                     }}
                   >
@@ -804,7 +852,7 @@ const ChatRoomScreen = () => {
                   <TouchableOpacity
                     style={styles.modalOptionForEdit}
                     onPress={() => {
-                      handleDeleteMessage(editingMessage);
+                      if (editingMessage) handleDeleteMessage(editingMessage);
                       setContent("");
                       setEditingMessageId("");
                       setEditModal(false);
@@ -818,7 +866,7 @@ const ChatRoomScreen = () => {
                 <TouchableOpacity
                   style={styles.modalOptionForEdit}
                   onPress={() => {
-                    handleReplyMessage(editingMessage);
+                    if (editingMessage) handleReplyMessage(editingMessage);
                   }}
                 >
                   <Reply size={20} color="#82934b" style={styles.modalIcon} />
@@ -829,14 +877,12 @@ const ChatRoomScreen = () => {
                   renderItem={({ item: emoji }) => (
                     <TouchableOpacity
                       style={[styles.emojiOption, {
-                        ...myReaction == emoji ?
-                          {
-                            backgroundColor: "rgba(192, 190, 190, 0.5)",
-                            borderRadius: 30,
-                          }
-                          : {}
+                        ...(myReaction == emoji ? {
+                          backgroundColor: "rgba(192, 190, 190, 0.5)",
+                          borderRadius: 30,
+                        } : {})
                       }]}
-                      onPress={() => handleEmojiReaction(editingMessage, emoji)}
+                      onPress={() => editingMessage && handleEmojiReaction(editingMessage, emoji)}
                     >
                       <Text style={styles.emojiText}>{emoji}</Text>
                     </TouchableOpacity>

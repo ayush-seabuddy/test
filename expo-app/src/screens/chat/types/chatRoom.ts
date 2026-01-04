@@ -122,11 +122,11 @@ export interface ChatMessage {
   caption: string | null;
   fileName: string | null;
   thumbnail: string | null;
-  createdAtId: string;
+  createdAtId: string|number;
   status: "ACTIVE" | "EDIT" | "DELETE" | string;
   createdAt: string;
   updatedAt: string;
   messageUser: MessageUser;
-  parentMessage: ParentMessage | null;
+  parentMessage?: ParentMessage | null;
   chatReactionDetails: MessageReaction[];
 }
