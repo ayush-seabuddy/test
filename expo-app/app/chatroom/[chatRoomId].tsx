@@ -459,6 +459,7 @@ const ChatRoomScreen = () => {
       const apiResponse = await uploadfile({ file: photo });
       if (apiResponse.success && apiResponse.status == 200) {
         setContentImage(apiResponse.data);
+        chat_payload.content = apiResponse.data
         await sendMessageImageUrl(apiResponse.data , chat_payload);
 
       } else {
