@@ -10,7 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "co.seabuddy.platform"
+      "bundleIdentifier": "com.seekware.seabuddy",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "co.seabuddy.platform",
@@ -66,6 +69,9 @@
             "minSdkVersion": 26,
             "compileSdkVersion": 35,
             "targetSdkVersion": 35
+          },
+          "ios": {
+            "useFrameworks": "static"
           }
         }
       ],
