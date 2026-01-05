@@ -283,7 +283,7 @@ const MonthlyHappinessIndexTestScreen = () => {
                 router.canGoBack?.() ? router.back() : router.replace('/home')
               }
             >
-              <ChevronLeft size={20} color={Colors.primary} />
+              <ChevronLeft size={24} color={Colors.primary} />
             </TouchableOpacity>
           )}
           <Text style={[styles.title, !isRequiredTest && { marginLeft: 10 }]}>
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
-  titleView: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  titleView: { flexDirection: 'row', alignItems: 'center' },
   title: { fontSize: 16, fontFamily: 'Poppins-Regular', color: '#262626' },
   description: { fontSize: 11, fontFamily: 'Poppins-Regular', color: '#262626', marginTop: 5 },
 

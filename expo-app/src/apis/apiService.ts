@@ -906,3 +906,10 @@ export const getapplastversion = async (): Promise<ApiResponse> => {
     url: ENDPOINTS.GETAPPLASTVERSION,
   });
 }
+
+export const fetchcustomsurvey = async (): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.FETCHCUSTOMSURVEY,
+  });
+}

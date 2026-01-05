@@ -875,5 +875,6 @@
   "cannotOpenUrl": "Unable to open url",
   "Book_an_appointment": "Book an appointment",
   "WellnessOfficerProfile": "Wellness Officer Profile",
-  "Book_Appointment": "Book Appointment"
+  "Book_Appointment": "Book Appointment",
+  "deletexperience":"Delete Experience"
 }

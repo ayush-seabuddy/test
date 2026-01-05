@@ -83,7 +83,7 @@ const ShipLifeScreenHeader = () => {
                   ? ImagesAssets.crewListLogo
                   : ImagesAssets.searchLogo
               }
-              style={styles.iconImage}
+              style={[styles.iconImage, !isCaptain && {height:26,width:26}]}
             />
           </View>
         </TouchableOpacity>

@@ -42,7 +42,7 @@ const HealthHeader = () => {
 
         <TouchableOpacity style={styles.headerButton} onPress={()=> router.replace('/globalSearch')}>
           <View style={styles.iconBackground}>
-            <Search size={20} color={Colors.black} />
+            <Search size={24} color={Colors.black} />
           </View>
         </TouchableOpacity>
 

@@ -68,9 +68,9 @@ export const ENDPOINTS = {
   GLOBAL_SEARCH: `${BASE_URL}/user/globalSearch`,
   GET_UNREAD_NOTIFICATION_COUNT: `${BASE_URL}/user/getUnreadNotificationCount`,
   GETAPPLASTVERSION:`${BASE_URL}/user/getLastVersion`,
-
   GET_UNREAD_MESSAGE_COUNT: `${BASE_URL}/user/getUnreadMessageCount`,
   BOOK_APPOINTMENT_WITH_DOCTOR: `${BASE_URL}/helpline/bookAppointmentWithDoctor`,
-  GET_DATA_USAGE: `${BASE_URL}/user/getDataUsage`
+  GET_DATA_USAGE: `${BASE_URL}/user/getDataUsage`,
+  FETCHCUSTOMSURVEY:`${BASE_URL}/user/viewUserTestList`,
 
 };
