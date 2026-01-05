@@ -1,18 +1,12 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import * as Application from "expo-application";
 import { useFonts } from "expo-font";
 import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as TaskManager from "expo-task-manager";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { I18nextProvider } from "react-i18next";
-import {
-  Platform,
-  StatusBar,
-  StyleSheet,
-  useColorScheme,
-} from "react-native";
+import { useEffect } from "react";
+import { I18nextProvider, useTranslation } from "react-i18next";
+import { StatusBar, StyleSheet, useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -20,12 +14,11 @@ import Toast from "react-native-toast-message";
 import { Provider } from "react-redux";
 
 import { NotificationProvider } from "@/Context/NotificationContext";
-import { getapplastversion } from "@/src/apis/apiService";
-import VersionCheckModal from "@/src/components/Modals/VersionCheckModal";
-import i18n, { initI18n } from "@/src/localization/i18n";
+import { initI18n } from "@/src/localization/i18n";
 import { store } from "@/src/redux/store";
 import Colors from "@/src/utils/Colors";
 import socketService from "@/src/utils/socketService";
+import i18n from "i18next";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -48,79 +41,11 @@ TaskManager.defineTask(BACKGROUND_NOTIFICATION_TASK, async ({ data, error }) => 
   console.log("Background notification received:", data);
 });
 
-Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK).catch(() => {});
+Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK).catch(() => { });
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-  const responseListener = useRef<Notifications.Subscription | null>(null);
-
-  const [isVersionModalVisible, setIsVersionModalVisible] = useState(false);
-  const [versionInfo, setVersionInfo] = useState<any>(null);
-
-  const compareVersions = (current: string, latest: string): boolean => {
-    const normalize = (v: string) => v.split(".").map(Number);
-    const currentParts = normalize(current);
-    const latestParts = normalize(latest);
-
-    for (let i = 0; i < Math.max(currentParts.length, latestParts.length); i++) {
-      const c = currentParts[i] ?? 0;
-      const l = latestParts[i] ?? 0;
-      if (c < l) return true;
-      if (c > l) return false;
-    }
-    return false;
-  };
-
-  const checkAppVersion = async () => {
-    try {
-      const currentVersion = Application.nativeApplicationVersion || "1.0.0";
-      console.log("Current App Version:", currentVersion);
-
-      const apiResponse = await getapplastversion();
-      if (apiResponse.success && apiResponse.status === 200) {
-        const platformKey = Platform.OS === "ios" ? "ios" : "android";
-        const platformData = apiResponse.data?.[platformKey];
-
-        if (!platformData) return;
-        const { lastVersion, isPopUp, isRequired, responseMessage, url } = platformData;
-
-        console.log("Latest Version:", lastVersion);
-
-        if (isPopUp && compareVersions(currentVersion, lastVersion)) {
-          setVersionInfo({
-            isRequired,
-            responseMessage: responseMessage || "A new version is available!",
-            url:
-              url ||
-              (Platform.OS === "ios"
-                ? "https://apps.apple.com/in/app/seabuddy/id6744636314"
-                : "https://play.google.com/store/apps/details?id=co.seabuddy.platform"),
-          });
-          setIsVersionModalVisible(true);
-        }
-      }
-    } catch (error) {
-      console.error("Error checking app version:", error);
-    }
-  };
-
-  useEffect(() => {
-    checkAppVersion();
-  }, []);
-
-  const handleUpdate = () => {
-    setIsVersionModalVisible(false);
-  };
-
-  const handleCloseVersionModal = () => {
-    if (!versionInfo?.isRequired) {
-      setIsVersionModalVisible(false);
-    }
-  };
-
-  const handleNotificationTap = useCallback(async (data: any) => {
-    // ... (your existing notification handling logic remains unchanged)
-  }, []);
+  const { t } = useTranslation();
 
   const [fontsLoaded] = useFonts({
     "Poppins-Regular": require("../assets/fonts/Poppins-Regular.ttf"),
@@ -149,29 +74,6 @@ export default function RootLayout() {
     initApp();
   }, [fontsLoaded]);
 
-  useEffect(() => {
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
-        handleNotificationTap(response.notification.request.content.data);
-      }
-    );
-
-    const checkInitialNotification = async () => {
-      const lastResponse = await Notifications.getLastNotificationResponseAsync();
-      if (lastResponse) {
-        setTimeout(() => {
-          handleNotificationTap(lastResponse.notification.request.content.data);
-        }, 1200);
-      }
-    };
-
-    checkInitialNotification();
-
-    return () => {
-      responseListener.current?.remove();
-    };
-  }, [handleNotificationTap]);
-
   if (!fontsLoaded) return null;
 
   return (
@@ -195,13 +97,6 @@ export default function RootLayout() {
                 </I18nextProvider>
               </PaperProvider>
             </ThemeProvider>
-
-            <VersionCheckModal
-              visible={isVersionModalVisible}
-              versionInfo={versionInfo}
-              onUpdate={handleUpdate}
-              onClose={handleCloseVersionModal}
-            />
           </SafeAreaView>
         </SafeAreaProvider>
       </Provider>

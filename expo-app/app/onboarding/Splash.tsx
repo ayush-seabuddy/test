@@ -35,9 +35,19 @@ type AppRoute =
   | '/monthlywellbeingpulse'
   | '/personalitymap';
 
-const Splash: React.FC = () => {
+interface SplashProps {
+  notificationDetails: {
+    isNotification: boolean;
+    page: AppRoute;
+    params: any;
+  };
+  showSplash: boolean;
+}
+
+const Splash: React.FC<SplashProps> = ({ notificationDetails, showSplash }) => {
   const { t } = useTranslation();
   const router = useRouter();
+
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const translateAnim = useRef(new Animated.Value(-height)).current;
@@ -184,8 +194,20 @@ const Splash: React.FC = () => {
       }
     };
 
-    initializeAndNavigate();
-  }, [router, t]);
+
+      if (notificationDetails.isNotification == true && notificationDetails.page) {
+        let param = notificationDetails.params;
+
+        if (param) router.push({ pathname: notificationDetails.page, params: notificationDetails.params } as any);
+        else router.push({ pathname: notificationDetails.page } as any);
+      } else {
+        initializeAndNavigate();
+      }
+
+
+
+
+  }, [notificationDetails]);
 
   return (
     <AppContainer>

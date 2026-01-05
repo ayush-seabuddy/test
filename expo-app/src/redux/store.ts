@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import chatListReducer from "./chatListSlice";
 import contentReducer from "./ContentSlice";
+import notificationReducer from "./notificationSlice";
 import socialPostReducer from "./socialPostSlice";
 import UserDetails from "./userDetailsSlice";
 
@@ -10,7 +11,8 @@ export const store = configureStore({
     counter:  socialPostReducer,
     chatList: chatListReducer,
     userDetails: UserDetails,
-    content: contentReducer
+    content: contentReducer,
+    notification: notificationReducer
   },
 });
 

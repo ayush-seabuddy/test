@@ -56,6 +56,7 @@ const initialState: UserDetails = {
   status: "",
   uniqueId: "",
   userType: "",
+  isNotification: false
 };
 
 export const userDetailsSlice = createSlice({
