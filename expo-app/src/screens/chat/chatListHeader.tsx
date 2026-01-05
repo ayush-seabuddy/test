@@ -99,7 +99,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     height: 60,
     paddingHorizontal: 10,
-    borderBottomWidth: 0.5,
+    // borderBottomWidth: 0.5,
     backgroundColor: "#FFFFFF",
     ...Platform.select({
       ios: {

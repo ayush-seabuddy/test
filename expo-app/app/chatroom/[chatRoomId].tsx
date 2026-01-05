@@ -33,14 +33,14 @@ const ChatRoomScreen = () => {
   const route = useRoute<ChatRoomRouteProp>()
   const chatRoomDetails = typeof route.params?.chatRoomDetails === 'string' ? JSON.parse(route.params?.chatRoomDetails) : route.params?.chatRoomDetails
   const chatRoomId = chatRoomDetails.id;
-  console.log("chatRoomId: ", chatRoomId);
+  const [participant , setParticipant] = useState(chatRoomDetails?.participantIds);
   const headerPops = {
     navigation: () => router.back(),
     data: chatRoomDetails,
     participant: chatRoomDetails?.participants?.length,
     GroupName: chatRoomDetails?.groupName,
     setSearchValue: () => { },
-    participantIds: chatRoomDetails?.participantIds
+    participantIds: participant
   }
 
 
@@ -55,7 +55,6 @@ const ChatRoomScreen = () => {
   const [chatListState, setChatList] = useState<ChatMessage[]>([]);
   const [newMessages, setNewMessages] = useState([]);
   const [groupName, setGroupName] = useState("");
-  const [participant, setParticipants] = useState("");
   const [participantIds, setParticipantIds] = useState([]);
   const [recording, setRecording] = useState(false);
   // const [audioRecorderPlayer] = useState(new AudioRecorderPlayer());
@@ -388,6 +387,7 @@ const ChatRoomScreen = () => {
       socketService.emit("joinChatRoom", payload);
 
       socketService.on("userPreviousMessages", (data) => {
+        setParticipant(data.participantIds);
         const newChatList = [...chatListState, ...data.previousMessages];
         setChatList(newChatList);
         saveMessage(newChatList)
@@ -584,7 +584,7 @@ const ChatRoomScreen = () => {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         {loading ? (
-          <ActivityIndicator size="large" color={Colors.darkGreen} />
+          <ActivityIndicator size="small" color={Colors.darkGreen} />
         ) : (
           <Text style={{ color: Colors.lightGreen }}>No messages yet</Text>
         )}
@@ -711,7 +711,7 @@ const ChatRoomScreen = () => {
               style={styles.iconContainer}
               onPress={() => selectImageFromCamera("library")}
             >
-              <Paperclip size={24} color="grey" style={styles.icon} />
+              <Paperclip size={23} color="grey" style={styles.icon} />
             </TouchableOpacity>
           </View>
 
@@ -950,14 +950,15 @@ const styles = StyleSheet.create({
   },
   inputInnerContainer: {
     flexDirection: "row",
-    alignItems: "flex-end",
+    alignItems: "center",
+    // justifyContent:"center",
+
     borderRadius: 30,
     backgroundColor: "rgba(230, 230, 230, 0.5)",
     flex: 1,
   },
   iconContainer: {
-    margin: 10,
-    marginBottom: 18
+    margin: 10
   },
   icon: {
     width: 23,
@@ -974,11 +975,11 @@ const styles = StyleSheet.create({
   },
   microphoneButton: {
     backgroundColor: "#82934b",
-    padding: 8,
+    padding: 10,
     borderRadius: 50,
     marginLeft: 10,
-    height: 45,
-    width: 45,
+    height: 55,
+    width: 55,
     justifyContent: "center",
     alignItems: "center",
   },

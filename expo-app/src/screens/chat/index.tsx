@@ -173,11 +173,12 @@ const ChatLoungeList = () => {
 
   return (
     <View style={styles.container}>
-      <ChatHeader />
+     
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
       >
+         <ChatHeader />
 
         {
         shipChatList.length == 0 && fleetChatList.length == 0 && 
@@ -192,6 +193,7 @@ const ChatLoungeList = () => {
         ))
         }
 
+        <View style={styles.chatListContainer}>
         {loungeSections.map((section) => {
           if (section.rooms.length === 0) return null
 
@@ -215,16 +217,16 @@ const ChatLoungeList = () => {
             </View>
           )
         })}
+         </View>
       </ScrollView>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.white },
+  container: { flex: 1,  backgroundColor: "#FFFFFF",  },
   contentContainer: {
     paddingBottom: 150,
-    marginTop: 80,
     gap: 25,
   },
   sectionContainer: {
@@ -232,6 +234,10 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(232, 232, 232, 1)",
     borderRadius: 15,
     overflow: 'hidden',
+  },
+  chatListContainer:{
+    marginTop:60
+
   },
   sectionHeader: {
     flexDirection: 'row',

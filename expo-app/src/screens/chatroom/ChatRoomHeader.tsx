@@ -5,6 +5,7 @@ import {
   Dimensions,
   FlatList,
   Image,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -22,7 +23,6 @@ const { height } = Dimensions.get("screen");
 // ──────────────────────────────────────────────────────────────
 // Memoized User Item – using Expo Image only
 const UserItem = React.memo(({ item, onPress }: { item: any; onPress: (user: any) => void }) => {
-  console.log("item: ", item);
   const isBoarded = item?.ship?.crewMembers?.find(
     (member: any) => member.userId === item?.id
   )?.isBoarded;
@@ -233,6 +233,17 @@ const styles = StyleSheet.create({
     height: 60,
     paddingHorizontal: 10,
     backgroundColor: "#FFFFFF",
+     ...Platform.select({
+          ios: {
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.5,
+          },
+          android: {
+            elevation: 5,
+          },
+        }),
 
   },
   shadow: {

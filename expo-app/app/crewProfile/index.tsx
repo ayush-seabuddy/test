@@ -1,8 +1,16 @@
+import { viewProfile } from '@/src/apis/apiService';
 import GlobalHeader from '@/src/components/GlobalHeader';
+import { showToast } from '@/src/components/GlobalToast';
+import MediaPreviewModal from '@/src/components/Modals/MediaPreviewModal';
 import Colors from '@/src/utils/Colors';
+import { formatHobbies, formatShipName } from '@/src/utils/helperFunctions';
+import { ImagesAssets } from '@/src/utils/ImageAssets';
+import { AntDesign, Entypo } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
 import { router, useLocalSearchParams } from 'expo-router';
 import { t } from 'i18next';
-import { ChevronLeft, ExternalLink, Globe, Mars, Maximize2 } from 'lucide-react-native';
+import { ExternalLink, Globe, Mars, Maximize2 } from 'lucide-react-native';
+import moment from 'moment-timezone';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Dimensions,
@@ -15,14 +23,6 @@ import {
   View,
 } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
-import { BlurView } from 'expo-blur';
-import { AntDesign, Entypo } from '@expo/vector-icons';
-import { formatHobbies, formatShipName } from '@/src/utils/helperFunctions';
-import moment from 'moment-timezone';
-import MediaPreviewModal from '@/src/components/Modals/MediaPreviewModal';
-import { viewProfile } from '@/src/apis/apiService';
-import { showToast } from '@/src/components/GlobalToast';
-import { ImagesAssets } from '@/src/utils/ImageAssets';
 
 const { width, height } = Dimensions.get('window');
 
