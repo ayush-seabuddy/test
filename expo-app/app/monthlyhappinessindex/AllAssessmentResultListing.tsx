@@ -167,8 +167,6 @@ const AllAssessmentResultListing = () => {
         <View style={styles.container}>
             <GlobalHeader
                 title={title}
-                leftIcon={<ChevronLeft size={24} color="#000" />}
-                onLeftPress={() => router.back()}
             />
 
             {sortedData.length > 0 ? (

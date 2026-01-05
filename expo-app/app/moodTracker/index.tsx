@@ -411,8 +411,6 @@ const MoodTracker: React.FC = () => {
       <View style={styles.mainContainer}>
         <GlobalHeader
           title="Mood Tracker"
-          onLeftPress={() => router.back()}
-          leftIcon={<ChevronLeft color="#000" size={24} />}
         />
 
         <ScrollView

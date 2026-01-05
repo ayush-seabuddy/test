@@ -189,8 +189,6 @@ const SocialMediaLinks = () => {
     <>
       <GlobalHeader
         title={t('social_media')}
-        onLeftPress={() => router.back()}
-        leftIcon={<ChevronLeft size={24} color="#000" />}
       />
 
       <View style={{ flex: 1, padding: 14 }}>

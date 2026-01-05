@@ -416,7 +416,7 @@ const EditProfile = () => {
       style={{ flex: 1 }}
     >
       <View style={{ flex: 1 }}>
-        <GlobalHeader title="Edit Profile" onLeftPress={() => router.back()} leftIcon={<ChevronLeft />} />
+        <GlobalHeader title="Edit Profile" />
         <ScrollView
           ref={scrollViewRef}
           showsVerticalScrollIndicator={false}

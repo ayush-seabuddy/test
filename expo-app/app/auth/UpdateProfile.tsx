@@ -264,7 +264,6 @@ const UpdateProfile = () => {
     <View style={styles.main}>
       <GlobalHeader
         title={t('profileDetails')}
-        leftIcon={<ChevronLeft size={20} />}
         onLeftPress={currentStep > 1 ? handlePrev : () => router.back()}
       />
 

@@ -205,8 +205,6 @@ const CompanyContentList = ({headerTitle, contentType}:{headerTitle:string , con
 
       <GlobalHeader 
         title={headerTitle}
-        leftIcon={<ChevronLeft size={24} color="#000" />}
-        onLeftPress={() => router.back()}
       />
       <FlatList
         data={data}

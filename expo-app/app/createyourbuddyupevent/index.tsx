@@ -709,10 +709,6 @@ const CreateYourBuddyUpEvent = () => {
 
                 <GlobalHeader
                     title={isEditMode ? t('editbuddyup') : t('createbuddyup')}
-                    leftIcon={<ChevronLeft />}
-                    onLeftPress={() => {
-                        router.back();
-                    }}
                 />
 
                 <View style={{ position: 'relative' }}>

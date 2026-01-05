@@ -55,8 +55,6 @@ const WellnessOfficerProfile = () => {
         <View style={{ flex: 1 }}>
             <GlobalHeader
                 title={t('WellnessOfficerProfile')}
-                leftIcon={<ChevronLeft size={20} />}
-                onLeftPress={() => router.back()}
             />
 
             {/* Expand Image Button */}

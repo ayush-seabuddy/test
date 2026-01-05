@@ -202,7 +202,6 @@ const BuddyCalendarModal = ({
                 <View style={styles.appBar}>
                     <GlobalHeader
                         title={t('calendar')}
-                        leftIcon={<ChevronLeft />}
                         onLeftPress={handleClose}
                     />
                 </View>

@@ -227,7 +227,7 @@ const CertificationsScreen = () => {
 
   return (
     <>
-      <GlobalHeader title={t('certifications')} onLeftPress={() => router.back()} leftIcon={<ChevronLeft />} />
+      <GlobalHeader title={t('certifications')} />
 
       <View style={{ flex: 1, padding: 14 }}>
         <View style={{ marginBottom: 12 }}>

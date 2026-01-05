@@ -245,7 +245,7 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
 
     return (
         <>
-            <GlobalHeader title={t('shipboard_experience')} onLeftPress={() => router.back()} leftIcon={<ChevronLeft />} />
+            <GlobalHeader title={t('shipboard_experience')} />
 
             {/* {loading && <Loader />} */}
 

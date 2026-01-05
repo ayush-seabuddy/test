@@ -246,8 +246,6 @@ const CrewListingScreen = () => {
         <View style={styles.main}>
             <GlobalHeader
                 title={t('crewlist')}
-                leftIcon={<ChevronLeft />}
-                onLeftPress={() => router.back()}
                 rightIcon={<Image source={ImagesAssets.FilterIcon} style={styles.filterIcon} contentFit="contain" />}
                 onRightPress={openFilterSheet}
             />

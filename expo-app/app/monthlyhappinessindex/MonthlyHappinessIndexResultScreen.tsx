@@ -58,8 +58,6 @@ const monthFormatted = useMemo(() => {
     <View style={styles.main}>
       <GlobalHeader
         title={`Result ${monthFormatted}`}
-        leftIcon={<ChevronLeft size={20} />}
-        onLeftPress={() => router.back()}
       />
 
       <ScrollView showsVerticalScrollIndicator={false}>

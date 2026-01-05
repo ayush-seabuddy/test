@@ -109,8 +109,6 @@ const UploadProfilePhoto = () => {
     <View style={styles.container}>
       <GlobalHeader
         title={t("profile_photo")}
-        leftIcon={<ChevronLeft size={24} />}
-        onLeftPress={() => router.back()}
       />
 
       <View style={styles.bottomCard1}>

@@ -330,8 +330,6 @@ const BuddyUpRequestApprovalScreen = () => {
                         ? t("sharetofeed")
                         : t("requestapprovalform")
                 }
-                leftIcon={<ChevronLeft />}
-                onLeftPress={() => router.back()}
             />
 
             {loading && (

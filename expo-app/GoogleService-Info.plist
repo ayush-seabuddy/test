@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyBTrB38AlY7qPfcUbx8p3iLdsCFxJhe8Ps</string>
+	<key>GCM_SENDER_ID</key>
+	<string>99688209735</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.seekware.seabuddy</string>
+	<key>PROJECT_ID</key>
+	<string>seabuddy-b46d6</string>
+	<key>STORAGE_BUCKET</key>
+	<string>seabuddy-b46d6.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:99688209735:ios:b0d166900b2259b5458062</string>
+	<key>DATABASE_URL</key>
+	<string>https://seabuddy-b46d6-default-rtdb.asia-southeast1.firebasedatabase.app</string>
+</dict>
+</plist>

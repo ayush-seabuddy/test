@@ -1,21 +1,64 @@
 {
   "cli": {
-    "version": ">= 16.28.0",
+    "version": ">= 5.0.0",
     "appVersionSource": "remote"
   },
   "build": {
+    "base": {
+      "channel": "development",
+      "distribution": "internal",
+      "autoIncrement": true
+    },
     "development": {
       "developmentClient": true,
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
+      "channel": "preview",
+      "distribution": "internal",
+      "autoIncrement": true,
+      "env": {
+        "APP_ENV": "staging",
+        "API_URL": "$API_URL",
+        "SOCKET_URL": "$SOCKET_URL"
+      },
+      "android": {
+        "gradleCommand": ":app:bundleRelease"
+      },
+      "ios": {
+        "buildConfiguration": "Release"
+      }
     },
     "production": {
-      "autoIncrement": true
+      "channel": "production",
+      "distribution": "store",
+      "autoIncrement": true,
+      "android": {
+        "gradleCommand": ":app:bundleRelease"
+      },
+      "ios": {
+        "buildConfiguration": "Release",
+        "autoIncrement": "buildNumber"
+      },
+      "env": {
+        "APP_ENV": "production",
+        "API_URL": "$API_URL",
+        "SOCKET_URL": "$SOCKET_URL"
+      }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {},
+      "android": {
+        "track": "internal"
+      }
+    },
+    "preview": {
+      "ios": {},
+      "android": {
+        "track": "internal"
+      }
+    }
   }
 }

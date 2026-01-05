@@ -331,8 +331,6 @@ const HelplineFormScreen = () => {
     <View style={styles.container}>
       <GlobalHeader
         title={isViewMode ? t('helplineForm') : helplineName}
-        leftIcon={<ChevronLeft size={20} />}
-        onLeftPress={() => router.back()}
       />
 
       {/* Header Section */}

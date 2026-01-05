@@ -208,7 +208,6 @@ const Profile: React.FC = () => {
     <View style={styles.container}>
       <GlobalHeader
         title={t('crew_profile')}
-        leftIcon={<ChevronLeft size={24} color={Colors.black} />}
         onLeftPress={handleBackPress}
         titleStyle={styles.headerTitle}
       />

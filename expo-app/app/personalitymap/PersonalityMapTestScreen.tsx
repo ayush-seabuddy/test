@@ -317,6 +317,6 @@ const styles = StyleSheet.create({
   radioInner: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#84A402' },
   radioLabelText: { fontSize: 11, color: '#fff', fontFamily: 'Poppins-Regular', textAlign: 'center' },
   footerContainer: { paddingHorizontal: 20, paddingTop: 30, paddingBottom: 40, alignItems: 'center' },
-  confidentialityText: { fontSize: 13, color: '#fff', lineHeight: 20, fontFamily: 'Poppins-Regular', textAlign: 'center' },
+  confidentialityText: { fontSize: 13, color: '#000', lineHeight: 20, fontFamily: 'Poppins-Regular', textAlign: 'center' },
   noQuestionsText: { color: '#fff', textAlign: 'center', marginTop: 50, fontSize: 16 },
 });

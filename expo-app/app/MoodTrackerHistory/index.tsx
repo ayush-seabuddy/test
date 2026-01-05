@@ -117,8 +117,6 @@ const MoodTrackerHistory = () => {
     <View style={styles.container}>
       <GlobalHeader
         title="Mood Tracker History"
-        onLeftPress={() => router.back()}
-        leftIcon={<ChevronLeft color="#000" size={24} />}
       />
 
       <FlatList

@@ -254,8 +254,6 @@ const LeaderboardScreen = () => {
         <View style={styles.main}>
             <GlobalHeader 
                 title={t('leaderboard')} 
-                leftIcon={<ChevronLeft />} 
-                onLeftPress={() => router.back()} 
             />
 
             <FlatList

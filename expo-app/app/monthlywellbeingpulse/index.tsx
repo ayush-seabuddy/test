@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     radioDot: { width: 14, height: 14, borderRadius: 7, backgroundColor: Colors.lightGreen },
     optionLabel: { color: '#fff', fontSize: 14, fontFamily: 'Poppins-Regular' },
     footer: { paddingHorizontal: 20, marginBottom: 40 },
-    disclaimerText: { fontFamily: 'Poppins-Regular', fontSize: 14, fontStyle: 'italic', color: '#fff', marginBottom: 20 },
+    disclaimerText: { fontFamily: 'Poppins-Regular', fontSize: 14, fontStyle: 'italic', color: '#000', marginBottom: 20 },
     submitButton: { backgroundColor: '#fff', paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
     submitButtonDisabled: { backgroundColor: '#666' },
     submitButtonTextActive: { color: 'black' },

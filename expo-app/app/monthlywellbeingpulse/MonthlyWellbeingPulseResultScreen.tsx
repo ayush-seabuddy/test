@@ -82,8 +82,6 @@ const MonthlyWellbeingPulseResultScreen = () => {
         <View style={styles.main}>
             <GlobalHeader
                 title={`Result ${formattedMonth}`}
-                leftIcon={<ChevronLeft size={20} />}
-                onLeftPress={() => router.back()}
             />
 
             <ScrollView style={{ flex: 1 }}>

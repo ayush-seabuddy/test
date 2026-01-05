@@ -82,8 +82,6 @@ const Analytics = () => {
     <View style={styles.root}>
       <GlobalHeader
         title={t("analytics")}
-        leftIcon={<ChevronLeft size={20} />}
-        onLeftPress={() => { router.back() }}
       />
       <ScrollView>
         <View style={styles.wholePage}>

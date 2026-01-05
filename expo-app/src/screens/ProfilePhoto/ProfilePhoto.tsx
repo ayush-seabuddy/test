@@ -159,8 +159,6 @@ const ProfilePhoto = () => {
     <>
       <GlobalHeader
         title={t('profile_photo')}
-        leftIcon={<ChevronLeft />}
-        onLeftPress={() => router.back()}
       />
 
       <View style={styles.container}>
