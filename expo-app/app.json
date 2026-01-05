@@ -14,6 +14,9 @@
     },
     "android": {
       "package": "co.seabuddy.platform",
+      "permissions": [
+        "INTERNET"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#E6F4FE",
