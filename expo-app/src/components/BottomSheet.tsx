@@ -47,12 +47,12 @@ const BottomSheet: React.FC<Props> = ({
     if (typeof point === "number") return point;
     if (point === "60%") return SCREEN_HEIGHT * 0.6;
     if (point === "80%") return SCREEN_HEIGHT * 0.8;
-    return SCREEN_HEIGHT * 0.5;
+    return SCREEN_HEIGHT * 0.2;
   };
 
   const sheetHeight = getHeight(snapPoints[0]);
 
-  const dynamicBehavior = keyboardHeight > 0 
+  const dynamicBehavior = keyboardHeight > 0
     ? (Platform.OS === "ios" ? "padding" : "height")
     : undefined;
 
@@ -83,34 +83,34 @@ const BottomSheet: React.FC<Props> = ({
 
 
 const styles = StyleSheet.create({
-    backdrop: {
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-    },
-    sheet: {
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: "#fff",
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        overflow: "hidden",
-    },
-    handleContainer: {
-        alignItems: "center",
-        paddingTop: 5,
-    },
-    handle: {
-        width: 40,
-        height: 3,
-        borderRadius: 2,
-        backgroundColor: "#ccc",
-    },
+  backdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  sheet: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    overflow: "hidden",
+  },
+  handleContainer: {
+    alignItems: "center",
+    paddingTop: 5,
+  },
+  handle: {
+    width: 40,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: "#ccc",
+  },
 });
 
 export default BottomSheet;

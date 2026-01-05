@@ -359,6 +359,7 @@ const styles = StyleSheet.create({
 
   personaresulttext: {
     fontSize: 20,
+    lineHeight: 30,
     color: "black",
     fontFamily: "WhyteInktrap-Bold",
   },
@@ -392,12 +393,14 @@ const styles = StyleSheet.create({
 
   maritime_title: {
     fontSize: 18,
+    lineHeight: 30,
     color: "#262626",
     fontFamily: "WhyteInktrap-Medium",
   },
 
   personality_type: {
     fontSize: 14,
+    lineHeight: 20,
     fontFamily: "WhyteInktrap-Bold",
   },
 
@@ -444,6 +447,7 @@ const styles = StyleSheet.create({
 
   personalityDescText: {
     fontSize: 18,
+    lineHeight: 20,
     fontFamily: "WhyteInktrap-Medium",
     color: "black",
   },

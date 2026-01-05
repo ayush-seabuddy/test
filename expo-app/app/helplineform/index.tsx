@@ -196,11 +196,9 @@ const HelplineFormScreen = () => {
 
   const isFormValid = () => {
     return questions.every(q => {
-      if (!q.isRequired) return true;
       if (isFieldDisabled(q.id)) return true;
-
       const answer = responses[q.id];
-      return answer && answer.trim() !== '' && answer !== 'Anonymous';
+      return answer && answer.trim() !== '' && answer.trim() !== 'Anonymous';
     });
   };
 
@@ -208,7 +206,7 @@ const HelplineFormScreen = () => {
     if (isViewMode) return; // Prevent submit in view mode
 
     if (!isFormValid()) {
-      showToast.error(t('validationError'), t('pleaseFillAllRequiredFields'));
+      showToast.error(t('incomplete'), t('pleaseanswerall'));
       return;
     }
 

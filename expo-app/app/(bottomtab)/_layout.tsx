@@ -47,8 +47,8 @@ const BottomTabbarLayout = () => {
           const iconSource = isProfile
             ? userDetails.profileUrl
             : TAB_ICONS[route.name]?.[
-                focused ? 'focused' : 'unfocused'
-              ];
+            focused ? 'focused' : 'unfocused'
+            ];
 
           return (
             <View
@@ -69,15 +69,15 @@ const BottomTabbarLayout = () => {
                   isProfile
                     ? focused
                       ? {
-                          borderColor: Colors.lightGreen,
-                          borderWidth: 0.5,
-                        }
+                        borderColor: Colors.lightGreen,
+                        borderWidth: 0.5,
+                      }
                       : null
                     : {
-                        tintColor: focused
-                          ? Colors.lightGreen
-                          : 'white',
-                      },
+                      tintColor: focused
+                        ? Colors.lightGreen
+                        : 'white',
+                    },
                 ]}
               />
             </View>
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(84, 97, 94, 1)',
     marginVertical: 20,
     marginHorizontal: 10,
-    paddingTop: Platform.OS === 'ios' ? 30 : 5,
+    paddingTop: Platform.OS === 'ios' ? 8 : 5,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },

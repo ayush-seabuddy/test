@@ -113,7 +113,7 @@ const ForgotPasswordScreen = () => {
                 onChangeText={handleEmailChange}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                containerStyle={{ width: '90%', marginTop: 30 }}
+                containerStyle={{ width: '90%', marginTop: 30, alignItems: 'center' }}
                 leftIcon={<Mail size={20} color={Colors.iconMuted} />}
                 error={email && emailError}
               />
@@ -173,6 +173,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: "WhyteInktrap-Bold",
     fontSize: 20,
+    lineHeight: 20,
     color: "#161616",
     paddingTop: Platform.OS === "android" ? 0 : 10,
   },

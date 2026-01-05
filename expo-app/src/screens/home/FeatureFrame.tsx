@@ -86,7 +86,6 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
             title: t("ship_life"),
             description: t("ship_life_description"),
             onPress: () => router.push("/(bottomtab)/shiplife"),
-            onPress: () => router.push("/(bottomtab)/shiplife"),
         },
         {
             icon: ImagesAssets.ShipAnchorLogo,
@@ -243,7 +242,7 @@ const styles = StyleSheet.create({
     },
     featuresGrid: {
         flex: 1,
-        marginTop: 20,
+        marginVertical: 10,
         alignItems: "center",
         justifyContent: "center",
         gap: 8,

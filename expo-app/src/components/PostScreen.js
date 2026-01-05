@@ -9,18 +9,18 @@ import {
   FlatList,
   Modal,
   TextInput,
+  Image,
 } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
-import { Image } from 'expo-image';
 import {
   Heart,
   MessageCircle,
   TrendingUp,
-  MoreVertical,
   Play,
   Trash,
   AlertTriangle,
   PencilIcon,
+  MoreVertical,
 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import ReactTimeAgo from 'react-time-ago';
@@ -28,7 +28,6 @@ import { VideoView, useVideoPlayer } from 'expo-video';
 import { useRouter } from 'expo-router';
 import BottomSheet from './BottomSheet';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Popover from 'react-native-popover-view';
 import { likecommentpost, updatepost } from '../apis/apiService';
 import { showToast } from './GlobalToast';
 import FullScreenMediaModal from '@/app/fullscreenmediapreview';
@@ -67,35 +66,46 @@ const ColorsLight = {
 
 const isVideo = (uri) => !!uri && /\.(mp4|mov|avi|m4v)$/i.test(uri);
 
-const UserItem = React.memo(({ user, onPress }) => (
-  <TouchableOpacity style={styles.userItemContainer} onPress={onPress} activeOpacity={0.7}>
-    <Image
-      source={{ uri: user.profileUrl || undefined }}
-      style={styles.userAvatar}
-      contentFit="cover"
-      placeholder={ImagesAssets.userIcon}
-    />
-    <View style={styles.userInfo}>
-      <Text style={styles.userName}>{user.fullName}</Text>
-    </View>
-  </TouchableOpacity>
-));
+const UserItem = React.memo(({ user, onPress }) => {
+  const imageSource = user.profileUrl
+    ? { uri: user.profileUrl }
+    : ImagesAssets.userIcon;
+
+  return (
+    <TouchableOpacity style={styles.userItemContainer} onPress={onPress} activeOpacity={0.7}>
+      <Image
+        source={imageSource}
+        style={styles.userAvatar}
+        contentFit="cover"
+      />
+      <View style={styles.userInfo}>
+        <Text style={styles.userName}>{user.fullName}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+});
 
 const TaggedUsersRow = ({ users, onPress }) => (
   <TouchableOpacity activeOpacity={0.8} onPress={onPress}>
     <View style={styles.avatarRow}>
-      {users.slice(0, 3).map((user, index) => (
-        <Image
-          key={user.id || index}
-          source={{ uri: user.profileUrl || undefined }}
-          style={[
-            styles.avatar1,
-            { marginLeft: index > 0 ? -15 : 0 },
-          ]}
-          contentFit="cover"
-          placeholder={ImagesAssets.userIcon}
-        />
-      ))}
+      {users.slice(0, 3).map((user, index) => {
+        const imageSource = user.profileUrl
+          ? { uri: user.profileUrl }
+          : ImagesAssets.userIcon;
+
+        return (
+          <Image
+            key={user.id || index}
+            source={imageSource}
+            style={[
+              styles.avatar1,
+              { marginLeft: index > 0 ? -15 : 0 },
+            ]}
+            placeholder={ImagesAssets.userIcon}
+            contentFit="cover"
+          />
+        );
+      })}
       {users.length > 3 && (
         <View style={styles.additionalUsers}>
           <Text style={styles.additionalUsersText}>+{users.length - 3}</Text>
@@ -112,7 +122,7 @@ const PostHeader = ({
   taggedUsers,
   onTaggedPress,
   onProfilePress,
-  children,
+  onMenuPress,
 }) => (
   <View style={styles.header}>
     <TouchableOpacity onPress={onProfilePress}>
@@ -138,7 +148,10 @@ const PostHeader = ({
         </View>
       )}
     </View>
-    {children}
+
+    <TouchableOpacity onPress={onMenuPress} style={styles.menuButton}>
+      <MoreVertical size={20} color="#4B5563" strokeWidth={1.7} />
+    </TouchableOpacity>
   </View>
 );
 
@@ -301,6 +314,52 @@ const PostFooter = ({ post, isLiked, likesCount, handleLikeToggle, isLikeLoading
   </View>
 );
 
+// Menu as BottomSheet
+const MenuBottomSheet = ({ visible, onClose, isOwner, onEdit, onDeleteTrigger, onReportTrigger }) => {
+  return (
+    <BottomSheet visible={visible} onClose={onClose} snapPoints={["30%"]}>
+      <View style={styles.menuSheetContent}>
+        {isOwner ? (
+          <>
+            <TouchableOpacity
+              style={styles.menuRow}
+              onPress={() => {
+                onClose();
+                onEdit();
+              }}
+            >
+              <PencilIcon size={20} color="#1F2937" />
+              <Text style={styles.menuText}>{t('edit')}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.menuRow}
+              onPress={() => {
+                onClose();
+                onDeleteTrigger();
+              }}
+            >
+              <Trash size={18} color="#EF4444" />
+              <Text style={[styles.menuText, { color: '#EF4444' }]}>{t('delete')}</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <TouchableOpacity
+            style={styles.menuRow}
+            onPress={() => {
+              onClose();
+              onReportTrigger();
+            }}
+          >
+            <AlertTriangle size={20} color="#EF4444" />
+            <Text style={[styles.menuText, { color: '#EF4444' }]}>{t('report')}</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </BottomSheet>
+  );
+};
+
+// Delete Confirmation as Modal (original)
 const DeleteConfirmationModal = ({ visible, onClose, onConfirm, loading }) => (
   <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
     <View style={styles.modalOverlay}>
@@ -320,10 +379,18 @@ const DeleteConfirmationModal = ({ visible, onClose, onConfirm, loading }) => (
   </Modal>
 );
 
+// Report as Modal (original)
 const ReportModal = ({ visible, onClose, onSubmit, loading }) => {
   const [reason, setReason] = useState('');
-  const handleSubmit = () => { onSubmit(reason); setReason(''); };
-  const handleClose = () => { setReason(''); onClose(); };
+  const handleSubmit = () => {
+    if (!reason.trim()) return;
+    onSubmit(reason);
+    setReason('');
+  };
+  const handleClose = () => {
+    setReason('');
+    onClose();
+  };
 
   return (
     <Modal transparent visible={visible} animationType="fade" onRequestClose={handleClose}>
@@ -380,7 +447,7 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
     })();
   }, []);
 
-  const [showPopover, setShowPopover] = useState(false);
+  const [menuSheetVisible, setMenuSheetVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -396,7 +463,9 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
         if (!stored) return setYourActivity(false);
         const currentUser = JSON.parse(stored);
         setYourActivity(post.userDetails?.id && currentUser?.id === post.userDetails.id);
-      } catch { setYourActivity(false); }
+      } catch {
+        setYourActivity(false);
+      }
     };
     checkOwnership();
   }, [post.userDetails?.id]);
@@ -531,6 +600,25 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
     }
   };
 
+  const handleEdit = () => {
+    router.push({
+      pathname: '/newpost',
+      params: {
+        editMode: 'true',
+        postId: post.id,
+        caption: post.caption || '',
+        imageUrls: JSON.stringify(post.imageUrls || []),
+        hashtags: JSON.stringify(post.hashtags || []),
+        taggedUsers: JSON.stringify((post.taggedUsers || []).map(u => ({
+          id: u.id,
+          fullName: u.fullName,
+          profileUrl: u.profileUrl || null,
+          designation: u.designation || ''
+        }))),
+      }
+    });
+  };
+
   const hashtagsDisplay = useMemo(() => (
     <View style={styles.hashtagsContainer}>
       {isBuddyUpEvent && <View style={[styles.tag, { backgroundColor: ColorsLight.tagBg }]}><Text style={[styles.tagText, { color: '#06361F' }]}>{t('buddyupevents')}</Text></View>}
@@ -553,62 +641,8 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
           taggedUsers={taggedUsers}
           onTaggedPress={() => setTaggedSheetVisible(true)}
           onProfilePress={() => navigateToProfile(post.userDetails.id)}
-        >
-          <Popover
-            isVisible={showPopover}
-            onRequestClose={() => setShowPopover(false)}
-            from={
-              <TouchableOpacity onPress={() => setShowPopover(true)}>
-                <View style={styles.menuButton}>
-                  <MoreVertical size={20} color="#4B5563" strokeWidth={1.7} />
-                </View>
-              </TouchableOpacity>
-            }
-            popoverStyle={{ backgroundColor: '#FFFFFF', borderRadius: 12, paddingVertical: 8, minWidth: 140 }}
-            placement="bottom"
-          >
-            <View>
-              {yourActivity ? (
-                <>
-                  <TouchableOpacity
-                    style={styles.menuRow}
-                    onPress={() => {
-                      setShowPopover(false);
-                      router.push({
-                        pathname: '/newpost',
-                        params: {
-                          editMode: 'true',
-                          postId: post.id,
-                          caption: post.caption || '',
-                          imageUrls: JSON.stringify(post.imageUrls || []),
-                          hashtags: JSON.stringify(post.hashtags || []),
-                          taggedUsers: JSON.stringify((post.taggedUsers || []).map(u => ({
-                            id: u.id,
-                            fullName: u.fullName,
-                            profileUrl: u.profileUrl || null,
-                            designation: u.designation || ''
-                          }))),
-                        }
-                      });
-                    }}
-                  >
-                    <PencilIcon size={20} color="#1F2937" />
-                    <Text style={styles.menuText}>{t('edit')}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.menuRow} onPress={() => { setShowPopover(false); setDeleteModalVisible(true); }}>
-                    <Trash size={18} color="#EF4444" />
-                    <Text style={[styles.menuText, { color: '#EF4444' }]}>{t('delete')}</Text>
-                  </TouchableOpacity>
-                </>
-              ) : (
-                <TouchableOpacity style={styles.menuRow} onPress={() => { setShowPopover(false); setReportModalVisible(true); }}>
-                  <AlertTriangle size={20} color="#EF4444" />
-                  <Text style={[styles.menuText, { color: '#EF4444' }]}>{t('report')}</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </Popover>
-        </PostHeader>
+          onMenuPress={() => setMenuSheetVisible(true)}
+        />
 
         {hasMedia && (
           <PostMedia
@@ -647,9 +681,33 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
         />
       </View>
 
-      <DeleteConfirmationModal visible={deleteModalVisible} onClose={() => setDeleteModalVisible(false)} onConfirm={deletePost} loading={loading} />
-      <ReportModal visible={reportModalVisible} onClose={() => setReportModalVisible(false)} onSubmit={reportPost} loading={loading} />
+      {/* Menu - BottomSheet */}
+      <MenuBottomSheet
+        visible={menuSheetVisible}
+        onClose={() => setMenuSheetVisible(false)}
+        isOwner={yourActivity}
+        onEdit={handleEdit}
+        onDeleteTrigger={() => setDeleteModalVisible(true)}
+        onReportTrigger={() => setReportModalVisible(true)}
+      />
 
+      {/* Delete Confirmation - Modal */}
+      <DeleteConfirmationModal
+        visible={deleteModalVisible}
+        onClose={() => setDeleteModalVisible(false)}
+        onConfirm={deletePost}
+        loading={loading}
+      />
+
+      {/* Report - Modal */}
+      <ReportModal
+        visible={reportModalVisible}
+        onClose={() => setReportModalVisible(false)}
+        onSubmit={reportPost}
+        loading={loading}
+      />
+
+      {/* Likes BottomSheet */}
       <BottomSheet visible={likesSheetVisible} onClose={() => setLikesSheetVisible(false)}>
         <View style={styles.sheetHeader}>
           <Text style={styles.sheetTitle}>{t('likedUsers')}</Text>
@@ -665,6 +723,7 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
         />
       </BottomSheet>
 
+      {/* Tagged Users BottomSheet */}
       <BottomSheet visible={taggedSheetVisible} onClose={() => setTaggedSheetVisible(false)}>
         <View style={styles.sheetHeader}>
           <Text style={styles.sheetTitle}>{t("taggedUsers")}</Text>
@@ -724,20 +783,24 @@ const styles = StyleSheet.create({
   additionalUsers: { width: 30, height: 30, borderRadius: 15, backgroundColor: '#D1D5DB', justifyContent: 'center', alignItems: 'center', marginLeft: -15 },
   additionalUsersText: { fontSize: 12, color: '#374151', fontWeight: '600', fontFamily: 'Poppins-SemiBold' },
   pagination: { flexDirection: 'row', justifyContent: 'center', marginTop: 10 },
-  menuRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 20 },
-  menuText: { marginLeft: 10, fontSize: 12, fontFamily: 'Poppins-SemiBold', color: '#1F2937' },
+
+  menuSheetContent: { paddingHorizontal: 20, paddingTop: 10 },
+  menuRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 16 },
+  menuText: { marginLeft: 12, fontSize: 16, fontFamily: 'Poppins-SemiBold', color: '#1F2937' },
   mediaHashtagsOverlay: { position: 'absolute', bottom: 10, left: 10, right: 0, zIndex: 10, pointerEvents: 'none' },
+
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   modalContainer: { backgroundColor: '#FFFFFF', borderRadius: 16, padding: 24, width: '100%', maxWidth: 400, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 10 },
   modalTitle: { fontSize: 18, fontWeight: '700', color: '#1F2937', marginBottom: 8, fontFamily: 'Poppins-SemiBold', textAlign: 'center' },
   modalSubtitle: { fontSize: 14, color: '#374151', marginBottom: 20, fontFamily: 'Poppins-Regular', textAlign: 'center', lineHeight: 20 },
   textInput: { backgroundColor: '#F3F4F6', borderRadius: 8, padding: 12, fontSize: 14, color: '#1F2937', fontFamily: 'Poppins-Regular', borderWidth: 1, borderColor: '#D1D5DB', minHeight: 100, marginBottom: 20 },
   modalButtonContainer: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
-  modalButton: { flex: 1, paddingVertical: 10, borderRadius: 8, alignItems: 'center', justifyContent: 'center', minHeight: 40 },
+  modalButton: { flex: 1, paddingVertical: 14, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   modalButtonCancel: { backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: '#D1D5DB' },
   modalButtonConfirm: { backgroundColor: '#8DAF02' },
-  modalButtonTextCancel: { fontSize: 14, fontWeight: '600', color: '#1F2937', fontFamily: 'Poppins-SemiBold' },
-  modalButtonTextConfirm: { fontSize: 14, fontWeight: '600', color: '#FFFFFF', fontFamily: 'Poppins-SemiBold' },
+  modalButtonTextCancel: { fontSize: 15, fontWeight: '600', color: '#1F2937', fontFamily: 'Poppins-SemiBold' },
+  modalButtonTextConfirm: { fontSize: 15, fontWeight: '600', color: '#FFFFFF', fontFamily: 'Poppins-SemiBold' },
+
   sheetHeader: { alignItems: 'center', paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: '#eee' },
   sheetTitle: { fontSize: 15, fontFamily: 'Poppins-SemiBold', color: '#1F2937' },
   userItemContainer: { flexDirection: 'row', alignItems: 'center', padding: 10, marginVertical: 4, borderRadius: 10, backgroundColor: '#f9f9f9' },

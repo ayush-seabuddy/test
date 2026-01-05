@@ -488,7 +488,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 7,
   },
-  experienceTitle: { fontSize: 18, color: ProfileColors.textPrimary, fontFamily: 'WhyteInktrap-Bold' },
+  experienceTitle: { fontSize: 18, color: ProfileColors.textPrimary, fontFamily: 'WhyteInktrap-Bold', lineHeight: 20 },
   experienceItem: { marginVertical: 5 },
   experienceHeader: {
     flexDirection: 'row',

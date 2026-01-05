@@ -136,7 +136,11 @@ const AssessmentList = ({ isProfileScreen = false }: { isProfileScreen?: boolean
           <View style={styles.headerRow}>
             <View style={styles.titleRow}>
               <Text style={styles.sectionTitle}>{t('myassessments')}</Text>
-              {hasPendingAssessment && <TriangleAlert size={18} color="red" />}
+              {hasPendingAssessment &&
+                <View style={{ marginBottom: 5 }}>
+                  <TriangleAlert size={18} color="red" />
+                </View>
+              }
             </View>
             <TouchableOpacity onPress={() => setListOpen(!listOpen)}>
               {listOpen ? <ChevronUp size={20} color="black" /> : <ChevronDown size={20} color="black" />}
@@ -244,6 +248,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: isProMax ? 22 : 18,
     fontWeight: '500',
+    lineHeight: 25,
     color: Colors.darkGreen,
     fontFamily: 'WhyteInktrap-Medium',
   },
