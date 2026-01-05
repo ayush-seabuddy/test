@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Linking, Platform, StyleSheet, View } from 'react-native';
 
 import { useNotification } from '@/Context/NotificationContext';
@@ -11,34 +11,23 @@ import { createTables } from '@/src/database/chatSchema';
 import { initI18n } from '@/src/localization/i18n';
 import { I18nProvider } from '@/src/localization/I18nProvider';
 import Colors from '@/src/utils/Colors';
-import * as Notifications from 'expo-notifications';
 import { useTranslation } from 'react-i18next';
 import Splash from './onboarding/Splash';
+
+import { setIsNotification, setPage, setParams } from '@/src/redux/notificationSlice';
+import * as Notifications from 'expo-notifications';
+import { useDispatch } from 'react-redux';
 
 export default function Index() {
   const { notification, expoPushToken, error } = useNotification();
   const { t } = useTranslation();
-  const [notificationDetails, setNotificationDetails] = useState<{
-    isNotification: boolean,
-    page: string,
-    params: any
-  }>({
-    isNotification: false,
-    page: '/',
-    params: {},
-  })
-  const [showSplash, setShowSplash] = useState(false);
+  const dispatch = useDispatch();
   const responseListener = useRef<Notifications.Subscription | null>(null);
 
   const handleNotificationTap = useCallback(
     async (data: any) => {
       if (!data?.page) return;
-      setNotificationDetails((prev) => {
-        return {
-          ...prev,
-          isNotification: true,
-        }
-      })
+      dispatch(setIsNotification(true));
 
       const { id, page, type, androidUrl, iosUrl } = data;
 
@@ -57,53 +46,26 @@ export default function Index() {
       try {
         switch (page) {
           case "GROUP_ACTIVITY":
-            setNotificationDetails((prev) => {
-              return {
-                ...prev,
-                page: "/buddyupeventdescription",
-                params: { eventId: id },
-              }
-            })
+            dispatch(setPage("/buddyupeventdescription"));
+            dispatch(setParams({ eventId: id }));
             break;
 
           case "CONTENT":
-            setNotificationDetails((prev) => {
-              return {
-                ...prev,
-                page: "/contentDetails/[contentId]",
-                params:  { contentId: id },
-              }
-            })
+            dispatch(setPage("/contentDetails/[contentId]"));
+            dispatch(setParams({ contentId: id }));
             break;
 
           case "HANGOUT":
-              setNotificationDetails((prev) => {
-              return {
-                ...prev,
-                page: "/singlepost",
-                params:  { postId: id },
-              }
-            })
+            dispatch(setPage("/singlepost"));
+            dispatch(setParams({ postId: id }));
             break;
 
           case "HAPPINESS":
-            setNotificationDetails((prev) => {
-              return {
-                ...prev,
-                page:"/monthlyhappinessindex",
-                params:  { },
-              }
-            })
+            dispatch(setPage("/monthlyhappinessindex"));
             break;
 
           case "POMS":
-            setNotificationDetails((prev) => {
-              return {
-                ...prev,
-                page:"/monthlywellbeingpulse",
-                params:  {},
-              }
-            })
+            dispatch(setPage("/monthlywellbeingpulse"));
             break;
 
           default:
@@ -114,7 +76,7 @@ export default function Index() {
         showToast.error("oops", t("somethingwentwrong"));
       }
     },
-    [t]
+    [t, dispatch]
   );
 
   useEffect(() => {
@@ -177,7 +139,7 @@ export default function Index() {
           style={styles.container}
         >
           <View style={styles.splashOverlay}>
-            <Splash notificationDetails={notificationDetails} showSplash={showSplash} />
+            <Splash />
           </View>
         </LinearGradient>
       </AppContainer>
