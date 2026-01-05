@@ -1,0 +1,12 @@
+build:
+  name: Create preview builds
+  triggers:
+    - event: push
+      branch: feature/expo-migration
+  steps:
+    - eas/checkout
+    - eas/install_dependencies
+    - eas/build:
+        platform: all
+        profile: preview
+        auto_submit: false

@@ -1,8 +1,14 @@
 {
   "cli": {
-    "version": ">= 5.0.0"
+    "version": ">= 5.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
+    "base": {
+      "channel": "development",
+      "distribution": "internal",
+      "autoIncrement": true
+    },
     "development": {
       "developmentClient": true,
       "distribution": "internal",
@@ -11,20 +17,50 @@
       }
     },
     "preview": {
+      "channel": "preview",
       "distribution": "internal",
+      "autoIncrement": true,
       "env": {
-        "APP_ENV": "staging"
-      }
-    },
-    "production": {
+        "APP_ENV": "staging",
+        "API_URL": "$API_URL",
+        "SOCKET_URL": "$SOCKET_URL"
+      },
       "android": {
-        "gradleCommand": ":app:assembleRelease"
+        "gradleCommand": ":app:bundleRelease"
       },
       "ios": {
         "buildConfiguration": "Release"
+      }
+    },
+    "production": {
+      "channel": "production",
+      "distribution": "store",
+      "autoIncrement": true,
+      "android": {
+        "gradleCommand": ":app:bundleRelease"
+      },
+      "ios": {
+        "buildConfiguration": "Release",
+        "autoIncrement": "buildNumber"
       },
       "env": {
-        "APP_ENV": "production"
+        "APP_ENV": "production",
+        "API_URL": "$API_URL",
+        "SOCKET_URL": "$SOCKET_URL"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {},
+      "android": {
+        "track": "internal"
+      }
+    },
+    "preview": {
+      "ios": {},
+      "android": {
+        "track": "internal"
       }
     }
   }
