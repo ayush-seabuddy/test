@@ -1,11 +1,10 @@
+import UserProfile from '@/src/screens/Profile/UserProfile'
 import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet } from 'react-native'
 
 const ProfileScreen = () => {
   return (
-    <View>
-      <Text>ProfileScreen</Text>
-    </View>
+   <UserProfile />
   )
 }
 

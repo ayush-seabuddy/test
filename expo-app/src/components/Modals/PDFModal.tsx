@@ -1,16 +1,17 @@
+import { useNavigation } from "@react-navigation/native";
+import { ChevronLeft } from 'lucide-react-native';
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  TouchableOpacity,
   ActivityIndicator,
+  Dimensions,
+  Modal,
   Platform,
-  Modal
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
-import { ChevronLeft, FileText } from 'lucide-react-native';
-import { useNavigation } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 
 const { height, width } = Dimensions.get("window");
@@ -29,10 +30,10 @@ const PDFModal:React.FC<PDFModalProps> = ({
   pdfUrl,
   useLocal = false,
   title = "App Guide",
+  
 }) => {
   const navigation = useNavigation();
   const [useWebView, setUseWebView] = useState(false);
-
   const pdfModalStyle = {
     backgroundColor: "#fff",
     alignItems: "center",
@@ -65,11 +66,11 @@ const PDFModal:React.FC<PDFModalProps> = ({
   transparent={false}
   animationType="slide" // optional: smoother entry
 >
-      <View style={styles.pdfModalContainer}>
+      <SafeAreaView style={styles.pdfModalContainer}>
         {pdfUrl ? (
           <>
             <View style={styles.headerContainer}>
-              <TouchableOpacity onPress={handleBackPress} style={styles.headerButton}>
+              <TouchableOpacity onPress={onClose||handleBackPress} style={styles.headerButton}>
                 <ChevronLeft  size={20} />
               </TouchableOpacity>
               <Text style={styles.headerText}>{title}</Text>
@@ -107,7 +108,7 @@ const PDFModal:React.FC<PDFModalProps> = ({
             </TouchableOpacity>
           </View>
         )}
-      </View>
+      </SafeAreaView>
     </Modal>
   );
 };

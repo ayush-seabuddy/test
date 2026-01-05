@@ -1,106 +1,96 @@
 // CustomHeader.js
-import React, { useCallback, useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Platform,
-  Image,
-  TextInput,
-} from "react-native";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { getUnreadNotificationCount } from "@/src/apis/apiService";
 import Colors from "@/src/utils/Colors";
+import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { useNavigation } from "@react-navigation/native";
+import { router, useFocusEffect } from "expo-router";
 import { House } from "lucide-react-native";
-import { router } from "expo-router";
+import React, { useCallback, useState } from "react";
+import {
+  Image,
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  View
+} from "react-native";
 
 const SocialHeader = () => {
   const navigation = useNavigation();
 
-  const [Notification, setNotification] = useState([]);
   const [unreadNotification, setUnreadNotification] = useState(0)
 
 
-//   const GetAllNotification = async () => {
-//     const dbResult = await AsyncStorage.getItem("userDetails");
-//     const userDetails = JSON.parse(dbResult);
-//     try {
-//       const queryParams = new URLSearchParams({
-//         page: 1,
-//         limit: 100,
-//       }).toString();
-//       var response = await apiCallWithToken(
-//         apiServerUrl + "/user/getAllNotifications?" + queryParams,
-//         "GET",
-//         null,
-//         userDetails.authToken
-//       );
+  //   const GetAllNotification = async () => {
+  //     const dbResult = await AsyncStorage.getItem("userDetails");
+  //     const userDetails = JSON.parse(dbResult);
+  //     try {
+  //       const queryParams = new URLSearchParams({
+  //         page: 1,
+  //         limit: 100,
+  //       }).toString();
+  //       var response = await apiCallWithToken(
+  //         apiServerUrl + "/user/getAllNotifications?" + queryParams,
+  //         "GET",
+  //         null,
+  //         userDetails.authToken
+  //       );
 
 
-//       setNotification(response.result.notificationsList);
-//     } catch (error) {
-//       console.log(error);
-//     }
-//   };
+  //       setNotification(response.result.notificationsList);
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   };
 
-//   const unReadNotification = async () => {
-//     const dbResult = await AsyncStorage.getItem("userDetails");
-//     const userDetails = JSON.parse(dbResult);
-//     try {
-//       var response = await apiCallWithToken(
-//         apiServerUrl + "/user/getUnreadNotificationCount?",
-//         "GET",
-//         null,
-//         userDetails.authToken
-//       );
-//       setUnreadNotification(response.result.allNotifications);
-//     } catch (error) {
-//       console.log(error);
-//     }
-//   };
+  const unReadNotification = async () => {
+    try {
+      var response = await getUnreadNotificationCount();
+      setUnreadNotification(response.data.allNotifications);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-//   useFocusEffect(
-//     useCallback(() => {
-//       GetAllNotification();
-//       unReadNotification();
-//       return () => {
-//       };
-//     }, [])
-//   );
+  useFocusEffect(
+    useCallback(() => {
+      // GetAllNotification();
+      unReadNotification();
+      return () => {
+      };
+    }, [])
+  );
 
-return (
+  return (
     <View style={styles.container}>
       <Image source={ImagesAssets.appTitleLogo} style={styles.titleLogo} />
 
       <View style={styles.iconGroup}>
         {/* Notification Button */}
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => { router.push('/notification') }}>
           <View style={styles.iconWrapper}>
             <Image source={ImagesAssets.notificationBell} style={styles.iconImage} />
-            <View style={styles.badgeWrapper}>
-              <Text style={styles.badgeText}>{Notification.length}</Text>
-            </View>
+            {unreadNotification > 0 && <View style={styles.badgeWrapper}>
+              {/* <Text style={styles.badgeText}>{unreadNotification}</Text> */}
+            </View>}
           </View>
         </TouchableOpacity>
 
         {/* Company Library */}
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => router.push("/company-library")}>
           <View style={styles.iconWrapper}>
             <Image source={ImagesAssets.companyLibraryLogo} style={styles.iconImage} />
           </View>
         </TouchableOpacity>
 
         {/* Search */}
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => router.push("/globalSearch")}>
           <View style={styles.iconWrapper}>
             <Image source={ImagesAssets.searchLogo} style={styles.iconImage} />
           </View>
         </TouchableOpacity>
 
         {/* Home */}
-        <TouchableOpacity style={styles.homeButton} onPress={() => router.push("/home")}>
+        <TouchableOpacity style={styles.homeButton} onPress={() => router.replace("/home")}>
           <House size={22} color="#000" />
         </TouchableOpacity>
       </View>
@@ -160,12 +150,12 @@ const styles = StyleSheet.create({
 
   badgeWrapper: {
     position: "absolute",
-    top: -5,
-    right: -5,
+    top: 2,
+    right: 2,
     backgroundColor: Colors.lightGreen,
     borderRadius: 10,
-    minWidth: 18,
-    height: 18,
+    minWidth: 10,
+    height: 10,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 4,

@@ -1,29 +1,28 @@
 // ChatRoomHeader.tsx
-import React, { useState, useRef, useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  View,
+  BackHandler,
+  Dimensions,
+  FlatList,
+  Image,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  Platform,
-  Image,
-  BackHandler,
-  FlatList,
-  Dimensions,
+  View
 } from "react-native";
 // import { ImagesAssets } from "../../assets/ImagesAssets";
-import { useSelector } from "react-redux";
-import ChatSearchComponent from "./ChatSearchComponent";
-import { ArrowLeft, Search } from "lucide-react-native";
-import { router } from "expo-router";
-import RBSheet from "react-native-raw-bottom-sheet";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { router } from "expo-router";
+import { ChevronLeft, Search } from "lucide-react-native";
+import RBSheet from "react-native-raw-bottom-sheet";
+import ChatSearchComponent from "./ChatSearchComponent";
 
 const { height } = Dimensions.get("screen");
 
 // ──────────────────────────────────────────────────────────────
 // Memoized User Item – using Expo Image only
 const UserItem = React.memo(({ item, onPress }: { item: any; onPress: (user: any) => void }) => {
+  console.log("item: ", item);
   const isBoarded = item?.ship?.crewMembers?.find(
     (member: any) => member.userId === item?.id
   )?.isBoarded;
@@ -45,7 +44,8 @@ const UserItem = React.memo(({ item, onPress }: { item: any; onPress: (user: any
         />
         <View style={{ marginLeft: 10 }}>
           <Text style={styles.userItem}>
-            {item.fullName} ({item?.designation})
+            {item.fullName} 
+            {/* ({item?.designation}) */}
           </Text>
 
          {item?.department !== "Shore_Staff" && (
@@ -158,7 +158,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
             }
             style={{ padding: 12 }}
           >
-            <ArrowLeft color="black" size={25} />
+            <ChevronLeft color="black" size={25} />
           </TouchableOpacity>
 
           {/* Group Name + Members Count – NO onPress */}

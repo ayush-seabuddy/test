@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import GlobalButton from "@/src/components/GlobalButton";
 import { Info } from "lucide-react-native";
@@ -20,6 +20,9 @@ const { width, height } = Dimensions.get("window");
 const PersonalityMapIntroScreen = () => {
     const router = useRouter();
     const { t } = useTranslation();
+    const params = useLocalSearchParams<{
+        testData?: string;
+    }>();
 
     return (
         <View style={styles.container}>
@@ -60,7 +63,12 @@ const PersonalityMapIntroScreen = () => {
                 <GlobalButton
                     title={t("start_button")}
                     onPress={() => {
-                        router.push('/personalitymap/PersonalityMapTestScreen');
+                        router.push({
+                            pathname: '/personalitymap/PersonalityMapTestScreen',
+                            params: {
+                                testData: params.testData || '',
+                            },
+                        });
                     }}
                     buttonStyle={styles.customButton}
                     textStyle={styles.customButtonText}

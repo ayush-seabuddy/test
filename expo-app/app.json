@@ -14,15 +14,18 @@
     },
     "android": {
       "package": "co.seabuddy.platform",
+      "permissions": [
+        "INTERNET"
+      ],
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#E6F4FE",
         "monochromeImage": "./assets/images/adaptive-icon.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "softwareKeyboardLayoutMode": "pan"
+      "softwareKeyboardLayoutMode": "resize",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "static",
@@ -33,10 +36,18 @@
       "expo-localization",
       "expo-font",
       [
-        "react-native-video",
+        "expo-video",
         {
-          "androidEnableCaching": true,
-          "iosEnableCaching": true
+          "supportsBackgroundPlayback": true,
+          "supportsPictureInPicture": true
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "defaultChannel": "default",
+          "enableBackgroundRemoteNotifications": false
         }
       ],
       [
@@ -46,6 +57,16 @@
             "portrait",
             "landscape"
           ]
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26,
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35
+          }
         }
       ],
       [
@@ -71,6 +92,14 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "env": "local",
+      "router": {},
+      "eas": {
+        "projectId": "130f7684-8e60-49eb-8e4c-746ee8b1ff0b"
+      }
+    },
+    "owner": "seabuddyco1"
   }
 }

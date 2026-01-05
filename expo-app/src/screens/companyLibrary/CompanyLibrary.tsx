@@ -1,0 +1,226 @@
+
+import { getallcontents } from '@/src/apis/apiService'
+import GlobalHeader from '@/src/components/GlobalHeader'
+import { router } from 'expo-router'
+import { t } from 'i18next'
+import { ChevronLeft, ChevronRight } from 'lucide-react-native'
+import React, { useEffect } from 'react'
+import { Text, TouchableOpacity, View } from 'react-native'
+import RelatedContentCard from '../ContentDetails/RelatedContentCard'
+import CompanyAnnouncements from './CompanyAnnouncements'
+import MusicCard from './MusicCard'
+
+const CompanyLibrary = () => {
+    const contentList = ["MUSIC", "READ", "VIDEO"];
+    const [loading, setLoading] = React.useState(true);
+    const [contentListData, setContentListData] = React.useState({
+
+        MUSIC: [],
+        READ: [],
+        VIDEO: []
+    });
+
+
+    const getContentList = async (item: string) => {
+        try {
+            const apiResponse = await getallcontents({
+                page: 1,
+                limit: 10,
+                contentCategory: "COMPANY_LIBRARY",
+                contentType: item
+                // onlyAnnouncement: onlyAnnouncement,
+            });
+
+
+
+            if (apiResponse.success && apiResponse.status === 200) {
+                console.log("apiResponse.data.allContents: ", apiResponse.data.allContents);
+                setContentListData((prevData) => ({
+                    ...prevData,
+                    [item]: apiResponse.data.allContents
+                }))
+            } else {
+                // showToast.error(t('oops'), apiResponse.message);
+            }
+        } catch (error) {
+            // showToast.error(t('oops'), t('somethingwentwrong'));
+        }
+    };
+
+    useEffect(() => {
+        try {
+            setLoading(true);
+            contentList.forEach(async (item) => {
+                await getContentList(item);
+            });
+
+        } catch (error) {
+
+        } finally {
+            setLoading(false);
+        }
+
+    }, []);
+
+    return (
+        <View style={{ flex: 1 }}>
+            <GlobalHeader title={t("companyLibrary")} leftIcon={<ChevronLeft size={24} />} onLeftPress={() => router.back()} />
+            <View
+                style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginVertical: 10,
+                    paddingHorizontal: 14,
+                }}
+            >
+                <Text
+                    style={{
+                        lineHeight: 22,
+                        fontSize: 18,
+                        fontWeight: "500",
+                        color: "black",
+                        fontFamily: "WhyteInktrap-Medium",
+                    }}
+                >
+                    Bulletin
+                </Text>
+            </View>
+            <CompanyAnnouncements />
+            {contentListData?.VIDEO?.length > 0 && <>
+                <View
+                    style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginVertical: 10,
+                        paddingHorizontal: 14,
+                    }}
+                >
+                    <Text
+                        style={{
+                            lineHeight: 22,
+                            fontSize: 18,
+                            fontWeight: "500",
+                            color: "black",
+                            fontFamily: "WhyteInktrap-Medium",
+                        }}
+                    >
+                        Watch
+                    </Text>
+                    {contentListData?.VIDEO?.length > 3 && (
+                        <TouchableOpacity
+                            onPress={() => {
+                                router.push({
+                                    pathname: "/companyContentList",
+                                    params: {
+                                        title: `Watch`,
+                                        contentType: `VIDEO`
+                                    },
+                                });
+                            }}
+                        >
+                            <ChevronRight size={24} />
+                        </TouchableOpacity>
+                    )}
+                </View>
+                {!loading && <View style={{ paddingHorizontal: 16 }}>
+                    <RelatedContentCard data={contentListData?.VIDEO} />
+                </View>}
+
+
+            </>}
+
+            {contentListData?.MUSIC?.length > 0 && <>
+                <View
+                    style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginVertical: 10,
+                        paddingHorizontal: 14,
+                    }}
+                >
+                    <Text
+                        style={{
+                            lineHeight: 22,
+                            fontSize: 18,
+                            fontWeight: "500",
+                            color: "black",
+                            fontFamily: "WhyteInktrap-Medium",
+                        }}
+                    >
+                        Listen
+                    </Text>
+                    {contentListData?.MUSIC?.length > 3 && (
+                        <TouchableOpacity
+                            onPress={() => {
+                                router.push({
+                                    pathname: "/companyContentList",
+                                    params: {
+                                        title: `Listen`,
+                                        contentType: `MUSIC`
+                                    },
+                                });
+                            }}
+                        >
+                            <ChevronRight size={24} />
+                        </TouchableOpacity>
+                    )}
+                </View>
+                {!loading && <View style={{ paddingHorizontal: 16 }}>
+                    <MusicCard data={contentListData?.MUSIC} />
+                </View>}
+
+
+            </>}
+
+
+            {contentListData?.READ?.length > 0 && <>
+                <View
+                    style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginVertical: 10,
+                        paddingHorizontal: 14,
+                    }}
+                >
+                    <Text
+                        style={{
+                            lineHeight: 22,
+                            fontSize: 18,
+                            fontWeight: "500",
+                            color: "black",
+                            fontFamily: "WhyteInktrap-Medium",
+                        }}
+                    >
+                        Read
+                    </Text>
+                    {contentListData?.READ?.length > 3 && (
+                        <TouchableOpacity
+                            onPress={() => {
+                                router.push({
+                                    pathname: "/companyContentList",
+                                    params: {
+                                        title: `Read`,
+                                        contentType: `READ`
+                                    },
+                                });
+                            }}
+                        >
+                            <ChevronRight size={24} />
+                        </TouchableOpacity>
+                    )}
+                </View>
+                {!loading && <View style={{ paddingHorizontal: 16 }}>
+                    <RelatedContentCard data={contentListData?.READ} />
+                </View>}
+
+
+            </>}
+        </View>
+    )
+}
+
+export default CompanyLibrary

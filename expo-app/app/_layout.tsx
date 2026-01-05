@@ -1,25 +1,51 @@
-import Colors from "@/src/utils/Colors";
+import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Slot } from "expo-router";
+import * as Notifications from "expo-notifications";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect, useState } from "react";
-import { I18nextProvider } from "react-i18next";
-import { StatusBar, StyleSheet, Text } from "react-native";
+import * as TaskManager from "expo-task-manager";
+import { useEffect } from "react";
+import { I18nextProvider, useTranslation } from "react-i18next";
+import { StatusBar, StyleSheet, useColorScheme } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-import KeyboardWrapper from "../src/components/KeyboardWrapper";
-import { initI18n } from "@/src/localization/i18n";
-import i18n from "i18next";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import socketService from "@/src/utils/socketService";
 import { Provider } from "react-redux";
+
+import { NotificationProvider } from "@/Context/NotificationContext";
+import { initI18n } from "@/src/localization/i18n";
 import { store } from "@/src/redux/store";
+import Colors from "@/src/utils/Colors";
+import socketService from "@/src/utils/socketService";
+import i18n from "i18next";
 
 SplashScreen.preventAutoHideAsync();
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowList: true,
+  }),
+});
+
+const BACKGROUND_NOTIFICATION_TASK = "background-notification-task";
+
+TaskManager.defineTask(BACKGROUND_NOTIFICATION_TASK, async ({ data, error }) => {
+  if (error) {
+    console.error("Background notification error:", error);
+    return;
+  }
+  console.log("Background notification received:", data);
+});
+
+Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK).catch(() => { });
+
 export default function RootLayout() {
-  const [appReady, setAppReady] = useState(false);
+  const colorScheme = useColorScheme();
+  const { t } = useTranslation();
 
   const [fontsLoaded] = useFonts({
     "Poppins-Regular": require("../assets/fonts/Poppins-Regular.ttf"),
@@ -32,43 +58,55 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    async function prepare() {
-      await initI18n();
-      setAppReady(true);
-      SplashScreen.hideAsync();
-    }
+    if (!fontsLoaded) return;
 
-    if (fontsLoaded) prepare();
+    const initApp = async () => {
+      try {
+        await initI18n();
+        socketService.initializeSocket();
+      } catch (e) {
+        console.warn("Init error:", e);
+      } finally {
+        await SplashScreen.hideAsync();
+      }
+    };
+
+    initApp();
   }, [fontsLoaded]);
 
-  useEffect(()=>{
-   socketService.initializeSocket()
-  },[])
-
-  if (!appReady) return null;
+  if (!fontsLoaded) return null;
 
   return (
-     <Provider store={store}>
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-        <StatusBar barStyle="dark-content" backgroundColor="#000" />
-          <PaperProvider>
-            <I18nextProvider i18n={i18n}>
+    <NotificationProvider>
+      <Provider store={store}>
+        <SafeAreaProvider>
+          <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
+            <StatusBar
+              barStyle={colorScheme === "dark" ? "light-content" : "dark-content"}
+              backgroundColor="#000"
+            />
+            <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+              <PaperProvider>
+                <I18nextProvider i18n={i18n}>
                   <GestureHandlerRootView style={{ flex: 1 }}>
-                <Slot />
-                </GestureHandlerRootView>
-            </I18nextProvider>
-          </PaperProvider>
-        <Toast />
-      </SafeAreaView>
-    </SafeAreaProvider>
-    </Provider>
+                    <Stack screenOptions={{ headerShown: false }}>
+                      <Stack.Screen name="(bottomtab)" />
+                    </Stack>
+                    <Toast />
+                  </GestureHandlerRootView>
+                </I18nextProvider>
+              </PaperProvider>
+            </ThemeProvider>
+          </SafeAreaView>
+        </SafeAreaProvider>
+      </Provider>
+    </NotificationProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  container: {
     flex: 1,
-    backgroundColor: Colors?.white || "#fff",
+    backgroundColor: Colors.white ?? "#fff",
   },
 });

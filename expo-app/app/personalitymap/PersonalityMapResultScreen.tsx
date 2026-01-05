@@ -35,7 +35,7 @@ interface PersonalityInsight {
   big_five_type_full: string;
   famous_individuals: string[];
   description: string;
-  personality_traits: Record<string, string>[];
+  personality_traits: Record<string, string> | Record<string, string>[];
   career_path: Record<string, string>;
   red_flags: string[];
   corrective_actions: Array<{
@@ -121,6 +121,31 @@ const PersonalityMapResultScreen = () => {
 
   const traitsList = Array.isArray(data?.personality_traits) ? data.personality_traits : [];
   const careerObj = typeof data?.career_path === "object" && !Array.isArray(data?.career_path) ? data.career_path : {};
+  const normalizedTraits = React.useMemo(() => {
+    if (!data?.personality_traits) return [];
+
+    // Case 1: Already an array
+    if (Array.isArray(data.personality_traits)) {
+      return data.personality_traits.flatMap((obj) =>
+        Object.entries(obj).map(([title, value]) => ({
+          title,
+          value,
+        }))
+      );
+    }
+
+    // Case 2: Object
+    if (typeof data.personality_traits === "object") {
+      return Object.entries(data.personality_traits).map(
+        ([title, value]) => ({
+          title,
+          value,
+        })
+      );
+    }
+
+    return [];
+  }, [data?.personality_traits]);
 
   return (
     <View style={styles.main}>
@@ -240,29 +265,23 @@ const PersonalityMapResultScreen = () => {
             </TouchableOpacity>
           </View>
 
-          {!traitsExpanded && traitsList.length > 0 && (
+          {!traitsExpanded && normalizedTraits.length > 0 && (
             <Text style={styles.desc} numberOfLines={2}>
-              {(() => {
-                const first = traitsList[0];
-                const [title, value] = Object.entries(first)[0] as [string, string];
-                return `${title}: ${value}`;
-              })()}
+              {normalizedTraits[0].title}: {normalizedTraits[0].value}
             </Text>
           )}
 
           {traitsExpanded && (
             <View style={{ marginTop: 10, gap: 12 }}>
-              {traitsList.map((traitObj, index) => {
-                const [title, value] = Object.entries(traitObj)[0] as [string, string];
-                return (
-                  <View key={index}>
-                    <Text style={styles.traitTitle}>{title}</Text>
-                    <Text style={styles.desc}>{value}</Text>
-                  </View>
-                );
-              })}
+              {normalizedTraits.map((item, index) => (
+                <View key={index}>
+                  <Text style={styles.traitTitle}>{item.title}</Text>
+                  <Text style={styles.desc}>{item.value}</Text>
+                </View>
+              ))}
             </View>
           )}
+
         </View>
 
         {/* Career Path */}
@@ -340,6 +359,7 @@ const styles = StyleSheet.create({
 
   personaresulttext: {
     fontSize: 20,
+    lineHeight: 30,
     color: "black",
     fontFamily: "WhyteInktrap-Bold",
   },
@@ -373,12 +393,14 @@ const styles = StyleSheet.create({
 
   maritime_title: {
     fontSize: 18,
+    lineHeight: 30,
     color: "#262626",
     fontFamily: "WhyteInktrap-Medium",
   },
 
   personality_type: {
     fontSize: 14,
+    lineHeight: 20,
     fontFamily: "WhyteInktrap-Bold",
   },
 
@@ -425,6 +447,7 @@ const styles = StyleSheet.create({
 
   personalityDescText: {
     fontSize: 18,
+    lineHeight: 20,
     fontFamily: "WhyteInktrap-Medium",
     color: "black",
   },

@@ -6,6 +6,7 @@ import {
   Pressable,
   FlatList,
   ActivityIndicator,
+  TouchableOpacity,
 } from 'react-native';
 import Colors from '@/src/utils/Colors';
 import * as Progress from 'react-native-progress';
@@ -16,6 +17,9 @@ import { showToast } from '@/src/components/GlobalToast';
 import GlobalButton from '@/src/components/GlobalButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PersonalityMapResultModal from '@/src/components/PersonalityMapResultModal';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { BackHandler } from 'react-native';
+import moment from 'moment-timezone';
 
 type AnswerOption = { option: string; score: number };
 type Question = {
@@ -30,15 +34,23 @@ const PAGE_SIZE = 10;
 
 const PersonalityMapTestScreen = () => {
   const { t } = useTranslation();
+  const router = useRouter();
+  const params = useLocalSearchParams<{ testData?: string }>();
   const flatListRef = useRef<FlatList>(null);
-
+  const previousMonth = moment().subtract(1, 'month');
   const [allQuestions, setAllQuestions] = useState<Question[]>([]);
   const [displayedQuestions, setDisplayedQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [showResultPopup, setshowResultPopup] = useState(false);
+  const [showResultPopup, setShowResultPopup] = useState(false);
+
+  const parsedTestData = params.testData
+    ? JSON.parse(params.testData as string)
+    : null;
+
+  const isRequiredTest = parsedTestData?.isRequires === true;
 
   const fetchQuestions = useCallback(async () => {
     setLoading(true);
@@ -59,7 +71,7 @@ const PersonalityMapTestScreen = () => {
         setAllQuestions(unique);
         setDisplayedQuestions(unique.slice(0, PAGE_SIZE));
       } else {
-        showToast.error(t('oops'), res.message);
+        showToast.error(t('oops'), res.message || t('somethingwentwrong'));
       }
     } catch (err: any) {
       showToast.error(t('oops'), err.message || t('somethingwentwrong'));
@@ -71,6 +83,17 @@ const PersonalityMapTestScreen = () => {
   useEffect(() => {
     fetchQuestions();
   }, [fetchQuestions]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!isRequiredTest) return;
+
+      const onBackPress = () => true;
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => subscription.remove();
+    }, [isRequiredTest])
+  );
 
   const loadMoreQuestions = () => {
     if (loadingMore || displayedQuestions.length >= allQuestions.length) return;
@@ -97,7 +120,7 @@ const PersonalityMapTestScreen = () => {
     const idx = displayedQuestions.findIndex(q => !answers[q.id]);
     if (idx !== -1) {
       flatListRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0.5 });
-      showToast.error('Incomplete', 'Please answer all questions');
+      showToast.error(t('incomplete'), t('please_answer_all'));
     }
   };
 
@@ -113,10 +136,10 @@ const PersonalityMapTestScreen = () => {
     try {
       const payload = {
         questionType: 'PERSONALITY',
-        month: new Date().toISOString().slice(0, 7), // YYYY-MM
+        month: previousMonth.format('MM-YYYY'),
         answers: Object.entries(answers).map(([questionId, answer]) => ({
           questionId,
-          answer,                     // number (1-5)
+          answer,
           createdAt: new Date().toISOString(),
         })),
       };
@@ -124,21 +147,23 @@ const PersonalityMapTestScreen = () => {
       const res = await saveassessmentresponse(payload);
 
       if (res.success && res.status === 200) {
-        showToast.success(t('success'), res.message);
+        showToast.success(t('success'), res.message || t('assessment_submitted'));
 
-        // Mark test as completed locally
         try {
-          const user = JSON.parse((await AsyncStorage.getItem('userDetails')) || '{}');
-          user.isPersonalityTestCompleted = true;
-          await AsyncStorage.setItem('userDetails', JSON.stringify(user));
+          const userStr = await AsyncStorage.getItem('userDetails');
+          if (userStr) {
+            const user = JSON.parse(userStr);
+            user.isPersonalityTestCompleted = true;
+            await AsyncStorage.setItem('userDetails', JSON.stringify(user));
+          }
         } catch (_) { }
-        setshowResultPopup(true);
 
+        setShowResultPopup(true);
       } else {
-        showToast.error('Error', res.message || 'Submission failed');
+        showToast.error(t('error'), res.message || t('somethingwentwrong'));
       }
     } catch (err: any) {
-      showToast.error('Error', err.message || 'Network error');
+      showToast.error(t('error'), err.message || t('somethingwentwrong'));
     } finally {
       setSubmitting(false);
     }
@@ -187,9 +212,9 @@ const PersonalityMapTestScreen = () => {
             <Text style={styles.confidentialityText}>{t('happinessindexdisclaimer')}</Text>
             <GlobalButton
               onPress={handleNextPress}
-              title={submitting ? 'Submitting...' : t('common.next')}
+              title={submitting ? t('submitting') : t('common.next')}
               buttonStyle={styles.nextButton}
-              disabled={submitting}
+              disabled={submitting || !isComplete}
             />
           </>
         )}
@@ -215,17 +240,20 @@ const PersonalityMapTestScreen = () => {
 
   return (
     <View style={styles.main}>
-      <PersonalityMapResultModal visible={showResultPopup} setModalVisible={setshowResultPopup} />
+      <PersonalityMapResultModal visible={showResultPopup} setModalVisible={setShowResultPopup} />
 
       <View style={styles.header}>
-
         <View style={styles.innerView}>
-
           <Text style={styles.personalitymaptext}>{t('personalitymap')}</Text>
-          <View style={styles.skipView}>
-            <Text style={styles.skip}>{t('skip')}</Text>
-            <ChevronRight size={20} color={Colors.textSecondary} />
-          </View>
+          {!isRequiredTest && (
+            <TouchableOpacity
+              onPress={() => router.replace('/home')}
+              style={styles.skipView}
+            >
+              <Text style={styles.skip}>{t('skip')}</Text>
+              <ChevronRight size={20} color={Colors.textSecondary} />
+            </TouchableOpacity>
+          )}
         </View>
 
         <Text style={styles.personalitymapdesc}>{t('personalitymapdesc')}</Text>
@@ -234,7 +262,7 @@ const PersonalityMapTestScreen = () => {
           progress={progress}
           color="#84A402"
           height={7}
-          unfilledColor={Colors.iconColor}
+          unfilledColor="#E0E0E0"
           borderWidth={0}
           width={null}
           style={styles.progressbar}
@@ -243,7 +271,12 @@ const PersonalityMapTestScreen = () => {
         <Text style={styles.progresspercentage}>
           {Math.round(progress * 100)}% {t('completedquestions')} ({answeredCount}/{totalQuestions})
         </Text>
-        <Text style={styles.mandatoryText}>{t('mandatorydesc')}</Text>
+
+        <Text style={styles.mandatoryText}>
+          {isRequiredTest
+            ? t('mandatorydesc')
+            : t('mandatoryindays', { diffDays: 7 })}
+        </Text>
       </View>
 
       <FlatList
@@ -266,7 +299,7 @@ export default PersonalityMapTestScreen;
 const styles = StyleSheet.create({
   main: { flex: 1, backgroundColor: Colors.captainanimatedlayoutbg },
   header: { margin: 16, gap: 10, paddingBottom: 10 },
-  innerView: { flexDirection: 'row', justifyContent: 'space-between' },
+  innerView: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   personalitymaptext: { fontSize: 20, lineHeight: 22, color: '#161616', fontFamily: 'WhyteInktrap-Bold' },
   personalitymapdesc: { fontFamily: 'Poppins-Regular', fontSize: 12, color: 'black' },
   skip: { fontSize: 14, color: Colors.textSecondary, fontFamily: 'Poppins-Regular' },
@@ -284,6 +317,6 @@ const styles = StyleSheet.create({
   radioInner: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#84A402' },
   radioLabelText: { fontSize: 11, color: '#fff', fontFamily: 'Poppins-Regular', textAlign: 'center' },
   footerContainer: { paddingHorizontal: 20, paddingTop: 30, paddingBottom: 40, alignItems: 'center' },
-  confidentialityText: { fontSize: 13, color: 'black', lineHeight: 20, fontFamily: 'Poppins-Regular' },
+  confidentialityText: { fontSize: 13, color: '#fff', lineHeight: 20, fontFamily: 'Poppins-Regular', textAlign: 'center' },
   noQuestionsText: { color: '#fff', textAlign: 'center', marginTop: 50, fontSize: 16 },
 });

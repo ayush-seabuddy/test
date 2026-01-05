@@ -1,21 +1,21 @@
+import Colors from "@/src/utils/Colors";
 import React, { ReactNode } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
   Platform,
-  ViewStyle,
+  StyleSheet,
+  Text,
   TextStyle,
+  TouchableOpacity,
+  View,
+  ViewStyle,
 } from "react-native";
-import Colors from "@/src/utils/Colors";
 
 interface GlobalHeaderProps {
   title?: string;
   onLeftPress?: () => void;
   onRightPress?: () => void;
-  leftIcon?: ReactNode; 
-  rightIcon?: ReactNode; 
+  leftIcon?: ReactNode;
+  rightIcon?: ReactNode;
   containerStyle?: ViewStyle;
   titleStyle?: TextStyle;
   showShadow?: boolean;
@@ -26,7 +26,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
   title = "",
   onLeftPress,
   onRightPress,
-  leftIcon,
+  leftIcon, 
   rightIcon,
   containerStyle,
   titleStyle,
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 3 }, 
+        shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.12,
         shadowRadius: 3.5,
       },
@@ -90,13 +90,14 @@ const styles = StyleSheet.create({
         elevation: 0,
       },
     }),
-    borderBottomWidth: StyleSheet.hairlineWidth, 
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: Colors.background,
   },
 
   iconContainer: {
     width: 45,
     height: 45,
+    marginHorizontal:10,
     justifyContent: "center",
     alignItems: "center",
   },

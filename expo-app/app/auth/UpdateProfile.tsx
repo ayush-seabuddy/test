@@ -1,16 +1,16 @@
-import { Dimensions, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ChevronLeft, Check } from 'lucide-react-native';
-import CustomLottie from '@/src/components/CustomLottie';
-import GlobalHeader from '@/src/components/GlobalHeader';
-import GlobalDropdown from '@/src/components/GlobalDropdown';
-import { useTranslation } from 'react-i18next';
-import GlobalButton from '@/src/components/GlobalButton';
 import { getallcountries, updateprofile, UpdateProfileRequest } from '@/src/apis/apiService';
+import CustomLottie from '@/src/components/CustomLottie';
+import GlobalButton from '@/src/components/GlobalButton';
+import GlobalDropdown from '@/src/components/GlobalDropdown';
+import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import Colors from '@/src/utils/Colors';
 import { getUserDetails } from '@/src/utils/helperFunctions';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Check, ChevronLeft } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type User = {
   department?: string;
@@ -269,7 +269,7 @@ const UpdateProfile = () => {
       />
 
       <View style={styles.bottomCard1}>
-        <CustomLottie isBlurView={false} componetHeight={height * 0.85} />
+        <CustomLottie isBlurView={false} componentHeight={height * 0.85} />
       </View>
 
       <View style={styles.mainContent}>
