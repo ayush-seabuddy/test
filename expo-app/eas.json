@@ -9,10 +9,12 @@
       "distribution": "internal",
       "autoIncrement": true
     },
+
     "development": {
       "developmentClient": true,
       "distribution": "internal"
     },
+
     "preview": {
       "channel": "preview",
       "distribution": "internal",
@@ -23,12 +25,13 @@
         "SOCKET_URL": "$SOCKET_URL"
       },
       "android": {
-        "gradleCommand": ":app:bundleRelease"
+        "buildType": "apk"
       },
       "ios": {
         "buildConfiguration": "Release"
       }
     },
+
     "production": {
       "channel": "production",
       "distribution": "store",
@@ -47,6 +50,7 @@
       }
     }
   },
+
   "submit": {
     "production": {
       "ios": {},

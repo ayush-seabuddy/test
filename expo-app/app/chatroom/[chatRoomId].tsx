@@ -723,7 +723,7 @@ const ChatRoomScreen = () => {
           >
             {editingMessageId ?
               <Check size={25} color="#fff" />
-              : <SendHorizonal size={25} color="#fff" />}
+              : <SendHorizonal size={22} color="#fff" />}
           </TouchableOpacity>
         </View>
 
@@ -943,8 +943,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-end",
     padding: 10,
-    borderRadius: 10,
-    marginHorizontal: 10,
+    // marginHorizontal: 10,
     marginBottom: 20,
     minHeight: 45,
   },
@@ -953,12 +952,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     // justifyContent:"center",
 
-    borderRadius: 30,
+    borderRadius: 10,
     backgroundColor: "rgba(230, 230, 230, 0.5)",
     flex: 1,
   },
   iconContainer: {
-    margin: 10
+    marginVertical: 2,
+    marginHorizontal:8
   },
   icon: {
     width: 23,
@@ -977,9 +977,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#82934b",
     padding: 10,
     borderRadius: 50,
-    marginLeft: 10,
-    height: 55,
-    width: 55,
+    marginLeft: 5,
+    height: 53,
+    width: 53,
     justifyContent: "center",
     alignItems: "center",
   },

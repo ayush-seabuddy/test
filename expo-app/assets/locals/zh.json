@@ -859,7 +859,7 @@
   "month": "月份：",
   "result": "结果：",
   "veryunhappy": "非常不开心",
-     "veryhappy": "很高兴",
+  "veryhappy": "很高兴",
   "happy": "快乐",
   "monthlyhappinessindex_resultdescription": {
     "veryhappy": "非常快乐 — 生活感觉良好，幸福感很强。",
@@ -872,7 +872,18 @@
   "updateavailable": "可用更新",
   "later": "之后",
   "Book_an_appointment": "预约",
-  "WellnessOfficerProfile":"健康官员简介",
-  "Book_Appointment":"预订预约",
-    "deletexperience":"删除经验"
+  "WellnessOfficerProfile": "健康官员简介",
+  "Book_Appointment": "预订预约",
+  "deletexperience": "删除经验",
+  "moodnoteaddedsuccessfully": "情绪笔记已成功添加。",
+  "note:": "笔记：",
+  "howareyoufeelingtoday": "你今天感觉怎么样？",
+  "wouldyouliketoshare": "您愿意分享一些细节吗？",
+  "addnote_description": "您的笔记将私密保存，您可以随时在“健康”页面的“情绪追踪器”中查看。",
+  "writeyourthoughts": "请在此处写下您的想法……",
+  "checkintoday": "今天入住",
+  "alreadycheckedintoday": "今天已入住",
+  "monthlymoodchart": "每月情绪图表",
+  "moodnotes": "心情笔记",
+  "surveyHeader": "民意调查"
 }

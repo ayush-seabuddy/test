@@ -1,7 +1,7 @@
-
 import { getAllMoodTracker, getMoodTrackerAnalysis, moodTracker } from "@/src/apis/apiService";
 import CustomLottie from "@/src/components/CustomLottie";
 import GlobalHeader from "@/src/components/GlobalHeader";
+import { showToast } from "@/src/components/GlobalToast";
 import { RootState } from "@/src/redux/store";
 import Colors from "@/src/utils/Colors";
 import { height, width } from "@/src/utils/helperFunctions";
@@ -10,14 +10,17 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { ChevronLeft, ChevronRight } from "lucide-react-native";
+import { ChevronLeft, ChevronRight, X } from "lucide-react-native";
 import moment from "moment-timezone";
 import {
+  memo,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import {
   FlatList,
   Keyboard,
@@ -31,7 +34,6 @@ import {
   View,
 } from "react-native";
 import { ActivityIndicator, Modal } from "react-native-paper";
-import Toast from "react-native-toast-message";
 import { useSelector } from "react-redux";
 
 interface MoodTrackerItem {
@@ -39,8 +41,6 @@ interface MoodTrackerItem {
   mood: "HAPPY" | "SAD" | "CALM" | "ANGRY" | "ANXIOUS";
   details?: string;
   createdAt: string;
-  feeling?: string;
-  reason?: string;
 }
 
 interface DateItem {
@@ -59,174 +59,62 @@ interface MoodAverageItem {
   emoji: any;
 }
 
-const MoodTracker: React.FC = () => {
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [moodData, setMoodData] = useState<MoodTrackerItem[] | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [lastFiveDaysMoodTracker, setLastFiveDaysMoodTracker] = useState<MoodTrackerItem[]>([]);
-  const [monthlyMoodAverage, setMonthlyMoodAverage] = useState<MoodAverageItem[]>([]);
-  const [visible, setVisible] = useState<boolean>(false);
-  const [showPicker, setShowPicker] = useState<boolean>(false);
-  const [isTodayData, setIsTodayData] = useState<boolean>(false);
-  const [step, setStep] = useState<1 | 2>(1);
-  const [selectedMood, setSelectedMood] = useState<string>("");
-  const [ReasonText, setReasonText] = useState<string>("");
+const MOOD_CONFIG = {
+  HAPPY: { color: "#B0DB0266", emoji: ImagesAssets.Emoji_1 },
+  SAD: { color: "#DB8F0266", emoji: ImagesAssets.Emoji_3 },
+  CALM: { color: "#B0DB0266", emoji: ImagesAssets.Emoji_2 },
+  ANGRY: { color: "#E5424566", emoji: ImagesAssets.Emoji_4 },
+  ANXIOUS: { color: "#69BEDC66", emoji: ImagesAssets.Emoji_5 },
+} as const;
 
-  const userDetails = useSelector((state: RootState) => state.userDetails);
-  const scrollViewRef = useRef<ScrollView>(null);
+const MOOD_OPTIONS = [
+  { emoji: ImagesAssets.Emoji_1, label: "Happy" },
+  { emoji: ImagesAssets.Emoji_5, label: "Anxious" },
+  { emoji: ImagesAssets.Emoji_3, label: "Sad" },
+  { emoji: ImagesAssets.Emoji_4, label: "Angry" },
+  { emoji: ImagesAssets.Emoji_2, label: "Calm" },
+] as const;
 
-  const showModal = () => setVisible(true);
-  const hideModal = () => setVisible(false);
-
-  const fetchMoodHistory = useCallback(async () => {
-    try {
-      const res = await getAllMoodTracker({ page: 1, limit: 5 });
-      if (res?.status === 200 && res?.data) {
-        setLastFiveDaysMoodTracker(res.data.moodTrackerList || []);
-      }
-    } catch (error) {
-      console.error("Error fetching mood history:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const changeMonth = (direction: number) => {
-    const newDate = new Date(currentDate);
-    newDate.setMonth(currentDate.getMonth() + direction);
-
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-
-    if (
-      newDate.getFullYear() < currentYear ||
-      (newDate.getFullYear() === currentYear && newDate.getMonth() <= currentMonth)
-    ) {
-      setCurrentDate(newDate);
-    }
-  };
-
-  const today = new Date();
-
-  const getFormattedDates = (year: number, month: number): DateItem[] => {
-    const dates: DateItem[] = [];
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    const todayMoment = moment(today);
-    const currentWeek = todayMoment.isoWeek();
-
-    for (let i = 1; i <= daysInMonth; i++) {
-      const date = new Date(year, month, i);
-      const dateMoment = moment(date);
-      const isCurrentWeek =
-        dateMoment.isoWeek() === currentWeek && dateMoment.year() === todayMoment.year();
-
-      dates.push({
-        fullDate: date.toDateString(),
-        date: date.getDate(),
-        month: date.toLocaleString("default", { month: "short" }),
-        day: date.toLocaleString("default", { weekday: "short" }),
-        isToday:
-          date.getDate() === today.getDate() &&
-          date.getMonth() === today.getMonth() &&
-          date.getFullYear() === today.getFullYear(),
-        isCurrentWeek,
-      });
-    }
-    return dates;
-  };
-
-  const dates = getFormattedDates(currentDate.getFullYear(), currentDate.getMonth());
-
-  const DateWiseList: React.FC<{ item: DateItem; moodData: MoodTrackerItem[] | null }> = ({
-    item,
-    moodData,
-  }) => {
-    let matchingMood: MoodTrackerItem | undefined;
-    if (moodData?.length) {
-      moodData.forEach((element) => {
-        const formattedDate = moment(element.createdAt).format("DD");
-        if (String(item.date).padStart(2, "0") === formattedDate) {
-          matchingMood = element;
-        }
-      });
-    }
-
-    return (
-      <View style={styles.dateItem}>
-        <Text style={[styles.dateText, { marginTop: 10 }]}>{item.day}</Text>
-        <View style={[styles.todayCircle, { backgroundColor: item.isToday ? "#B0DB02" : "#fff" }]}>
-          <Text style={styles.dateText}>{item.date}</Text>
-        </View>
-        {matchingMood && (
-          <Image style={styles.moodEmojiInCalendar} source={getMoodEmoji(matchingMood.mood)} />
-        )}
-      </View>
+const DateItemComponent = memo(({ item, moodData }: { item: DateItem; moodData: MoodTrackerItem[] | null }) => {
+  const matchingMood = useMemo(() => {
+    return moodData?.find(
+      (m) => moment(m.createdAt).format("DD") === String(item.date).padStart(2, "0")
     );
-  };
+  }, [moodData, item.date]);
 
-  const mapMoodData = (monthlyMoodAverage: Record<string, string>) => {
-    const moodMap = {
-      HAPPY: { mood: "HAPPY", color: "#B0DB0266", emoji: ImagesAssets.Emoji_1 },
-      SAD: { mood: "SAD", color: "#DB8F0266", emoji: ImagesAssets.Emoji_3 },
-      CALM: { mood: "CALM", color: "#B0DB0266", emoji: ImagesAssets.Emoji_2 },
-      ANGRY: { mood: "ANGRY", color: "#E5424566", emoji: ImagesAssets.Emoji_4 },
-      ANXIOUS: { mood: "ANXIOUS", color: "#69BEDC66", emoji: ImagesAssets.Emoji_5 },
-    };
+  return (
+    <View style={styles.dateItem}>
+      <Text style={[styles.dateText, { marginTop: 10 }]}>{item.day}</Text>
+      <View
+        style={[
+          styles.todayCircle,
+          { backgroundColor: item.isToday ? "#B0DB02" : "#fff" },
+        ]}
+      >
+        <Text style={styles.dateText}>{item.date}</Text>
+      </View>
+      {matchingMood && (
+        <Image
+          style={styles.moodEmojiInCalendar}
+          source={MOOD_CONFIG[matchingMood.mood]?.emoji ?? ImagesAssets.Emoji_1}
+        />
+      )}
+    </View>
+  );
+});
 
-    const mapped = Object.keys(monthlyMoodAverage).map((key) => {
-      const progress = parseFloat(monthlyMoodAverage[key]);
-      const config = moodMap[key as keyof typeof moodMap];
-      return {
-        mood: config?.mood || null,
-        progress: progress / 100,
-        color: config?.color || "#FFFFFF",
-        emoji: config?.emoji || null,
-      };
-    });
+const MoodNoteCard = memo(({ item }: { item: MoodTrackerItem }) => {
+  const { t } = useTranslation();
 
-    setMonthlyMoodAverage(mapped);
-  };
-
-  const fetchMoodData = async (month: number, year: number) => {
-    try {
-      setLoading(true);
-      const result = await getMoodTrackerAnalysis({ month, year });
-      if (result.status === 200) {
-        setMoodData(result.data?.monthlyMoodTrackers || null);
-        mapMoodData(result.data?.monthlyMoodAverage || {});
-        fetchMoodHistory();
-      }
-    } catch (error) {
-      console.error("Error fetching mood data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const month = currentDate.getMonth() + 1;
-    const year = currentDate.getFullYear();
-    fetchMoodData(month, year);
-  }, [currentDate]);
-
-  const getMoodEmoji = (mood: "HAPPY" | "SAD" | "CALM" | "ANGRY" | "ANXIOUS") => {
-    const map = {
-      HAPPY: ImagesAssets.Emoji_1,
-      SAD: ImagesAssets.Emoji_3,
-      CALM: ImagesAssets.Emoji_2,
-      ANGRY: ImagesAssets.Emoji_4,
-      ANXIOUS: ImagesAssets.Emoji_5,
-    };
-    return map[mood] || ImagesAssets.Emoji_1;
-  };
-
-  const renderItem = ({ item }: { item: MoodTrackerItem }) => (
+  return (
     <View style={styles.moodNoteCard}>
       <BlurView style={StyleSheet.absoluteFill} intensity={80} tint="light" />
       <View style={styles.moodNoteHeader}>
         <View style={styles.moodNoteLeft}>
-          <Image style={styles.moodNoteEmoji} source={getMoodEmoji(item.mood)} />
+          <Image
+            style={styles.moodNoteEmoji}
+            source={MOOD_CONFIG[item.mood]?.emoji ?? ImagesAssets.Emoji_1}
+          />
           <View>
             <Text style={styles.moodNoteTitle}>{item.mood}</Text>
             <Text style={styles.moodNoteDate}>
@@ -237,170 +125,334 @@ const MoodTracker: React.FC = () => {
       </View>
       {item.details && (
         <View style={styles.moodNoteDetails}>
-          <Text style={styles.moodNoteDetailsText}>Note: {item.details}</Text>
+          <Text style={styles.moodNoteDetailsText}>
+            {t("note:")}
+            {item.details}
+          </Text>
         </View>
       )}
     </View>
   );
+});
 
-  const moodPopUp = [
-    { emoji: ImagesAssets.Emoji_1, label: "Happy" },
-    { emoji: ImagesAssets.Emoji_5, label: "Anxious" },
-    { emoji: ImagesAssets.Emoji_3, label: "Sad" },
-    { emoji: ImagesAssets.Emoji_4, label: "Angry" },
-    { emoji: ImagesAssets.Emoji_2, label: "Calm" },
-  ];
+const MoodModalStep1 = memo(
+  ({
+    onSelect,
+    onClose,
+    userName,
+  }: {
+    onSelect: (mood: string) => void;
+    onClose: () => void;
+    userName?: string;
+  }) => {
+    const { t } = useTranslation();
 
-  const handleSubmit = async () => {
+    const greeting = useMemo(() => {
+      const hour = new Date().getHours();
+      if (hour < 12) return "Good Morning";
+      if (hour < 18) return "Good Afternoon";
+      if (hour < 22) return "Good Evening";
+      return "Hello";
+    }, []);
+
+    return (
+      <View style={styles.modalStepContainer}>
+        <BlurView style={StyleSheet.absoluteFill} intensity={80} tint="light" />
+        <View style={styles.modalContent}>
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={onClose}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          >
+            <X size={28} color="#929292" />
+          </TouchableOpacity>
+
+          <View style={styles.modalGreetingContainer}>
+            <Text style={styles.modalUserName}>
+              {greeting},{" "}
+              <Text style={styles.modalUserName}>{userName || ""}!</Text>
+            </Text>
+            <Text style={styles.modalTitle}>{t("howareyoufeelingtoday")}</Text>
+          </View>
+
+          <View style={styles.moodSelectionGrid}>
+            {MOOD_OPTIONS.map((mood) => (
+              <TouchableOpacity
+                key={mood.label}
+                style={styles.moodOption}
+                onPress={() => onSelect(mood.label)}
+              >
+                <Image source={mood.emoji} style={styles.moodOptionEmoji} />
+                <Text style={styles.moodOptionLabel}>{mood.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </View>
+    );
+  }
+);
+
+const MoodModalStep2 = memo(
+  ({
+    reason,
+    setReason,
+    onSubmit,
+    loading,
+    onClose,
+  }: {
+    reason: string;
+    setReason: (text: string) => void;
+    onSubmit: () => void;
+    loading: boolean;
+    onClose: () => void;
+  }) => {
+    const { t } = useTranslation();
+
+    return (
+      <TouchableOpacity
+        activeOpacity={1}
+        onPress={Keyboard.dismiss}
+        style={styles.modalStepContainer}
+      >
+        <BlurView style={StyleSheet.absoluteFill} intensity={80} tint="light" />
+        <View style={styles.modalContent}>
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={onClose}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          >
+            <X size={28} color="#929292" />
+          </TouchableOpacity>
+
+          <Text style={styles.modalTitle}>{t("wouldyouliketoshare")}</Text>
+          <Text style={styles.modalSubtitle}>{t("addnote_description")}</Text>
+
+          <TextInput
+            style={styles.modalTextInput}
+            placeholder={t("writeyourthoughts")}
+            value={reason}
+            onChangeText={setReason}
+            multiline
+            numberOfLines={4}
+            textAlignVertical="top"
+          />
+
+          <TouchableOpacity
+            style={styles.modalSubmitButton}
+            onPress={onSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.modalSubmitText}>{t("submit")}</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    );
+  }
+);
+
+const MoodTracker: React.FC = () => {
+  const { t } = useTranslation();
+  const userDetails = useSelector((state: RootState) => state.userDetails);
+
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [moodData, setMoodData] = useState<MoodTrackerItem[] | null>(null);
+  const [lastFiveDays, setLastFiveDays] = useState<MoodTrackerItem[]>([]);
+  const [monthlyAverage, setMonthlyAverage] = useState<MoodAverageItem[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [step, setStep] = useState<1 | 2>(1);
+  const [selectedMood, setSelectedMood] = useState("");
+  const [reasonText, setReasonText] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isTodayChecked, setIsTodayChecked] = useState(false);
+
+  const scrollRef = useRef<ScrollView>(null);
+
+  const getFormattedDates = useCallback((year: number, month: number): DateItem[] => {
+    const dates: DateItem[] = [];
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
+    const todayMoment = moment(today);
+    const currentWeek = todayMoment.isoWeek();
+
+    for (let i = 1; i <= daysInMonth; i++) {
+      const date = new Date(year, month, i);
+      const dateMoment = moment(date);
+      dates.push({
+        fullDate: date.toDateString(),
+        date: i,
+        month: date.toLocaleString("default", { month: "short" }),
+        day: date.toLocaleString("default", { weekday: "short" }),
+        isToday:
+          i === today.getDate() &&
+          month === today.getMonth() &&
+          year === today.getFullYear(),
+        isCurrentWeek:
+          dateMoment.isoWeek() === currentWeek &&
+          dateMoment.year() === todayMoment.year(),
+      });
+    }
+    return dates;
+  }, []);
+
+  const dates = useMemo(
+    () => getFormattedDates(currentDate.getFullYear(), currentDate.getMonth()),
+    [currentDate, getFormattedDates]
+  );
+
+  const fetchMoodHistory = useCallback(async () => {
+    try {
+      const res = await getAllMoodTracker({ page: 1, limit: 5 });
+      if (res?.status === 200) {
+        setLastFiveDays(res.data?.moodTrackerList ?? []);
+      }
+    } catch (error) {
+      console.error("Mood history fetch failed:", error);
+    }
+  }, []);
+
+  const fetchMonthlyData = useCallback(
+    async (month: number, year: number) => {
+      setLoading(true);
+      try {
+        const result = await getMoodTrackerAnalysis({ month, year });
+        if (result.status === 200) {
+          setMoodData(result.data?.monthlyMoodTrackers ?? null);
+
+          const averages = result.data?.monthlyMoodAverage ?? {};
+          const mapped = Object.entries(averages).map(([key, value]) => {
+            const config = MOOD_CONFIG[key as keyof typeof MOOD_CONFIG];
+            const progress = Number(value) / 100;
+            return {
+              mood: key,
+              progress,
+              color: config?.color ?? "#FFFFFF",
+              emoji: config?.emoji ?? null,
+            };
+          });
+          setMonthlyAverage(mapped);
+          await fetchMoodHistory();
+        }
+      } catch (error) {
+        console.error("Monthly mood data fetch failed:", error);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchMoodHistory]
+  );
+
+  useEffect(() => {
+    const month = currentDate.getMonth() + 1;
+    const year = currentDate.getFullYear();
+    fetchMonthlyData(month, year);
+  }, [currentDate, fetchMonthlyData]);
+
+  useEffect(() => {
+    const checkToday = async () => {
+      try {
+        const stored = await AsyncStorage.getItem("userDetails");
+        if (!stored) return;
+        const data = JSON.parse(stored);
+        const todayStr = moment().format("YYYY-MM-DD");
+        setIsTodayChecked(data.lastMoodDate === todayStr && data.isMoodTracker);
+      } catch {
+      }
+    };
+    checkToday();
+  }, []);
+
+  const changeMonth = useCallback(
+    (direction: -1 | 1) => {
+      const newDate = new Date(currentDate);
+      newDate.setMonth(currentDate.getMonth() + direction);
+
+      const now = new Date();
+      if (
+        newDate.getFullYear() < now.getFullYear() ||
+        (newDate.getFullYear() === now.getFullYear() &&
+          newDate.getMonth() <= now.getMonth())
+      ) {
+        setCurrentDate(newDate);
+      }
+    },
+    [currentDate]
+  );
+
+  const handleMoodSelect = useCallback((mood: string) => {
+    setSelectedMood(mood);
+    setStep(2);
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
     setLoading(true);
-    const body = {moodTrackers: [
-              {
-                mood: selectedMood?.toUpperCase(),
-                details: ReasonText,
-                createdAt: new Date().toISOString(),
-              },
-            ]}
+    const payload = {
+      moodTrackers: [
+        {
+          mood: selectedMood.toUpperCase() as
+            | "HAPPY"
+            | "SAD"
+            | "CALM"
+            | "ANGRY"
+            | "ANXIOUS",
+          details: reasonText.trim(),
+          createdAt: new Date().toISOString(),
+        },
+      ],
+    };
 
     try {
-      const response = await moodTracker(body);
+      const response = await moodTracker(payload);
       if (response.status === 200) {
-        Toast.show({
-          type: "success",
-          text1: "Mood Note Added Successfully",
-          visibilityTime: 2000,
-        });
+        showToast.success(
+          t("success"),
+          t("moodnoteaddedsuccessfully")
+        );
 
-        const todayDate = moment().format("YYYY-MM-DD");
+        const today = moment().format("YYYY-MM-DD");
         const stored = await AsyncStorage.getItem("userDetails");
         if (stored) {
           const parsed = JSON.parse(stored);
           parsed.isMoodTracker = true;
-          parsed.lastMoodDate = todayDate;
+          parsed.lastMoodDate = today;
           await AsyncStorage.setItem("userDetails", JSON.stringify(parsed));
         }
-        setIsTodayData(true);
-        fetchMoodData(currentDate.getMonth() + 1, currentDate.getFullYear());
+
+        setIsTodayChecked(true);
+        fetchMonthlyData(
+          currentDate.getMonth() + 1,
+          currentDate.getFullYear()
+        );
       } else {
-        Toast.show({
-          type: "error",
-          text1: "Error",
-          text2: response.data?.responseMessage,
-        });
+        showToast.error(t("oops"), response.data?.responseMessage);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Mood submit failed:", error);
     } finally {
       setLoading(false);
-      handleClose();
+      setModalVisible(false);
+      setStep(1);
+      setSelectedMood("");
+      setReasonText("");
     }
-  };
+  }, [
+    selectedMood,
+    reasonText,
+    currentDate,
+    fetchMonthlyData,
+    t,
+  ]);
 
-  const resetModal = () => {
+  const resetAndCloseModal = useCallback(() => {
+    setModalVisible(false);
     setStep(1);
     setSelectedMood("");
     setReasonText("");
-  };
-
-  const handleClose = () => {
-    resetModal();
-    hideModal();
-  };
-
-  useEffect(() => {
-    const checkTodayMood = async () => {
-      const stored = await AsyncStorage.getItem("userDetails");
-      if (!stored) return;
-      const data = JSON.parse(stored);
-      const today = moment().format("YYYY-MM-DD");
-      setIsTodayData(data.lastMoodDate === today && data.isMoodTracker);
-    };
-    checkTodayMood();
-  }, [userDetails]);
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good Morning";
-    if (hour < 18) return "Good Afternoon";
-    if (hour < 22) return "Good Evening";
-    return "Hello";
-  };
-
-  const renderStep = () => {
-    switch (step) {
-      case 1:
-        return (
-          <View style={styles.modalStepContainer}>
-            
-            <BlurView style={StyleSheet.absoluteFill} intensity={80} tint="light" />
-            <View style={styles.modalContent}>
-              <TouchableOpacity style={styles.modalCloseButton} onPress={handleClose}>
-                <Text style={styles.modalCloseText}>×</Text>
-              </TouchableOpacity>
-              <View style={styles.modalGreetingContainer}>
-                <Text style={styles.modalGreeting}>
-                  {getGreeting()}{" "}
-                  <Text style={styles.modalUserName}>
-                    {userDetails?.fullName?.split(" ")[0] || ""}!
-                  </Text>
-                </Text>
-                <Text style={styles.modalTitle}>How're you feeling today?</Text>
-              </View>
-              <View style={styles.moodSelectionGrid}>
-                {moodPopUp.map((mood, i) => (
-                  <TouchableOpacity
-                    key={i}
-                    style={[
-                      styles.moodOption,
-                      selectedMood === mood.label && styles.moodOptionSelected,
-                    ]}
-                    onPress={() => {
-                      setSelectedMood(mood.label);
-                      setStep(2);
-                    }}
-                  >
-                    <Image source={mood.emoji} style={styles.moodOptionEmoji} />
-                    <Text style={styles.moodOptionLabel}>
-                      {mood.label.charAt(0).toUpperCase() + mood.label.slice(1)}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          </View>
-        );
-
-      case 2:
-        return (
-          <TouchableOpacity activeOpacity={1} onPress={Keyboard.dismiss} style={styles.modalStepContainer}>
-            <BlurView style={StyleSheet.absoluteFill} intensity={80} tint="light" />
-            <View style={styles.modalContent}>
-              <TouchableOpacity style={styles.modalCloseButton} onPress={handleClose}>
-                <Text style={styles.modalCloseText}>×</Text>
-              </TouchableOpacity>
-              <Text style={styles.modalTitle}>Would you like to share some details?</Text>
-              <Text style={styles.modalSubtitle}>
-                Your notes will be saved privately and can be viewed anytime in the Mood Tracker on the Health page
-              </Text>
-              <TextInput
-                style={styles.modalTextInput}
-                placeholder="Write your thoughts here..."
-                value={ReasonText}
-                onChangeText={setReasonText}
-                multiline
-                numberOfLines={4}
-              />
-              <TouchableOpacity style={styles.modalSubmitButton} onPress={handleSubmit}>
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.modalSubmitText}>Submit</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        );
-    }
-  };
+  }, []);
 
   return (
     <KeyboardAvoidingView
@@ -409,101 +461,149 @@ const MoodTracker: React.FC = () => {
       keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
     >
       <View style={styles.mainContainer}>
-        <GlobalHeader
-          title="Mood Tracker"
-        />
+        <GlobalHeader title={t("moodTracker")} />
 
         <ScrollView
+          ref={scrollRef}
           contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          {/* Calendar Card */}
           <View style={styles.calendarCard}>
             <View style={styles.calendarHeader}>
               <Text style={styles.calendarGreeting}>
-                Hi, {userDetails?.fullName?.split(" ")[0]}!
+                {t("hi")}, {userDetails?.fullName?.split(" ")?.[0] ?? ""}!
               </Text>
               <View style={styles.monthNavigation}>
                 <TouchableOpacity onPress={() => changeMonth(-1)}>
                   <ChevronLeft size={22} color={Colors.darkGreen} />
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => setShowPicker(true)}>
-                  <Text style={styles.monthText}>
-                    {currentDate.toLocaleString("default", { month: "short" })} {currentDate.getFullYear()}
-                  </Text>
-                </TouchableOpacity>
+                <Text style={styles.monthText}>
+                  {currentDate.toLocaleString("default", { month: "short" })}{" "}
+                  {currentDate.getFullYear()}
+                </Text>
                 <TouchableOpacity onPress={() => changeMonth(1)}>
                   <ChevronRight size={22} color={Colors.darkGreen} />
                 </TouchableOpacity>
               </View>
             </View>
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.datesScroll}>
-              {dates.map((item, i) => (
-                <DateWiseList key={i} item={item} moodData={moodData} />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.datesScroll}
+            >
+              {dates.map((item) => (
+                <DateItemComponent
+                  key={item.fullDate}
+                  item={item}
+                  moodData={moodData}
+                />
               ))}
             </ScrollView>
 
             <TouchableOpacity
-              style={[styles.checkInButton, isTodayData && styles.checkInDisabled]}
-              onPress={showModal}
-              disabled={isTodayData}
+              style={[
+                styles.checkInButton,
+                isTodayChecked && styles.checkInDisabled,
+              ]}
+              onPress={() => setModalVisible(true)}
+              disabled={isTodayChecked || loading}
             >
               <Text style={styles.checkInText}>
-                {isTodayData ? "Already Checked in Today" : "Check In Today"}
+                {isTodayChecked
+                  ? t("alreadycheckedintoday")
+                  : t("checkintoday")}
               </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Monthly Mood Chart */}
           <View style={styles.chartCard}>
             <BlurView style={StyleSheet.absoluteFill} intensity={60} tint="light" />
             <View style={styles.chartHeader}>
-              <Text style={styles.chartTitle}>Monthly Mood Chart</Text>
-              <TouchableOpacity style={styles.chartMonthButton} onPress={() => setShowPicker(true)}>
+              <Text style={styles.chartTitle}>{t("monthlymoodchart")}</Text>
+              <View style={styles.chartMonthButton}>
                 <Text style={styles.chartMonthText}>
-                  {currentDate.toLocaleString("default", { month: "short" })} {currentDate.getFullYear()}
+                  {currentDate.toLocaleString("default", { month: "short" })}{" "}
+                  {currentDate.getFullYear()}
                 </Text>
-              </TouchableOpacity>
+              </View>
             </View>
+
             <View style={styles.chartBars}>
-              {monthlyMoodAverage.map((mood, i) => (
-                <View key={i} style={styles.barItem}>
+              {monthlyAverage.map((item) => (
+                <View key={item.mood ?? Math.random()} style={styles.barItem}>
                   <View style={styles.barContainer}>
-                    <View style={[styles.barFilled, { flex: mood.progress, backgroundColor: mood.color }]} />
-                    <View style={[styles.barEmpty, { flex: 1 - mood.progress }]} />
+                    <View
+                      style={[
+                        styles.barFilled,
+                        {
+                          flex: item.progress,
+                          backgroundColor: item.color,
+                        },
+                      ]}
+                    />
+                    <View
+                      style={[
+                        styles.barEmpty,
+                        { flex: 1 - item.progress },
+                      ]}
+                    />
                   </View>
                   <View style={styles.barLabel}>
-                    <Image source={mood.emoji} style={styles.barEmoji} />
-                    <Text style={styles.barPercent}>{Math.round(mood.progress * 100)}%</Text>
+                    {item.emoji && (
+                      <Image source={item.emoji} style={styles.barEmoji} />
+                    )}
+                    <Text style={styles.barPercent}>
+                      {Math.round(item.progress * 100)}%
+                    </Text>
                   </View>
-                  <Text style={styles.barMoodName}>{mood.mood}</Text>
+                  <Text style={styles.barMoodName}>{item.mood}</Text>
                 </View>
               ))}
             </View>
           </View>
 
-          {/* Mood Notes Section */}
-          {lastFiveDaysMoodTracker.length > 0 && (
+          {!!lastFiveDays.length && (
             <View style={styles.notesHeader}>
-              <Text style={styles.notesTitle}>Mood Notes</Text>
-              <TouchableOpacity onPress={() => router.push("/MoodTrackerHistory")}>
-                <Text style={styles.viewAllText}>View All</Text>
+              <Text style={styles.notesTitle}>{t("moodnotes")}</Text>
+              <TouchableOpacity
+                onPress={() => router.push("/MoodTrackerHistory")}
+              >
+                <Text style={styles.viewAllText}>{t("viewall")}</Text>
               </TouchableOpacity>
             </View>
           )}
 
           <FlatList
-            data={lastFiveDaysMoodTracker}
+            data={lastFiveDays}
             keyExtractor={(item) => item.id}
-            renderItem={renderItem}
+            renderItem={({ item }) => <MoodNoteCard item={item} />}
             contentContainerStyle={styles.notesList}
+            scrollEnabled={false}
           />
         </ScrollView>
 
-        <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modalContainer}>
-          {renderStep()}
+        <Modal
+          visible={modalVisible}
+          onDismiss={resetAndCloseModal}
+          contentContainerStyle={styles.modalContainer}
+        >
+          {step === 1 ? (
+            <MoodModalStep1
+              onSelect={handleMoodSelect}
+              onClose={resetAndCloseModal}
+              userName={userDetails?.fullName?.split(" ")?.[0]}
+            />
+          ) : (
+            <MoodModalStep2
+              reason={reasonText}
+              setReason={setReasonText}
+              onSubmit={handleSubmit}
+              loading={loading}
+              onClose={resetAndCloseModal}
+            />
+          )}
         </Modal>
 
         <CustomLottie
@@ -519,15 +619,14 @@ export default MoodTracker;
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  mainContainer: { flex: 1 , backgroundColor: "#fff"},
-  scrollContent: { flexGrow: 1, paddingBottom: 200, minHeight: height },
+  mainContainer: { flex: 1, backgroundColor: "#fff" },
+  scrollContent: { flexGrow: 1, paddingBottom: 220, minHeight: height },
 
-  // Calendar Card
   calendarCard: {
     backgroundColor: "rgba(180, 180, 180, 0.6)",
     marginHorizontal: 14,
     marginTop: 15,
-    borderRadius: 30,
+    borderRadius: 20,
     padding: 10,
   },
   calendarHeader: {
@@ -538,8 +637,8 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   calendarGreeting: {
-    color: "#000",
-    fontSize: 22,
+    color: "#262626",
+    fontSize: 18,
     fontFamily: "WhyteInktrap-Bold",
     textTransform: "capitalize",
   },
@@ -582,12 +681,11 @@ const styles = StyleSheet.create({
   checkInDisabled: { backgroundColor: "#777" },
   checkInText: { color: "#fff", fontSize: 14, fontFamily: "Poppins-SemiBold" },
 
-  // Monthly Chart
   chartCard: {
-    backgroundColor: "rgba(180, 180, 180, 0.4)",
+    backgroundColor: "rgba(180, 180, 180, 0.9)",
     marginHorizontal: 14,
     marginVertical: 15,
-    borderRadius: 35,
+    borderRadius: 20,
     padding: 20,
     overflow: "hidden",
   },
@@ -608,7 +706,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 8,
   },
-  chartMonthText: { color: "#000", fontSize: 12, fontWeight: "600" },
+  chartMonthText: { color: "#000", fontSize: 10, fontWeight: "600" },
   chartBars: { flexDirection: "row", justifyContent: "space-around" },
   barItem: { alignItems: "center" },
   barContainer: {
@@ -622,28 +720,27 @@ const styles = StyleSheet.create({
   barFilled: { width: "100%" },
   barEmpty: { backgroundColor: "#F0F0F0CC", width: "100%" },
   barLabel: { alignItems: "center", marginTop: 5 },
-  barEmoji: { height: 26, width: 26, marginTop: -10 },
+  barEmoji: { height: 26, width: 26, marginTop: -25 },
   barPercent: { fontSize: 14, fontWeight: "bold", color: "#161616" },
   barMoodName: { fontSize: 10, color: "#000" },
 
-  // Mood Notes
   notesHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginHorizontal: 20,
-    marginTop: 10,
+    marginVertical: 10,
   },
   notesTitle: {
-    fontSize: 20,
-    color: "#B7B7B7",
+    fontSize: 16,
+    color: "#000",
     fontFamily: "WhyteInktrap-Bold",
   },
-  viewAllText: { fontSize: 12, color: "#B7B7B7" },
+  viewAllText: { fontSize: 12, color: "#000" },
   notesList: { paddingHorizontal: 14 },
 
   moodNoteCard: {
-    backgroundColor: "rgba(180, 180, 180, 0.4)",
+    backgroundColor: "rgba(180, 180, 180, 0.9)",
     padding: 15,
     borderRadius: 12,
     marginVertical: 5,
@@ -655,56 +752,64 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   moodNoteLeft: { flexDirection: "row", alignItems: "center" },
-  moodNoteEmoji: { width: 30, height: 30, resizeMode: "contain", margin: 5 },
+  moodNoteEmoji: {
+    width: 50,
+    height: 50,
+    resizeMode: "contain",
+    marginRight: 10,
+  },
   moodNoteTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "500",
     color: "#262626",
     fontFamily: "WhyteInktrap-Bold",
     lineHeight: 28,
   },
   moodNoteDate: {
-    fontSize: 12,
+    fontSize: 10,
     color: "#636363",
     fontFamily: "Poppins-Regular",
   },
   moodNoteDetails: { paddingHorizontal: 10, marginTop: 10 },
   moodNoteDetailsText: { fontSize: 15, color: "black" },
 
-  // Modal
   modalContainer: {
     backgroundColor: "white",
     width: "100%",
     position: "absolute",
-    bottom: 0,
+    bottom: -20,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
   },
-  modalStepContainer: { overflow: "hidden", borderTopLeftRadius: 32, borderTopRightRadius: 32 },
+  modalStepContainer: {
+    overflow: "hidden",
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+  },
   modalContent: {
     backgroundColor: "#FFFFFFCC",
     paddingHorizontal: 20,
     paddingVertical: 20,
   },
-  modalCloseButton: { position: "absolute", right: 20, top: 20 },
-  modalCloseText: { fontSize: 35, color: "#929292" },
-  modalGreetingContainer: { marginVertical: 15 },
-  modalGreeting: {
-    fontSize: 16,
-    color: "#262626",
-    fontFamily: "Poppins-Regular",
+  modalCloseButton: {
+    position: "absolute",
+    right: 20,
+    top: 35,
+    zIndex: 10,
+    padding: 4,
   },
+  modalGreetingContainer: { marginVertical: 15 },
   modalUserName: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "600",
     color: "#262626",
     fontFamily: "Poppins-SemiBold",
   },
   modalTitle: {
-    fontSize: 22,
+    fontSize: 14,
     fontWeight: "600",
     color: "#262626",
-    fontFamily: "Poppins-SemiBold",
+    fontFamily: "Poppins-Regular",
   },
   modalSubtitle: {
     fontSize: 12,
@@ -714,19 +819,14 @@ const styles = StyleSheet.create({
   },
   moodSelectionGrid: {
     flexDirection: "row",
+    flexWrap: "wrap",
     justifyContent: "space-around",
     marginVertical: 20,
   },
   moodOption: {
     alignItems: "center",
     justifyContent: "center",
-  },
-  moodOptionSelected: {
-    backgroundColor: "#e0e0e0",
-    borderWidth: 2,
-    borderColor: "#02130B",
-    borderRadius: 12,
-    padding: 8,
+    marginBottom: 15,
   },
   moodOptionEmoji: { height: 50, width: 50 },
   moodOptionLabel: {
@@ -745,8 +845,8 @@ const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: "top",
     marginBottom: 20,
-    backgroundColor: "#FFFFFF",        // Solid white background
-  color: "#000000",
+    backgroundColor: "#FFFFFF",
+    color: "#000000",
   },
   modalSubmitButton: {
     backgroundColor: "#02130B",
@@ -756,7 +856,6 @@ const styles = StyleSheet.create({
   },
   modalSubmitText: { color: "white", fontSize: 16, fontWeight: "500" },
 
-  // Background Lottie
   backgroundLottie: {
     width: width,
     height: height * 0.68,

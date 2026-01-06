@@ -7,13 +7,13 @@ import { ChevronLeft } from "lucide-react-native";
 import moment from "moment";
 import React, { useCallback, useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Dimensions,
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    View
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  View
 } from "react-native";
 import Toast from "react-native-toast-message";
 
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   moodCard: {
-    backgroundColor: "rgba(180, 180, 180, 0.4)",
+    backgroundColor: "#ededed",
     padding: 16,
     borderRadius: 12,
     marginVertical: 6,
@@ -176,14 +176,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   moodTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "600",
     color: "#262626",
     fontFamily: "WhyteInktrap-Bold",
     marginLeft: 8,
   },
   dateText: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: "500",
     color: "#636363",
     fontFamily: "Poppins-Regular",
@@ -194,13 +194,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   noteText: {
-    fontSize: 15,
+    fontSize: 13,
+    fontFamily: 'Poppins-SemiBold',
     color: "#454545",
     lineHeight: 22,
   },
   imageEmogiIcon: {
-    width: 36,
-    height: 36,
+    width: 50,
+    height: 50,
     resizeMode: "contain",
   },
   listContent: {
