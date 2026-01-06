@@ -112,7 +112,7 @@ const UploadProfilePhoto = () => {
       />
 
       <View style={styles.bottomCard1}>
-        <CustomLottie isBlurView={true} />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
       </View>
 
       <View style={styles.overlay}>

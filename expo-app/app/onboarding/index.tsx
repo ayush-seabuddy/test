@@ -173,7 +173,7 @@ const OnboardingScreens = () => {
             </View>
 
             <View style={styles.bottomSheet}>
-                <CustomLottie isBlurView={true} />
+                <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
 
                 <ScrollView
                     contentContainerStyle={styles.scrollContent}

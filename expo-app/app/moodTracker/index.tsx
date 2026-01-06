@@ -608,7 +608,7 @@ const MoodTracker: React.FC = () => {
 
         <CustomLottie
           customSyle={styles.backgroundLottie}
-          isBlurView={true}
+          isBlurView={Platform.OS === 'ios' ? true : false}
         />
       </View>
     </KeyboardAvoidingView>

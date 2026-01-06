@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
@@ -187,7 +188,7 @@ const ChangePasswordScreen = () => {
       </View>
 
       <View pointerEvents="none" style={styles.backgroundLottie}>
-        <CustomLottie isBlurView={true} />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
       </View>
     </View>
   );

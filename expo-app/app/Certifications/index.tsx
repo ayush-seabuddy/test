@@ -8,6 +8,7 @@ import {
     Dimensions,
     FlatList,
     Modal,
+    Platform,
     Pressable,
     StyleSheet,
     TouchableOpacity,
@@ -422,7 +423,7 @@ const CertificationsScreen = () => {
       </Modal>
 
       <View style={styles.background}>
-        <CustomLottie isBlurView={true} />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
       </View>
     </>
   );

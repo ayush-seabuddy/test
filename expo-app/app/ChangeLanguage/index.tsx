@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Dimensions,
   FlatList,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -121,7 +122,7 @@ const ChangeLanguageScreen = () => {
       <Toast />
 
       <View style={styles.backgroundLottie}>
-        <CustomLottie isBlurView={true} />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
       </View>
     </>
   );

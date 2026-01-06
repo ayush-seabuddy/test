@@ -106,7 +106,7 @@ const AppointmentHistory = () => {
 
       {/* Bottom Animation */}
       <View style={styles.bottomCard}>
-        <CustomLottie isBlurView={true} />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
       </View>
     </View>
   );

@@ -268,7 +268,7 @@ const UpdateProfile = () => {
       />
 
       <View style={styles.bottomCard1}>
-        <CustomLottie isBlurView={true} componentHeight={height * 0.85} />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} componentHeight={height * 0.85} />
       </View>
 
       <View style={styles.mainContent}>

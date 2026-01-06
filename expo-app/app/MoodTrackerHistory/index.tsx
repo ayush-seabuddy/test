@@ -12,6 +12,7 @@ import {
   Dimensions,
   FlatList,
   Image,
+  Platform,
   StyleSheet,
   Text,
   View
@@ -143,7 +144,7 @@ const MoodTrackerHistory = () => {
 
       {/* Bottom Lottie Background */}
       <View style={styles.bottomLottieContainer}>
-        <CustomLottie isBlurView={true} />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
       </View>
 
       <Toast />

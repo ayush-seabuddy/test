@@ -12,6 +12,7 @@ import {
   Dimensions,
   FlatList,
   TextInput as NativeTextInput,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -266,7 +267,7 @@ const SocialMediaLinks = () => {
 
       {/* Background Lottie */}
       <View style={styles.backgroundLottie}>
-        <CustomLottie />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false}/>
       </View>
 
       <Toast />

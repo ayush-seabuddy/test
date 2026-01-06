@@ -105,7 +105,7 @@ const WellnessOfficerList = ({  }) => {
           style={styles.lottieBackground}
           resizeMode="cover"
         /> */}
-        <CustomLottie isBlurView={true} />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
       </View>
     </View>
   );

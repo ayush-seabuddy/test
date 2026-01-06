@@ -128,7 +128,7 @@ const AudioDetails = ({ data: fullDetails }: { data: Content }) => {
       </View>
 
       <View style={styles.background}>
-        <CustomLottie isBlurView={true} customSyle={{ height: height * 0.55 }} />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} customSyle={{ height: height * 0.55 }} />
       </View>
     </View>
   );

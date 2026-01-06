@@ -356,7 +356,7 @@ const HelplineFormScreen = () => {
         </View>
       ) : (
         <View style={{ flex: 1 }}>
-            <CustomLottie isBlurView={true} componentHeight={height * 0.80} />
+            <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} componentHeight={height * 0.80} />
 
           <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

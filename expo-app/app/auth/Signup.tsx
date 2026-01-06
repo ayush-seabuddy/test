@@ -75,7 +75,7 @@ const Signup = () => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
-        <CustomLottie isBlurView={true} componentHeight={height * 0.9} />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} componentHeight={height * 0.9} />
         <View style={styles.topOverlay} />
         <Animated.Image
           source={ImagesAssets.splashCaptainImage}
