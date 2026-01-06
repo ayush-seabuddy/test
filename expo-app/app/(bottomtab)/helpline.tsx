@@ -50,7 +50,7 @@ const HelplineScreen = () => {
       />
 
       <View style={styles.backgroundImage}>
-        <CustomLottie isBlurView={false} componentHeight={height * 0.9} />
+        <CustomLottie isBlurView={true} componentHeight={height * 0.9} />
       </View>
 
       <View style={styles.cardContainer}>
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   },
   cardContainer: {
     position: "absolute",
-    top: "28%",
+    top: "40%",
     left: 16,
     right: 16,
     bottom: 16,

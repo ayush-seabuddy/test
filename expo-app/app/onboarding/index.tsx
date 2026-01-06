@@ -173,7 +173,7 @@ const OnboardingScreens = () => {
             </View>
 
             <View style={styles.bottomSheet}>
-                <CustomLottie isBlurView={false} />
+                <CustomLottie isBlurView={true} />
 
                 <ScrollView
                     contentContainerStyle={styles.scrollContent}

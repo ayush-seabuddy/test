@@ -62,9 +62,7 @@ const Settings = () => {
         <View style={{ flex: 1 }}>
 
             <GlobalHeader
-                leftIcon={<ChevronLeft />}
-                onLeftPress={() => router.back()}
-                title="Settings"
+                title={t('settings')}
             />
             <View style={{ flex: 1, backgroundColor: "#e8e8e8" }}>
                 <ScrollView style={styles.container}>

@@ -100,7 +100,7 @@ const Chats = ({
                 <TouchableOpacity
                   onPress={() => router.push({
                     pathname: "/crewProfile",
-                    params: { crewId: item?.messageUser?.crewId }
+                    params: { crewId: item.senderId }
                   })}
                 >
                   <Image

@@ -47,7 +47,10 @@ const ChatSearchComponent: React.FC<ChatSearchComponentProps> = ({ setSearchValu
 
       {/* Search Input */}
       <View style={styles.searchContainer}>
-        <Search color="black" size={25} />
+        <View style={{ marginRight: 10 }}>
+          <Search color="black" size={24} />
+
+        </View>
 
         <TextInput
           ref={inputRef}
@@ -87,6 +90,7 @@ const styles = StyleSheet.create({
     height: 60,
     paddingHorizontal: 12,
     backgroundColor: "#FFFFFF",
+    elevation: 5,
   },
   shadow: {
     position: "absolute",

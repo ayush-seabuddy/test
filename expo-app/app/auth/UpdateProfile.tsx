@@ -264,12 +264,11 @@ const UpdateProfile = () => {
     <View style={styles.main}>
       <GlobalHeader
         title={t('profileDetails')}
-        leftIcon={<ChevronLeft size={20} />}
         onLeftPress={currentStep > 1 ? handlePrev : () => router.back()}
       />
 
       <View style={styles.bottomCard1}>
-        <CustomLottie isBlurView={false} componentHeight={height * 0.85} />
+        <CustomLottie isBlurView={true} componentHeight={height * 0.85} />
       </View>
 
       <View style={styles.mainContent}>

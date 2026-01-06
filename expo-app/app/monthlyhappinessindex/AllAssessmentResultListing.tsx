@@ -117,10 +117,17 @@ const AllAssessmentResultListing = () => {
         } else {
             const { mood, message } = classifyTMD(score);
             infoContent = (
-                <View style={{ marginTop: 6 }}>
-                    <Text style={styles.moodText}>{mood}</Text>
-                    <Text style={styles.messageText}>{message}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <View style={{ marginTop: 6, width: '90%' }}>
+                        <Text style={styles.moodText}>{mood}</Text>
+                        <Text style={styles.messageText}>{message}</Text>
+                    </View>
+
+                    <View style={styles.rightIcon}>
+                        <ArrowUpRight size={16} color="#666" />
+                    </View>
                 </View>
+
             );
         }
 
@@ -136,20 +143,22 @@ const AllAssessmentResultListing = () => {
             >
                 <View style={styles.cardContent}>
                     <View style={styles.leftSection}>
-                        <Text style={styles.dateText}>{formattedDate}</Text>
-
-                        <View style={[styles.scoreBadge, { backgroundColor: bg }]}>
-                            <Text style={[styles.scoreText, { color: text }]}>
-                                {t('score')}: {score}
-                            </Text>
+                        <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
+                            <Text style={styles.dateText}>{formattedDate}</Text>
+                            <View style={[styles.scoreBadge, { backgroundColor: bg }]}>
+                                <Text style={[styles.scoreText, { color: text }]}>
+                                    {t('score')}: {score}
+                                </Text>
+                            </View>
                         </View>
+
+
+
 
                         {infoContent}
                     </View>
 
-                    <View style={styles.rightIcon}>
-                        <ArrowUpRight size={16} color="#666" />
-                    </View>
+
                 </View>
             </TouchableOpacity>
         );
@@ -167,8 +176,6 @@ const AllAssessmentResultListing = () => {
         <View style={styles.container}>
             <GlobalHeader
                 title={title}
-                leftIcon={<ChevronLeft size={24} color="#000" />}
-                onLeftPress={() => router.back()}
             />
 
             {sortedData.length > 0 ? (
@@ -252,6 +259,7 @@ const styles = StyleSheet.create({
     },
     messageText: {
         fontSize: 12.5,
+        width: '90%',
         color: '#444',
         fontFamily: 'Poppins-Regular',
         marginTop: 4,

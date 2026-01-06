@@ -256,8 +256,6 @@ const BuddyUpEventDescription = () => {
             <View style={styles.main}>
                 <GlobalHeader
                     title={t('activityDetails')}
-                    leftIcon={<ChevronLeft />}
-                    onLeftPress={() => router.back()}
                 />
                 <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: '60%' }}>
                     <Image source={ImagesAssets.nodatafound} style={{ height: 120, width: 120 }} />

@@ -131,8 +131,6 @@ const ChangePasswordScreen = () => {
     <View style={styles.main}>
       <GlobalHeader
         title={t('change_password')}
-        onLeftPress={router.back}
-        leftIcon={<ChevronLeft color="#000" size={24} />}
       />
 
       <View style={styles.container}>
@@ -189,7 +187,7 @@ const ChangePasswordScreen = () => {
       </View>
 
       <View pointerEvents="none" style={styles.backgroundLottie}>
-        <CustomLottie isBlurView={false} />
+        <CustomLottie isBlurView={true} />
       </View>
     </View>
   );

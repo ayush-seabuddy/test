@@ -316,8 +316,9 @@ const PostFooter = ({ post, isLiked, likesCount, handleLikeToggle, isLikeLoading
 
 // Menu as BottomSheet
 const MenuBottomSheet = ({ visible, onClose, isOwner, onEdit, onDeleteTrigger, onReportTrigger }) => {
+  const snapPoints = isOwner ? ["20%"] : ["18%"];
   return (
-    <BottomSheet visible={visible} onClose={onClose} snapPoints={["30%"]}>
+    <BottomSheet visible={visible} onClose={onClose} snapPoints={snapPoints}>
       <View style={styles.menuSheetContent}>
         {isOwner ? (
           <>
@@ -343,23 +344,27 @@ const MenuBottomSheet = ({ visible, onClose, isOwner, onEdit, onDeleteTrigger, o
             </TouchableOpacity>
           </>
         ) : (
-          <TouchableOpacity
-            style={styles.menuRow}
-            onPress={() => {
-              onClose();
-              onReportTrigger();
-            }}
-          >
-            <AlertTriangle size={20} color="#EF4444" />
-            <Text style={[styles.menuText, { color: '#EF4444' }]}>{t('report')}</Text>
-          </TouchableOpacity>
+            <View>
+              <Text style={styles.reportdisclaimerText}>If you believe this post violates our community guidelines, please report it.</Text>
+              <TouchableOpacity
+                style={styles.menuRow}
+                onPress={() => {
+                  onClose();
+                  onReportTrigger();
+                }}
+              >
+                <AlertTriangle size={20} color="#EF4444" />
+                <Text style={[styles.menuText, { color: '#EF4444' }]}>{t('report')}</Text>
+              </TouchableOpacity>
+            </View>
+
         )}
       </View>
     </BottomSheet>
   );
 };
 
-// Delete Confirmation as Modal (original)
+// Delete Confirmation Modal
 const DeleteConfirmationModal = ({ visible, onClose, onConfirm, loading }) => (
   <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
     <View style={styles.modalOverlay}>
@@ -786,7 +791,7 @@ const styles = StyleSheet.create({
 
   menuSheetContent: { paddingHorizontal: 20, paddingTop: 10 },
   menuRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 16 },
-  menuText: { marginLeft: 12, fontSize: 16, fontFamily: 'Poppins-SemiBold', color: '#1F2937' },
+  menuText: { marginLeft: 12, fontSize: 14, fontFamily: 'Poppins-SemiBold', color: '#1F2937', marginTop: 2 },
   mediaHashtagsOverlay: { position: 'absolute', bottom: 10, left: 10, right: 0, zIndex: 10, pointerEvents: 'none' },
 
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
@@ -795,12 +800,12 @@ const styles = StyleSheet.create({
   modalSubtitle: { fontSize: 14, color: '#374151', marginBottom: 20, fontFamily: 'Poppins-Regular', textAlign: 'center', lineHeight: 20 },
   textInput: { backgroundColor: '#F3F4F6', borderRadius: 8, padding: 12, fontSize: 14, color: '#1F2937', fontFamily: 'Poppins-Regular', borderWidth: 1, borderColor: '#D1D5DB', minHeight: 100, marginBottom: 20 },
   modalButtonContainer: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
-  modalButton: { flex: 1, paddingVertical: 14, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  modalButton: { flex: 1, paddingVertical: 10, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   modalButtonCancel: { backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: '#D1D5DB' },
   modalButtonConfirm: { backgroundColor: '#8DAF02' },
   modalButtonTextCancel: { fontSize: 15, fontWeight: '600', color: '#1F2937', fontFamily: 'Poppins-SemiBold' },
   modalButtonTextConfirm: { fontSize: 15, fontWeight: '600', color: '#FFFFFF', fontFamily: 'Poppins-SemiBold' },
-
+  reportdisclaimerText: { fontFamily: 'Poppins-Medium', fontSize: 14, marginTop: 10 },
   sheetHeader: { alignItems: 'center', paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: '#eee' },
   sheetTitle: { fontSize: 15, fontFamily: 'Poppins-SemiBold', color: '#1F2937' },
   userItemContainer: { flexDirection: 'row', alignItems: 'center', padding: 10, marginVertical: 4, borderRadius: 10, backgroundColor: '#f9f9f9' },

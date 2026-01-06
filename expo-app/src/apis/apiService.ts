@@ -311,6 +311,12 @@ export interface ListAllUsersParams {
   limit: number,
 }
 
+export interface GetAnalyticsParams {
+  fromMonth: string,
+  toMonth: string
+}
+
+
 export interface ReadSingleNotificationRequest {
   notificationId: string
 }
@@ -842,6 +848,8 @@ export const listallusers = async (params?: ListAllUsersParams): Promise<ApiResp
 };
 
 
+
+
 export const offboardonboardcrew = async (
   payload: OffboardOnboardCrewRequest
 ): Promise<ApiResponse> => {
@@ -904,5 +912,20 @@ export const getapplastversion = async (): Promise<ApiResponse> => {
   return await apiRequest({
     method: "GET",
     url: ENDPOINTS.GETAPPLASTVERSION,
+  });
+}
+
+export const fetchcustomsurvey = async (): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    url: ENDPOINTS.FETCHCUSTOMSURVEY,
+  });
+}
+
+export const getAnalytics = async (params?: GetAnalyticsParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    params,
+    url: ENDPOINTS.GETANALYTICS,
   });
 }

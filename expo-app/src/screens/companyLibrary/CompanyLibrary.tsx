@@ -64,7 +64,7 @@ const CompanyLibrary = () => {
 
     return (
         <View style={{ flex: 1 }}>
-            <GlobalHeader title={t("companyLibrary")} leftIcon={<ChevronLeft size={24} />} onLeftPress={() => router.back()} />
+            <GlobalHeader title={t("companyLibrary")}/>
             <View
                 style={{
                     flexDirection: "row",

@@ -45,9 +45,14 @@ const BottomSheet: React.FC<Props> = ({
 
   const getHeight = (point: string | number): number => {
     if (typeof point === "number") return point;
-    if (point === "60%") return SCREEN_HEIGHT * 0.6;
-    if (point === "80%") return SCREEN_HEIGHT * 0.8;
-    return SCREEN_HEIGHT * 0.2;
+    
+    // Parse percentage strings
+    if (typeof point === "string" && point.endsWith("%")) {
+      const percentage = parseFloat(point) / 100;
+      return SCREEN_HEIGHT * percentage;
+    }
+    
+    return SCREEN_HEIGHT * 0.2; // Default fallback
   };
 
   const sheetHeight = getHeight(snapPoints[0]);
@@ -74,7 +79,7 @@ const BottomSheet: React.FC<Props> = ({
             <View style={styles.handle} />
           </View>
 
-          <View style={{ flex: 1, }}>{children}</View>
+          <View style={{ flex: 1 }}>{children}</View>
         </View>
       </KeyboardAvoidingView>
     </Modal>

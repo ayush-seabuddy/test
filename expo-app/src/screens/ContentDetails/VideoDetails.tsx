@@ -100,8 +100,6 @@ export default function VideosDetails({ data: fullDetails }: { data: Content }) 
       {/* <VideoDetailsHeader navigation={router} data={fullDetails} fromHome={fromHome} /> */}
       <GlobalHeader
         title={fullDetails?.contentTitle}
-        leftIcon={<ChevronLeft />}
-        onLeftPress={() => router.back()}
       />
 
 

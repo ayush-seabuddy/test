@@ -277,8 +277,6 @@ const BuddyUpEventList = ({ userId, type, from , ActivitiesData}: Props) => {
       {from === 'shiplifescreen' && (
         <GlobalHeader
           title={t('activities')}
-          leftIcon={<ChevronLeft />}
-          onLeftPress={() => router.back()}
         />
       )}
       <FlatList

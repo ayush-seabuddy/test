@@ -102,12 +102,14 @@ const EmergencyModal: React.FC<EmergencyModalProps> = ({ visible, onClose }) => 
                 <Pressable style={styles.overlay} onPress={onClose} />
 
                 <View style={styles.card}>
-                    <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-                          <Text style={styles.helloText}>
-                        {t('hey')} <Text style={styles.name}>{user?.fullName || 'there'}!</Text>
-                    </Text>
-                        <X size={24} color="#000" />
-                    </TouchableOpacity>
+                    <View style={styles.closeBtn}>
+                        <Text style={styles.helloText}>
+                            {t('hey')} <Text style={styles.name}>{user?.fullName || 'there'}!</Text>
+                        </Text>
+                        <TouchableOpacity onPress={onClose}>
+                            <X size={24} color="#000" />
+                        </TouchableOpacity>
+                    </View>
                     <Text style={styles.heading}>{t('emergency_lines')}</Text>
 
                     {loading ? (
@@ -178,13 +180,13 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 25,
         borderTopRightRadius: 25,
         padding: 20,
-        paddingTop:24,
+        paddingTop: 24,
         zIndex: 3,
-         position:"absolute",
-    bottom:0 
+        position: "absolute",
+        bottom: 0
     },
 
-    closeBtn: { justifyContent:'space-between',flexDirection:'row'},
+    closeBtn: { justifyContent: 'space-between', flexDirection: 'row' },
 
     helloText: { fontSize: 16, fontFamily: "Poppins-SemiBold", color: '#333' },
     name: { color: "#D32F2F", fontFamily: "WhyteInktrap-Bold" },
@@ -202,7 +204,7 @@ const styles = StyleSheet.create({
     },
     rowLeft: { flexDirection: "row", flex: 1, alignItems: "center", marginRight: 12 },
     iconBox: { backgroundColor: "#FFBF00", padding: 12, borderRadius: 14, marginRight: 14 },
-    nameText: { fontSize: 12, fontFamily: "WhyteInktrap-Medium" ,lineHeight:20},
+    nameText: { fontSize: 12, fontFamily: "WhyteInktrap-Medium", lineHeight: 20 },
     desc: { fontSize: 11, marginVertical: 4, color: '#555', fontFamily: "Poppins-Regular" },
     phone: { fontSize: 12, fontFamily: "Poppins-SemiBold" },
     wIcon: { width: 32, height: 32, tintColor: "#25D366" }

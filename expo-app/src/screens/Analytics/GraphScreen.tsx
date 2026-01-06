@@ -2,52 +2,37 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Dimensions,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 import { getDataUsage } from '@/src/apis/apiService';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
-
-// Optional: placeholder data if API fails or for preview
-const placeholderChartData = {
-  labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-  datasets: [
-    {
-      data: [20, 45, 28, 80],
-      color: (opacity = 1) => `rgba(52, 168, 83, ${opacity})`, // Green line
-      strokeWidth: 3,
-    },
-  ],
-};
-
-const screenWidth = Dimensions.get('window').width;
+import Colors from '@/src/utils/Colors';
+import { useTranslation } from 'react-i18next';
 
 const GraphScreen: React.FC = () => {
   const [dataUsed, setDataUsed] = useState<string>('0');
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedDate, setSelectedDate] = useState<dayjs.Dayjs>(dayjs());
+  const { t } = useTranslation();
 
   const fetchDataUsage = async () => {
     try {
       setLoading(true);
       const dbResult = await AsyncStorage.getItem('userDetails');
-      if (!dbResult) {
-        console.log('No user details found');
-        return;
-      }
+      if (!dbResult) return;
 
       const userDetails = JSON.parse(dbResult);
       const monthParam = selectedDate.format('YYYY-MM');
 
-      const response = await getDataUsage({month: monthParam});
+      const response = await getDataUsage({ month: monthParam });
 
       if (response?.status === 200) {
-        setDataUsed(response?.data?.dataUsed?.toString() || '0');
+        setDataUsed(response.data?.dataUsed?.toString() ?? '0');
       } else {
         setDataUsed('0');
       }
@@ -71,64 +56,38 @@ const GraphScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {/* Month Navigation & Data Usage */}
-      <View style={styles.headerSection}>
-        <View style={styles.monthNavigation}>
-          <View style={styles.monthSelector}>
-            <TouchableOpacity onPress={() => handleMonthChange(-1)}>
-              <ChevronLeft size={20} /> 
-            </TouchableOpacity>
+      <View style={styles.monthSelector}>
+        <TouchableOpacity onPress={() => handleMonthChange(-1)}>
+          <ChevronLeft size={24} color="#333" />
+        </TouchableOpacity>
 
-            <Text style={styles.monthText}>
-              {selectedDate.format('MMM YYYY')}
-            </Text>
+        <Text style={styles.monthText}>
+          {selectedDate.format('MMM YYYY')}
+        </Text>
 
-            {!isCurrentMonth && (
-              <TouchableOpacity onPress={() => handleMonthChange(1)}>
-                <ChevronRight size={20} /> 
-              </TouchableOpacity>
-            )}
-          </View>
+        <TouchableOpacity
+          onPress={() => handleMonthChange(1)}
+          disabled={isCurrentMonth}
+        >
+          <ChevronRight
+            size={24}
+            color={isCurrentMonth ? '#ccc' : '#333'}
+          />
+        </TouchableOpacity>
+      </View>
 
-          {loading ? (
-            <ActivityIndicator size="small" color="#333" />
-          ) : (
-            <View style={styles.dataUsageContainer}>
-              <Text style={styles.dataUsageText}>{dataUsed || '0'}</Text>
-              <Text style={styles.dataUsageUnit}> MB</Text>
-            </View>
-          )}
+      {loading ? (
+        <ActivityIndicator size="large" color={Colors.lightGreen} />
+      ) : (
+        <View style={styles.dataUsageContainer}>
+          <Text style={styles.dataUsageText}>
+            {dataUsed} MB
+          </Text>
+          <Text style={styles.labelText}>
+            {t('monthlydatausage')}
+          </Text>
         </View>
-      </View>
-
-      {/* Line Chart */}
-      <View style={styles.chartContainer}>
-        <Text style={styles.chartTitle}>Monthly Data Usage Trend</Text>
-        {/* <LineChart
-          data={placeholderChartData}
-          width={screenWidth - 40}
-          height={220}
-          chartConfig={{
-            backgroundColor: '#ffffff',
-            backgroundGradientFrom: '#ffffff',
-            backgroundGradientTo: '#f8f9fa',
-            decimalPlaces: 0,
-            color: (opacity = 1) => `rgba(52, 168, 83, ${opacity})`,
-            labelColor: () => `#333`,
-            style: { borderRadius: 16 },
-            propsForDots: {
-              r: '6',
-              strokeWidth: '2',
-              stroke: '#34a853',
-            },
-          }}
-          bezier
-          style={styles.chart}
-          withHorizontalLines={true}
-          withVerticalLines={false}
-          segments={4}
-        /> */}
-      </View>
+      )}
     </View>
   );
 };
@@ -136,62 +95,39 @@ const GraphScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 20,
-    backgroundColor: '#fff',
-  },
-  headerSection: {
+    borderRadius: 20,
+    backgroundColor: '#f5f5f5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
     paddingHorizontal: 20,
-  },
-  monthNavigation: {
-    width: '100%',
   },
   monthSelector: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    maxWidth: 300,
     marginBottom: 20,
   },
   monthText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: 'Poppins-SemiBold',
     color: '#333',
-    marginHorizontal: 16,
-  },
-  arrow: {
-    width: 20,
-    height: 20,
-    resizeMode: 'contain',
   },
   dataUsageContainer: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'center',
+    alignItems: 'center',
   },
   dataUsageText: {
-    fontSize: 36,
-    fontWeight: '400',
+    fontSize: 20,
+    fontFamily: 'Poppins-SemiBold',
     color: '#333',
+    marginBottom: 8,
   },
-  dataUsageUnit: {
-    fontSize: 24,
-    fontWeight: '400',
-    color: '#333',
-    marginLeft: 4,
-  },
-  chartContainer: {
-    paddingHorizontal: 20,
-    marginTop: 20,
-  },
-  chartTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  chart: {
-    borderRadius: 16,
-    marginVertical: 8,
+  labelText: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Regular',
+    color: '#262626',
   },
 });
 

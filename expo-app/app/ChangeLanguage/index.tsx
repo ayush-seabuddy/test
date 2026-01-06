@@ -99,8 +99,6 @@ const ChangeLanguageScreen = () => {
     <>
       <GlobalHeader
         title={t('change_language')}
-        onLeftPress={() => router.back()}
-        leftIcon={<ChevronLeft color="#000" size={24} />}
       />
 
       <View style={styles.container}>
@@ -123,7 +121,7 @@ const ChangeLanguageScreen = () => {
       <Toast />
 
       <View style={styles.backgroundLottie}>
-        <CustomLottie isBlurView={false} />
+        <CustomLottie isBlurView={true} />
       </View>
     </>
   );

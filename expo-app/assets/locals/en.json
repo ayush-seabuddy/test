@@ -860,7 +860,7 @@
   "month": "Month :",
   "result": "Result :",
   "veryunhappy": "Very Unhappy",
-   "veryhappy": "Very Happy",
+  "veryhappy": "Very Happy",
   "happy": "Happy",
   "monthlyhappinessindex_resultdescription": {
     "veryhappy": "Very Happy — Life feels good, strong well-being.",
@@ -875,5 +875,22 @@
   "cannotOpenUrl": "Unable to open url",
   "Book_an_appointment": "Book an appointment",
   "WellnessOfficerProfile": "Wellness Officer Profile",
-  "Book_Appointment": "Book Appointment"
+  "Book_Appointment": "Book Appointment",
+  "deletexperience": "Delete Experience",
+  "moodnoteaddedsuccessfully": "Mood Note Added Successfully",
+  "note:": "Note: ",
+  "howareyoufeelingtoday": "How're you feeling today?",
+  "wouldyouliketoshare": "Would you like to share some details?",
+  "addnote_description": "Your notes will be saved privately and can be viewed anytime in the Mood Tracker on the Health page",
+  "writeyourthoughts": "Write your thoughts here...",
+  "checkintoday": "Check In Today",
+  "alreadycheckedintoday": "Already Checked in Today",
+  "monthlymoodchart": "Monthly Mood Chart",
+  "moodnotes": "Mood Notes",
+  "surveyHeader": "Survey",
+  "moodtrackerhistory": "Mood Tracker History",
+  "stresslevels": "Stress Levels",
+  "monthlydatausage": "Monthly Data Usage",
+  "buddyuplog": "BuddyUp Log",
+  "buddyuplog_description": "Track your BuddyUp activity and see how you’re engaging with your crew community."
 }

@@ -82,8 +82,6 @@ const ComplaintHistoryScreen = () => {
         <View style={styles.main}>
             <GlobalHeader
                 title={t('complaintHistory')}
-                leftIcon={<ChevronLeft size={20} />}
-                onLeftPress={() => router.back()}
             />
 
             {complaintdata && complaintdata.length > 0 ? (

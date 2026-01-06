@@ -8,6 +8,7 @@ import {
   Dimensions,
   Alert,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { ChevronDown, InfoIcon, Share2 } from "lucide-react-native";
@@ -47,7 +48,7 @@ interface PersonalityInsight {
 
 const PersonalityMapResultScreen = () => {
   const { t } = useTranslation();
-
+  const [loading, setloading] = useState(false);
   const [data, setData] = useState<PersonalityInsight | null>(null);
   const [userName, setUserName] = useState("User");
   const [pdfUri, setPdfUri] = useState<string | null>(null);
@@ -102,15 +103,18 @@ const PersonalityMapResultScreen = () => {
 
   const getAssessmentResult = async () => {
     try {
+      setloading(true);
       const apiResponse = await getallassessmentsResult({ questionType: "PERSONALITY" });
 
       if (apiResponse.success && apiResponse.status === 200) {
+        setloading(false);
         const insights = apiResponse.data.data.insights;
         setData(insights);
       } else {
         showToast.error(t("oops"), apiResponse.message);
       }
     } catch (error) {
+      setloading(false);
       showToast.error(t("oops"), t("somethingwentwrong"));
     }
   };
@@ -166,7 +170,7 @@ const PersonalityMapResultScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView
+      {loading ? <ActivityIndicator size={30} color={Colors.lightGreen} /> : <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
       >
@@ -332,11 +336,11 @@ const PersonalityMapResultScreen = () => {
             </View>
           )}
         </View>
-      </ScrollView>
-
-      <View style={styles.buttonContainer}>
-        <GlobalButton title={t("goback")} onPress={() => router.back()} />
-      </View>
+      </ScrollView>}
+      {!loading &&
+        <View style={styles.buttonContainer}>
+          <GlobalButton title={t("goback")} onPress={() => router.back()} />
+        </View>}
     </View>
   );
 };

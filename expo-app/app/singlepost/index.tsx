@@ -72,8 +72,6 @@ const SinglePostScreen = () => {
         <View style={styles.container}>
             <GlobalHeader
                 title={t('post')}
-                leftIcon={<ChevronLeft />}
-                onLeftPress={() => router.back()}
             />
 
             {loading ? (

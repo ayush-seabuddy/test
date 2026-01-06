@@ -99,7 +99,7 @@ const Home = () => {
 
       <View style={styles.contentContainer}>
         <View style={styles.backgroundOverlay}>
-          <CustomLottie isBlurView={false} />
+          <CustomLottie isBlurView={true} />
         </View>
 
         <ExitAppModal

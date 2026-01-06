@@ -12,6 +12,7 @@ import {
     Dimensions,
     Image,
     ImageSourcePropType,
+    Platform,
     StyleSheet,
     Text,
     TouchableOpacity,
@@ -129,7 +130,7 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
                             {unreadMessageCount > 0 && (
                                 <View style={styles.badge}>
                                     <Text style={styles.badgeText}>
-                                      
+
                                         {unreadMessageCount > 9 ? "9+" : unreadMessageCount}
                                     </Text>
                                 </View>
@@ -295,7 +296,7 @@ const styles = StyleSheet.create({
         borderRadius: 50,
         position: "absolute",
         top: 8,
-        right: -18,
+        right: Platform.OS === 'ios' ? -5 : -18,
         minWidth: 18,
         height: 18,
         justifyContent: "center",

@@ -1,4 +1,4 @@
-import { getallcontents } from '@/src/apis/apiService';
+import { fetchcustomsurvey, getallcontents } from '@/src/apis/apiService';
 import { showToast } from '@/src/components/GlobalToast';
 import Colors from '@/src/utils/Colors';
 import { Image } from 'expo-image';
@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, FlatList, Dimensions, Text, NativeScrollEvent, NativeSyntheticEvent, TouchableOpacity } from 'react-native';
+import CustomSurveyCard from './CustomSurveyCard';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 20;
@@ -21,7 +22,7 @@ type AnnouncementsProps = {
 };
 
 type Announcement = {
-    id:string;
+    id: string;
     alreadySeen: boolean;
     contentTitle: string;
     createdAt: string;
@@ -29,14 +30,21 @@ type Announcement = {
     thumbnail: string;
 };
 
+type Survey = {
+    id: string;
+    type: string;
+    image: string;
+    title: string;
+    description: string;
+}
+
 const Announcements: React.FC<AnnouncementsProps> = ({
     onlyAnnouncement = false,
     page = 1,
     limit = 10,
-    contentCategory,
-    contentType,
 }) => {
     const [loading, setloading] = useState(false);
+    const [surveyData, setsurveyData] = useState<Survey | null>(null);
     const [announcement, setannouncement] = useState<Announcement[]>([]);
     const { t } = useTranslation();
     const flatListRef = useRef<FlatList>(null);
@@ -65,8 +73,31 @@ const Announcements: React.FC<AnnouncementsProps> = ({
         }
     };
 
+    const getallsurvey = async () => {
+        setloading(true);
+        try {
+            const apiResponse = await fetchcustomsurvey();
+
+            setloading(false);
+
+            if (apiResponse.success && apiResponse.status === 200) {
+                // Filter for CUSTOM_SURVEY type and get the first one
+                const customSurveyList = (apiResponse.data || []).filter(
+                    (item: Survey) => item.type === "CUSTOM_SURVEY"
+                );
+                setsurveyData(customSurveyList.length > 0 ? customSurveyList[0] : null);
+            } else {
+                showToast.error(t('oops'), apiResponse.message);
+            }
+        } catch (error) {
+            setloading(false);
+            showToast.error(t('oops'), t('somethingwentwrong'));
+        }
+    };
+
     useEffect(() => {
         getAllAnnouncements();
+        getallsurvey();
     }, []);
 
     useEffect(() => {
@@ -120,11 +151,11 @@ const Announcements: React.FC<AnnouncementsProps> = ({
     const renderAnnouncement = ({ item }: { item: Announcement }) => {
         const isNew = !item.alreadySeen;
         return (
-            <TouchableOpacity style={styles.card} onPress={()=>{
+            <TouchableOpacity style={styles.card} onPress={() => {
                 router.push({
-                                        pathname: "/contentDetails/[contentId]",
-                                        params: { contentId: item.id },
-                                    })
+                    pathname: "/contentDetails/[contentId]",
+                    params: { contentId: item.id },
+                })
             }}>
                 <Image source={{ uri: item.thumbnail }} style={styles.image} contentFit="cover" />
                 <LinearGradient
@@ -173,7 +204,6 @@ const Announcements: React.FC<AnnouncementsProps> = ({
                 })}
             />
 
-            {/* Pagination Dots */}
             <View style={styles.dotsContainer}>
                 {announcement.map((_, index) => (
                     <View
@@ -182,6 +212,10 @@ const Announcements: React.FC<AnnouncementsProps> = ({
                     />
                 ))}
             </View>
+            
+            {surveyData && (
+                <CustomSurveyCard surveyData={surveyData} />
+            )}
         </View>
     );
 };

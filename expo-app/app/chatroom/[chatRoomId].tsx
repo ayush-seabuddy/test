@@ -1,10 +1,9 @@
-// src/screens/chat/ChatRoom.tsx
 import { getReactionsOnMessage, uploadfile } from '@/src/apis/apiService';
 import KeyboardAvoidingWrapper from '@/src/components/KeyboardAvoidingWrapper';
 import MediaPreviewModal from '@/src/components/Modals/MediaPreviewModal';
 import { saveMessage } from '@/src/database/chatMessageService';
 import { RootState } from '@/src/redux/store';
-import { ChatMessage, ChatRoom } from '@/src/screens/chat/types/chatRoom'; // <-- your type
+import { ChatMessage, ChatRoom } from '@/src/screens/chat/types/chatRoom';
 import ChatRoomHeader from '@/src/screens/chatroom/ChatRoomHeader';
 import Chats from '@/src/screens/chatroom/components/ChatDataList';
 import Colors from '@/src/utils/Colors';
@@ -33,14 +32,14 @@ const ChatRoomScreen = () => {
   const route = useRoute<ChatRoomRouteProp>()
   const chatRoomDetails = typeof route.params?.chatRoomDetails === 'string' ? JSON.parse(route.params?.chatRoomDetails) : route.params?.chatRoomDetails
   const chatRoomId = chatRoomDetails.id;
-  console.log("chatRoomId: ", chatRoomId);
+  const [participant , setParticipant] = useState(chatRoomDetails?.participantIds);
   const headerPops = {
     navigation: () => router.back(),
     data: chatRoomDetails,
     participant: chatRoomDetails?.participants?.length,
     GroupName: chatRoomDetails?.groupName,
     setSearchValue: () => { },
-    participantIds: chatRoomDetails?.participantIds
+    participantIds: participant
   }
 
 
@@ -55,7 +54,6 @@ const ChatRoomScreen = () => {
   const [chatListState, setChatList] = useState<ChatMessage[]>([]);
   const [newMessages, setNewMessages] = useState([]);
   const [groupName, setGroupName] = useState("");
-  const [participant, setParticipants] = useState("");
   const [participantIds, setParticipantIds] = useState([]);
   const [recording, setRecording] = useState(false);
   // const [audioRecorderPlayer] = useState(new AudioRecorderPlayer());
@@ -388,6 +386,7 @@ const ChatRoomScreen = () => {
       socketService.emit("joinChatRoom", payload);
 
       socketService.on("userPreviousMessages", (data) => {
+        setParticipant(data.participantIds);
         const newChatList = [...chatListState, ...data.previousMessages];
         setChatList(newChatList);
         saveMessage(newChatList)
@@ -584,7 +583,7 @@ const ChatRoomScreen = () => {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         {loading ? (
-          <ActivityIndicator size="large" color={Colors.darkGreen} />
+          <ActivityIndicator size="small" color={Colors.lightGreen} />
         ) : (
           <Text style={{ color: Colors.lightGreen }}>No messages yet</Text>
         )}
@@ -711,25 +710,23 @@ const ChatRoomScreen = () => {
               style={styles.iconContainer}
               onPress={() => selectImageFromCamera("library")}
             >
-              <Paperclip size={24} color="grey" style={styles.icon} />
+              <Paperclip size={23} color="grey" style={styles.icon} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                sendMessage();
+              }}
+              style={styles.microphoneButton}
+            >
+              {editingMessageId ?
+                <Check size={25} color="#fff" />
+                : <SendHorizonal size={22} color="#fff" />}
             </TouchableOpacity>
           </View>
-
-          <TouchableOpacity
-            onPress={() => {
-              sendMessage();
-            }}
-            style={styles.microphoneButton}
-          >
-            {editingMessageId ?
-              <Check size={25} color="#fff" />
-              : <SendHorizonal size={25} color="#fff" />}
-          </TouchableOpacity>
         </View>
 
         <RBSheet
           ref={bottomSheetRef}
-          // closeOnDragDown={true}
           closeOnPressMask={true}
           height={height * 0.5}
           customStyles={{
@@ -932,7 +929,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "white",
-    // paddingBottom: 10
   },
   loadingContainer: {
     flex: 1,
@@ -943,21 +939,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-end",
     padding: 10,
-    borderRadius: 10,
-    marginHorizontal: 10,
     marginBottom: 20,
-    minHeight: 45,
   },
   inputInnerContainer: {
     flexDirection: "row",
-    alignItems: "flex-end",
-    borderRadius: 30,
+    alignItems: "center",
+    borderRadius: 10,
     backgroundColor: "rgba(230, 230, 230, 0.5)",
     flex: 1,
   },
   iconContainer: {
-    margin: 10,
-    marginBottom: 18
+    marginVertical: 2,
+    marginHorizontal:8
   },
   icon: {
     width: 23,
@@ -974,11 +967,12 @@ const styles = StyleSheet.create({
   },
   microphoneButton: {
     backgroundColor: "#82934b",
-    padding: 8,
+    padding: 10,
+    marginRight: 10,
     borderRadius: 50,
-    marginLeft: 10,
-    height: 45,
-    width: 45,
+    marginLeft: 5,
+    height: 40,
+    width: 40,
     justifyContent: "center",
     alignItems: "center",
   },

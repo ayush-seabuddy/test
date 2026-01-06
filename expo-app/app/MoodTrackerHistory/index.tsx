@@ -6,20 +6,20 @@ import { router } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 import moment from "moment";
 import React, { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-    ActivityIndicator,
-    Dimensions,
-    FlatList,
-    Image,
-    StyleSheet,
-    Text,
-    View
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  View
 } from "react-native";
 import Toast from "react-native-toast-message";
 
 const { width, height } = Dimensions.get("screen");
 
-// Define the Mood Tracker entry type
 interface MoodEntry {
   id: string;
   mood: "HAPPY" | "SAD" | "SLEEPY" | "ANGRY" | "ANXIOUS";
@@ -40,41 +40,42 @@ const getMoodEmoji = (mood: MoodEntry["mood"]) => {
   return moodImages[mood] || ImagesAssets.Emoji_1;
 };
 
-const renderItem = ({ item }: { item: MoodEntry }) => (
-  <View style={styles.moodCard}>
-    <View style={styles.header}>
-      <View style={styles.left}>
-        <Image
-          style={styles.imageEmogiIcon}
-          source={getMoodEmoji(item.mood)}
-        />
-        <View>
-          <Text style={styles.moodTitle}>{item.mood}</Text>
-          <Text style={styles.dateText}>
-            {moment(item.createdAt).format("DD MMM YYYY")}
-          </Text>
-        </View>
-      </View>
-    </View>
 
-    {item.details && (
-      <View style={styles.noteContainer}>
-        <Text style={styles.noteText}>
-          <Text style={{ fontWeight: "bold" }}>Note: </Text>
-          {item.details}
-        </Text>
-      </View>
-    )}
-  </View>
-);
 
 const MoodTrackerHistory = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [moodData, setMoodData] = useState<MoodEntry[]>([]);
   const [page, setPage] = useState<number>(1);
   const [limit] = useState<number>(10);
+  const { t } = useTranslation();
   const [hasMore, setHasMore] = useState<boolean>(true);
+  const renderItem = ({ item }: { item: MoodEntry }) => (
+    <View style={styles.moodCard}>
+      <View style={styles.header}>
+        <View style={styles.left}>
+          <Image
+            style={styles.imageEmogiIcon}
+            source={getMoodEmoji(item.mood)}
+          />
+          <View>
+            <Text style={styles.moodTitle}>{item.mood}</Text>
+            <Text style={styles.dateText}>
+              {moment(item.createdAt).format("DD MMM YYYY")}
+            </Text>
+          </View>
+        </View>
+      </View>
 
+      {item.details && (
+        <View style={styles.noteContainer}>
+          <Text style={styles.noteText}>
+            <Text style={{ fontWeight: "bold" }}>{t('note:')}</Text>
+            {item.details}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
   const fetchMoodHistory = useCallback(async (currentPage: number) => {
     if (!hasMore || loading) return;
 
@@ -103,7 +104,7 @@ const MoodTrackerHistory = () => {
   }, [hasMore, limit, loading]);
 
   useEffect(() => {
-    fetchMoodHistory(1); // Initial fetch
+    fetchMoodHistory(1);
   }, []);
 
   const handleLoadMore = useCallback(() => {
@@ -116,9 +117,7 @@ const MoodTrackerHistory = () => {
   return (
     <View style={styles.container}>
       <GlobalHeader
-        title="Mood Tracker History"
-        onLeftPress={() => router.back()}
-        leftIcon={<ChevronLeft color="#000" size={24} />}
+        title={t('moodtrackerhistory')}
       />
 
       <FlatList
@@ -144,7 +143,7 @@ const MoodTrackerHistory = () => {
 
       {/* Bottom Lottie Background */}
       <View style={styles.bottomLottieContainer}>
-        <CustomLottie isBlurView={false} />
+        <CustomLottie isBlurView={true} />
       </View>
 
       <Toast />
@@ -160,10 +159,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   moodCard: {
-    backgroundColor: "rgba(180, 180, 180, 0.4)",
+    backgroundColor: "#ededed",
     padding: 16,
     borderRadius: 12,
-    marginVertical: 6,
+    marginTop: 10,
     marginHorizontal: 14,
     overflow: "hidden",
   },
@@ -178,14 +177,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   moodTitle: {
-    fontSize: 18,
+    fontSize: 16,
+    lineHeight: 20,
     fontWeight: "600",
     color: "#262626",
     fontFamily: "WhyteInktrap-Bold",
     marginLeft: 8,
   },
   dateText: {
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: "500",
     color: "#636363",
     fontFamily: "Poppins-Regular",
@@ -196,13 +196,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   noteText: {
-    fontSize: 15,
+    fontSize: 13,
+    fontFamily: 'Poppins-SemiBold',
     color: "#454545",
     lineHeight: 22,
   },
   imageEmogiIcon: {
-    width: 36,
-    height: 36,
+    width: 50,
+    height: 50,
     resizeMode: "contain",
   },
   listContent: {

@@ -560,7 +560,7 @@ const CommentsSection = ({
                 ) : (
                   <View style={{
                     backgroundColor: commentText.trim() ? ColorsLight.likeColor : ColorsLight.textTertiary,
-                    padding: 9,
+                      padding: 10,
                     borderRadius: 10
                   }}>
                     <SendHorizonal size={20} color={'white'} strokeWidth={1.5} />
@@ -639,7 +639,7 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 46,
     maxHeight: 114,
-    paddingTop: Platform.OS === 'ios' ? 13 : 0,
+    paddingTop: Platform.OS === 'ios' ? 13 : 10,
     paddingHorizontal: 16,
     borderRadius: 10,
     marginRight: 10,

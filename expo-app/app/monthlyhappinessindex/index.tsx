@@ -9,7 +9,7 @@ import {
   Platform,
 } from 'react-native';
 import Slider from '@react-native-community/slider';
-import { ArrowLeft, Check, TriangleAlert } from 'lucide-react-native';
+import { ArrowLeft, Check, ChevronLeft, TriangleAlert } from 'lucide-react-native';
 import Colors from '@/src/utils/Colors';
 import * as Progress from 'react-native-progress';
 import { useTranslation } from 'react-i18next';
@@ -283,7 +283,7 @@ const MonthlyHappinessIndexTestScreen = () => {
                 router.canGoBack?.() ? router.back() : router.replace('/home')
               }
             >
-              <ArrowLeft size={20} color={Colors.primary} />
+              <ChevronLeft size={24} color={Colors.primary} />
             </TouchableOpacity>
           )}
           <Text style={[styles.title, !isRequiredTest && { marginLeft: 10 }]}>
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
-  titleView: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  titleView: { flexDirection: 'row', alignItems: 'center' },
   title: { fontSize: 16, fontFamily: 'Poppins-Regular', color: '#262626' },
   description: { fontSize: 11, fontFamily: 'Poppins-Regular', color: '#262626', marginTop: 5 },
 
@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
   sliderText: { fontSize: 13, color: '#fff', fontFamily: 'Poppins-Regular' },
 
   footer: { padding: 20, paddingBottom: 40 },
-  disclaimerText: { fontStyle: 'italic', marginBottom: 20, fontSize: 14, color: '#fff' },
+  disclaimerText: { fontStyle: 'italic', marginBottom: 20, fontSize: 14, color: '#000' },
   submitButton: { backgroundColor: 'white', borderRadius: 12, width: '100%' },
   disabledButton: { opacity: 0.5 },
   submitText: { color: Colors.darkGreen, fontFamily: 'Poppins-SemiBold' },

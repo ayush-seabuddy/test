@@ -9,6 +9,8 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+import { router } from "expo-router";
+import { ChevronLeft } from "lucide-react-native";
 
 interface GlobalHeaderProps {
   title?: string;
@@ -26,13 +28,22 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
   title = "",
   onLeftPress,
   onRightPress,
-  leftIcon, 
+  leftIcon,
   rightIcon,
   containerStyle,
   titleStyle,
   showShadow = true,
   backgroundColor = "#fff",
 }) => {
+  /** Default back behavior */
+  const handleLeftPress = () => {
+    if (onLeftPress) {
+      onLeftPress();
+    } else {
+      router.back();
+    }
+  };
+
   return (
     <View
       style={[
@@ -42,28 +53,32 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
         containerStyle,
       ]}
     >
+      {/* LEFT ICON */}
       <TouchableOpacity
         style={styles.iconContainer}
-        onPress={onLeftPress}
+        onPress={handleLeftPress}
         activeOpacity={0.7}
-        disabled={!onLeftPress}
       >
-        {leftIcon && leftIcon}
+        {leftIcon ?? (
+          <ChevronLeft size={24} color={Colors.textPrimary || "#000"} />
+        )}
       </TouchableOpacity>
 
+      {/* TITLE */}
       <View style={styles.titleWrapper}>
         <Text style={[styles.title, titleStyle]} numberOfLines={1}>
           {title}
         </Text>
       </View>
 
+      {/* RIGHT ICON */}
       <TouchableOpacity
-        style={styles.iconContainer}
+        style={[styles.iconContainer, { marginRight: 10 }]}
         onPress={onRightPress}
         activeOpacity={0.7}
         disabled={!onRightPress}
       >
-        {rightIcon && rightIcon}
+        {rightIcon ?? <View style={{ width: 24 }} />}
       </TouchableOpacity>
     </View>
   );
@@ -97,14 +112,16 @@ const styles = StyleSheet.create({
   iconContainer: {
     width: 45,
     height: 45,
-    marginHorizontal:10,
+    marginLeft: 10,
     justifyContent: "center",
     alignItems: "center",
   },
+
   titleWrapper: {
     flex: 1,
     justifyContent: "center",
   },
+
   title: {
     fontSize: 15,
     fontFamily: "Poppins-SemiBold",

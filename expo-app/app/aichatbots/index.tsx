@@ -225,10 +225,8 @@ const AIChatbotScreen = () => {
         <View style={styles.main}>
             <View style={styles.headerContainer}>
                 <GlobalHeader
-                    leftIcon={<ChevronLeft size={20} />}
                     title={`${chatbotName} Buddy`}
                     titleStyle={{ textAlign: 'center' }}
-                    onLeftPress={() => router.back()}
                     rightIcon={
                         <TouchableOpacity onPress={() => setShowDisclaimer(true)}>
                             <InfoIcon size={20} />

@@ -393,8 +393,6 @@ const NewPostScreen = () => {
       <View style={styles.main}>
         <GlobalHeader
           title={isEditMode ? t('editpost') : t('createnewpost')}
-          leftIcon={<ChevronLeft />}
-          onLeftPress={() => router.back()}
         />
 
         {(isLoading || loadingUsers) && (

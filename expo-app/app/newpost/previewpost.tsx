@@ -212,8 +212,6 @@ const PreviewPostScreen: React.FC = () => {
         <View style={styles.container}>
             <GlobalHeader
                 title={t('previewpost')}
-                leftIcon={<ChevronLeft />}
-                onLeftPress={() => router.back()}
             />
 
             <ScrollView showsVerticalScrollIndicator={false}>
