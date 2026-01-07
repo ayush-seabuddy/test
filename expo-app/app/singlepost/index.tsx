@@ -8,13 +8,18 @@ import PostScreen from '@/src/components/PostScreen';
 import { getallposts } from '@/src/apis/apiService';
 import { showToast } from '@/src/components/GlobalToast';
 import { ScrollView } from 'react-native-gesture-handler';
+import { Image } from 'expo-image';
+import { ImagesAssets } from '@/src/utils/ImageAssets';
 
 const SinglePostScreen = () => {
     const { t } = useTranslation();
     const { postId } = useLocalSearchParams<{ postId: string }>();
 
     const [post, setPost] = useState<any>(null);
+
     const [loading, setLoading] = useState(true);
+    const [postNotFoundError, setPostNotFoundError] = useState(false);
+
 
     const fetchPost = useCallback(async () => {
         if (!postId) {
@@ -30,10 +35,8 @@ const SinglePostScreen = () => {
 
             if (apiResponse.success && apiResponse.status === 200) {
                 const fetchedPost =
-                    apiResponse.data?.hangoutsList?.[0] ||
-                    apiResponse.data?.post ||
-                    apiResponse.data?.[0] ||
-                    apiResponse.data;
+                    apiResponse.data?.hangoutsList?.[0]
+                if (!fetchedPost) setPostNotFoundError(true)
 
                 if (fetchedPost) {
                     setPost(fetchedPost);
@@ -81,12 +84,19 @@ const SinglePostScreen = () => {
                 </View>
             ) : (
                 <ScrollView style={styles.postView}>
-                    <PostScreen
+                        {post && !postNotFoundError ? <PostScreen
                         post={post}
                         index={0}
                         onPostDeleted={handlePostDeleted}
                         onPostReported={handlePostReported}
-                    />
+                        /> :
+                            <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: '60%' }}>
+                                <Image source={ImagesAssets.nodatafound} style={{ height: 120, width: 120 }} />
+                                <Text style={styles.notFoundText}>{t('nodataavailable')}</Text>
+
+                            </View>
+
+                        }
                 </ScrollView>
 
             )}
@@ -114,5 +124,12 @@ const styles = StyleSheet.create({
     },
     postView: {
         marginBottom: 20,
-    }
+    },
+    notFoundText: {
+        textAlign: 'center',
+        marginTop: 20,
+        fontSize: 16,
+        fontFamily: 'Poppins-Regular',
+        color: '#666',
+    },
 });

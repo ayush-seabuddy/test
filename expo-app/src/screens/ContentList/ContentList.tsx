@@ -15,11 +15,6 @@ import {
   View
 } from 'react-native';
 import Header from './Header';
-
-// Dummy data generator
-
-
-
 const { width, height } = Dimensions.get('window')
 const ContentList = () => {
   const { item } = useLocalSearchParams();
@@ -27,11 +22,8 @@ const ContentList = () => {
   const [data, setData] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  console.log("loading: ", loading);
   const [hasMore, setHasMore] = useState(false);
   const [contentType, setContentType] = useState<string>("")
-
-
   const getContentTypeConfig = (contentType: 'ARTICLE' | 'VIDEO' | 'MUSIC') => {
     switch (contentType) {
       case "ARTICLE":
@@ -173,20 +165,26 @@ const ContentList = () => {
   };
 
 
+
+
   const loadMoreItems = () => {
     if (loading || !hasMore) return;
 
-    setLoading(true);
-    // Simulate API delay
-    setTimeout(async () => {
-      const newItems = await generateDummyData(page);
-      setData((prev) => [...prev, ...newItems]);
-      setPage((prev) => prev + 1);
+    const nextPage = page + 1;  // Calculate next page first
+    console.log(nextPage, "dfsfsdklfsjkdl");
 
-      // Stop after 5 pages (50 items) for demo
-      if (page >= 5) {
-        setHasMore(false);
+
+    setLoading(true);
+    setTimeout(async () => {
+      const newItems = await generateDummyData(nextPage);
+
+      if (newItems.length > 0) {
+        setData((prev) => [...prev, ...newItems]);
+        setPage(nextPage);
+      } else {
+        setHasMore(false);  
       }
+
       setLoading(false);
     }, 800);
   };
@@ -219,7 +217,7 @@ const ContentList = () => {
 
           <View style={styles.empty}>
 
-            {loading ? <ActivityIndicator size="large" color="#000" /> : <Text>No cars found</Text>}
+            {loading ? <ActivityIndicator size="large" color="#000" /> : <Text>{t('nodataavailable')}</Text>}
           </View>
         }
       />
@@ -244,7 +242,7 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    minHeight: 120,
+    // minHeight: 120,
     backgroundColor: 'gray',
     borderRadius: 12,
     margin: 6,

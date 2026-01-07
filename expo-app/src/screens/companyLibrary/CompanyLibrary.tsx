@@ -5,10 +5,11 @@ import { router } from 'expo-router'
 import { t } from 'i18next'
 import { ChevronLeft, ChevronRight } from 'lucide-react-native'
 import React, { useEffect } from 'react'
-import { Text, TouchableOpacity, View } from 'react-native'
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import RelatedContentCard from '../ContentDetails/RelatedContentCard'
 import CompanyAnnouncements from './CompanyAnnouncements'
 import MusicCard from './MusicCard'
+import { showToast } from '@/src/components/GlobalToast'
 
 const CompanyLibrary = () => {
     const contentList = ["MUSIC", "READ", "VIDEO"];
@@ -30,9 +31,6 @@ const CompanyLibrary = () => {
                 contentType: item
                 // onlyAnnouncement: onlyAnnouncement,
             });
-
-
-
             if (apiResponse.success && apiResponse.status === 200) {
                 console.log("apiResponse.data.allContents: ", apiResponse.data.allContents);
                 setContentListData((prevData) => ({
@@ -40,10 +38,10 @@ const CompanyLibrary = () => {
                     [item]: apiResponse.data.allContents
                 }))
             } else {
-                // showToast.error(t('oops'), apiResponse.message);
+                showToast.error(t('oops'), apiResponse.message);
             }
         } catch (error) {
-            // showToast.error(t('oops'), t('somethingwentwrong'));
+            showToast.error(t('oops'), t('somethingwentwrong'));
         }
     };
 
@@ -64,7 +62,8 @@ const CompanyLibrary = () => {
 
     return (
         <View style={{ flex: 1 }}>
-            <GlobalHeader title={t("companyLibrary")}/>
+            <GlobalHeader title={t("companyLibrary")} />
+            <ScrollView>
             <View
                 style={{
                     flexDirection: "row",
@@ -83,7 +82,7 @@ const CompanyLibrary = () => {
                         fontFamily: "WhyteInktrap-Medium",
                     }}
                 >
-                    Bulletin
+                        {t('bulletin')}
                 </Text>
             </View>
             <CompanyAnnouncements />
@@ -106,7 +105,7 @@ const CompanyLibrary = () => {
                             fontFamily: "WhyteInktrap-Medium",
                         }}
                     >
-                        Watch
+                            {t('watch')}
                     </Text>
                     {contentListData?.VIDEO?.length > 3 && (
                         <TouchableOpacity
@@ -150,7 +149,7 @@ const CompanyLibrary = () => {
                             fontFamily: "WhyteInktrap-Medium",
                         }}
                     >
-                        Listen
+                            {t('listen')}
                     </Text>
                     {contentListData?.MUSIC?.length > 3 && (
                         <TouchableOpacity
@@ -168,10 +167,8 @@ const CompanyLibrary = () => {
                         </TouchableOpacity>
                     )}
                 </View>
-                {!loading && <View style={{ paddingHorizontal: 16 }}>
-                    <MusicCard data={contentListData?.MUSIC} />
-                </View>}
-
+                    {!loading &&
+                        <MusicCard data={contentListData?.MUSIC} />}
 
             </>}
 
@@ -195,7 +192,7 @@ const CompanyLibrary = () => {
                             fontFamily: "WhyteInktrap-Medium",
                         }}
                     >
-                        Read
+                            {t('read')}
                     </Text>
                     {contentListData?.READ?.length > 3 && (
                         <TouchableOpacity
@@ -218,7 +215,8 @@ const CompanyLibrary = () => {
                 </View>}
 
 
-            </>}
+                </>}
+            </ScrollView>
         </View>
     )
 }

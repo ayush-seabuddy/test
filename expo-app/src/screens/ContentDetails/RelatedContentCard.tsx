@@ -11,8 +11,6 @@ import {
   View
 } from "react-native";
 import { Content } from "./type";
-// import { ImagesAssets } from "../../assets/ImagesAssets";
-// import LinearGradient from "react-native-linear-gradient";
 
 const { width } = Dimensions.get("window");
 
@@ -37,13 +35,11 @@ const RelatedVideosCard = ({  data, onArticleClick }:{data:Content[] , onArticle
             resizeMode="cover"
             source={ { uri: item?.thumbnail }}
           >
-            {/* Bottom gradient overlay */}
             <LinearGradient
               colors={["transparent", "rgba(0,0,0,0.7)"]}
               style={styles.gradientOverlay}
             />
 
-            {/* Semi-transparent text background */}
             <View style={styles.textContainer}>
               <Text
                 style={[styles.titleText, styles.textColorWhite]}
@@ -66,15 +62,6 @@ const RelatedVideosCard = ({  data, onArticleClick }:{data:Content[] , onArticle
         data={data}
         renderItem={RenderData}
         showsHorizontalScrollIndicator={false}
-        // ListEmptyComponent={
-        //   <View style={styles.emptyContainer}>
-        //     <Image
-        //       style={{ height: 80, width: 80 }}
-        //       source={ImagesAssets.NoContent}
-        //     />
-        //     <Text style={styles.emptyText}>No Related Videos Found</Text>
-        //   </View>
-        // }
       />
     </View>
   );

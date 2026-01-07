@@ -6,121 +6,111 @@ import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native
 import Colors from '../utils/Colors';
 import { width } from '../utils/helperFunctions';
 
-const ContentListing =({data}:any) =>{
+const ContentListing = ({ data }: any) => {
 
   const getContentTypeConfig = (contentType: 'ARTICLE' | 'VIDEO' | 'MUSIC') => {
-      switch (contentType) {
-        case "ARTICLE":
-          return {
-            navigationScreen: "contentDetails",
-            emptyMessage: "No Article Found",
-            imageComponent: Image,
-            imageStyle: styles.imageBackground,
-            cardStyle: styles.cardContainer,
-            cardContentStyle: styles.cardContent,
-            textContainerStyle: styles.textContainer,
-            showPlayIcon: false,
-          };
-        case "VIDEO":
-          return {
-            navigationScreen: "contentDetails",
-            emptyMessage: "No Video Found",
-            imageComponent: Image,
-            imageStyle: styles.imageBackground,
-            cardStyle: styles.cardContainer,
-            cardContentStyle: styles.cardContent,
-            textContainerStyle: styles.textContainer,
-            showPlayIcon: false,
-          };
-        case "MUSIC":
-          return {
-            navigationScreen: "contentDetails",
-            emptyMessage: "No Audio Found",
-            imageComponent: Image,
-            imageStyle: styles.imageBackground,
-            cardStyle: styles.cardContainer,
-            cardContentStyle: styles.cardContent,
-            textContainerStyle: styles.textContainer,
-            showPlayIcon: false,
-          };
-        default:
-          return {
-            navigationScreen: "contentDetails",
-            emptyMessage: "No Article Found",
-            imageComponent: Image,
-            imageStyle: styles.imageBackground,
-            cardStyle: styles.cardContainer,
-            cardContentStyle: styles.cardContent,
-            textContainerStyle: styles.textContainer,
-            showPlayIcon: false,
-          };
-      }
-    };
+    switch (contentType) {
+      case "ARTICLE":
+        return {
+          navigationScreen: "contentDetails",
+          emptyMessage: "No Article Found",
+          imageComponent: Image,
+          imageStyle: styles.imageBackground,
+          cardStyle: styles.cardContainer,
+          cardContentStyle: styles.cardContent,
+          textContainerStyle: styles.textContainer,
+          showPlayIcon: false,
+        };
+      case "VIDEO":
+        return {
+          navigationScreen: "contentDetails",
+          emptyMessage: "No Video Found",
+          imageComponent: Image,
+          imageStyle: styles.imageBackground,
+          cardStyle: styles.cardContainer,
+          cardContentStyle: styles.cardContent,
+          textContainerStyle: styles.textContainer,
+          showPlayIcon: false,
+        };
+      case "MUSIC":
+        return {
+          navigationScreen: "contentDetails",
+          emptyMessage: "No Audio Found",
+          imageComponent: Image,
+          imageStyle: styles.imageBackground,
+          cardStyle: styles.cardContainer,
+          cardContentStyle: styles.cardContent,
+          textContainerStyle: styles.textContainer,
+          showPlayIcon: false,
+        };
+      default:
+        return {
+          navigationScreen: "contentDetails",
+          emptyMessage: "No Article Found",
+          imageComponent: Image,
+          imageStyle: styles.imageBackground,
+          cardStyle: styles.cardContainer,
+          cardContentStyle: styles.cardContent,
+          textContainerStyle: styles.textContainer,
+          showPlayIcon: false,
+        };
+    }
+  };
 
-   const RenderData = ({ item, index }: { item: any, index: number }) => {
-  
-      const config = getContentTypeConfig(item.contentType);
-      if (!config) return null;
-  
-  
-  
-      return (
-        <TouchableOpacity style={styles.card} activeOpacity={0.8} key={index} onPress={() =>
-          router.push({
-            pathname: "/contentDetails/[contentId]",
-            params: { item: JSON.stringify(item), contentId: item?.id },
-          })
-        }>
-          <View style={config.cardContentStyle}>
-  
-            <Image
-              style={config.imageStyle}
-              resizeMode="cover"
-              source={{
-                uri: item?.thumbnail
-              }} />
-            <View style={styles.textContainer}>
-              <Text
-                style={[styles.titleText]}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                {item?.contentTitle?.slice(0, 25)}
-              </Text>
-            </View>
-            <LinearGradient
-              colors={['transparent', 'rgba(65, 65, 65, 0.56)']} // adjust opacity as you like
-              style={styles.gradientOverlay}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 0, y: 1 }}
-            />
-  
+  const RenderData = ({ item, index }: { item: any, index: number }) => {
+
+    const config = getContentTypeConfig(item.contentType);
+    if (!config) return null;
+
+
+
+    return (
+      <TouchableOpacity style={styles.card} activeOpacity={0.8} key={index} onPress={() =>
+        router.push({
+          pathname: "/contentDetails/[contentId]",
+          params: { item: JSON.stringify(item), contentId: item?.id },
+        })
+      }>
+        <View style={config.cardContentStyle}>
+
+          <Image
+            style={config.imageStyle}
+            resizeMode="cover"
+            source={{
+              uri: item?.thumbnail
+            }} />
+          <View style={styles.textContainer}>
+            <Text
+              style={[styles.titleText]}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {item?.contentTitle?.slice(0, 25)}
+            </Text>
           </View>
-        </TouchableOpacity>
-      );
-    };
+          <LinearGradient
+            colors={['transparent', 'rgba(65, 65, 65, 0.56)']} // adjust opacity as you like
+            style={styles.gradientOverlay}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+          />
+
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
 
   return (
-     <FlatList
-            data={data}
-            renderItem={RenderData}
-            keyExtractor={(item) => item.id}
-            numColumns={2}
-            columnWrapperStyle={styles.row}
-            contentContainerStyle={styles.listContent}
-            showsVerticalScrollIndicator={false}
-            // onEndReached={loadMoreItems}
-            // onEndReachedThreshold={0.5}
-            // ListFooterComponent={renderFooter}
-            // ListEmptyComponent={
-    
-            //   <View style={styles.empty}>
-    
-            //     {loading ? <ActivityIndicator size="large" color="#000" /> : <Text>No cars found</Text>}
-            //   </View>
-            // }
-          />
+    <FlatList
+      data={data}
+      renderItem={RenderData}
+      keyExtractor={(item) => item.id}
+      numColumns={2}
+      columnWrapperStyle={styles.row}
+      contentContainerStyle={styles.listContent}
+      showsVerticalScrollIndicator={false}
+    />
   )
 }
 

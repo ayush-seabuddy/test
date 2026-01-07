@@ -773,8 +773,8 @@ const styles = StyleSheet.create({
     color: "#636363",
     fontFamily: "Poppins-Regular",
   },
-  moodNoteDetails: { paddingHorizontal: 10, marginTop: 10 },
-  moodNoteDetailsText: { fontSize: 15, color: "black" },
+  moodNoteDetails: { paddingHorizontal: 6, marginTop: 10 },
+  moodNoteDetailsText: { fontSize: 14, color: "black", fontFamily: 'Poppins-Regular' },
 
   modalContainer: {
     backgroundColor: "white",
