@@ -28,7 +28,8 @@
         "buildType": "apk"
       },
       "ios": {
-        "buildConfiguration": "Release"
+        "buildConfiguration": "Release",
+        "credentialsSource": "remote"
       }
     },
 
