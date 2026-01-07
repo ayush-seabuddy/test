@@ -890,5 +890,7 @@
   "stresslevels": "压力水平",
   "monthlydatausage": "每月数据使用量",
   "buddyuplog": "BuddyUp 日志",
-  "buddyuplog_description": "追踪你的 BuddyUp 活动，看看你是如何与你的团队社区互动的。"
+  "buddyuplog_description": "追踪你的 BuddyUp 活动，看看你是如何与你的团队社区互动的。",
+  "newmediauploaded": "新媒体已上传",
+    "allnotificationsalreadyread": "所有通知均已标记为已读"
 }

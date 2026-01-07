@@ -78,9 +78,14 @@ const HelplineFormScreen = () => {
 
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsModalVisible(true), 600);
+    const timer = setTimeout(() => {
+      if (!isViewMode) {
+        setIsModalVisible(true);
+      }
+    }, 600);
+
     return () => clearTimeout(timer);
-  }, []);
+  }, [isViewMode]);
 
   const fetchQuestions = async () => {
     setLoading(true);
@@ -356,7 +361,7 @@ const HelplineFormScreen = () => {
         </View>
       ) : (
         <View style={{ flex: 1 }}>
-            <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} componentHeight={height * 0.80} />
+          <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} componentHeight={height * 0.80} />
 
           <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

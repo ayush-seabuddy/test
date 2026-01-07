@@ -7,6 +7,7 @@ import {
     Image,
     TouchableOpacity,
     ScrollView,
+    Platform,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomLottie from "@/src/components/CustomLottie";

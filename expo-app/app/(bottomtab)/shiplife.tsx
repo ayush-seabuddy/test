@@ -408,18 +408,14 @@ const ShipLifeScreen = () => {
 
   const keyExtractor = (item: ListItem, index: number) => `${item.type}-${index}`;
 
-  if (isLoading) {
-    return (
-      <View style={styles.fullScreenLoader}>
-        <ActivityIndicator size="large" color={Colors.lightGreen} />
-      </View>
-    );
-  }
-
   return (
     <View style={styles.main}>
       <ShipLifeScreenHeader />
-      {!shipId ? (
+      {isLoading ? (
+        <View style={styles.fullScreenLoader}>
+          <ActivityIndicator size="large" color={Colors.lightGreen} />
+        </View>
+      ) : !shipId ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Text style={{
             fontSize: 16,

@@ -3,9 +3,10 @@ import { showToast } from '@/src/components/GlobalToast';
 import Colors from '@/src/utils/Colors';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
+import { router } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Dimensions, FlatList, NativeScrollEvent, NativeSyntheticEvent, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, FlatList, NativeScrollEvent, NativeSyntheticEvent, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 20;
@@ -20,6 +21,7 @@ type CompanyAnnouncementsProps = {
 };
 
 type Announcement = {
+    id: string;
     alreadySeen: boolean;
     contentTitle: string;
     createdAt: string;
@@ -47,8 +49,8 @@ const CompanyAnnouncements: React.FC<CompanyAnnouncementsProps> = ({
             const apiResponse = await getallcontents({
                 page: page,
                 limit: limit,
-                contentCategory:"COMPANY_LIBRARY",
-                contentType:"ANNOUNCEMENT"
+                contentCategory: "COMPANY_LIBRARY",
+                contentType: "ANNOUNCEMENT"
                 // onlyAnnouncement: onlyAnnouncement,
             });
 
@@ -120,7 +122,13 @@ const CompanyAnnouncements: React.FC<CompanyAnnouncementsProps> = ({
     const renderAnnouncement = ({ item }: { item: Announcement }) => {
         const isNew = !item.alreadySeen;
         return (
-            <View style={styles.card}>
+            <TouchableOpacity style={styles.card} onPress={() => {
+                router.push({
+                    pathname: "/contentDetails/[contentId]",
+                    params: { contentId: item.id },
+                })
+            }
+            }>
                 <Image source={{ uri: item.thumbnail }} style={styles.image} contentFit="cover" />
                 <LinearGradient
                     colors={["rgba(0, 0, 0, 0.34)", "rgba(0, 0, 0, 0.4)"]}
@@ -137,7 +145,7 @@ const CompanyAnnouncements: React.FC<CompanyAnnouncementsProps> = ({
                         {item?.description?.replace(/<[^>]*>/g, "") || ""}
                     </Text>
                 </View>
-            </View>
+            </TouchableOpacity>
         );
     };
 

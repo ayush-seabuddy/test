@@ -58,8 +58,8 @@ const ChangePasswordScreen = () => {
         return !value.trim()
           ? t('new_password_required')
           : value.length >= 6
-          ? ''
-          : t('password_min_length');
+            ? ''
+            : t('password_min_length');
       if (field === 'confirmPassword')
         return value === newPassword ? '' : t('passwords_do_not_match');
       return '';

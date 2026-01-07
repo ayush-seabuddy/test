@@ -4,7 +4,7 @@ import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from 'expo-au
 import { router } from "expo-router";
 import { ChevronLeft, FastForward, Pause, Play, Repeat, Repeat1 } from 'lucide-react-native';
 import React from 'react';
-import { ActivityIndicator, Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Content } from './type';
 
 const { width, height } = Dimensions.get('window');

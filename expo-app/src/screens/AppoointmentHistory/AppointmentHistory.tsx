@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Dimensions,
   FlatList,
+  Platform,
   StyleSheet,
   Text,
   View,
@@ -113,14 +114,14 @@ const AppointmentHistory = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "transparent" , alignContent:"flex-start" },
+  container: { flex: 1, backgroundColor: "transparent", alignContent: "flex-start" },
 
   flatListContent: {
     flexGrow: 1,
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 80,
-    alignContent:"flex-start"
+    alignContent: "flex-start"
   },
 
   cardWrapper: {

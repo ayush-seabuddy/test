@@ -12,7 +12,8 @@ import {
 } from 'react-native';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { useTranslation } from 'react-i18next';
-import { ArrowRightCircle, ChevronLeft, Hash, Tag, Play, X } from 'lucide-react-native';
+import * as FileSystem from 'expo-file-system';
+import { ArrowRightCircle, Hash, Tag, Play, X } from 'lucide-react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
@@ -27,7 +28,7 @@ import {
   BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
 import { showToast } from '@/src/components/GlobalToast';
-import { listallusersfortag } from '@/src/apis/apiService';
+import { createpost, listallusersfortag, updatepost, updatepostbyid } from '@/src/apis/apiService';
 import { getUserDetails } from '@/src/utils/helperFunctions';
 import { BASE_URL } from '@/src/apis/endpoints';
 import axios from 'axios';
@@ -60,7 +61,7 @@ const renderBackdrop = (props: any) => (
 const NewPostScreen = () => {
   const { t } = useTranslation();
   const params = useLocalSearchParams();
-
+  const MAX_FILE_SIZE_BYTES = 200 * 1024 * 1024;
   const isEditMode = params.editMode === 'true';
   const editPostId = params.postId as string;
 
@@ -77,6 +78,7 @@ const NewPostScreen = () => {
   const [allUsers, setAllUsers] = useState<AllUsers[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [loading, setLoading] = useState(false); // for create/update post
 
   const mediaSheetRef = useRef<BottomSheetModal>(null);
   const tagSheetRef = useRef<BottomSheetModal>(null);
@@ -134,74 +136,102 @@ const NewPostScreen = () => {
     return type === 'video' ? 'video/mp4' : 'image/jpeg';
   };
 
-  const pickMedia = async (type: 'photo' | 'video' | 'gallery') => {
-    try {
-      mediaSheetRef.current?.dismiss();
-      setIsLoading(true);
-      let result;
+const pickMedia = async (type: 'photo' | 'video' | 'gallery') => {
+  try {
+    mediaSheetRef.current?.dismiss();
+    setIsLoading(true);
+    let result;
 
-      if (type === 'photo') {
-        result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          quality: 0.8,
-          allowsEditing: true,
-        });
-      } else if (type === 'video') {
-        result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-          videoMaxDuration: 45
-        });
-      } else {
-        result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.All,
-          allowsMultipleSelection: true,
-          quality: 0.8,
-          videoMaxDuration: 45,
-        });
-      }
-
-      if (!result.canceled) {
-        const assets = result.assets || [];
-        const invalidVideos = assets.filter(
-          (asset) =>
-            asset.type === 'video' &&
-            asset.duration &&
-            asset.duration > 45000
-        );
-
-        if (invalidVideos.length > 0) {
-          const longestSeconds = Math.round(
-            Math.max(...invalidVideos.map((v) => v.duration || 0)) / 1000
-          );
-          showToast.error(
-            t('oops'),
-            t('videotoolong', { seconds: longestSeconds, max: 45 })
-          );
-          return;
-        }
-
-        const newMedia: MediaItem[] = assets.map((asset) => ({
-          uri: asset.uri,
-          type: asset.type === 'video' ? 'video' : 'image',
-          id: `${asset.uri}-${Date.now()}-${Math.random()}`,
-          isExisting: false,
-        }));
-
-        setSelectedMedia((prev) => [...prev, ...newMedia]);
-        showToast.success(
-          t('success'),
-          t('mediaitemsadded', { count: newMedia.length })
-        );
-      }
-    } catch (error: any) {
-      if (!error.message?.includes('User cancelled')) {
-        console.error('Error picking media:', error);
-        showToast.error(t('error'), t('imagePickFailed'));
-      }
-    } finally {
-      setIsLoading(false);
+    if (type === 'photo') {
+      result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+        allowsEditing: true,
+      });
+    } else if (type === 'video') {
+      result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+        videoMaxDuration: 45,
+      });
+    } else {
+      result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.All,
+        allowsMultipleSelection: true,
+        quality: 0.8,
+        videoMaxDuration: 45,
+      });
     }
-  };
+
+    if (!result.canceled) {
+      const assets = result.assets || [];
+
+      // Check video duration first (existing logic)
+      const invalidVideos = assets.filter(
+        (asset) =>
+          asset.type === 'video' &&
+          asset.duration &&
+          asset.duration > 45000
+      );
+
+      if (invalidVideos.length > 0) {
+        const longestSeconds = Math.round(
+          Math.max(...invalidVideos.map((v) => v.duration || 0)) / 1000
+        );
+        showToast.error(
+          t('oops'),
+          t('videotoolong', { seconds: longestSeconds, max: 45 })
+        );
+        return;
+      }
+
+      // New: Check file sizes
+      const oversizedFilesInfo: { asset: ImagePicker.ImagePickerAsset; size: number }[] = [];
+      for (const asset of assets) {
+        if (asset.uri) {
+          try {
+            const info = await FileSystem.getInfoAsync(asset.uri);
+            const size = info && info.exists && info.size ? info.size : 0;
+            if (size > MAX_FILE_SIZE_BYTES) {
+              oversizedFilesInfo.push({ asset, size });
+            }
+          } catch (err) {
+            console.warn('Could not get file size for:', asset.uri, err);
+          }
+        }
+      }
+
+      if (oversizedFilesInfo.length > 0) {
+        const largestBytes = Math.max(...oversizedFilesInfo.map(i => i.size));
+        const largestMB = Math.round(largestBytes / (1024 * 1024));
+        showToast.error(
+          t('oops'),
+          t('filetoolarge', { mb: largestMB, max: 200 })
+        );
+        return;
+      }
+
+      const newMedia: MediaItem[] = assets.map((asset) => ({
+        uri: asset.uri,
+        type: asset.type === 'video' ? 'video' : 'image',
+        id: `${asset.uri}-${Date.now()}-${Math.random()}`,
+        isExisting: false,
+      }));
+
+      setSelectedMedia((prev) => [...prev, ...newMedia]);
+      showToast.success(
+        t('success'),
+        t('mediaitemsadded', { count: newMedia.length })
+      );
+    }
+  } catch (error: any) {
+    if (!error.message?.includes('User cancelled')) {
+      console.error('Error picking media:', error);
+      showToast.error(t('error'), t('imagePickFailed'));
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const uploadNewMediaOnly = async (): Promise<string[]> => {
     const newMedia = selectedMedia.filter((m) => !m.isExisting);
@@ -236,7 +266,7 @@ const NewPostScreen = () => {
         }
       }
 
-      showToast.success(t('success'), 'New media uploaded');
+      showToast.success(t('success'), t('newmediauploaded'));
       return uploadedUrls;
     } catch (error) {
       console.error('Upload failed:', error);
@@ -247,56 +277,129 @@ const NewPostScreen = () => {
     }
   };
 
-  const handlePreview = async () => {
+  // Helper to get final media URLs (existing + newly uploaded)
+  const getFinalMediaUrls = async (): Promise<string[]> => {
+    const existingUrls = selectedMedia
+      .filter((m) => m.isExisting)
+      .map((m) => m.uri);
+
+    const newUploadedUrls = await uploadNewMediaOnly();
+
+    if (newUploadedUrls.length < selectedMedia.filter((m) => !m.isExisting).length) {
+      throw new Error('Some media failed to upload');
+    }
+
+    return [...existingUrls, ...newUploadedUrls];
+  };
+
+  const createPost = async (imageUrls: string[]) => {
+    if (loading) return;
+    try {
+      setLoading(true);
+
+      const payload = {
+        hangouts: [
+          {
+            caption: caption.trim(),
+            tags: taggedUsers.map(u => String(u.id)),
+            hashtags,
+            createdAt: new Date().toISOString(),
+          },
+        ],
+      };
+
+      const apiResponse = await createpost(payload);
+
+      if (apiResponse.success && apiResponse.status === 200) {
+        showToast.success(t('success'), t('postcreatedsuccessfully'));
+        router.push('/(bottomtab)/(community)/social');
+      } else {
+        showToast.error(t('oops'), apiResponse.message);
+      }
+    } catch (error) {
+      console.log('Error creating post:', error);
+      showToast.error(t('oops'), t('somethingwentwrong'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updatePost = async (imageUrls: string[]) => {
+    if (loading || !editPostId) return;
+    try {
+      setLoading(true);
+
+      const payload = {
+        id: editPostId,
+        caption: caption.trim(),
+        tags: taggedUsers.map(u => String(u.id)),
+        hashtags,
+      };
+
+      const apiResponse = await updatepostbyid(payload);
+
+      if (apiResponse.success && apiResponse.status === 200) {
+        showToast.success(t('success'), t('postupdatedsuccessfully'));
+        router.push('/(bottomtab)/(community)/social');
+      } else {
+        showToast.error(t('oops'), apiResponse.message);
+      }
+    } catch (error) {
+      console.log('Error updating post:', error);
+      showToast.error(t('oops'), t('somethingwentwrong'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
     if (!caption.trim()) {
       showToast.error(t('oops'), 'Caption is required');
       return;
     }
 
+    if (loading || isLoading) return;
+
     setIsLoading(true);
+
     try {
-      let finalMediaUrls: string[] = [];
+      if (selectedMedia.length === 0) {
+        // No media → directly create/update post with empty imageUrls
+        if (isEditMode) {
+          await updatePost([]);
+        } else {
+          await createPost([]);
+        }
+      } else {
+        // Has media → upload new ones, then go to preview
+        const finalMediaUrls = await getFinalMediaUrls();
 
-      // Keep existing (already uploaded) URLs
-      const existingUrls = selectedMedia
-        .filter((m) => m.isExisting)
-        .map((m) => m.uri);
+        const mediaForPreview = finalMediaUrls.map((uri) => ({
+          uri,
+          type: /\.(mp4|mov|avi|m4v)$/i.test(uri) ? 'video' : 'image',
+        }));
 
-      // Upload only new media
-      const newUploadedUrls = await uploadNewMediaOnly();
-
-      if (newUploadedUrls.length < selectedMedia.filter((m) => !m.isExisting).length) {
-        showToast.error(t('error'), 'Some media failed to upload');
-        return;
+        router.push({
+          pathname: '/newpost/previewpost',
+          params: {
+            isEditMode: isEditMode ? 'true' : 'false',
+            postId: editPostId || '',
+            mediaFiles: JSON.stringify(mediaForPreview),
+            caption: caption.trim(),
+            hashtags: JSON.stringify(hashtags),
+            taggedUsers: JSON.stringify(
+              taggedUsers.map((u) => ({
+                id: u.id,
+                fullName: u.fullName,
+                profileUrl: u.profileUrl || undefined,
+              }))
+            ),
+          },
+        });
       }
-
-      finalMediaUrls = [...existingUrls, ...newUploadedUrls];
-
-      const mediaForPreview = finalMediaUrls.map((uri) => ({
-        uri,
-        type: /\.(mp4|mov|avi|m4v)$/i.test(uri) ? 'video' : 'image',
-      }));
-
-      router.push({
-        pathname: '/newpost/previewpost',
-        params: {
-          isEditMode: isEditMode ? 'true' : 'false',
-          postId: editPostId || '',
-          mediaFiles: JSON.stringify(mediaForPreview),
-          caption: caption.trim(),
-          hashtags: JSON.stringify(hashtags),
-          taggedUsers: JSON.stringify(
-            taggedUsers.map((u) => ({
-              id: u.id,
-              fullName: u.fullName,
-              profileUrl: u.profileUrl || undefined,
-            }))
-          ),
-        },
-      });
     } catch (error) {
-      console.error('Preview preparation failed:', error);
-      showToast.error(t('error'), 'Failed to prepare preview');
+      console.error('Submit failed:', error);
+      showToast.error(t('error'), 'Failed to process post');
     } finally {
       setIsLoading(false);
     }
@@ -395,18 +498,18 @@ const NewPostScreen = () => {
           title={isEditMode ? t('editpost') : t('createnewpost')}
         />
 
-        {(isLoading || loadingUsers) && (
+        {(isLoading || loadingUsers || loading) && (
           <View style={styles.loadingOverlay}>
             <ActivityIndicator size="large" color={Colors.lightGreen} />
           </View>
         )}
 
         <KeyboardAwareScrollView
-  showsVerticalScrollIndicator={false}
-  enableOnAndroid
-  keyboardShouldPersistTaps="handled"
-  extraScrollHeight={120}
->
+          showsVerticalScrollIndicator={false}
+          enableOnAndroid
+          keyboardShouldPersistTaps="handled"
+          extraScrollHeight={120}
+        >
           <Text style={styles.headingText}>
             {t('keepitpositive')}{'\n'}
             {t('keepitpositive_description')}
@@ -523,7 +626,7 @@ const NewPostScreen = () => {
               styles.previewandsharebutton,
               !caption.trim() && styles.disabledButton,
             ]}
-            onPress={handlePreview}
+            onPress={handleSubmit}
             disabled={!caption.trim()}
           >
             <Text style={styles.previewandsharetext}>
@@ -599,6 +702,7 @@ const NewPostScreen = () => {
 
 export default NewPostScreen;
 
+// Styles remain unchanged
 const styles = StyleSheet.create({
   main: { flex: 1, backgroundColor: '#fff' },
   loadingOverlay: {

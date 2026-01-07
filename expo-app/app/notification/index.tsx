@@ -23,6 +23,8 @@ import {
     deleteandclearallnotification
 } from '@/src/apis/apiService';
 import { router } from 'expo-router';
+import { Image } from 'expo-image';
+import { ImagesAssets } from '@/src/utils/ImageAssets';
 const { height, width } = Dimensions.get("screen");
 interface Notification {
     id: string;
@@ -313,7 +315,16 @@ const NotificationScreen = () => {
                     <TouchableOpacity onPress={() => setClearAllModalVisible(true)}>
                         <CircleX size={24} color="#000" />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setMarkAllModalVisible(true)}>
+                    <TouchableOpacity
+                        onPress={() => {
+                            const hasUnread = notifications.some(notif => notif.status !== 'READ');
+                            if (hasUnread) {
+                                setMarkAllModalVisible(true);
+                            } else {
+                                showToast.success(t('success'), t('allnotificationsalreadyread'));
+                            }
+                        }}
+                    >
                         <CircleCheckBig size={24} color="#000" />
                     </TouchableOpacity>
                 </View>
@@ -326,7 +337,8 @@ const NotificationScreen = () => {
                     </View>
                 ) : notifications.length === 0 ? (
                     <View style={styles.centerLoader}>
-                        <Text style={styles.emptyText}>{t('nonotifications')}</Text>
+                        <Image source={ImagesAssets.nodatafound} style={styles.nodatafoundImage} />
+                        <Text style={styles.emptyText}>{t('nonotificationfound')}</Text>
                     </View>
                 ) : (
                     <FlatList
@@ -544,7 +556,7 @@ const styles = StyleSheet.create({
     footerLoader: { paddingVertical: 20, alignItems: 'center' },
     centerLoader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
     emptyText: {
-        fontSize: 14,
+        fontSize: 16,
         color: '#888',
         fontFamily: 'Poppins-Regular',
     },
@@ -602,6 +614,11 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.lightGreen,
         borderRadius: 8,
         alignItems: 'center',
+    },
+    nodatafoundImage: {
+        height: 150,
+        width: 150,
+        marginBottom: 20,
     },
     cancelText: {
         color: '#333',
