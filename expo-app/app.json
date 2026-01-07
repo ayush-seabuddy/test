@@ -69,7 +69,8 @@
             ]
           }
         ]
-      }
+      },
+      "appleTeamId": "Y38GVJM76S"
     },
     "android": {
       "package": "co.seabuddy.platform",
