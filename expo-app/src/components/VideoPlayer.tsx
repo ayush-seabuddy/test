@@ -1,5 +1,6 @@
+import { useFocusEffect } from "expo-router";
 import { PlayerError, VideoPlayerStatus, VideoView, useVideoPlayer } from "expo-video";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 interface Props {
@@ -26,6 +27,20 @@ useEffect(() => {
     subscription.remove();
   };
 }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        try {
+          player.pause()  // This usually works even if native object is detaching
+        } catch (e) {
+          console.warn("Mute failed (likely already released):", e);
+        }
+      };
+    }, [player])
+  );
+
+
 
   return (
     <View style={styles.container}>

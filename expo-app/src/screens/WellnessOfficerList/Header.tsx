@@ -63,8 +63,7 @@ const Header = ({  }) => {
         </TouchableOpacity>
       </View>
       
-    </View>
-     <View style={styles.elevation}/>
+      </View>
      </>
   );
 };
@@ -79,6 +78,17 @@ const styles = StyleSheet.create({
     zIndex: 1,
     paddingHorizontal: 10,
     backgroundColor: "#FFFFFF",
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.5,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
     
   },
   elevation:{

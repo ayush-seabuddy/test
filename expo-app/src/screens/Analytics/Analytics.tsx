@@ -7,7 +7,7 @@ import { router } from 'expo-router'
 import { t } from 'i18next'
 import { ChevronLeft, ChevronRight, Settings } from 'lucide-react-native'
 import moment from 'moment-timezone'
-import React, { useEffect, useState } from 'react'
+import React, { use, useEffect, useState } from 'react'
 import { Linking, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { PieChart } from "react-native-chart-kit"
 import { ScrollView } from 'react-native-gesture-handler'
@@ -17,10 +17,25 @@ import { getAnalytics } from '@/src/apis/apiService'
 import { showToast } from '@/src/components/GlobalToast'
 
 const Analytics = () => {
+  interface GroupActivity {
+    name: string;
+    population: number;
+  }
+
+  interface StressLevel {
+    month: string; // format like "08-2025"
+    TMD: number;
+  }
+
+  interface AnalyticsResponse {
+    groupActivities: GroupActivity[];
+    stressLevelGraph: StressLevel[];
+  }
+
   const [loading, setLoading] = useState(false);
-  const [groupActivities, setGroupActivities] = useState([]);
-  const [stressLevelGraph, setStressLevelGraph] = useState([]);
-  const [data, setData] = useState([]);
+  const [groupActivities, setGroupActivities] = useState<GroupActivity[]>([]);
+  const [stressLevelGraph, setStressLevelGraph] = useState<StressLevel[]>([]);
+  const [data, setData] = useState<GroupActivity[]>([]);
   const [selectedDate, setSelectedDate] = useState(moment().subtract(6, "months"));
   const [selectedDateTo, setSelectedDateTo] = useState(moment());
   const [sleepData, setSleepData] = useState([]);
@@ -47,7 +62,13 @@ const Analytics = () => {
 
   const getanalyticsdata = async () => {
     try {
-      const apiResponse = await getAnalytics({ fromMonth: '08-2025', toMonth: '12-2025' });
+      const apiResponse = await getAnalytics({ fromMonth: selectedDate.format('MM-YYYY'), toMonth: selectedDateTo.format('MM-YYYY') });
+
+      if (apiResponse.data) {
+        setGroupActivities(apiResponse.data.groupActivities);
+        setStressLevelGraph(apiResponse.data.stressLevelGraph);
+
+      }
       if (apiResponse.success && apiResponse.status === 200) {
         showToast.success(t('success'), apiResponse.message);
       }
@@ -64,6 +85,15 @@ const Analytics = () => {
     getanalyticsdata();
   }, [])
 
+  useEffect(() => {
+    const colors = ['#B0DB02', '#FAFAD9', '#84A402'];
+    const updatedActivities = groupActivities.map((activity, index) => ({
+      ...activity,
+      color: colors[index] || '#000',
+    }))
+    setData(updatedActivities);
+  },
+    [groupActivities])
 
 
   const openHealthOrSettings = async () => {

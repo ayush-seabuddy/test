@@ -27,7 +27,6 @@ const CompanyContentList = ({headerTitle, contentType}:{headerTitle:string , con
   const [data, setData] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  console.log("loading: ", loading);
   const [hasMore, setHasMore] = useState(false);
 
 
@@ -176,17 +175,21 @@ const CompanyContentList = ({headerTitle, contentType}:{headerTitle:string , con
   const loadMoreItems = () => {
     if (loading || !hasMore) return;
 
-    setLoading(true);
-    // Simulate API delay
-    setTimeout(async () => {
-      const newItems = await generateDummyData(page);
-      setData((prev) => [...prev, ...newItems]);
-      setPage((prev) => prev + 1);
+    const nextPage = page + 1;  // Calculate next page first
+    console.log(nextPage, "sfdfjsdklfsd");
 
-      // Stop after 5 pages (50 items) for demo
-      if (page >= 5) {
-        setHasMore(false);
+
+    setLoading(true);
+    setTimeout(async () => {
+      const newItems = await generateDummyData(nextPage);
+
+      if (newItems.length > 0) {
+        setData((prev) => [...prev, ...newItems]);
+        setPage(nextPage);  // Only update page if we got data
+      } else {
+        setHasMore(false);  // No more data
       }
+
       setLoading(false);
     }, 800);
   };
@@ -221,7 +224,7 @@ const CompanyContentList = ({headerTitle, contentType}:{headerTitle:string , con
 
           <View style={styles.empty}>
 
-            {loading ? <ActivityIndicator size="large" color="#000" /> : <Text>No cars found</Text>}
+            {loading ? <ActivityIndicator size="large" color="#000" /> : <Text>No data found</Text>}
           </View>
         }
       />
@@ -238,7 +241,7 @@ const styles = StyleSheet.create({
     padding: 12,
     // paddingTop: 65,
     flexGrow: 1,
-    flex: 1,
+    // flex: 1,
     // backgroundColor:"red"
   },
   row: {
@@ -246,7 +249,6 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    minHeight: 120,
     backgroundColor: 'gray',
     borderRadius: 12,
     margin: 6,

@@ -892,5 +892,9 @@
   "buddyuplog": "BuddyUp 日志",
   "buddyuplog_description": "追踪你的 BuddyUp 活动，看看你是如何与你的团队社区互动的。",
   "newmediauploaded": "新媒体已上传",
-    "allnotificationsalreadyread": "所有通知均已标记为已读"
+    "allnotificationsalreadyread": "所有通知均已标记为已读",
+  "bulletin": "公告",
+  "watch": "手表",
+  "listen": "听",
+  "read": "读"
 }

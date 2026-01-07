@@ -893,6 +893,10 @@
   "monthlydatausage": "Monthly Data Usage",
   "buddyuplog": "BuddyUp Log",
   "buddyuplog_description": "Track your BuddyUp activity and see how you’re engaging with your crew community.",
+  "bulletin": "Bulletin",
+  "watch": "Watch",
+  "listen": "Listen",
+  "read": "Read",
   "newmediauploaded":"New media uploaded",
   "allnotificationsalreadyread": "All notifications are already marked as read"
 }
