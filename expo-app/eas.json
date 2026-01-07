@@ -17,7 +17,6 @@
 
     "preview": {
       "channel": "preview",
-      "distribution": "internal",
       "autoIncrement": true,
       "env": {
         "APP_ENV": "staging",
@@ -25,11 +24,12 @@
         "SOCKET_URL": "$SOCKET_URL"
       },
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "distribution": "internal"
       },
       "ios": {
         "buildConfiguration": "Release",
-        "credentialsSource": "remote"
+        "simulator": true
       }
     },
 
