@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import Colors from "@/src/utils/Colors";
-import { House } from "lucide-react-native";
+import { House, Trophy } from "lucide-react-native";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { getUserDetails } from "../utils/helperFunctions";
@@ -43,10 +43,11 @@ const ShipLifeScreenHeader = () => {
           onPress={() => router.push("/leaderboard")}
         >
           <View style={styles.iconWrapper}>
-            <Image
+            {/* <Image
               source={ImagesAssets.LeaderboardIcon}
               style={styles.iconImage}
-            />
+            /> */}
+            <Trophy size={24} color={Colors.black} />
           </View>
         </TouchableOpacity>
 
@@ -83,7 +84,7 @@ const ShipLifeScreenHeader = () => {
                   ? ImagesAssets.crewListLogo
                   : ImagesAssets.searchLogo
               }
-              style={[styles.iconImage, !isCaptain && {height:26,width:26}]}
+              style={[styles.iconImage, !isCaptain && { height: 26, width: 26 }]}
             />
           </View>
         </TouchableOpacity>

@@ -86,10 +86,6 @@ const LoginScreen = () => {
         apiResponse?.data.shipId && await AsyncStorage.setItem("shipId", apiResponse?.data.shipId);
         apiResponse?.data.employerId && await AsyncStorage.setItem("employerId", apiResponse?.data.employerId);
         const storedData = await AsyncStorage.getItem('userDetails');
-
-        if (apiResponse?.data.employerId) return router.replace('/home');
-
-        // const storedData = await AsyncStorage.getItem('userDetails');
         const user = JSON.parse(storedData ?? "");
 
         console.log("Stored user data:", storedData);

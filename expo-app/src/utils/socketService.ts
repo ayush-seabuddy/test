@@ -11,9 +11,9 @@ type ExtraConfig = {
 const extra = Constants.expoConfig?.extra as ExtraConfig | undefined;
 
 
-const SOCKET_URL = extra?.SOCKET_URL;;
+const SOCKET_URL = 'https://seabuddyapi.seekware.in';
 
-type SocketEvent = string ;
+type SocketEvent = string;
 type SocketData = any;
 type SocketCallback = (data: any) => void;
 

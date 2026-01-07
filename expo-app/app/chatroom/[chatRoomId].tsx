@@ -944,7 +944,7 @@ const styles = StyleSheet.create({
   inputInnerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 10,
+    borderRadius: 30,
     backgroundColor: "rgba(230, 230, 230, 0.5)",
     flex: 1,
   },

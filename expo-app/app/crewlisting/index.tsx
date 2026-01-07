@@ -72,11 +72,11 @@ const CrewListingScreen = () => {
 
             if (apiResponse.success && apiResponse.status === 200) {
                 const newUsers = apiResponse.data.usersList || [];
-
+                const filteredUsers = newUsers.filter((user: UserProfile) => user.id !== userDetails.id);
                 if (append) {
-                    setCrewList(prev => [...prev, ...newUsers]);
+                    setCrewList(prev => [...prev, ...filteredUsers]);
                 } else {
-                    setCrewList(newUsers);
+                    setCrewList(filteredUsers);
                 }
 
                 setHasMore(newUsers.length === PAGE_SIZE);

@@ -475,7 +475,7 @@ const AppointmentForm = () => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1 ,backgroundColor:"#fff"}}>
       <GlobalHeader
         title="Appointment Form"
         leftIcon={<ChevronLeft size={20} />}

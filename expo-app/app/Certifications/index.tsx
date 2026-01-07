@@ -227,7 +227,7 @@ const CertificationsScreen = () => {
   };
 
   return (
-    <>
+    <View style={styles.main}>
       <GlobalHeader title={t('certifications')} />
 
       <View style={{ flex: 1, padding: 14 }}>
@@ -425,11 +425,15 @@ const CertificationsScreen = () => {
       <View style={styles.background}>
         <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
       </View>
-    </>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  main:{
+flex:1,
+backgroundColor:'#fff'
+  },
   input: {
     fontFamily: 'Poppins-Regular',
     fontSize: 16,

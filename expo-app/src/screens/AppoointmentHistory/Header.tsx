@@ -15,7 +15,7 @@ import {
 const Header = ({  }) => {
   const [modalVisible, setModalVisible] = useState(false);
   return (
-    <>
+    <View style={styles.main}>
     <View style={styles.container}>
     
       <EmergencyModal onClose={() => setModalVisible(false)}  visible={modalVisible} />
@@ -46,12 +46,16 @@ const Header = ({  }) => {
       </View>
       
       </View>
-     </>
+     </View>
      
   );
 };
 
 const styles = StyleSheet.create({
+  main:{
+flex:1,
+backgroundColor:"#fff"
+  },
   container: {
     flexDirection: "row",
     alignItems: "center",

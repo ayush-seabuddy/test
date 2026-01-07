@@ -70,7 +70,6 @@ const Analytics = () => {
 
       }
       if (apiResponse.success && apiResponse.status === 200) {
-        showToast.success(t('success'), apiResponse.message);
       }
       else {
         showToast.error(t('oops'), apiResponse.message);
@@ -185,25 +184,25 @@ const Analytics = () => {
                 </View>
                 <GraphScreen />
               </View>
-              <View style={styles.buddyUpContainer}>
-                <Text style={styles.buddyUpTitle}>{t('buddyuplog')}</Text>
-                <Text style={styles.buddyUpSubtitle}>
-                  {t('buddyuplog_description')}
-                </Text>
-                <PieChart
-                  data={data}
-                  width={width * 0.83}
-                  height={100}
-                  chartConfig={chartConfig}
-                  accessor={"population"}
-                  backgroundColor={"transparent"}
-                  paddingLeft={"35"}
-                  center={[0, 0]}
-                  absolute
-                />
-              </View>
-
-
+              {!data.every(item => item.population === 0) && (
+                <View style={styles.buddyUpContainer}>
+                  <Text style={styles.buddyUpTitle}>{t('buddyuplog')}</Text>
+                  <Text style={styles.buddyUpSubtitle}>
+                    {t('buddyuplog_description')}
+                  </Text>
+                  <PieChart
+                    data={data}
+                    width={width * 0.83}
+                    height={100}
+                    chartConfig={chartConfig}
+                    accessor={"population"}
+                    backgroundColor={"transparent"}
+                    paddingLeft={"35"}
+                    center={[0, 0]}
+                    absolute
+                  />
+                </View>
+              )}
               <View style={styles.sleepRow}>
                 <View style={styles.sleepStyleBox}>
                   <Text style={styles.sleepTitle}>Sleep Quality</Text>

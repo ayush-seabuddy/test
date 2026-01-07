@@ -187,9 +187,6 @@ const ChangePasswordScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <View pointerEvents="none" style={styles.backgroundLottie}>
-        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
-      </View>
     </View>
   );
 };
@@ -231,17 +228,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontFamily: 'Poppins-SemiBold',
     fontSize: 14,
-  },
-  backgroundLottie: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: '50%',
-    zIndex: 1,
-    borderTopLeftRadius: 50,
-    borderTopRightRadius: 50,
-    overflow: 'hidden',
   },
 });
 

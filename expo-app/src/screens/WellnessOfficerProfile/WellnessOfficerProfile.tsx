@@ -52,7 +52,7 @@ const WellnessOfficerProfile = () => {
     if (!data) return null
 
     return (
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1,backgroundColor:"#fff" }}>
             <GlobalHeader
                 title={t('WellnessOfficerProfile')}
             />
