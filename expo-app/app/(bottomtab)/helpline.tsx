@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
+  Platform,
 } from "react-native";
 
 import { useTranslation } from "react-i18next";
@@ -50,7 +51,7 @@ const HelplineScreen = () => {
       />
 
       <View style={styles.backgroundImage}>
-        <CustomLottie isBlurView={true} componentHeight={height * 0.9} />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} componentHeight={height * 0.9} />
       </View>
 
       <View style={styles.cardContainer}>

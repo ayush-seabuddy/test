@@ -5,13 +5,14 @@ import { ChevronLeft, Edit, Trash2 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-    Dimensions,
-    FlatList,
-    Modal,
-    Pressable,
-    StyleSheet,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  FlatList,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
@@ -422,7 +423,7 @@ const CertificationsScreen = () => {
       </Modal>
 
       <View style={styles.background}>
-        <CustomLottie isBlurView={true} />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
       </View>
     </>
   );

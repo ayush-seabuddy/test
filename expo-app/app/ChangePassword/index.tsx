@@ -4,6 +4,7 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { Text, TextInput } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
@@ -57,8 +58,8 @@ const ChangePasswordScreen = () => {
         return !value.trim()
           ? t('new_password_required')
           : value.length >= 6
-          ? ''
-          : t('password_min_length');
+            ? ''
+            : t('password_min_length');
       if (field === 'confirmPassword')
         return value === newPassword ? '' : t('passwords_do_not_match');
       return '';
@@ -187,7 +188,7 @@ const ChangePasswordScreen = () => {
       </View>
 
       <View pointerEvents="none" style={styles.backgroundLottie}>
-        <CustomLottie isBlurView={true} />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
       </View>
     </View>
   );

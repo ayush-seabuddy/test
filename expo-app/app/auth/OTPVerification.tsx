@@ -97,7 +97,7 @@ const OTPVerification = () => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.innerContainer}>
-          <CustomLottie isBlurView={true} />
+          <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
 
           <View style={styles.topBackground} />
           <Animated.Image

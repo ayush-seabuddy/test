@@ -57,7 +57,7 @@ const ForgotPasswordScreen = () => {
     if (!validateEmail(email)) return;
     setloading(true);
     try {
-      const apiResponse = await forgotpassword({email});
+      const apiResponse = await forgotpassword({ email });
       setloading(false);
       if (apiResponse.success && apiResponse.status === 200) {
         showToast.success(
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: "WhyteInktrap-Bold",
     fontSize: 20,
-    lineHeight: 20,
+    lineHeight: 30,
     color: "#161616",
     paddingTop: Platform.OS === "android" ? 0 : 10,
   },

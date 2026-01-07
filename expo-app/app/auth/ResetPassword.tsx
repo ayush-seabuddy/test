@@ -65,7 +65,7 @@ const ResetPassword = () => {
     if (!isFormValid) return;
     setLoading(true);
     try {
-      const apiResponse = await resetpassword({email, password});
+      const apiResponse = await resetpassword({ email, password });
       setLoading(false);
       if (apiResponse.success && apiResponse.status === 200) {
         showToast.success(t('success'), apiResponse.message);
@@ -83,7 +83,7 @@ const ResetPassword = () => {
     <KeyboardWrapper>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
-          <CustomLottie isBlurView={true} componentHeight={height * 0.78} />
+          <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} componentHeight={height * 0.78} />
           <View style={styles.topOverlay} />
           <Animated.Image
             source={ImagesAssets.splashCaptainImage}

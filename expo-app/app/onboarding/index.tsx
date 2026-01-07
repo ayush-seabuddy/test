@@ -7,6 +7,7 @@ import {
     Image,
     TouchableOpacity,
     ScrollView,
+    Platform,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomLottie from "@/src/components/CustomLottie";
@@ -173,7 +174,7 @@ const OnboardingScreens = () => {
             </View>
 
             <View style={styles.bottomSheet}>
-                <CustomLottie isBlurView={true} />
+                <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
 
                 <ScrollView
                     contentContainerStyle={styles.scrollContent}

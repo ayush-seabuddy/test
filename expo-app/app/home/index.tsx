@@ -99,7 +99,7 @@ const Home = () => {
 
       <View style={styles.contentContainer}>
         <View style={styles.backgroundOverlay}>
-          <CustomLottie isBlurView={true} />
+          <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
         </View>
 
         <ExitAppModal

@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   Dimensions,
   Image,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -20,7 +21,7 @@ import Header from "./Header";
 
 const { width, height } = Dimensions.get("window");
 
-const WellnessOfficerList = ({  }) => {
+const WellnessOfficerList = ({ }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -105,7 +106,7 @@ const WellnessOfficerList = ({  }) => {
           style={styles.lottieBackground}
           resizeMode="cover"
         /> */}
-        <CustomLottie isBlurView={true} />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
       </View>
     </View>
   );

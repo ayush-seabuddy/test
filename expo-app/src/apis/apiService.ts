@@ -241,6 +241,8 @@ export interface ViewContentDetailsParams {
 }
 
 export interface GetAllDoctorsParams {
+  page?: number,
+  limit?: number,
   contentCategory?: string,
   contentType?: string,
 }

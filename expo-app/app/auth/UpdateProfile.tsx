@@ -10,7 +10,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Check, ChevronLeft } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type User = {
   department?: string;
@@ -224,7 +224,7 @@ const UpdateProfile = () => {
       setLoading(false);
 
       if (res.success && res.status === 200) {
-        showToast.success(t('success'),res.message);
+        showToast.success(t('success'), res.message);
         router.push('/personalitymap');
       } else {
         showToast.error(t('oops'), res.message ?? t('somethingwentwrong'));
@@ -268,7 +268,7 @@ const UpdateProfile = () => {
       />
 
       <View style={styles.bottomCard1}>
-        <CustomLottie isBlurView={true} componentHeight={height * 0.85} />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} componentHeight={height * 0.85} />
       </View>
 
       <View style={styles.mainContent}>
