@@ -39,7 +39,8 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 
 const EditProfile = () => {
   const { t } = useTranslation();
-  // Validation schemas (use translated messages via t)
+
+  // Validation schemas
   const validationSchema = Yup.object().shape({
     name: Yup.string().required(t('validation.name_required', 'Name is required')),
     email: Yup.string().email(t('validation.invalid_email', 'Invalid email')).required(t('validation.email_required', 'Email is required')),
@@ -77,6 +78,7 @@ const EditProfile = () => {
       .min(20, t('validation.about_min', 'About should be at least 20 characters'))
       .max(600, t('validation.about_max', 'About should not exceed 600 characters')),
   });
+
   const dispatch = useDispatch();
   const profile = useSelector((state: RootState) => state.userDetails);
 
@@ -110,14 +112,13 @@ const EditProfile = () => {
     return date.toLocaleDateString('en-GB');
   };
 
-  // Helper function to parse date from API format (DD/MM/YYYY)
   const parseAPIDate = (dateString: string): Date | null => {
     if (!dateString) return null;
     try {
       const parts = dateString.split('/');
       if (parts.length === 3) {
         const day = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1; // Month is 0-indexed in JS
+        const month = parseInt(parts[1], 10) - 1;
         const year = parseInt(parts[2], 10);
         const parsed = new Date(year, month, day);
         if (!isNaN(parsed.getTime())) {
@@ -130,77 +131,75 @@ const EditProfile = () => {
     return null;
   };
 
-  // Translated Dropdown Data
+  // Fixed dropdown data: value is stable key (e.g., 'male'), label is translated
   const GENDER = [
-    { label: t('genderOptions.male'), value: t('genderOptions.male') },
-    { label: t('genderOptions.female'), value: t('genderOptions.female') },
-    { label: t('genderOptions.other'), value: t('genderOptions.other') },
+    { label: t('genderOptions.male'), value: 'Male' },
+    { label: t('genderOptions.female'), value: 'Female' },
+    { label: t('genderOptions.other'), value: 'Other' },
   ];
 
   const EXPERIENCE = [
-    { label: t('experienceOptions.0_1'), value: t('experienceOptions.0_1') },
-    { label: t('experienceOptions.2_5'), value: t('experienceOptions.2_5') },
-    { label: t('experienceOptions.5_plus'), value: t('experienceOptions.5_plus') },
+    { label: t('experienceOptions.0_1'), value: '0-1 years' },
+    { label: t('experienceOptions.2_5'), value: '2-5 years' },
+    { label: t('experienceOptions.5_plus'), value: '5+ years' },
   ];
 
   const ETHNICITY = [
-    { label: t('ethnicityOptions.asian'), value: t('ethnicityOptions.asian') },
-    { label: t('ethnicityOptions.black'), value: t('ethnicityOptions.black') },
-    { label: t('ethnicityOptions.white'), value: t('ethnicityOptions.white') },
-    { label: t('ethnicityOptions.latino'), value: t('ethnicityOptions.latino') },
-    { label: t('ethnicityOptions.mena'), value: t('ethnicityOptions.mena') },
-    { label: t('ethnicityOptions.native'), value: t('ethnicityOptions.native') },
-    { label: t('ethnicityOptions.pacific'), value: t('ethnicityOptions.pacific') },
-    { label: t('ethnicityOptions.mixed'), value: t('ethnicityOptions.mixed') },
+    { label: t('ethnicityOptions.asian'), value: 'Asian' },
+    { label: t('ethnicityOptions.black'), value: 'Black / African Descent' },
+    { label: t('ethnicityOptions.white'), value: 'Caucasian / White' },
+    { label: t('ethnicityOptions.latino'), value: 'Hispanic / Latino' },
+    { label: t('ethnicityOptions.mena'), value: 'Middle Eastern / North African' },
+    { label: t('ethnicityOptions.native'), value: 'Native American / Indigenous' },
+    { label: t('ethnicityOptions.pacific'), value: 'Pacific Islander' },
+    { label: t('ethnicityOptions.mixed'), value: 'Mixed / Multiracial' },
   ];
 
   const RELATIONSHIP = [
-    { label: t('relationshipOptions.single'), value: t('relationshipOptions.single') },
-    { label: t('relationshipOptions.married'), value: t('relationshipOptions.married') },
-    { label: t('relationshipOptions.divorced'), value: t('relationshipOptions.divorced') },
-    { label: t('relationshipOptions.widowed'), value: t('relationshipOptions.widowed') },
+    { label: t('relationshipOptions.single'), value: 'Single' },
+    { label: t('relationshipOptions.married'), value: 'Married' },
+    { label: t('relationshipOptions.divorced'), value: 'Divorced' },
+    { label: t('relationshipOptions.widowed'), value: 'Widowed' },
   ];
-
   const RELIGION = [
-    { label: t('religionOptions.buddhism'), value: t('religionOptions.buddhism') },
-    { label: t('religionOptions.christianity'), value: t('religionOptions.christianity') },
-    { label: t('religionOptions.hinduism'), value: t('religionOptions.hinduism') },
-    { label: t('religionOptions.islam'), value: t('religionOptions.islam') },
-    { label: t('religionOptions.judaism'), value: t('religionOptions.judaism') },
-    { label: t('religionOptions.sikhism'), value: t('religionOptions.sikhism') },
-    { label: t('religionOptions.jainism'), value: t('religionOptions.jainism') },
-    { label: t('religionOptions.zoroastrianism'), value: t('religionOptions.zoroastrianism') },
-    { label: t('religionOptions.taoism'), value: t('religionOptions.taoism') },
-    { label: t('religionOptions.shinto'), value: t('religionOptions.shinto') },
-    { label: t('religionOptions.other'), value: t('religionOptions.other') },
-    { label: t('religionOptions.none'), value: t('religionOptions.none') },
+    { label: t('religionOptions.buddhism'), value: 'Buddhism' },
+    { label: t('religionOptions.christianity'), value: 'Christianity' },
+    { label: t('religionOptions.hinduism'), value: 'Hinduism' },
+    { label: t('religionOptions.islam'), value: 'Islam' },
+    { label: t('religionOptions.judaism'), value: 'Judaism' },
+    { label: t('religionOptions.sikhism'), value: 'Sikhism' },
+    { label: t('religionOptions.jainism'), value: 'Jainism' },
+    { label: t('religionOptions.zoroastrianism'), value: 'Zoroastrianism' },
+    { label: t('religionOptions.taoism'), value: 'Taoism' },
+    { label: t('religionOptions.shinto'), value: 'Shinto' },
+    { label: t('religionOptions.other'), value: 'Other' },
+    { label: t('religionOptions.none'), value: 'No Religion' },
   ];
-
   const HOBBIES_OPTIONS = [
-    { label: t('hobbiesOptions.art'), value: t('hobbiesOptions.art') },
-    { label: t('hobbiesOptions.music'), value: t('hobbiesOptions.music') },
-    { label: t('hobbiesOptions.photo'), value: t('hobbiesOptions.photo') },
-    { label: t('hobbiesOptions.dance'), value: t('hobbiesOptions.dance') },
-    { label: t('hobbiesOptions.yoga'), value: t('hobbiesOptions.yoga') },
-    { label: t('hobbiesOptions.gym'), value: t('hobbiesOptions.gym') },
-    { label: t('hobbiesOptions.gaming'), value: t('hobbiesOptions.gaming') },
-    { label: t('hobbiesOptions.reading'), value: t('hobbiesOptions.reading') },
-    { label: t('hobbiesOptions.movies'), value: t('hobbiesOptions.movies') },
-    { label: t('hobbiesOptions.cooking'), value: t('hobbiesOptions.cooking') },
-    { label: t('hobbiesOptions.sports'), value: t('hobbiesOptions.sports') },
-    { label: t('hobbiesOptions.meditation'), value: t('hobbiesOptions.meditation') },
+    { label: t('hobbiesOptions.art'), value: '🎨 Art & Craft' },
+    { label: t('hobbiesOptions.music'), value: '🎵 Music' },
+    { label: t('hobbiesOptions.photo'), value: '📸 Photography' },
+    { label: t('hobbiesOptions.dance'), value: '💃 Dancing' },
+    { label: t('hobbiesOptions.yoga'), value: '🧘‍♀️ Yoga' },
+    { label: t('hobbiesOptions.gym'), value: '🏋️‍♀️ Gym/Fitness' },
+    { label: t('hobbiesOptions.gaming'), value: '🎮 Gaming' },
+    { label: t('hobbiesOptions.reading'), value: '📖 Reading' },
+    { label: t('hobbiesOptions.movies'), value: '🎬 Movies' },
+    { label: t('hobbiesOptions.cooking'), value: '🍳 Cooking' },
+    { label: t('hobbiesOptions.sports'), value: '⚽ Sports' },
+    { label: t('hobbiesOptions.meditation'), value: '🧘‍♂️ Meditation' },
   ];
 
   const FAV_ACTIVITY_OPTIONS = [
-    { label: t('fav_activityOptions.movie'), value: t('fav_activityOptions.movie') },
-    { label: t('fav_activityOptions.gym'), value: t('fav_activityOptions.gym') },
-    { label: t('fav_activityOptions.karaoke'), value: t('fav_activityOptions.karaoke') },
-    { label: t('fav_activityOptions.games'), value: t('fav_activityOptions.games') },
-    { label: t('fav_activityOptions.jam'), value: t('fav_activityOptions.jam') },
-    { label: t('fav_activityOptions.meditation'), value: t('fav_activityOptions.meditation') },
-    { label: t('fav_activityOptions.cook'), value: t('fav_activityOptions.cook') },
-    { label: t('fav_activityOptions.sports'), value: t('fav_activityOptions.sports') },
-    { label: t('fav_activityOptions.drinks'), value: t('fav_activityOptions.drinks') },
+    { label: t('fav_activityOptions.movie'), value: 'Movie Night' },
+    { label: t('fav_activityOptions.gym'), value: 'Gym Session' },
+    { label: t('fav_activityOptions.karaoke'), value: 'Karaoke' },
+    { label: t('fav_activityOptions.games'), value: 'Crew Games (Cards, Ludo etc.)' },
+    { label: t('fav_activityOptions.jam'), value: 'Jam Session' },
+    { label: t('fav_activityOptions.meditation'), value: 'Meditation' },
+    { label: t('fav_activityOptions.cook'), value: 'Cooking Challenge' },
+    { label: t('fav_activityOptions.sports'), value: 'Sports Match' },
+    { label: t('fav_activityOptions.drinks'), value: 'Drinks and Chats' },
   ];
 
   useEffect(() => {
@@ -219,7 +218,6 @@ const EditProfile = () => {
           setEmail(object.email || '');
           setPhone(object.mobileNumber || '');
 
-          // Parse date from API format (DD/MM/YYYY)
           if (object.dob) {
             const parsed = parseAPIDate(object.dob);
             if (parsed && !isNaN(parsed.getTime())) {
@@ -227,6 +225,7 @@ const EditProfile = () => {
             }
           }
 
+          // These now use stable keys (e.g., 'male', '0_1', 'asian') from backend
           setGender(object.gender || null);
           setYearsOfExperience(object.experience || null);
           setRace(object.ethnicity || null);
@@ -266,7 +265,6 @@ const EditProfile = () => {
     };
 
     try {
-      // Validate based on department
       if (profile?.department === "Shore_Staff") {
         await validationSchemaForShoreStaff.validate(values, { abortEarly: false });
       } else {
@@ -294,7 +292,6 @@ const EditProfile = () => {
         isProfileCompleted: true,
       };
 
-      // Remove empty fields
       for (const key in body) {
         const value = body[key];
         const isEmptyString = typeof value === "string" && value.trim() === "";
@@ -310,13 +307,10 @@ const EditProfile = () => {
 
       if (response.status === 200 || response.success) {
         showToast.success(t('success'), t('profileupdatedsuccessfully'));
-        // Optional: Navigate back or refresh
-        // router.back();
       } else {
         showToast.error(t('error'), response?.message);
       }
     } catch (error: unknown) {
-      // Handle Yup validation errors specially to show translated messages
       if (error && typeof error === 'object' && 'inner' in (error as any)) {
         const yupError = error as any;
         const errorMessages = yupError.inner
@@ -379,7 +373,6 @@ const EditProfile = () => {
       }
     };
 
-    // Get the labels of selected items to display in text field
     const selectedLabels = data
       .filter((d) => selected.includes(d.value))
       .map((d) => d.label)
@@ -387,7 +380,6 @@ const EditProfile = () => {
 
     return (
       <View>
-        {/* Dropdown for selection */}
         <View style={styles.dropdownContainer}>
           <Dropdown
             style={styles.dropdown}
@@ -411,7 +403,6 @@ const EditProfile = () => {
           />
         </View>
 
-        {/* Wrapped chips container - NO horizontal scrolling */}
         {selected.length > 0 && (
           <View style={styles.wrappedChipsContainer}>
             {data
@@ -480,7 +471,7 @@ const EditProfile = () => {
           />
         </View>
 
-        {/* Date of Birth - Enhanced with proper placeholder handling */}
+        {/* Date of Birth */}
         <TouchableOpacity style={styles.inputContainer} onPress={() => setOpenDatePicker(true)}>
           <Calendar size={20} color="#666" style={styles.icon} />
           {date ? (
@@ -524,12 +515,12 @@ const EditProfile = () => {
           <HandHelpingIcon size={20} color="#666" />
         )}
 
-        {/* Race/Ethnicity */}
+        {/* Ethnicity */}
         {renderSingleDropdown(
           ETHNICITY,
           race,
           (item) => setRace(item.value),
-          t('race'),
+          t('selectethnicity'),
           <Heart size={20} color="#666" />
         )}
 
@@ -538,7 +529,7 @@ const EditProfile = () => {
           RELATIONSHIP,
           maritalStatus,
           (item) => setMaritalStatus(item.value),
-          t('marital_status'),
+          t('selectrelationshipstatus'),
           <HeartPulseIcon size={20} color="#666" />
         )}
 
@@ -551,7 +542,7 @@ const EditProfile = () => {
           <Blend size={20} color="#666" />
         )}
 
-        {/* Hobbies - Multi Select with Wrapped Layout */}
+        {/* Hobbies */}
         {renderMultiDropdown(
           HOBBIES_OPTIONS,
           selectedHobbies,
@@ -561,7 +552,7 @@ const EditProfile = () => {
           3
         )}
 
-        {/* Favorite Onboard Activity - Multi Select with Wrapped Layout */}
+        {/* Favorite Activity */}
         {renderMultiDropdown(
           FAV_ACTIVITY_OPTIONS,
           selectedFavActivities,
@@ -586,7 +577,6 @@ const EditProfile = () => {
           autoFocus={false}
         />
 
-        {/* Character count */}
         <Text style={styles.charCount}>{about.length}/600</Text>
 
         {/* Update Button */}
@@ -642,7 +632,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#454545',
   },
-  // Enhanced DOB styles
   dateText: {
     flex: 1,
     fontSize: 16,
