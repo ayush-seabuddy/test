@@ -1,24 +1,25 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { useFonts } from "expo-font";
-import * as Notifications from "expo-notifications";
-import { Stack } from "expo-router";
+import { Stack, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import * as TaskManager from "expo-task-manager";
-import { useEffect } from "react";
-import { I18nextProvider, useTranslation } from "react-i18next";
-import { StatusBar, StyleSheet, useColorScheme } from "react-native";
+import { useFonts } from "expo-font";
+import { useEffect, useRef, useCallback } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
+import { StatusBar, StyleSheet, useColorScheme, Platform, Linking } from "react-native";
 import { Provider } from "react-redux";
+import { PaperProvider } from "react-native-paper";
+import { I18nextProvider, useTranslation } from "react-i18next";
+import Toast from "react-native-toast-message";
+import * as Notifications from "expo-notifications";
+import * as TaskManager from "expo-task-manager";
+import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 
-import { NotificationProvider } from "@/Context/NotificationContext";
-import { initI18n } from "@/src/localization/i18n";
-import { store } from "@/src/redux/store";
 import Colors from "@/src/utils/Colors";
-import socketService from "@/src/utils/socketService";
+import { store } from "@/src/redux/store";
+import { initI18n } from "@/src/localization/i18n";
 import i18n from "i18next";
+import socketService from "@/src/utils/socketService";
+import { NotificationProvider } from "@/Context/NotificationContext";
+import { showToast } from "@/src/components/GlobalToast";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -45,6 +46,7 @@ Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK).catch(() => { });
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const responseListener = useRef<Notifications.Subscription | null>(null);
   const { t } = useTranslation();
 
   const [fontsLoaded] = useFonts({
@@ -56,6 +58,54 @@ export default function RootLayout() {
     "WhyteInktrap-Heavy": require("../assets/fonts/WhyteInktrap-Heavy.ttf"),
     "WhyteInktrap-Medium": require("../assets/fonts/WhyteInktrap-Medium.ttf"),
   });
+
+  const handleNotificationTap = useCallback(
+    async (data: any) => {
+      if (!data?.page) return;
+
+      const { id, page, type, androidUrl, iosUrl } = data;
+
+      if (page === "UPDATE" && type === "UPDATE") {
+        const url = Platform.OS === "ios" ? iosUrl : androidUrl;
+        if (!url) return;
+
+        try {
+          await Linking.openURL(url);
+        } catch {
+          showToast.error("oops", t("somethingwentwrong"));
+        }
+        return;
+      }
+
+      try {
+        switch (page) {
+          case "GROUP_ACTIVITY":
+            id && router.push({ pathname: "/buddyupeventdescription", params: { eventId: id } });
+            break;
+
+          case "CONTENT":
+            id && router.push({ pathname: "/contentDetails/[contentId]", params: { contentId: id } });
+            break;
+
+          case "HANGOUT":
+            id && router.push({ pathname: "/singlepost", params: { postId: id } });
+            break;
+
+          case "HAPPINESS":
+            router.push("/monthlyhappinessindex");
+            break;
+
+          case "POMS":
+            router.push("/monthlywellbeingpulse");
+            break;
+        }
+      } catch (err) {
+        console.error("Navigation error:", err);
+        showToast.error("oops", t("somethingwentwrong"));
+      }
+    },
+    [t]
+  );
 
   useEffect(() => {
     if (!fontsLoaded) return;
@@ -73,6 +123,28 @@ export default function RootLayout() {
 
     initApp();
   }, [fontsLoaded]);
+
+  useEffect(() => {
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        handleNotificationTap(response.notification.request.content.data);
+      });
+
+    const checkInitialNotification = async () => {
+      const lastResponse = await Notifications.getLastNotificationResponseAsync();
+      if (lastResponse) {
+        setTimeout(() => {
+          handleNotificationTap(lastResponse.notification.request.content.data);
+        }, 1200);
+      }
+    };
+
+    checkInitialNotification();
+
+    return () => {
+      responseListener.current?.remove();
+    };
+  }, [handleNotificationTap]);
 
   if (!fontsLoaded) return null;
 
