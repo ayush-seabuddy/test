@@ -103,7 +103,6 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
     ];
 
     return (
-        <View style={styles.container}>
             <View style={styles.frameWrapper}>
                 <BlurView style={StyleSheet.absoluteFill} tint="regular" intensity={800} />
 
@@ -127,7 +126,7 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
                                 resizeMode="cover"
                                 source={ImagesAssets.ChatLogo}
                             />
-                            {unreadMessageCount > 0 && (
+                            {unreadMessageCount >= 0 && (
                                 <View style={styles.badge}>
                                     <Text style={styles.badgeText}>
 
@@ -171,7 +170,6 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
                     </View>
                 </View>
             </View>
-        </View>
     );
 };
 
@@ -183,13 +181,14 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         overflow: "hidden",
         marginVertical: isProMax ? 10 : 0,
+        backgroundColor:"red"
     },
     frameWrapper: {
+        marginHorizontal: 16,
         borderRadius: 32,
         backgroundColor: "rgba(218,218,218,0.4)",
         paddingHorizontal: 20,
         alignItems: "center",
-        width: "100%",
         overflow: "hidden",
     },
     greetingSection: {
@@ -200,7 +199,6 @@ const styles = StyleSheet.create({
         marginTop: 16,
         alignItems: "center",
         width: "100%",
-        marginBottom: isProMax ? -15 : -10,
     },
     greetingCard: {
         backgroundColor: "#FFFFFF33",
@@ -235,7 +233,6 @@ const styles = StyleSheet.create({
     chatIcon: {
         height: 25,
         width: 25,
-        marginRight: 10,
     },
     featuresContainer: {
         gap: 16,

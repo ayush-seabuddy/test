@@ -127,7 +127,6 @@ const Splash: React.FC = () => {
       
 
         // 3. If profile not completed → Force onboarding
-        console.log("userData.isProfileCompleted: ", userData);
         if (userData.isProfileCompleted !== true) {
           setTimeout(() => {
             router.replace('/onboarding' as any);
