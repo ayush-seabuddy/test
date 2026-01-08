@@ -5,6 +5,7 @@ import { Image } from 'expo-image'
 import { ImagesAssets } from '@/src/utils/ImageAssets'
 import Colors from '@/src/utils/Colors'
 import { router } from 'expo-router'
+import EmptyComponent from '../EmptyComponent'
 
 interface CrewMember {
     id: string
@@ -119,12 +120,7 @@ const OverallCrewRankingCard: React.FC<OverallCrewRankingCardProps> = ({
     if (overallCrewList.length === 0) {
         return (
             <View style={styles.emptyContainer}>
-                <Image 
-                    source={ImagesAssets.nodatafound} 
-                    style={styles.nodatafoundImage} 
-                    contentFit="contain" 
-                />
-                <Text style={styles.emptyText}>{t('nocrewfound')}</Text>
+                <EmptyComponent text={t('nocrewfound')}/>
             </View>
         )
     }
@@ -235,7 +231,7 @@ const styles = StyleSheet.create({
         flex: 1, 
         justifyContent: 'center', 
         alignItems: 'center', 
-        marginTop: 40,
+        marginTop: '40%',
         paddingHorizontal: 20,
     },
     emptyText: { 

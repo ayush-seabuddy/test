@@ -12,6 +12,7 @@ import { Dropdown } from 'react-native-element-dropdown'
 import { addupdateshipstatus, listallusers, offboardonboardcrew } from '@/src/apis/apiService'
 import { getUserDetails } from '@/src/utils/helperFunctions'
 import { showToast } from '@/src/components/GlobalToast'
+import EmptyComponent from '@/src/components/EmptyComponent'
 
 interface UserProfile {
     id: string;
@@ -278,7 +279,14 @@ const CrewListingScreen = () => {
                             <View style={styles.crewlistView}>
                                 <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
                                     <View style={styles.rowView}>
-                                        <View style={styles.profileContainer}>
+                                        <TouchableOpacity style={styles.profileContainer} onPress={() => {
+                                            router.push({
+                                                pathname: '/crewProfile',
+                                                params: {
+                                                    crewId: item.id
+                                                }
+                                            })
+                                        }}>
                                             <Image
                                                 source={item.profileUrl}
                                                 style={styles.profileIcon}
@@ -286,7 +294,7 @@ const CrewListingScreen = () => {
                                                 contentFit="cover"
                                             />
                                             {item.isBoarded && <View style={styles.onlineDot} />}
-                                        </View>
+                                        </TouchableOpacity>
 
                                         <View style={styles.nameanddesignationView}>
                                             <Text style={styles.name}>{item.fullName}</Text>
@@ -309,6 +317,12 @@ const CrewListingScreen = () => {
                         );
                     }}
                     contentContainerStyle={{ paddingBottom: 50 }}
+                    ListEmptyComponent={
+                        <View style={styles.nocrewfound}>
+                            <EmptyComponent text={t('nocrewfound')} />
+
+                        </View>
+                    }
                 />
             )}
 
@@ -502,6 +516,7 @@ const styles = StyleSheet.create({
     optionsModalContainer: { width: '80%', backgroundColor: '#ffffff', borderRadius: 15, overflow: 'hidden', elevation: 10, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 10, shadowOffset: { width: 0, height: 2 } },
     optionModalItem: { paddingVertical: 16, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: '#eee' },
     lastOptionItem: { borderBottomWidth: 0 },
+    nocrewfound: { justifyContent: 'center', alignItems: 'center', marginTop: "50%" },
     optionModalText: { fontSize: 14, color: '#333', fontFamily: 'Poppins-Medium', textAlign: 'center' },
     optionModalTextDestructive: { fontSize: 14, color: '#d32f2f', fontFamily: 'Poppins-Medium', textAlign: 'center' },
 });

@@ -21,6 +21,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 
@@ -84,18 +85,22 @@ const Profile: React.FC = () => {
   const [crewProfileDetails, setCrewProfileDetails] = useState<CrewProfile>({});
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState('');
+  const [imageLoading, setImageLoading] = useState(true);
 
   // Fetch profile
   const fetchProfile = useCallback(async () => {
     if (!crewId) return;
 
     try {
+      setImageLoading(true); // Start loading when fetching profile
       const { data } = await viewProfile({ userId: crewId });
       if (data) {
         setCrewProfileDetails(data);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
+    } finally {
+      // We'll handle image loading separately
     }
   }, [crewId]);
 
@@ -120,6 +125,18 @@ const Profile: React.FC = () => {
 
   const handleCloseModal = useCallback(() => {
     setModalVisible(false);
+  }, []);
+
+  const handleImageLoadStart = useCallback(() => {
+    setImageLoading(true);
+  }, []);
+
+  const handleImageLoadEnd = useCallback(() => {
+    setImageLoading(false);
+  }, []);
+
+  const handleImageError = useCallback(() => {
+    setImageLoading(false);
   }, []);
 
   // Memoized values
@@ -220,22 +237,30 @@ const Profile: React.FC = () => {
           <Maximize2 size={20} color={Colors.black} />
         </TouchableOpacity>
       )}
-<ImageBackground
-  source={crewProfileDetails.profileUrl ? { uri: crewProfileDetails.profileUrl } : ImagesAssets.userIcon}
-  style={crewProfileDetails.profileUrl ? styles.headerImage : {width: '100%',
-  height: height * 0.46,
-  position: 'absolute',
-  top: 80,
-  borderBottomLeftRadius: 30,
-  borderBottomRightRadius: 30,
-  overflow: 'hidden',}}
-  defaultSource={ImagesAssets.userIcon}
-  resizeMode="cover"
->
-</ImageBackground>
+
+      {/* Image Background with Loader */}
+      <ImageBackground
+        source={crewProfileDetails.profileUrl ? { uri: crewProfileDetails.profileUrl } : ImagesAssets.userIcon}
+        style={[
+          crewProfileDetails.profileUrl ? styles.headerImage : styles.placeholderImage,
+          imageLoading && { opacity: 0.7 }
+        ]}
+        defaultSource={ImagesAssets.userIcon}
+        resizeMode="cover"
+        onLoadStart={handleImageLoadStart}
+        onLoadEnd={handleImageLoadEnd}
+        onError={handleImageError}
+      >
+        {/* Loader overlay */}
+        {imageLoading && crewProfileDetails.profileUrl && (
+          <View style={styles.loaderOverlay}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+          </View>
+        )}
+      </ImageBackground>
 
       <FlatList
-        data={[{ key: 'profile-content' }]} // Single item to wrap ScrollView-like content
+        data={[{ key: 'profile-content' }]}
         renderItem={() => (
           <View style={styles.scrollContent}>
             <View style={styles.cardContainer}>
@@ -395,6 +420,25 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
     overflow: 'hidden',
+  },
+  placeholderImage: {
+    width: '100%',
+    height: height * 0.46,
+    position: 'absolute',
+    top: 80,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    overflow: 'hidden',
+  },
+  loaderOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
   scrollContent: { paddingTop: height * 0.42, paddingHorizontal: 20 },
   cardContainer: {

@@ -56,9 +56,9 @@ interface Props {
   ActivitiesData?: BuddyUpEvent[];
 }
 
-const BuddyUpEventList = ({ userId, type, from , ActivitiesData}: Props) => {
+const BuddyUpEventList = ({ userId, type, from, ActivitiesData }: Props) => {
   const { t } = useTranslation();
-  const [groupActivities, setGroupActivities] = useState<BuddyUpEvent[]>(ActivitiesData||[]);
+  const [groupActivities, setGroupActivities] = useState<BuddyUpEvent[]>(ActivitiesData || []);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -135,7 +135,7 @@ const BuddyUpEventList = ({ userId, type, from , ActivitiesData}: Props) => {
 
   const GetDatafromApi = async (isLoadMore = false,) => {
     try {
-      if(ActivitiesData && ActivitiesData.length>0){
+      if (ActivitiesData && ActivitiesData.length > 0) {
         return;
       }
       if (!isLoadMore) {
@@ -261,7 +261,7 @@ const BuddyUpEventList = ({ userId, type, from , ActivitiesData}: Props) => {
     if (!loadingMore) return null;
     return (
       <View style={styles.footerLoader}>
-        <CommonLoader/>
+        <CommonLoader />
       </View>
     );
   };
@@ -269,7 +269,7 @@ const BuddyUpEventList = ({ userId, type, from , ActivitiesData}: Props) => {
   if (loading && groupActivities.length === 0) {
     return (
       <View style={styles.center}>
-        <CommonLoader fullScreen/>
+        <CommonLoader fullScreen />
       </View>
     );
   }
@@ -294,7 +294,7 @@ const BuddyUpEventList = ({ userId, type, from , ActivitiesData}: Props) => {
         ListFooterComponent={renderFooter}
         ListEmptyComponent={
           <View style={styles.center}>
-            <EmptyComponent text={t('nobuddyupfound')}/>
+            <EmptyComponent text={t('nobuddyupfound')} />
           </View>
         }
       />
@@ -325,7 +325,7 @@ export default BuddyUpEventList;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 70 },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: "50%" },
 
   columnWrapper: {
     justifyContent: 'space-between',

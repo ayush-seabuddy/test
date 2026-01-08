@@ -928,5 +928,6 @@
   "appointment_book_failed": "预约失败，请重试。",
   "readmore": "+ 阅读更多",
   "readless": "- 收起",
-  "yourbookedappointment": "您预约的时间"
+  "yourbookedappointment": "您预约的时间",
+  "photouploadedsuccessfully": "照片上传成功！"
 }

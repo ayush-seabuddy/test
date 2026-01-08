@@ -67,7 +67,7 @@ const ChatRoomScreen = () => {
   const [keyboardPadding, setKeyboardPadding] = useState(0);
   const [chatItemPadding, setChatItemPadding] = useState(0);
   const [mediaModalVisible, setMediaModalVisible] = useState(false);
-  const [selectedMedia, setSelectedMedia] = useState<{ uri: string; isVideo: boolean; imageUri?: string }>({ uri: "", isVideo: false });
+  const [selectedMedia, setSelectedMedia] = useState<{ uri: string; isVideo: boolean; imageUri?: string , fileName?: any , fileSize?: number , type?: any}>({ uri: "", isVideo: false });
   const [imageLoading, setImageLoading] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingMessage, setEditingMessage] = useState<ChatMessage | null>(null);
@@ -438,7 +438,7 @@ const ChatRoomScreen = () => {
   };
 
 
-  const uploadImage = async (photo: string) => {
+  const uploadImage = async (photo: string ,fileName: any , fileSize: any , type: any) => {
     if (!photo) return;
     setLoading(true);
     try {
@@ -455,7 +455,7 @@ const ChatRoomScreen = () => {
       };
       setChatList((prevMessageList) => [chat_payload as ChatMessage, ...prevMessageList]);
 
-      const apiResponse = await uploadfile({ file: photo });
+      const apiResponse = await uploadfile({ file: photo , fileName: fileName , fileSize: fileSize , type: type });
       if (apiResponse.success && apiResponse.status == 200) {
         setContentImage(apiResponse.data);
         chat_payload.content = apiResponse.data
@@ -486,10 +486,15 @@ const ChatRoomScreen = () => {
       if (result.canceled) return;
 
       const uri = result.assets?.[0]?.uri;
+      console.log("result.assets?.[0]: ", result.assets?.[0]);
       if (!uri) return;
       console.log("uri: ", uri);
       setMediaModalVisible(true);
-      setSelectedMedia({ uri: uri, isVideo: false, imageUri: uri });
+      setSelectedMedia({ uri: uri, isVideo: false, imageUri: uri , 
+        fileName: result.assets?.[0]?.fileName ,
+        fileSize: result.assets?.[0]?.fileSize,
+        type: result.assets?.[0]?.type
+      });
       setLoading(false);
     } catch (error) {
 
@@ -836,7 +841,7 @@ const ChatRoomScreen = () => {
                 setImageUploading(true);
                 setLoading(true);
                 setMediaModalVisible(false);
-                uploadImage(selectedMedia.imageUri);
+                uploadImage(selectedMedia.imageUri , selectedMedia.fileName , selectedMedia.fileSize , selectedMedia.type);
               }
             }}
           />

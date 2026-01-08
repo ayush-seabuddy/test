@@ -103,32 +103,32 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
     ];
 
     return (
-        <View style={styles.frameWrapper}>
-            <BlurView style={StyleSheet.absoluteFill} tint="regular" intensity={800} />
+            <View style={styles.frameWrapper}>
+                <BlurView style={StyleSheet.absoluteFill} tint="regular" intensity={800} />
 
-            <View style={styles.greetingSection}>
-                <TouchableOpacity style={styles.greetingCard} onPress={() => { router.push("/(bottomtab)/(community)/chats") }}>
-                    <View style={styles.greetingRow}>
-                        <View style={styles.greetingTextWrapper}>
-                            <Text style={styles.greetingText}>
-                                {`${t("hi")} ${name
-                                    ? name.split(" ")[0].charAt(0).toUpperCase() +
-                                    name.split(" ")[0].slice(1)
-                                    : ""
-                                    }, ${t("how_are_you_today")}`}
-                            </Text>
-                            <Text style={styles.subtitle}>
-                                {t("chat_with_your_crewmates")}
-                            </Text>
-                        </View>
-                        <Image
-                            style={styles.chatIcon}
-                            resizeMode="cover"
-                            source={ImagesAssets.ChatLogo}
-                        />
-                        {unreadMessageCount >= 0 && (
-                            <View style={styles.badge}>
-                                <Text style={styles.badgeText}>
+                <View style={styles.greetingSection}>
+                    <TouchableOpacity style={styles.greetingCard} onPress={() => { router.push("/(bottomtab)/(community)/chats") }}>
+                        <View style={styles.greetingRow}>
+                            <View style={styles.greetingTextWrapper}>
+                                <Text style={styles.greetingText}>
+                                    {`${t("hi")} ${name
+                                        ? name.split(" ")[0].charAt(0).toUpperCase() +
+                                        name.split(" ")[0].slice(1)
+                                        : ""
+                                        }, ${t("how_are_you_today")}`}
+                                </Text>
+                                <Text style={styles.subtitle}>
+                                    {t("chat_with_your_crewmates")}
+                                </Text>
+                            </View>
+                            <Image
+                                style={styles.chatIcon}
+                                resizeMode="cover"
+                                source={ImagesAssets.ChatLogo}
+                            />
+                            {unreadMessageCount >= 0 && (
+                                <View style={styles.badge}>
+                                    <Text style={styles.badgeText}>
 
                                     {unreadMessageCount > 9 ? "9+" : unreadMessageCount}
                                 </Text>
@@ -153,23 +153,23 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
                             </View>
                         ))}
 
-                    {/* App Guide */}
-                    <TouchableOpacity
-                        style={styles.guideRow}
-                        onPress={() => onOpenPDF(pdfUrl, "App Guide")}
-                    >
-                        <View style={styles.greetingTextWrapper}>
-                            <Text style={styles.subtitle}>{t("how_to_use_guide")}</Text>
-                        </View>
-                        <Image
-                            style={styles.guideIcon}
-                            resizeMode="cover"
-                            source={ImagesAssets.NotebookLogo}
-                        />
-                    </TouchableOpacity>
+                        {/* App Guide */}
+                        <TouchableOpacity
+                            style={styles.guideRow}
+                            onPress={() => onOpenPDF(pdfUrl, "App Guide")}
+                        >
+                            <View style={styles.greetingTextWrapper}>
+                                <Text style={styles.subtitle}>{t("how_to_use_guide")}</Text>
+                            </View>
+                            <Image
+                                style={styles.guideIcon}
+                                resizeMode="cover"
+                                source={ImagesAssets.NotebookLogo}
+                            />
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </View>
-        </View>
     );
 };
 
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         overflow: "hidden",
         marginVertical: isProMax ? 10 : 0,
-        backgroundColor: "red"
+        backgroundColor:"red"
     },
     frameWrapper: {
         marginHorizontal: 16,

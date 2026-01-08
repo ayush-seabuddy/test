@@ -9,7 +9,8 @@ type ExtraConfig = {
 // Safely access extra with fallback
 const extra = Constants.expoConfig?.extra as ExtraConfig | undefined;
 
-export const BASE_URL = 'http://192.168.1.83:2193/api/v1';
+export const BASE_URL = extra?.API_URL || 'https://seabuddyapi.seekware.in/api/v1';
+
 // Define endpoints
 export const ENDPOINTS = {
   LOGIN: `${BASE_URL}/user/login`,
@@ -18,6 +19,7 @@ export const ENDPOINTS = {
   VERIFYOTP: `${BASE_URL}/user/verifyOtp`,
   RESETPASSWORD: `${BASE_URL}/user/resetPassword`,
   UPLOADFILE: `${BASE_URL}/user/uploadFile`,
+  uploadFileUrl: `${BASE_URL}/user/uploadFileUrl`,
   GETALLCOUNTRIES: `${BASE_URL}/user/getAllCountries`,
   UPDATEPROFILE: `${BASE_URL}/user/updateProfile`,
   GETALLASSESSMENTS: `${BASE_URL}/user/getAssessmentQuestions`,
