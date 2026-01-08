@@ -3,23 +3,22 @@ import { RootState } from '@/src/redux/store';
 import Colors from '@/src/utils/Colors';
 import { height, isShipStaff } from '@/src/utils/helperFunctions';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
+import { AntDesign, Entypo, MaterialIcons } from '@expo/vector-icons'; // Added vector icons
 import { Image } from 'expo-image';
-import { t } from 'i18next';
 import { ExternalLink } from 'lucide-react-native';
 import React, { useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dimensions,
   Linking,
   ScrollView,
   StyleSheet,
-  Switch,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { Divider } from 'react-native-paper';
 import { useSelector } from 'react-redux';
-import { AntDesign, Entypo, MaterialIcons } from '@expo/vector-icons'; // Added vector icons
 
 const { width } = Dimensions.get('window');
 
@@ -28,6 +27,7 @@ interface SocialLink {
   link: string;
 }
 const About = () => {
+  const { t } = useTranslation();
   const userDetails = useSelector((state: RootState) => state.userDetails);
 
   const capitalize = useCallback((str: string) => (str ? str.charAt(0).toUpperCase() + str.slice(1) : 'N/A'), []);

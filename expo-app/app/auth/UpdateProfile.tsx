@@ -7,7 +7,7 @@ import { showToast } from '@/src/components/GlobalToast';
 import Colors from '@/src/utils/Colors';
 import { getUserDetails } from '@/src/utils/helperFunctions';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Check, ChevronLeft } from 'lucide-react-native';
+import { Check } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -268,7 +268,7 @@ const UpdateProfile = () => {
       />
 
       <View style={styles.bottomCard1}>
-        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} componentHeight={height * 0.85} />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} componentHeight={height * 0.95} />
       </View>
 
       <View style={styles.mainContent}>
