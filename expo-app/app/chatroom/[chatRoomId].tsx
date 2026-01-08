@@ -1,8 +1,9 @@
-import { getReactionsOnMessage, uploadfile } from '@/src/apis/apiService';
+import { getReactionsOnMessage, uploadfile, viewProfile } from '@/src/apis/apiService';
 import KeyboardAvoidingWrapper from '@/src/components/KeyboardAvoidingWrapper';
 import MediaPreviewModal from '@/src/components/Modals/MediaPreviewModal';
 import { saveMessage } from '@/src/database/chatMessageService';
 import { RootState } from '@/src/redux/store';
+import { updateUserField } from '@/src/redux/userDetailsSlice';
 import { ChatMessage, ChatRoom } from '@/src/screens/chat/types/chatRoom';
 import ChatRoomHeader from '@/src/screens/chatroom/ChatRoomHeader';
 import Chats from '@/src/screens/chatroom/components/ChatDataList';
@@ -25,22 +26,23 @@ import { useDispatch, useSelector } from 'react-redux';
 
 type ChatRoomScreenParams = {
   chatRoomDetails: ChatRoom
+  chatRoomId: string
 }
 type ChatRoomRouteProp = RouteProp<{ ChatRoom: ChatRoomScreenParams }, 'ChatRoom'>
 const { width, height } = Dimensions.get("screen");
 const ChatRoomScreen = () => {
   const route = useRoute<ChatRoomRouteProp>()
   const chatRoomDetails = typeof route.params?.chatRoomDetails === 'string' ? JSON.parse(route.params?.chatRoomDetails) : route.params?.chatRoomDetails
-  const chatRoomId = chatRoomDetails.id;
+  const chatRoomId = chatRoomDetails?.id || route.params?.chatRoomId;
   const [participant , setParticipant] = useState(chatRoomDetails?.participantIds);
-  const headerPops = {
+  const [hederDetails ,setHeaderDetails] = useState({
     navigation: () => router.back(),
     data: chatRoomDetails,
     participant: chatRoomDetails?.participants?.length,
     GroupName: chatRoomDetails?.groupName,
     setSearchValue: () => { },
     participantIds: participant
-  }
+  });
 
 
   const dispatch = useDispatch();
@@ -88,6 +90,20 @@ const ChatRoomScreen = () => {
   const emojis = ["👍", "😊", "❤️", "😂", "😮", "😢"];
 
   const { id: senderId, shipId } = useSelector((state: RootState) => state.userDetails)
+
+   
+          const fetchProfileDetails = async () => {
+              let result = await viewProfile();
+              if (result?.data) {
+                  const object = result.data
+                  for (const property in object) {
+                      console.log(`${property}: ${object[property]}`);
+                      dispatch(updateUserField({ key: property, value: object[property] }))
+                  }
+  
+              }
+          }
+       
 
   interface ReactionData {
     createdAt?: string;
@@ -368,6 +384,14 @@ const ChatRoomScreen = () => {
   );
 
 
+ useFocusEffect(
+    useCallback(() => {
+     if(!senderId){
+       fetchProfileDetails()
+     }
+
+    }, [senderId])
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -375,9 +399,13 @@ const ChatRoomScreen = () => {
         setLoading(false);
         setLoadingMore(false);
       }, 5000);
+      if(!senderId){
+         return
+
+      }
       const payload = {
         userId: senderId,
-        chatRoomId: chatRoomDetails.id,
+        chatRoomId: chatRoomId,
         page: currentPage,
         limit: 30,
       };
@@ -386,6 +414,19 @@ const ChatRoomScreen = () => {
       socketService.emit("joinChatRoom", payload);
 
       socketService.on("userPreviousMessages", (data) => {
+        if(!chatRoomDetails){
+         
+
+
+          setHeaderDetails((prev)=> {
+          return {
+            ...prev,
+          GroupName: data?.groupName,
+          participantIds: data?.participantIds,
+          setSearchValue: () => { },
+          participant: data?.participantIds?.length,
+          }})
+        }
         setParticipant(data.participantIds);
         const newChatList = [...chatListState, ...data.previousMessages];
         setChatList(newChatList);
@@ -400,7 +441,7 @@ const ChatRoomScreen = () => {
         socketService.off("userPreviousMessages");
       }
 
-    }, [currentPage])
+    }, [currentPage , senderId])
   );
 
 
@@ -604,7 +645,7 @@ const ChatRoomScreen = () => {
 
 
       <View style={styles.container}>
-        <ChatRoomHeader  {...headerPops} />
+        <ChatRoomHeader  {...hederDetails} />
         <FlatList
           ref={flatListRef}
           data={getGroupedChatList()}
