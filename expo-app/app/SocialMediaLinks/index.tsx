@@ -168,7 +168,7 @@ const SocialMediaLinks = () => {
       if (response.status === 200) {
         setSavedLinks(updatedLinks);
         setLinks((prev) => ({ ...prev, [platformLower]: '' }));
-        showToast.success(t('success'), t('linkdeletedsuccessfully') || 'Link deleted successfully');
+        showToast.success(t('success'), t('linkdeletedsuccessfully'));
       }
     } catch (error) {
       showToast.error(t('error'), t('failedToDeleteLink'));
@@ -209,7 +209,7 @@ const SocialMediaLinks = () => {
           {renderPlatformIcon('linkedin')}
           <TextInput
             style={styles.textInput}
-            placeholder={t('enterhere')}
+            placeholder={t('linkedin_url')}
             placeholderTextColor="#B7B7B7"
             value={links.linkedin}
             onChangeText={(text) => setLinks((prev) => ({ ...prev, linkedin: text }))}
@@ -224,7 +224,7 @@ const SocialMediaLinks = () => {
           {renderPlatformIcon('instagram')}
           <TextInput
             style={styles.textInput}
-            placeholder={t('enterhere')}
+            placeholder={t('instagram_url')}
             placeholderTextColor="#B7B7B7"
             value={links.instagram}
             onChangeText={(text) => setLinks((prev) => ({ ...prev, instagram: text }))}
@@ -239,7 +239,7 @@ const SocialMediaLinks = () => {
           {renderPlatformIcon('facebook')}
           <TextInput
             style={styles.textInput}
-            placeholder={t('enterhere')}
+            placeholder={t('twitter_url')}
             placeholderTextColor="#B7B7B7"
             value={links.facebook}
             onChangeText={(text) => setLinks((prev) => ({ ...prev, facebook: text }))}
@@ -254,7 +254,7 @@ const SocialMediaLinks = () => {
           {renderPlatformIcon('x')}
           <TextInput
             style={styles.textInput}
-            placeholder={t('enterhere')}
+            placeholder={t('twitter_url')}
             placeholderTextColor="#B7B7B7"
             value={links.x}
             onChangeText={(text) => setLinks((prev) => ({ ...prev, x: text }))}
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 8,
     marginBottom: 10,
-    padding: 12,
+    padding: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     borderWidth: 1,
     borderColor: '#e0e0e0',
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
   platformRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 10,
   },
   companyName: {
     fontFamily: 'Poppins-SemiBold',
@@ -428,13 +428,13 @@ const styles = StyleSheet.create({
   },
   role: {
     fontFamily: 'Poppins-Regular',
-    fontSize: 13,
+    fontSize: 12,
     color: '#666',
-    marginLeft: 28,
+    width: '90%'
   },
   actions: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 5,
   },
   actionButton: {
     padding: 8,
