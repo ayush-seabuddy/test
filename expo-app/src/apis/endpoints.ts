@@ -74,5 +74,6 @@ export const ENDPOINTS = {
   GET_DATA_USAGE: `${BASE_URL}/user/getDataUsage`,
   FETCHCUSTOMSURVEY: `${BASE_URL}/user/viewUserTestList`,
   GETANALYTICS: `${BASE_URL}/user/getAnalytics`,
+  LOGOUT: `${BASE_URL}/user/logout`,
 
 };

@@ -1,18 +1,18 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import {
+  Dimensions,
   Modal,
-  View,
+  StatusBar,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  StatusBar,
+  View,
 } from "react-native";
 
 const { width } = Dimensions.get("window");
 
-const SignOutModal = ({ visible, onClose, onDelete }) => {
+const SignOutModal = ({ visible, onClose, onLogout }:{visible:boolean,onClose:()=>void,onLogout:()=>void}) => {
   const { t } = useTranslation();
   const handleNo = () => {
     onClose();
@@ -37,7 +37,7 @@ const SignOutModal = ({ visible, onClose, onDelete }) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.button, styles.yesButton]}
-              onPress={onDelete}
+              onPress={onLogout}
             >
               <Text style={styles.yesButtonText}>{t('yes')}</Text>
             </TouchableOpacity>

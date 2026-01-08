@@ -185,6 +185,7 @@ const styles = StyleSheet.create({
     },
     frameWrapper: {
         marginHorizontal: 16,
+        marginHorizontal: 16,
         borderRadius: 32,
         backgroundColor: "rgba(218,218,218,0.4)",
         paddingHorizontal: 20,

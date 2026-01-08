@@ -1,17 +1,17 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { I18nextProvider } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect } from 'react';
+import { I18nextProvider } from 'react-i18next';
+import { StyleSheet, View } from 'react-native';
 
+import { useNotification } from '@/Context/NotificationContext';
 import AppContainer from '@/src/components/AppContainer';
 import CustomStatusBar from '@/src/components/CustomStatusBar';
-import Splash from './onboarding/Splash';
 import { createTables } from '@/src/database/chatSchema';
 import { initI18n } from '@/src/localization/i18n';
 import Colors from '@/src/utils/Colors';
 import i18next from 'i18next';
-import { useNotification } from '@/Context/NotificationContext';
+import Splash from './onboarding/Splash';
 
 export default function Index() {
   const { notification, expoPushToken, error } = useNotification();

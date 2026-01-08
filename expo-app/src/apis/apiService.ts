@@ -321,6 +321,10 @@ export interface GetAnalyticsParams {
   toMonth: string
 }
 
+export interface signoutPayload {
+  deviceToken: string[]
+}
+
 
 export interface ReadSingleNotificationRequest {
   notificationId: string
@@ -955,5 +959,14 @@ export const getAnalytics = async (params?: GetAnalyticsParams): Promise<ApiResp
     method: "GET",
     params,
     url: ENDPOINTS.GETANALYTICS,
+  });
+}
+
+
+export const logout = async (payload: signoutPayload): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "POST",
+    url: ENDPOINTS.LOGOUT,
+    data: payload,
   });
 }

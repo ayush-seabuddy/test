@@ -64,6 +64,7 @@ export default function RootLayout() {
 
   const handleNotificationTap = useCallback(
     async (data: any) => {
+      console.log("data: ", data);
       if (!data?.page) return;
 
       const { id, page, type, androidUrl, iosUrl } = data;
@@ -82,6 +83,12 @@ export default function RootLayout() {
 
       try {
         switch (page) {
+          case "CHAT":
+            id && router.push({
+                    pathname: `/chatroom/[chatRoomId]`,
+                    params: { chatRoomId: id },
+                  })
+            break;
           case "GROUP_ACTIVITY":
             id && router.push({ pathname: "/buddyupeventdescription", params: { eventId: id } });
             break;

@@ -108,8 +108,8 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
   const bottomSheetRef = useRef<RBSheetRef>(null);
 
   const dummyUsers = useMemo(
-    () => participantIds || data.participantIds,
-    [participantIds, data.participantIds]
+    () => participantIds || data?.participantIds,
+    [participantIds, data]
   );
 
   const openSheet = () => {

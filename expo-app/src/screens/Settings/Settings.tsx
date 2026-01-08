@@ -1,3 +1,4 @@
+import { logout, signoutPayload } from '@/src/apis/apiService'
 import GlobalHeader from '@/src/components/GlobalHeader'
 import DeleteModal from '@/src/components/Modals/DeleteModal'
 import SignOutModal from '@/src/components/Modals/SignOutModal'
@@ -26,21 +27,29 @@ const Settings = () => {
 
     const handleLogout = async () => {
         try {
-        // Clear all AsyncStorage data
-        await AsyncStorage.clear();
-         dispatch(clearAllChatLists()); // Dispatch an action to reset Redux state
+            const ExpoPushToken = await AsyncStorage.getItem("ExpoPushToken");
+            console.log("ExpoPushToken:", ExpoPushToken);
 
+            if (typeof ExpoPushToken === "string") {
+                const payload: signoutPayload = {
+                    deviceToken: [ExpoPushToken],
+                };
 
-        // Reset navigation stack to Login screen
-        router.replace('/auth/Login');
-    } catch (error) {
-        console.error('Error during logout:', error);
-    }
-        
-        setModalVisible(false);
+                console.log("payload:", payload);
+                await logout(payload);
+            }
+
+            await AsyncStorage.clear();
+            dispatch(clearAllChatLists());
+            router.replace("/auth/Login");
+        } catch (error) {
+            console.error("Error during logout:", error);
+        } finally {
+            setModalVisible(false);
+        }
     };
 
-    const renderSettingItem = (labelKey: string, onPress: ()=>void, value = null, isVerified = false) => (
+    const renderSettingItem = (labelKey: string, onPress: () => void, value = null, isVerified = false) => (
         <TouchableOpacity style={styles.itemContainer} onPress={onPress}>
             <Text style={styles.itemText}>{t(labelKey)}</Text>
             {value ? (
@@ -68,18 +77,18 @@ const Settings = () => {
                 <ScrollView style={styles.container}>
                     <Text style={styles.sectionTitle}>{t("profile_information")}</Text>
                     <View style={styles.section}>
-                        {renderSettingItem("name_nationality_contact", () => {router.push("/editProfile") })}
-                        {renderSettingItem("profile_photo", () => {router.push("/profilePhoto")})} 
-                        {renderSettingItem("shipboard_experience", () => {router.push("/WorkExperience")})} 
-                        {renderSettingItem("social_media", () => {router.push("/SocialMediaLinks")})} 
-                        {renderSettingItem("certifications", () => { router.push("/Certifications")})}
-                        {renderSettingItem("change_language", () => { router.push("/ChangeLanguage")})}
+                        {renderSettingItem("name_nationality_contact", () => { router.push("/editProfile") })}
+                        {renderSettingItem("profile_photo", () => { router.push("/profilePhoto") })}
+                        {renderSettingItem("shipboard_experience", () => { router.push("/WorkExperience") })}
+                        {renderSettingItem("social_media", () => { router.push("/SocialMediaLinks") })}
+                        {renderSettingItem("certifications", () => { router.push("/Certifications") })}
+                        {renderSettingItem("change_language", () => { router.push("/ChangeLanguage") })}
                     </View>
 
                     <Text style={styles.sectionTitle}>{t("account")}</Text>
                     <View style={styles.section1}>
                         {renderSettingItem("change_password", () => { router.push("/ChangePassword") })}
-                       
+
                         {renderSettingItem("log_out", () => setModalVisible(true))}
                     </View>
 
@@ -97,7 +106,7 @@ const Settings = () => {
             <SignOutModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
-                onDelete={handleLogout}
+                onLogout={handleLogout}
             />
         </View >
     )
