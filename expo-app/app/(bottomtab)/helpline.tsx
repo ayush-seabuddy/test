@@ -83,16 +83,16 @@ const styles = StyleSheet.create({
   },
   historyButton: {
     position: "absolute",
-    right: 62,
+    right: 70,
     backgroundColor: "#B0DB0266",
-    padding: 6,
+    padding: 5,
     borderRadius: 10,
   },
   homeButton: {
     position: "absolute",
-    right: 10,
+    right: 20,
     backgroundColor: "#B0DB0266",
-    padding: 6,
+    padding: 5,
     borderRadius: 10,
   },
   illustrativeIcon: {

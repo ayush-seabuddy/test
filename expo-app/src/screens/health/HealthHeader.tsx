@@ -28,26 +28,34 @@ const HealthHeader = () => {
       <Text style={styles.health}>{t("health")}</Text>
 
       <View style={styles.headerButtonsContainer}>
+        {/* SOS Button */}
         <TouchableOpacity
           onPress={() => setEmergencyModalVisible((prev) => !prev)}
-          style={styles.headerButton}
         >
           <View style={styles.iconBackground}>
             <Image
               source={ImagesAssets.sosimage}
-              style={styles.headerIcon1}
+              style={styles.headerIcon}
             />
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.headerButton} onPress={()=> router.replace('/globalSearch')}>
+        {/* Search Button */}
+        <TouchableOpacity
+          onPress={() => router.replace('/globalSearch')}
+        >
           <View style={styles.iconBackground}>
             <Search size={24} color={Colors.black} />
           </View>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.homeButton} onPress={() => router.replace('/home')}>
-          <Home size={21} color="#000" />
+        {/* Home Button */}
+        <TouchableOpacity
+          onPress={() => router.replace('/home')}
+        >
+          <View style={styles.homeIconBackground}>
+            <Home size={21} color="#000" />
+          </View>
         </TouchableOpacity>
       </View>
     </View>
@@ -77,7 +85,7 @@ const styles = StyleSheet.create({
   health: {
     fontSize: 24,
     lineHeight: 29,
-    marginLeft: 9,
+    marginLeft: 5,
     marginTop: 8,
     fontFamily: "WhyteInktrap-Medium",
     color: "#262626",
@@ -85,26 +93,21 @@ const styles = StyleSheet.create({
   headerButtonsContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 10,
-    paddingVertical: 5,
-  },
-  headerButton: {
-    marginLeft: 5,
-  },
-  headerIcon1: {
-    width: 28,
-    height: 28,
-    resizeMode: "contain",
+    gap: 16,
   },
   iconBackground: {
     borderRadius: 8,
-    padding: 3,
+    backgroundColor: "transparent",
   },
-  homeButton: {
+  homeIconBackground: {
     backgroundColor: "#B0DB0266",
     borderRadius: 10,
     padding: 6,
-    right: -10,
+  },
+  headerIcon: {
+    width: 28,
+    height: 28,
+    resizeMode: "contain",
   },
 });
 

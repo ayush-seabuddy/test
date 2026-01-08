@@ -916,5 +916,6 @@
   "instagram_url": "Enter Instagram account URL",
   "linkedin_url": "Enter LinkedIn profile URL",
   "facebook_url": "Enter Facebook profile URL",
-  "twitter_url": "Enter Twitter profile URL"
+  "twitter_url": "Enter Twitter profile URL",
+  "nomoodentries":"No mood entries yet"
 }

@@ -22,6 +22,8 @@ import { addeditdeletebuddyupevent, GETALLBUDDYUPEVENTS } from '../apis/apiServi
 import Colors from '../utils/Colors';
 import GlobalHeader from './GlobalHeader';
 import { showToast } from './GlobalToast';
+import EmptyComponent from './EmptyComponent';
+import CommonLoader from './CommonLoader';
 
 const { width } = Dimensions.get('window');
 
@@ -259,7 +261,7 @@ const BuddyUpEventList = ({ userId, type, from , ActivitiesData}: Props) => {
     if (!loadingMore) return null;
     return (
       <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color={Colors.lightGreen} />
+        <CommonLoader/>
       </View>
     );
   };
@@ -267,7 +269,7 @@ const BuddyUpEventList = ({ userId, type, from , ActivitiesData}: Props) => {
   if (loading && groupActivities.length === 0) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color={Colors.lightGreen} />
+        <CommonLoader fullScreen/>
       </View>
     );
   }
@@ -292,7 +294,7 @@ const BuddyUpEventList = ({ userId, type, from , ActivitiesData}: Props) => {
         ListFooterComponent={renderFooter}
         ListEmptyComponent={
           <View style={styles.center}>
-            <Text style={styles.emptyText}>{t('nobuddyupfound')}</Text>
+            <EmptyComponent text={t('nobuddyupfound')}/>
           </View>
         }
       />
@@ -323,7 +325,7 @@ export default BuddyUpEventList;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 100 },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 70 },
 
   columnWrapper: {
     justifyContent: 'space-between',

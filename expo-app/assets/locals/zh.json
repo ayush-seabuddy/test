@@ -911,5 +911,6 @@
   "instagram_url": "请输入 Instagram 账号链接",
   "linkedin_url": "请输入 LinkedIn 个人资料链接",
   "facebook_url": "请输入 Facebook 个人资料链接",
-  "twitter_url": "请输入 Twitter 个人资料链接"
+  "twitter_url": "请输入 Twitter 个人资料链接",
+  "nomoodentries": "还没有心情条目"
 }

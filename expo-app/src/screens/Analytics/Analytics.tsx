@@ -197,7 +197,7 @@ const Analytics = () => {
                     chartConfig={chartConfig}
                     accessor={"population"}
                     backgroundColor={"transparent"}
-                    paddingLeft={"35"}
+                    paddingLeft="0"
                     center={[0, 0]}
                     absolute
                   />
