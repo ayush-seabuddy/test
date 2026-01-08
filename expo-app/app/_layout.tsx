@@ -1,25 +1,28 @@
+import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import * as Notifications from "expo-notifications";
 import { Stack, router } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useFonts } from "expo-font";
-import { useEffect, useRef, useCallback } from "react";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { StatusBar, StyleSheet, useColorScheme, Platform, Linking } from "react-native";
-import { Provider } from "react-redux";
-import { PaperProvider } from "react-native-paper";
-import { I18nextProvider, useTranslation } from "react-i18next";
-import Toast from "react-native-toast-message";
-import * as Notifications from "expo-notifications";
 import * as TaskManager from "expo-task-manager";
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import { useCallback, useEffect, useRef } from "react";
+import { I18nextProvider, useTranslation } from "react-i18next";
+import { Linking, Platform, StatusBar, StyleSheet, useColorScheme } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { PaperProvider } from "react-native-paper";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
+import { Provider } from "react-redux";
 
-import Colors from "@/src/utils/Colors";
-import { store } from "@/src/redux/store";
-import { initI18n } from "@/src/localization/i18n";
-import i18n from "i18next";
-import socketService from "@/src/utils/socketService";
 import { NotificationProvider } from "@/Context/NotificationContext";
 import { showToast } from "@/src/components/GlobalToast";
+import { initI18n } from "@/src/localization/i18n";
+import { store } from "@/src/redux/store";
+import Colors from "@/src/utils/Colors";
+import socketService from "@/src/utils/socketService";
+import i18n from "i18next";
+import { Appearance } from 'react-native';
+
+Appearance.setColorScheme('light');
 
 SplashScreen.preventAutoHideAsync();
 

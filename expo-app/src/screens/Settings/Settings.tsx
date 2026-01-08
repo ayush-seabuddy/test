@@ -5,14 +5,14 @@ import { clearAllChatLists } from '@/src/redux/chatListSlice'
 import { height, width } from '@/src/utils/helperFunctions'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { router } from 'expo-router'
-import { t } from 'i18next'
-import { ChevronLeft, CircleArrowRight } from 'lucide-react-native'
+import { CircleArrowRight } from 'lucide-react-native'
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 const Settings = () => {
-
+    const { t } = useTranslation();
     const dispatch = useDispatch();
 
 

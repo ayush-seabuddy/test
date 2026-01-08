@@ -6,9 +6,9 @@ import Colors from '@/src/utils/Colors'
 import { height, width } from '@/src/utils/helperFunctions'
 import { Image } from 'expo-image'
 import { router } from 'expo-router'
-import { t } from 'i18next'
 import { Settings, SquarePen } from 'lucide-react-native'
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import AssessmentList from '../health/AssessmentList'
@@ -17,6 +17,7 @@ import ProfileTabs from './ProfileTabs'
 import UserPost from './UserPosts'
 
 const UserProfile = () => {
+     const { t } = useTranslation();
     const userDetails = useSelector((state: RootState) => state.userDetails)
     const dispatch = useDispatch()
     const [activeTab, setActiveTab] = useState<'about' | 'posts' | 'buddyuponprofile' | 'assessments'>('about');

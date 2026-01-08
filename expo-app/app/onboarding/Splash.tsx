@@ -18,7 +18,7 @@ import AppContainer from '@/src/components/AppContainer';
 import { showToast } from '@/src/components/GlobalToast';
 import { RootState } from '@/src/redux/store';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const { height } = Dimensions.get('window');
 
@@ -40,10 +40,9 @@ type AppRoute =
 const Splash: React.FC = () => {
   const { t } = useTranslation();
   const router = useRouter();
+  const dispatch = useDispatch();
   const notificationDetails = useSelector((state: RootState) => state.notification);
-  console.log("notificationDetails: ", notificationDetails);
- 
-
+  
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const translateAnim = useRef(new Animated.Value(-height)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -62,7 +61,9 @@ const Splash: React.FC = () => {
         version,
       });
 
+      console.log("apiResponse: ", apiResponse);
       if (apiResponse.success && apiResponse.status == 200) {
+        return apiResponse.data;
       } else {
         showToast.error(t('oops'), apiResponse.message);
       }
@@ -113,15 +114,21 @@ const Splash: React.FC = () => {
         }
 
         const userDetails = JSON.parse(userDetailsStr);
-        const { isProfileCompleted, id: userId } = userDetails;
+        const {  id: userId } = userDetails;
 
-        // 2. Call viewUserProfile API with all required parameters
-        if (userId) {
-          await viewUserProfile(userId);
+        if(!userId) {
+          setTimeout(() => router.replace('/auth/Login' as any), 3000);
+          return;
         }
+        
+         const userData = await viewUserProfile(userId);
+        
+
+      
 
         // 3. If profile not completed → Force onboarding
-        if (isProfileCompleted !== true) {
+        console.log("userData.isProfileCompleted: ", userData);
+        if (userData.isProfileCompleted !== true) {
           setTimeout(() => {
             router.replace('/onboarding' as any);
           }, 3000);
