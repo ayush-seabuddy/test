@@ -11,6 +11,7 @@ import { createTables } from '@/src/database/chatSchema';
 import { initI18n } from '@/src/localization/i18n';
 import Colors from '@/src/utils/Colors';
 import i18next from 'i18next';
+import Splash from './onboarding/Splash';
 
 export default function Index() {
   const { notification, expoPushToken, error } = useNotification();
@@ -51,7 +52,7 @@ export default function Index() {
           style={styles.container}
         >
           <View style={styles.splashOverlay}>
-            {/* <Splash /> */}
+            <Splash />
           </View>
         </LinearGradient>
       </AppContainer>

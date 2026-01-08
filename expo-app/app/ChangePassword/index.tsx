@@ -1,35 +1,19 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   TouchableOpacity,
   View,
   ActivityIndicator,
-  Platform,
+  Text,
+  TextInput,
 } from 'react-native';
-import { Text, TextInput } from 'react-native-paper';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
+import { Eye, EyeOff } from 'lucide-react-native';
 
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { changePassword } from '@/src/apis/apiService';
-import CustomLottie from '@/src/components/CustomLottie';
 import { showToast } from '@/src/components/GlobalToast';
-
-interface Errors {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-}
-
-const inputTheme = {
-  colors: {
-    primary: '#000',
-    outline: '#000',
-    placeholder: '#666',
-    background: '#fff',
-  },
-};
 
 const ChangePasswordScreen = () => {
   const { t } = useTranslation();
@@ -45,37 +29,28 @@ const ChangePasswordScreen = () => {
     confirm: false,
   });
 
-  const [errors, setErrors] = useState<Errors>({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
-
-  const validateField = useCallback(
-    (field: keyof Errors, value: string) => {
-      if (field === 'currentPassword') return value.trim() ? '' : t('current_password_required');
-      if (field === 'newPassword')
-        return !value.trim()
-          ? t('new_password_required')
-          : value.length >= 6
-            ? ''
-            : t('password_min_length');
-      if (field === 'confirmPassword')
-        return value === newPassword ? '' : t('passwords_do_not_match');
-      return '';
-    },
-    [newPassword, t]
-  );
+  const validateInputs = (): boolean => {
+    if (!currentPassword.trim()) {
+      showToast.error(t('oops'), t('current_password_required'));
+      return false;
+    }
+    if (!newPassword.trim()) {
+      showToast.error(t('oops'), t('new_password_required'));
+      return false;
+    }
+    if (newPassword.length < 6) {
+      showToast.error(t('oops'), t('password_min_length'));
+      return false;
+    }
+    if (newPassword !== confirmPassword) {
+      showToast.error(t('oops'), t('passwords_do_not_match'));
+      return false;
+    }
+    return true;
+  };
 
   const handleSubmit = async () => {
-    const finalErrors: Errors = {
-      currentPassword: validateField('currentPassword', currentPassword),
-      newPassword: validateField('newPassword', newPassword),
-      confirmPassword: validateField('confirmPassword', confirmPassword),
-    };
-
-    setErrors(finalErrors);
-    if (Object.values(finalErrors).some(Boolean)) return;
+    if (!validateInputs()) return;
 
     try {
       setLoading(true);
@@ -97,96 +72,79 @@ const ChangePasswordScreen = () => {
     }
   };
 
-  const renderInput = (
-    label: string,
+  const renderPasswordInput = (
     value: string,
-    onChange: (v: string) => void,
-    visible: boolean,
-    toggle: () => void,
-    error?: string
+    onChangeText: (text: string) => void,
+    placeholder: string,
+    showPassword: boolean,
+    toggleShow: () => void
   ) => (
-    <>
+    <View style={styles.inputContainer}>
       <TextInput
-        label={label}
+        style={styles.textInput}
+        placeholder={placeholder}
+        placeholderTextColor="#B7B7B7"
         value={value}
-        onChangeText={onChange}
-        secureTextEntry={!visible}
-        mode="outlined"
+        onChangeText={onChangeText}
+        secureTextEntry={!showPassword}
         autoCapitalize="none"
-        textColor="#000"
-        style={styles.input}
-        theme={inputTheme}
-        right={
-          <TextInput.Icon
-            icon={visible ? 'eye-off' : 'eye'}
-            onPress={toggle}
-            color="#000"
-          />
-        }
+        autoCorrect={false}
       />
-      {!!error && <Text style={styles.errorText}>{error}</Text>}
-    </>
+      <TouchableOpacity onPress={toggleShow} style={styles.eyeIcon}>
+        {showPassword ? (
+          <EyeOff size={20} color="#666" />
+        ) : (
+          <Eye size={20} color="#666" />
+        )}
+      </TouchableOpacity>
+    </View>
   );
 
   return (
     <View style={styles.main}>
-      <GlobalHeader
-        title={t('change_password')}
-      />
+      <GlobalHeader title={t('change_password')} />
 
       <View style={styles.container}>
-        {renderInput(
-          t('current_password'),
+        {/* Current Password */}
+        {renderPasswordInput(
           currentPassword,
-          (v) => {
-            setCurrentPassword(v);
-            setErrors((p) => ({ ...p, currentPassword: validateField('currentPassword', v) }));
-          },
+          setCurrentPassword,
+          t('current_password'),
           show.current,
-          () => setShow((p) => ({ ...p, current: !p.current })),
-          errors.currentPassword
+          () => setShow((p) => ({ ...p, current: !p.current }))
         )}
 
-        {renderInput(
-          t('new_password'),
+        {/* New Password */}
+        {renderPasswordInput(
           newPassword,
-          (v) => {
-            setNewPassword(v);
-            setErrors((p) => ({
-              ...p,
-              newPassword: validateField('newPassword', v),
-              confirmPassword: validateField('confirmPassword', confirmPassword),
-            }));
-          },
+          setNewPassword,
+          t('new_password'),
           show.new,
-          () => setShow((p) => ({ ...p, new: !p.new })),
-          errors.newPassword
+          () => setShow((p) => ({ ...p, new: !p.new }))
         )}
 
-        {renderInput(
-          t('confirm_password'),
+        {/* Confirm Password */}
+        {renderPasswordInput(
           confirmPassword,
-          (v) => {
-            setConfirmPassword(v);
-            setErrors((p) => ({
-              ...p,
-              confirmPassword: validateField('confirmPassword', v),
-            }));
-          },
+          setConfirmPassword,
+          t('confirm_password'),
           show.confirm,
-          () => setShow((p) => ({ ...p, confirm: !p.confirm })),
-          errors.confirmPassword
+          () => setShow((p) => ({ ...p, confirm: !p.confirm }))
         )}
 
+        {/* Submit Button */}
         <TouchableOpacity
           onPress={handleSubmit}
           style={[styles.button, loading && styles.disabledButton]}
           disabled={loading}
         >
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{t('change_password')}</Text>}
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>{t('change_password')}</Text>
+          )}
         </TouchableOpacity>
       </View>
-
     </View>
   );
 };
@@ -194,40 +152,47 @@ const ChangePasswordScreen = () => {
 const styles = StyleSheet.create({
   main: {
     flex: 1,
-    backgroundColor: '#fff',
-    position: 'relative',
+    backgroundColor: '#ededed',
   },
   container: {
-    padding: 14,
-    zIndex: 2,
+    padding: 20,
   },
-  input: {
-    marginBottom: 12,
-    fontFamily: 'Poppins-Regular',
-    fontSize: 16,
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    height: 55,
+    paddingTop: 3,
     backgroundColor: '#fff',
+    marginBottom: 15,
   },
-  errorText: {
-    color: 'red',
+  textInput: {
+    flex: 1,
+    fontSize: 14,
+    color: '#454545',
     fontFamily: 'Poppins-Regular',
-    fontSize: 12,
-    marginBottom: 8,
+  },
+  eyeIcon: {
+    padding: 4,
   },
   button: {
-    borderRadius: 8,
-    marginVertical: 20,
-    height: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: '#000',
+    borderRadius: 10,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
   },
   disabledButton: {
     opacity: 0.7,
   },
   buttonText: {
     color: '#fff',
-    fontFamily: 'Poppins-SemiBold',
     fontSize: 14,
+    fontFamily: 'Poppins-SemiBold',
   },
 });
 

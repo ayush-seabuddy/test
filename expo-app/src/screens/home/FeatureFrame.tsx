@@ -130,28 +130,28 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
                                 <View style={styles.badge}>
                                     <Text style={styles.badgeText}>
 
-                                        {unreadMessageCount > 9 ? "9+" : unreadMessageCount}
-                                    </Text>
-                                </View>
-                            )}
-                        </View>
-                    </TouchableOpacity>
-                </View>
+                                    {unreadMessageCount > 9 ? "9+" : unreadMessageCount}
+                                </Text>
+                            </View>
+                        )}
+                    </View>
+                </TouchableOpacity>
+            </View>
 
-                <View style={styles.featuresContainer}>
-                    <View style={styles.featuresGrid}>
-                        {features
-                            .reduce<Feature[][]>((rows, _, i) => {
-                                if (i % 2 === 0) rows.push(features.slice(i, i + 2));
-                                return rows;
-                            }, [])
-                            .map((row, index) => (
-                                <View key={index} style={styles.featureRow}>
-                                    {row.map((feature, i) => (
-                                        <FeatureCard key={i} {...feature} />
-                                    ))}
-                                </View>
-                            ))}
+            <View style={styles.featuresContainer}>
+                <View style={styles.featuresGrid}>
+                    {features
+                        .reduce<Feature[][]>((rows, _, i) => {
+                            if (i % 2 === 0) rows.push(features.slice(i, i + 2));
+                            return rows;
+                        }, [])
+                        .map((row, index) => (
+                            <View key={index} style={styles.featureRow}>
+                                {row.map((feature, i) => (
+                                    <FeatureCard key={i} {...feature} />
+                                ))}
+                            </View>
+                        ))}
 
                         {/* App Guide */}
                         <TouchableOpacity
@@ -184,6 +184,7 @@ const styles = StyleSheet.create({
         backgroundColor:"red"
     },
     frameWrapper: {
+        marginHorizontal: 16,
         marginHorizontal: 16,
         borderRadius: 32,
         backgroundColor: "rgba(218,218,218,0.4)",
@@ -293,7 +294,7 @@ const styles = StyleSheet.create({
         borderRadius: 50,
         position: "absolute",
         top: 8,
-        right: Platform.OS === 'ios' ? -5 : -18,
+        right: Platform.OS === 'ios' ? -5 : -5,
         minWidth: 18,
         height: 18,
         justifyContent: "center",

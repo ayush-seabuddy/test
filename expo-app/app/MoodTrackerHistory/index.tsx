@@ -1,9 +1,8 @@
 import { getAllMoodTracker } from "@/src/apis/apiService";
 import CustomLottie from "@/src/components/CustomLottie";
 import GlobalHeader from "@/src/components/GlobalHeader";
+import EmptyComponent from "@/src/components/EmptyComponent";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
-import { router } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
 import moment from "moment";
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,11 +14,12 @@ import {
   Platform,
   StyleSheet,
   Text,
-  View
+  View,
 } from "react-native";
 import Toast from "react-native-toast-message";
+import Colors from "@/src/utils/Colors";
 
-const { width, height } = Dimensions.get("screen");
+const { height } = Dimensions.get("screen");
 
 interface MoodEntry {
   id: string;
@@ -38,116 +38,102 @@ const getMoodEmoji = (mood: MoodEntry["mood"]) => {
     ANGRY: ImagesAssets.Emoji_4,
     ANXIOUS: ImagesAssets.Emoji_5,
   };
-  return moodImages[mood] || ImagesAssets.Emoji_1;
+  return moodImages[mood];
 };
 
-
-
 const MoodTrackerHistory = () => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [moodData, setMoodData] = useState<MoodEntry[]>([]);
-  const [page, setPage] = useState<number>(1);
-  const [limit] = useState<number>(10);
   const { t } = useTranslation();
-  const [hasMore, setHasMore] = useState<boolean>(true);
+
+  const [loading, setLoading] = useState(false);
+  const [moodData, setMoodData] = useState<MoodEntry[]>([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 10;
+
+  const fetchMoodHistory = useCallback(
+    async (currentPage: number) => {
+      if (loading || !hasMore) return;
+
+      setLoading(true);
+      try {
+        const res = await getAllMoodTracker({ page: currentPage, limit });
+
+        if (res?.status === 200) {
+          const newData = res.data?.moodTrackerList ?? [];
+          setMoodData(prev => [...prev, ...newData]);
+          setHasMore(res.data?.totalPages > currentPage);
+        }
+      } catch (error) {
+        Toast.show({
+          type: "error",
+          text1: t("somethingwentwrong"),
+          position: "bottom",
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [loading, hasMore, limit, t]
+  );
+
+  useEffect(() => {
+    fetchMoodHistory(1);
+  }, []);
+
+  const loadMore = () => {
+    if (!loading && hasMore) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchMoodHistory(nextPage);
+    }
+  };
+
   const renderItem = ({ item }: { item: MoodEntry }) => (
     <View style={styles.moodCard}>
       <View style={styles.header}>
-        <View style={styles.left}>
-          <Image
-            style={styles.imageEmogiIcon}
-            source={getMoodEmoji(item.mood)}
-          />
-          <View>
-            <Text style={styles.moodTitle}>{item.mood}</Text>
-            <Text style={styles.dateText}>
-              {moment(item.createdAt).format("DD MMM YYYY")}
-            </Text>
-          </View>
+        <Image source={getMoodEmoji(item.mood)} style={styles.emoji} />
+        <View>
+          <Text style={styles.moodTitle}>{item.mood}</Text>
+          <Text style={styles.dateText}>
+            {moment(item.createdAt).format("DD MMM YYYY")}
+          </Text>
         </View>
       </View>
 
-      {item.details && (
+      {item?.details?.trim() && (
         <View style={styles.noteContainer}>
           <Text style={styles.noteText}>
-            <Text style={{ fontWeight: "bold" }}>{t('note:')}</Text>
             {item.details}
           </Text>
         </View>
       )}
     </View>
   );
-  const fetchMoodHistory = useCallback(async (currentPage: number) => {
-    if (!hasMore || loading) return;
-
-    setLoading(true);
-    try {
-      const res = await getAllMoodTracker({
-        page: currentPage,
-        limit,
-      });
-
-      if (res?.status === 200 && res?.data) {
-        const newData = res.data.moodTrackerList || [];
-        setMoodData((prev) => [...prev, ...newData]);
-        setHasMore(res.data.totalPages > currentPage);
-      }
-    } catch (error) {
-      console.error("Error fetching mood history:", error);
-      Toast.show({
-        type: "error",
-        text1: "Failed to load mood history",
-        position: "bottom",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [hasMore, limit, loading]);
-
-  useEffect(() => {
-    fetchMoodHistory(1);
-  }, []);
-
-  const handleLoadMore = useCallback(() => {
-    if (!loading && hasMore) {
-      setPage((prev) => prev + 1);
-      fetchMoodHistory(page + 1);
-    }
-  }, [loading, hasMore, page, fetchMoodHistory]);
-
   return (
     <View style={styles.container}>
-      <GlobalHeader
-        title={t('moodtrackerhistory')}
-      />
+      <GlobalHeader title={t("moodtrackerhistory")} />
 
-      <FlatList
-        data={moodData}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={
-          loading ? (
-            <ActivityIndicator size="large" color="#000" style={styles.loader} />
-          ) : null
-        }
-        ListEmptyComponent={
-          !loading && moodData.length === 0 ? (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No mood entries yet</Text>
-            </View>
-          ) : null
-        }
-      />
+      {moodData.length === 0 && !loading ? (
+        <View style={styles.centerEmptyContainer}>
+          <EmptyComponent text={t("nomoodentries")} />
+        </View>
+      ) : (
+        <FlatList
+          data={moodData}
+          renderItem={renderItem}
+          keyExtractor={item => item.id}
+          contentContainerStyle={styles.listContent}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          style={{ zIndex: 1 }}
+          ListFooterComponent={
+            loading ? (
+              <ActivityIndicator size="large" style={styles.loader} color={Colors.darkGreen} />
+            ) : null
+          }
+        />
+      )}
 
-      {/* Bottom Lottie Background */}
-      <View style={styles.bottomLottieContainer}>
-        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
-      </View>
-
-      <Toast />
     </View>
   );
 };
@@ -159,81 +145,67 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
+  centerEmptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+
+  listContent: {
+    paddingBottom: 140,
+  },
+
   moodCard: {
     backgroundColor: "#ededed",
     padding: 16,
     borderRadius: 12,
     marginTop: 10,
     marginHorizontal: 14,
-    overflow: "hidden",
+    zIndex: 2,
+    elevation: 2,
   },
+
   header: {
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  left: {
     flexDirection: "row",
     alignItems: "center",
   },
+
+  emoji: {
+    width: 48,
+    height: 48,
+    resizeMode: "contain",
+    marginRight: 10,
+  },
+
   moodTitle: {
     fontSize: 16,
-    lineHeight: 20,
     fontWeight: "600",
     color: "#262626",
-    fontFamily: "WhyteInktrap-Bold",
-    marginLeft: 8,
   },
+
   dateText: {
-    fontSize: 10,
-    fontWeight: "500",
+    fontSize: 11,
     color: "#636363",
-    fontFamily: "Poppins-Regular",
-    marginLeft: 8,
+    marginTop: 2,
   },
+
   noteContainer: {
     marginTop: 10,
-    paddingHorizontal: 10,
   },
+
   noteText: {
-    fontSize: 13,
-    fontFamily: 'Poppins-SemiBold',
+    fontSize: 14,
+    fontFamily: 'Poppins-Regular',
     color: "#454545",
     lineHeight: 22,
   },
-  imageEmogiIcon: {
-    width: 50,
-    height: 50,
-    resizeMode: "contain",
+
+  noteLabel: {
+    fontWeight: "700",
   },
-  listContent: {
-    paddingBottom: 100,
-  },
+
   loader: {
-    marginVertical: 20,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 100,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: "#777",
-    fontWeight: "500",
-  },
-  bottomLottieContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: height * 0.7,
-    backgroundColor: "#c1c1c1",
-    borderTopLeftRadius: 50,
-    borderTopRightRadius: 50,
-    overflow: "hidden",
-    zIndex: -1,
+    marginTop: "80%",
   },
 });

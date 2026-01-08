@@ -1,9 +1,8 @@
-// CustomHeader.js
 import { getUnreadNotificationCount } from "@/src/apis/apiService";
 import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
-import { useNavigation } from "@react-navigation/native";
-import { router, useFocusEffect } from "expo-router";
+import { useFocusEffect } from "expo-router";
+import { router } from "expo-router";
 import { House } from "lucide-react-native";
 import React, { useCallback, useState } from "react";
 import {
@@ -11,86 +10,66 @@ import {
   Platform,
   StyleSheet,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
+type AppRoutes =
+  | "/notification"
+  | "/company-library"
+  | "/globalSearch"
+  | "/home";
+
 const SocialHeader = () => {
-  const navigation = useNavigation();
+  const [unreadNotification, setUnreadNotification] = useState(0);
 
-  const [unreadNotification, setUnreadNotification] = useState(0)
-
-
-  //   const GetAllNotification = async () => {
-  //     const dbResult = await AsyncStorage.getItem("userDetails");
-  //     const userDetails = JSON.parse(dbResult);
-  //     try {
-  //       const queryParams = new URLSearchParams({
-  //         page: 1,
-  //         limit: 100,
-  //       }).toString();
-  //       var response = await apiCallWithToken(
-  //         apiServerUrl + "/user/getAllNotifications?" + queryParams,
-  //         "GET",
-  //         null,
-  //         userDetails.authToken
-  //       );
-
-
-  //       setNotification(response.result.notificationsList);
-  //     } catch (error) {
-  //       console.log(error);
-  //     }
-  //   };
-
-  const unReadNotification = async () => {
+  const fetchUnreadCount = useCallback(async () => {
     try {
-      var response = await getUnreadNotificationCount();
-      setUnreadNotification(response.data.allNotifications);
+      const response = await getUnreadNotificationCount();
+      setUnreadNotification(response.data.allNotifications ?? 0);
     } catch (error) {
-      console.log(error);
+      console.log("Error fetching unread notifications:", error);
     }
-  };
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      // GetAllNotification();
-      unReadNotification();
-      return () => {
-      };
-    }, [])
+      fetchUnreadCount();
+    }, [fetchUnreadCount])
   );
+
+  const navigateTo = (route: AppRoutes) => {
+    router.push(route);
+  };
+
+  const goHome = () => {
+    router.replace("/home");
+  };
 
   return (
     <View style={styles.container}>
       <Image source={ImagesAssets.appTitleLogo} style={styles.titleLogo} />
 
       <View style={styles.iconGroup}>
-        {/* Notification Button */}
-        <TouchableOpacity style={styles.iconButton} onPress={() => { router.push('/notification') }}>
+        {/* Notification */}
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigateTo("/notification")}>
           <View style={styles.iconWrapper}>
-            <Image source={ImagesAssets.notificationBell} style={styles.iconImage} />
-            {unreadNotification > 0 && <View style={styles.badgeWrapper}>
-              {/* <Text style={styles.badgeText}>{unreadNotification}</Text> */}
-            </View>}
+            <Image source={ImagesAssets.notificationBell} style={styles.icon} />
+            {unreadNotification > 0 && <View style={styles.badgeDot} />}
           </View>
         </TouchableOpacity>
 
         {/* Company Library */}
-        <TouchableOpacity style={styles.iconButton} onPress={() => router.push("/company-library")}>
-          <View style={styles.iconWrapper}>
-            <Image source={ImagesAssets.companyLibraryLogo} style={styles.iconImage} />
-          </View>
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigateTo("/company-library")}>
+          <Image source={ImagesAssets.companyLibraryLogo} style={styles.icon} />
         </TouchableOpacity>
 
         {/* Search */}
-        <TouchableOpacity style={styles.iconButton} onPress={() => router.push("/globalSearch")}>
-          <View style={styles.iconWrapper}>
-            <Image source={ImagesAssets.searchLogo} style={styles.iconImage} />
-          </View>
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigateTo("/globalSearch")}>
+          <Image source={ImagesAssets.searchLogo} style={styles.icon} />
         </TouchableOpacity>
 
         {/* Home */}
-        <TouchableOpacity style={styles.homeButton} onPress={() => router.replace("/home")}>
+        <TouchableOpacity style={styles.homeButton} onPress={goHome}>
           <House size={22} color="#000" />
         </TouchableOpacity>
       </View>
@@ -106,14 +85,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     height: 60,
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
     backgroundColor: Colors.white,
     ...Platform.select({
       ios: {
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
-        shadowRadius: 3.5,
+        shadowRadius: 3.84,
       },
       android: {
         elevation: 5,
@@ -129,50 +108,39 @@ const styles = StyleSheet.create({
 
   iconGroup: {
     flexDirection: "row",
-    marginRight: 10,
+    alignItems: "center",
   },
 
   iconButton: {
-    marginLeft: 10,
+    marginLeft: 14,
   },
 
   iconWrapper: {
-    borderRadius: 8,
-    padding: 4,
     position: "relative",
   },
 
-  iconImage: {
+  icon: {
     width: 24,
     height: 24,
     resizeMode: "contain",
   },
 
-  badgeWrapper: {
+  badgeDot: {
     position: "absolute",
-    top: 2,
-    right: 2,
-    backgroundColor: Colors.lightGreen,
-    borderRadius: 10,
-    minWidth: 10,
+    top: -2,
+    right: 1,
+    width: 10,
     height: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 4,
-    borderWidth: 0.5,
+    backgroundColor: Colors.lightGreen,
+    borderRadius: 5,
+    borderWidth: 1.5,
     borderColor: Colors.white,
-  },
-
-  badgeText: {
-    color: Colors.white,
-    fontSize: 12,
-    fontWeight: "bold",
   },
 
   homeButton: {
     backgroundColor: "#B0DB0266",
     borderRadius: 10,
     padding: 6,
-    marginLeft: 10,
+    marginLeft: 13,
   },
 });
