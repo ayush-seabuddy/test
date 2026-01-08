@@ -316,9 +316,8 @@ const PostFooter = ({ post, isLiked, likesCount, handleLikeToggle, isLikeLoading
 
 // Menu as BottomSheet
 const MenuBottomSheet = ({ visible, onClose, isOwner, onEdit, onDeleteTrigger, onReportTrigger }) => {
-  const snapPoints = isOwner ? ["20%"] : ["18%"];
   return (
-    <BottomSheet visible={visible} onClose={onClose} snapPoints={snapPoints}>
+    <BottomSheet visible={visible} onClose={onClose} snapPoints={['20%']}>
       <View style={styles.menuSheetContent}>
         {isOwner ? (
           <>
@@ -344,19 +343,19 @@ const MenuBottomSheet = ({ visible, onClose, isOwner, onEdit, onDeleteTrigger, o
             </TouchableOpacity>
           </>
         ) : (
-            <View>
-              <Text style={styles.reportdisclaimerText}>If you believe this post violates our community guidelines, please report it.</Text>
-              <TouchableOpacity
-                style={styles.menuRow}
-                onPress={() => {
-                  onClose();
-                  onReportTrigger();
-                }}
-              >
-                <AlertTriangle size={20} color="#EF4444" />
-                <Text style={[styles.menuText, { color: '#EF4444' }]}>{t('report')}</Text>
-              </TouchableOpacity>
-            </View>
+          <View>
+            <Text style={styles.reportdisclaimerText}>{t('report_description')}</Text>
+            <TouchableOpacity
+              style={styles.menuRow}
+              onPress={() => {
+                onClose();
+                onReportTrigger();
+              }}
+            >
+              <AlertTriangle size={20} color="#EF4444" />
+              <Text style={[styles.menuText, { color: '#EF4444' }]}>{t('report')}</Text>
+            </TouchableOpacity>
+          </View>
 
         )}
       </View>

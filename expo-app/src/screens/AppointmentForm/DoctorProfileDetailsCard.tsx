@@ -1,8 +1,9 @@
 import { Image } from 'expo-image';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { t } from 'i18next';
+import { ImagesAssets } from '@/src/utils/ImageAssets';
 
-// Define the props type
 interface DoctorProfileDetailsCardProps {
   data: {
     profileUrl?: string;
@@ -13,29 +14,32 @@ interface DoctorProfileDetailsCardProps {
 }
 
 const DoctorProfileDetailsCard: React.FC<DoctorProfileDetailsCardProps> = ({ data }) => {
-    console.log("data: ", JSON.stringify(data));
-  const expertiseText =
-    data?.expertise?.[0] && data.expertise[0].length > 30
-      ? `${data.expertise[0].substring(0, 30)}...`
-      : data?.expertise?.[0] || '';
+  const mainExpertise = data?.expertise?.[0] || '';
+  const truncatedExpertise =
+    mainExpertise.length > 35 ? `${mainExpertise.substring(0, 35)}...` : mainExpertise;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.imageContainer}>
-          <View style={styles.imagePlaceholder} />
+    <View style={styles.card}>
+      <View style={styles.innerContent}>
+        <View style={styles.imageWrapper}>
+          <View style={styles.placeholder} />
           <Image
-            source={{ uri: data?.profileUrl }}
+            source={{ uri: data?.profileUrl || ImagesAssets.userIcon }}
             style={styles.profileImage}
-            resizeMode="cover"
+            contentFit="contain"
+            transition={300}
           />
         </View>
 
-        <View style={styles.infoContainer}>
-          <Text style={styles.doctorName}>{data?.doctorName || 'Dr. Name'}</Text>
-          {expertiseText ? <Text style={styles.expertise}>{expertiseText}</Text> : null}
+        <View style={styles.details}>
+          <Text style={styles.doctorName}>{data?.doctorName}</Text>
+          {truncatedExpertise ? (
+            <Text style={styles.expertise}>{truncatedExpertise}</Text>
+          ) : null}
           {data?.nationality ? (
-            <Text style={styles.nationality}>{data.nationality}</Text>
+            <Text style={styles.nationality}>
+              {t('nationality')}: {data.nationality}
+            </Text>
           ) : null}
         </View>
       </View>
@@ -44,58 +48,58 @@ const DoctorProfileDetailsCard: React.FC<DoctorProfileDetailsCardProps> = ({ dat
 };
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+  card: {
+    backgroundColor: '#fff',
     borderRadius: 20,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 6,
   },
-  content: {
+  innerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
   },
-  imageContainer: {
-    width: '25%',
-    height: 84,
+  imageWrapper: {
+    width: 90,
+    height: 90,
+    borderRadius: 20,
+    overflow: 'hidden',
     position: 'relative',
   },
-  imagePlaceholder: {
+  placeholder: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#d9d9d9',
-    borderRadius: 20,
+    backgroundColor: '#e8e8e8',
   },
   profileImage: {
-    position: 'absolute',
-    top: -1,
-    left: 0,
     width: '100%',
-    height: 85,
-    borderRadius: 20,
+    height: '100%',
   },
-  infoContainer: {
+  details: {
     flex: 1,
-    justifyContent: 'space-evenly',
-    gap: 8,
+    justifyContent: 'center',
+    gap: 6,
   },
   doctorName: {
     fontSize: 16,
-    lineHeight: 20,
-    fontWeight: '500',
-    color: '#262626',
-    fontFamily: 'WhyteInktrap', // Keep if you have this font loaded in Expo
+    fontFamily: 'Poppins-SemiBold',
+    color: '#1a1a1a',
+    lineHeight: 24,
   },
   expertise: {
     fontSize: 12,
-    color: '#888888', // Assuming textText400 is a gray
-    fontFamily: 'CaptionC10Regular', // Keep if custom font is loaded
+    textTransform: 'capitalize',
+    fontFamily: 'Poppins-Medium',
+    color: '#555',
   },
   nationality: {
     fontSize: 12,
-    fontWeight: '500',
-    color: '#888888',
-    paddingTop: 4,
+    textTransform: 'capitalize',
+    fontFamily: 'Poppins-Regular',
+    color: '#777',
   },
 });
 

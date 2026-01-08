@@ -103,72 +103,70 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
     ];
 
     return (
-        <View style={styles.container}>
-            <View style={styles.frameWrapper}>
-                <BlurView style={StyleSheet.absoluteFill} tint="regular" intensity={800} />
+        <View style={styles.frameWrapper}>
+            <BlurView style={StyleSheet.absoluteFill} tint="regular" intensity={800} />
 
-                <View style={styles.greetingSection}>
-                    <TouchableOpacity style={styles.greetingCard} onPress={() => { router.push("/(bottomtab)/(community)/chats") }}>
-                        <View style={styles.greetingRow}>
-                            <View style={styles.greetingTextWrapper}>
-                                <Text style={styles.greetingText}>
-                                    {`${t("hi")} ${name
-                                        ? name.split(" ")[0].charAt(0).toUpperCase() +
-                                        name.split(" ")[0].slice(1)
-                                        : ""
-                                        }, ${t("how_are_you_today")}`}
-                                </Text>
-                                <Text style={styles.subtitle}>
-                                    {t("chat_with_your_crewmates")}
-                                </Text>
-                            </View>
-                            <Image
-                                style={styles.chatIcon}
-                                resizeMode="cover"
-                                source={ImagesAssets.ChatLogo}
-                            />
-                            {unreadMessageCount > 0 && (
-                                <View style={styles.badge}>
-                                    <Text style={styles.badgeText}>
-
-                                        {unreadMessageCount > 9 ? "9+" : unreadMessageCount}
-                                    </Text>
-                                </View>
-                            )}
+            <View style={styles.greetingSection}>
+                <TouchableOpacity style={styles.greetingCard} onPress={() => { router.push("/(bottomtab)/(community)/chats") }}>
+                    <View style={styles.greetingRow}>
+                        <View style={styles.greetingTextWrapper}>
+                            <Text style={styles.greetingText}>
+                                {`${t("hi")} ${name
+                                    ? name.split(" ")[0].charAt(0).toUpperCase() +
+                                    name.split(" ")[0].slice(1)
+                                    : ""
+                                    }, ${t("how_are_you_today")}`}
+                            </Text>
+                            <Text style={styles.subtitle}>
+                                {t("chat_with_your_crewmates")}
+                            </Text>
                         </View>
-                    </TouchableOpacity>
-                </View>
+                        <Image
+                            style={styles.chatIcon}
+                            resizeMode="cover"
+                            source={ImagesAssets.ChatLogo}
+                        />
+                        {unreadMessageCount >= 0 && (
+                            <View style={styles.badge}>
+                                <Text style={styles.badgeText}>
 
-                <View style={styles.featuresContainer}>
-                    <View style={styles.featuresGrid}>
-                        {features
-                            .reduce<Feature[][]>((rows, _, i) => {
-                                if (i % 2 === 0) rows.push(features.slice(i, i + 2));
-                                return rows;
-                            }, [])
-                            .map((row, index) => (
-                                <View key={index} style={styles.featureRow}>
-                                    {row.map((feature, i) => (
-                                        <FeatureCard key={i} {...feature} />
-                                    ))}
-                                </View>
-                            ))}
-
-                        {/* App Guide */}
-                        <TouchableOpacity
-                            style={styles.guideRow}
-                            onPress={() => onOpenPDF(pdfUrl, "App Guide")}
-                        >
-                            <View style={styles.greetingTextWrapper}>
-                                <Text style={styles.subtitle}>{t("how_to_use_guide")}</Text>
+                                    {unreadMessageCount > 9 ? "9+" : unreadMessageCount}
+                                </Text>
                             </View>
-                            <Image
-                                style={styles.guideIcon}
-                                resizeMode="cover"
-                                source={ImagesAssets.NotebookLogo}
-                            />
-                        </TouchableOpacity>
+                        )}
                     </View>
+                </TouchableOpacity>
+            </View>
+
+            <View style={styles.featuresContainer}>
+                <View style={styles.featuresGrid}>
+                    {features
+                        .reduce<Feature[][]>((rows, _, i) => {
+                            if (i % 2 === 0) rows.push(features.slice(i, i + 2));
+                            return rows;
+                        }, [])
+                        .map((row, index) => (
+                            <View key={index} style={styles.featureRow}>
+                                {row.map((feature, i) => (
+                                    <FeatureCard key={i} {...feature} />
+                                ))}
+                            </View>
+                        ))}
+
+                    {/* App Guide */}
+                    <TouchableOpacity
+                        style={styles.guideRow}
+                        onPress={() => onOpenPDF(pdfUrl, "App Guide")}
+                    >
+                        <View style={styles.greetingTextWrapper}>
+                            <Text style={styles.subtitle}>{t("how_to_use_guide")}</Text>
+                        </View>
+                        <Image
+                            style={styles.guideIcon}
+                            resizeMode="cover"
+                            source={ImagesAssets.NotebookLogo}
+                        />
+                    </TouchableOpacity>
                 </View>
             </View>
         </View>
@@ -183,13 +181,14 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         overflow: "hidden",
         marginVertical: isProMax ? 10 : 0,
+        backgroundColor: "red"
     },
     frameWrapper: {
+        marginHorizontal: 16,
         borderRadius: 32,
         backgroundColor: "rgba(218,218,218,0.4)",
         paddingHorizontal: 20,
         alignItems: "center",
-        width: "100%",
         overflow: "hidden",
     },
     greetingSection: {
@@ -200,7 +199,6 @@ const styles = StyleSheet.create({
         marginTop: 16,
         alignItems: "center",
         width: "100%",
-        marginBottom: isProMax ? -15 : -10,
     },
     greetingCard: {
         backgroundColor: "#FFFFFF33",
@@ -235,7 +233,6 @@ const styles = StyleSheet.create({
     chatIcon: {
         height: 25,
         width: 25,
-        marginRight: 10,
     },
     featuresContainer: {
         gap: 16,
@@ -296,7 +293,7 @@ const styles = StyleSheet.create({
         borderRadius: 50,
         position: "absolute",
         top: 8,
-        right: Platform.OS === 'ios' ? -5 : -18,
+        right: Platform.OS === 'ios' ? -5 : -5,
         minWidth: 18,
         height: 18,
         justifyContent: "center",
