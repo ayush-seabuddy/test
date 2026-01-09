@@ -276,7 +276,7 @@ const BuddyUpEventDescription = () => {
             <GlobalHeader
                 title={t('activityDetails')}
                 leftIcon={<ChevronLeft />}
-                onLeftPress={() => router.back()}
+                onLeftPress={() => router.canGoBack() ? router.back() : router.replace('/(bottomtab)/shiplife')}
             />
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10 }}>

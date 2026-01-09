@@ -1,24 +1,23 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  BackHandler,
-  Platform,
-} from 'react-native';
-import Slider from '@react-native-community/slider';
-import { ArrowLeft, Check, ChevronLeft, TriangleAlert } from 'lucide-react-native';
-import Colors from '@/src/utils/Colors';
-import * as Progress from 'react-native-progress';
-import { useTranslation } from 'react-i18next';
-import GlobalButton from '@/src/components/GlobalButton';
-import GlobalPopup from '@/src/components/Modals/GlobalPopup';
 import { getallassessments, saveassessmentresponse } from '@/src/apis/apiService';
+import GlobalButton from '@/src/components/GlobalButton';
 import { showToast } from '@/src/components/GlobalToast';
-import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import GlobalPopup from '@/src/components/Modals/GlobalPopup';
+import Colors from '@/src/utils/Colors';
+import Slider from '@react-native-community/slider';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { Check, ChevronLeft, TriangleAlert } from 'lucide-react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  BackHandler,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import * as Progress from 'react-native-progress';
 
 type AnswerType = 'Textfield' | 'Radio' | 'Checkbox' | 'Linear Scale' | 'Textarea';
 
@@ -165,7 +164,7 @@ const MonthlyHappinessIndexTestScreen = () => {
 
       if (res.success) {
         showToast.success(t('success'), res.message);
-        router.replace('/home');
+        router.replace('/(bottomtab)/health');
       } else {
         showToast.error(t('oops'), res.message || t('somethingwentwrong'));
       }
@@ -280,7 +279,7 @@ const MonthlyHappinessIndexTestScreen = () => {
           {!isRequiredTest && (
             <TouchableOpacity
               onPress={() =>
-                router.canGoBack?.() ? router.back() : router.replace('/home')
+                router.canGoBack() ? router.back() : router.replace('/home')
               }
             >
               <ChevronLeft size={24} color={Colors.primary} />

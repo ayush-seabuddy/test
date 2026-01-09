@@ -14,7 +14,7 @@ import { RouteProp, useRoute } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import * as ImagePicker from "expo-image-picker";
 import { router, useFocusEffect } from 'expo-router';
-import { Camera, Check, Edit, Paperclip, Reply, SendHorizonal, Trash2, X } from 'lucide-react-native';
+import { Camera, Check, Edit, Paperclip, RefreshCw, Reply, SendHorizonal, Trash2, X } from 'lucide-react-native';
 import moment from 'moment-timezone';
 import { useCallback, useRef, useState } from 'react';
 import type { TextInput as RNTextInput } from 'react-native';
@@ -36,14 +36,7 @@ const ChatRoomScreen = () => {
   const chatRoomDetails = typeof route.params?.chatRoomDetails === 'string' ? JSON.parse(route.params?.chatRoomDetails) : route.params?.chatRoomDetails
   const chatRoomId = chatRoomDetails?.id || route.params?.chatRoomId;
   const [participant, setParticipant] = useState(chatRoomDetails?.participantIds);
-  const [hederDetails, setHeaderDetails] = useState({
-    navigation: () => router.back(),
-    data: chatRoomDetails,
-    participant: chatRoomDetails?.participants?.length,
-    GroupName: chatRoomDetails?.groupName,
-    setSearchValue: () => { },
-    participantIds: participant
-  });
+
 
 
   const dispatch = useDispatch();
@@ -61,7 +54,7 @@ const ChatRoomScreen = () => {
   const [recording, setRecording] = useState(false);
   // const [audioRecorderPlayer] = useState(new AudioRecorderPlayer());
   const [audioPath, setAudioPath] = useState(null);
-  const flatListRef = useRef(null);
+  const flatListRef = useRef<FlatList>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPageDataWaiting, setLastPageDataWaiting] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -70,6 +63,7 @@ const ChatRoomScreen = () => {
   const [keyboardPadding, setKeyboardPadding] = useState(0);
   const [chatItemPadding, setChatItemPadding] = useState(0);
   const [mediaModalVisible, setMediaModalVisible] = useState(false);
+  const [selectedMedia, setSelectedMedia] = useState<{ uri: string; isVideo: boolean; imageUri?: string, fileName?: any, fileSize?: number, type?: any }>({ uri: "", isVideo: false });
   const [selectedMedia, setSelectedMedia] = useState<{ uri: string; isVideo: boolean; imageUri?: string, fileName?: any, fileSize?: number, type?: any }>({ uri: "", isVideo: false });
   const [imageLoading, setImageLoading] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -84,9 +78,37 @@ const ChatRoomScreen = () => {
   const PAGE_SIZE = 50;
   const bottomSheetRef = useRef<any>(null);
   const [reactionCountList, setReactionCountList] = useState<ReactionData[]>([]);
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<any>([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
   const [searchQuery, setSearchQuery] = useState("");
+
+ const onSearch = (searchValue: string) => {
+    setSearchQuery(searchValue);
+    if (!searchValue || !chatListState || chatListState.length === 0) {
+      setSearchResults([]);
+      setCurrentSearchIndex(-1);
+      return;
+    }
+
+    const filtered = chatListState
+      .map((item, index) => ({ ...item, originalIndex: index }))
+      .filter((item) => item.content.toLowerCase().includes(searchValue.toLowerCase()));
+
+    setSearchResults(filtered);
+    setCurrentSearchIndex(filtered.length > 0 ? 0 : -1);
+
+    if (filtered.length > 0) {
+      flatListRef?.current?.scrollToIndex({ index: filtered[0].originalIndex, animated: true });
+    }
+  };
+  const [hederDetails, setHeaderDetails] = useState({
+    navigation: () => router.back(),
+    data: chatRoomDetails,
+    participant: chatRoomDetails?.participants?.length,
+    GroupName: chatRoomDetails?.groupName,
+    setSearchValue:onSearch,
+    participantIds: participant
+  });
 
   const emojis = ["👍", "😊", "❤️", "😂", "😮", "😢"];
 
@@ -415,20 +437,17 @@ const ChatRoomScreen = () => {
       socketService.emit("joinChatRoom", payload);
 
       socketService.on("userPreviousMessages", (data) => {
-        if (!chatRoomDetails) {
-
-
-
+       
           setHeaderDetails((prev) => {
             return {
               ...prev,
               GroupName: data?.groupName,
               participantIds: data?.participantIds,
-              setSearchValue: () => { },
+              setSearchValue: onSearch,
               participant: data?.participantIds?.length,
             }
           })
-        }
+       
         setParticipant(data.participantIds);
         const newChatList = [...chatListState, ...data.previousMessages];
         setChatList(newChatList);
@@ -453,6 +472,25 @@ const ChatRoomScreen = () => {
     if (loadingMore || currentPage >= totalPage) return;
     setLoadingMore(true);
     setCurrentPage(prev => prev + 1)
+  }
+
+
+  const retryFetch = () => {
+    setLoading(true)
+    // fetchChatRooms()
+    const payload = {
+      userId: senderId,
+      chatRoomId: chatRoomId,
+      page: 1,
+      limit: 30,
+    };
+    setLastPageDataWaiting(1);
+
+    socketService.emit("joinChatRoom", payload);
+    // optional safety timeout
+    setTimeout(() => {
+      setLoading(false)
+    }, 4000)
   }
 
 
@@ -634,7 +672,15 @@ const ChatRoomScreen = () => {
         {loading ? (
           <CommonLoader fullScreen />
         ) : (
+          <>
+          
           <Text style={{ color: Colors.lightGreen }}>No messages yet</Text>
+          <TouchableOpacity
+            onPress={retryFetch}
+            >
+          <RefreshCw size={30} color={Colors.lightGreen} />
+          </TouchableOpacity>
+          </>
         )}
       </View>
     );
@@ -648,7 +694,7 @@ const ChatRoomScreen = () => {
 
 
       <View style={styles.container}>
-        <ChatRoomHeader  {...hederDetails} />
+        <ChatRoomHeader  {...hederDetails}  />
         <FlatList
           ref={flatListRef}
           data={getGroupedChatList()}

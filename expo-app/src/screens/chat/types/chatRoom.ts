@@ -129,4 +129,5 @@ export interface ChatMessage {
   messageUser: MessageUser;
   parentMessage?: ParentMessage | null;
   chatReactionDetails: MessageReaction[];
+  participants: ChatParticipant[];
 }
