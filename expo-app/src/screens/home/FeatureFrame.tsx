@@ -121,6 +121,7 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
                                     {t("chat_with_your_crewmates")}
                                 </Text>
                             </View>
+                            <View style={styles.greetingNotification}>
                             <Image
                                 style={styles.chatIcon}
                                 resizeMode="cover"
@@ -134,6 +135,7 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
                                 </Text>
                             </View>
                         )}
+                        </View>
                     </View>
                 </TouchableOpacity>
             </View>
@@ -185,7 +187,6 @@ const styles = StyleSheet.create({
     },
     frameWrapper: {
         marginHorizontal: 16,
-        marginHorizontal: 16,
         borderRadius: 32,
         backgroundColor: "rgba(218,218,218,0.4)",
         paddingHorizontal: 20,
@@ -218,6 +219,13 @@ const styles = StyleSheet.create({
     greetingTextWrapper: {
         flexDirection: "column",
         paddingBottom: 6,
+    },
+    greetingNotification: {
+        position: "relative",
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
     },
     greetingText: {
         marginTop: isProMax ? 10 : 6,
@@ -293,8 +301,8 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.lightGreen,
         borderRadius: 50,
         position: "absolute",
-        top: 8,
-        right: Platform.OS === 'ios' ? -5 : -5,
+        top: -8,
+        right: Platform.OS === 'ios' ? -5 : -10,
         minWidth: 18,
         height: 18,
         justifyContent: "center",

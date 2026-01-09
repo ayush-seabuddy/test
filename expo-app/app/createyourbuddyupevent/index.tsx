@@ -1,4 +1,42 @@
 import {
+    addeditdeletebuddyupevent,
+    getalladminbuddyupcategories,
+    listallusersfortag,
+    uploadfile
+} from '@/src/apis/apiService'
+import GlobalButton from '@/src/components/GlobalButton'
+import GlobalHeader from '@/src/components/GlobalHeader'
+import { showToast } from '@/src/components/GlobalToast'
+import BuddyCalendarModal from '@/src/components/Modals/BuddyCalendarModal'
+import CreateCustomCategoryModal from '@/src/components/Modals/CreateCustomCategoryModal'
+import Colors from '@/src/utils/Colors'
+import { getUserDetails } from '@/src/utils/helperFunctions'
+import { ImagesAssets } from '@/src/utils/ImageAssets'
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'
+import BottomSheet, {
+    BottomSheetBackdrop,
+    BottomSheetFlatList,
+    BottomSheetModal,
+    BottomSheetView,
+} from '@gorhom/bottom-sheet'
+import { Image } from 'expo-image'
+import * as ImagePicker from 'expo-image-picker'
+import { router, useLocalSearchParams } from 'expo-router'
+import {
+    CalendarDays,
+    CircleArrowRight,
+    Hash,
+    InfoIcon,
+    MapPin,
+    Plus,
+    SquarePen,
+    Users
+} from 'lucide-react-native'
+import moment from 'moment'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import {
+    ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -6,50 +44,9 @@ import {
     Text,
     TextInput,
     TouchableOpacity,
-    View,
-    ActivityIndicator,
-    Modal,
+    View
 } from 'react-native'
-import React, { useRef, useState, useEffect, useCallback } from 'react'
-import { Image } from 'expo-image'
-import { ImagesAssets } from '@/src/utils/ImageAssets'
-import GlobalHeader from '@/src/components/GlobalHeader'
-import {
-    CalendarDays,
-    ChevronLeft,
-    CircleArrowRight,
-    Hash,
-    InfoIcon,
-    MapPin,
-    SquarePen,
-    Users,
-    Plus,
-} from 'lucide-react-native'
-import * as ImagePicker from 'expo-image-picker'
-import { useTranslation } from 'react-i18next'
-import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { Dropdown } from 'react-native-element-dropdown'
-import Colors from '@/src/utils/Colors'
-import GlobalButton from '@/src/components/GlobalButton'
-import { showToast } from '@/src/components/GlobalToast'
-import BottomSheet, {
-    BottomSheetBackdrop,
-    BottomSheetFlatList,
-    BottomSheetModal,
-    BottomSheetView,
-} from '@gorhom/bottom-sheet'
-import { router, useLocalSearchParams } from 'expo-router'
-import moment from 'moment'
-import { getUserDetails } from '@/src/utils/helperFunctions'
-import {
-    addeditdeletebuddyupevent,
-    createcustomcategory,
-    getalladminbuddyupcategories,
-    listallusersfortag,
-    uploadfile,
-} from '@/src/apis/apiService'
-import BuddyCalendarModal from '@/src/components/Modals/BuddyCalendarModal'
-import CreateCustomCategoryModal from '@/src/components/Modals/CreateCustomCategoryModal'
 
 type AllParticipants = {
     id: string
@@ -72,9 +69,11 @@ type AllEvents = {
 
 type MediaItem = {
     uri: string
-    type: 'image' | 'video'
+    type: any
     id: string
     isExisting?: boolean
+    fileName?: any
+    fileSize?: any
 }
 
 const CreateYourBuddyUpEvent = () => {
@@ -98,6 +97,7 @@ const CreateYourBuddyUpEvent = () => {
     const [isFetchingUsers, setIsFetchingUsers] = useState(false)
     const [eventName, setEventName] = useState<string | null>(null)
     const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
+    const [preEvent, setPreEvent] = useState<AllEvents>()
     const [defaultEventImage, setDefaultEventImage] = useState<string | null>(null)
     const [calendarModalVisible, setCalendarModalVisible] = useState(false)
     const [customCategoryModalVisible, setCustomCategoryModalVisible] = useState(false)
@@ -387,40 +387,65 @@ const CreateYourBuddyUpEvent = () => {
         )
     }
 
-    const handleEventSelect = (item: AllEvents) => {
+    const handleEventSelect = (item: AllEvents, id?: string | null) => {
         console.log('DEBUG: handleEventSelect called with:', item);
-        
+
         // Check if it's the "Create Your Own" option
         if (item.id === 'create_your_own') {
             setCustomCategoryModalVisible(true);
+            if (id) {
+                setPreEvent(allEvents.find(e => e.id === id))
+            }
             return;
+        } else {
+            setEventName(item.categoryName)
+            setSelectedEventId(item.id)
+            if (!selectedMedia) {
+                setDefaultEventImage(item.categoryImage)
+            }
         }
-        
-        setEventName(item.categoryName)
-        setSelectedEventId(item.id)
-        if (!selectedMedia) {
-            setDefaultEventImage(item.categoryImage)
-        }
+
+
     }
 
     const handleCustomCategoryCreated = (newCategory: AllEvents) => {
         console.log('DEBUG: New custom category created:', newCategory);
-        
+
         // Add the new category to the custom categories list
         setCustomCategories(prev => [...prev, newCategory]);
-        
+
         // Add to all events list
         setAllEvents(prev => [...prev.filter(item => item.id !== 'create_your_own'), newCategory, CREATE_YOUR_OWN_OPTION]);
-        
+
         // Select the new category
         setEventName(newCategory.categoryName);
         setSelectedEventId(newCategory.id);
         setDefaultEventImage(newCategory.categoryImage || null);
-        
+
         // Close the modal
         setCustomCategoryModalVisible(false);
-        
+
         showToast.success(t('success'), t('custom_category_created'));
+    }
+
+    const handleCustomEventCancelled = () => {
+
+        if (!preEvent || !preEvent.id) {
+            return
+        }
+
+        // setCustomCategories(prev => [...prev, preEvent]);
+
+        // Add to all events list
+        setAllEvents(prev => [...prev.filter(item => item.id !== preEvent.id && item.id !== 'create_your_own'), preEvent, CREATE_YOUR_OWN_OPTION]);
+
+        // Select the new category
+        setEventName(preEvent.categoryName);
+        setSelectedEventId(preEvent.id);
+        setDefaultEventImage(preEvent.categoryImage || null);
+
+        // Close the modal
+        setCustomCategoryModalVisible(false);
     }
 
     const handleDateSelect = (dates: {
@@ -470,8 +495,9 @@ const CreateYourBuddyUpEvent = () => {
                 const asset = result.assets[0]
                 const mediaItem: MediaItem = {
                     uri: asset.uri,
-                    type: 'image',
+                    type: asset.type,
                     id: `${asset.uri}-${Date.now()}-${Math.random()}`,
+                    fileName: asset.fileName, fileSize: asset.fileSize,
                 }
                 setSelectedMedia(mediaItem)
                 showToast.success(t('success'), t('mediaitemsadded', { count: 1 }))
@@ -596,13 +622,21 @@ const CreateYourBuddyUpEvent = () => {
 
         try {
             if (selectedMedia && selectedMedia.uri) {
-                const uploadResponse = await uploadfile({ file: selectedMedia.uri })
+                //   const apiResponse = await uploadfile({ file: photo , fileName: fileName , fileSize: fileSize , type: type });
+                //       if (apiResponse.success && apiResponse.status == 200) {
+                //         setContentImage(apiResponse.data);
+                const uploadResponse = await uploadfile({
+                    file: selectedMedia.uri,
+                    fileName: selectedMedia.fileName,
+                    fileSize: selectedMedia.fileSize,
+                    type: selectedMedia.type
+                })
                 if (uploadResponse.success && uploadResponse.status === 200) {
                     finalImageUrl = uploadResponse.data
                     showToast.success(t('success'), t('imageuploadedsuccessfully'))
                 } else {
                     setLoading(false)
-                    showToast.error(t('oops'), uploadResponse.message || t('failedtouploadimage'))
+                    showToast.error(t('oops'), t('somethingwentwrong') || t('failedtouploadimage'))
                     return
                 }
             }
@@ -614,16 +648,16 @@ const CreateYourBuddyUpEvent = () => {
                 .minute(selectedStartTime!.getMinutes())
                 .second(0)
                 .millisecond(0)
-                .toISOString()
+                .format('YYYY-MM-DD HH:mm:ss');  // Changed here
 
-            let endDateTime = startDateTime
+            let endDateTime = startDateTime;
             if (selectedEndDate && selectedEndTime) {
                 endDateTime = moment(selectedEndDate)
                     .hour(selectedEndTime.getHours())
                     .minute(selectedEndTime.getMinutes())
                     .second(0)
                     .millisecond(0)
-                    .toISOString()
+                    .format('YYYY-MM-DD HH:mm:ss');  // Changed here
             }
 
             const imageUrls: string[] = []
@@ -761,7 +795,7 @@ const CreateYourBuddyUpEvent = () => {
                                     valueField="id"
                                     placeholder={eventName || t('selectabuddyup')}
                                     value={selectedEventId}
-                                    onChange={(item: AllEvents) => handleEventSelect(item)}
+                                    onChange={(item: AllEvents) => handleEventSelect(item, selectedEventId)}
                                     renderItem={renderDropdownItem}
                                 />
                             </View>
@@ -971,7 +1005,13 @@ const CreateYourBuddyUpEvent = () => {
                 {/* Custom Category Modal */}
                 <CreateCustomCategoryModal
                     visible={customCategoryModalVisible}
-                    onClose={() => setCustomCategoryModalVisible(false)}
+                    onClose={() => {
+                        let eventId = selectedEventId
+                        setSelectedEventId(eventId)
+                        handleCustomEventCancelled()
+                        setCustomCategoryModalVisible(false)
+                    }
+                    }
                     onCategoryCreated={handleCustomCategoryCreated}
                 />
 

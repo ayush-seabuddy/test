@@ -1,23 +1,23 @@
-import {
-    StyleSheet,
-    Text,
-    View,
-    Modal,
-    TouchableOpacity,
-    TextInput,
-    ActivityIndicator,
-    Platform,
-    ScrollView
-} from 'react-native'
-import React, { useState } from 'react'
-import { Image } from 'expo-image'
-import { ImagesAssets } from '@/src/utils/ImageAssets'
-import Colors from '@/src/utils/Colors'
-import { useTranslation } from 'react-i18next'
-import { showToast } from '@/src/components/GlobalToast'
 import { createcustomcategory, uploadfile } from '@/src/apis/apiService'
+import { showToast } from '@/src/components/GlobalToast'
+import Colors from '@/src/utils/Colors'
+import { ImagesAssets } from '@/src/utils/ImageAssets'
+import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { SquarePen, X } from 'lucide-react-native'
+import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import {
+    ActivityIndicator,
+    Modal,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
+} from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 
 interface CreateCustomCategoryModalProps {
@@ -26,6 +26,13 @@ interface CreateCustomCategoryModalProps {
     onCategoryCreated: (category: any) => void
 }
 
+type SelectedImageType = {
+    uri: string
+    fileName?: string | null
+    fileSize?: number | null
+    type?: string | null
+} | null
+
 const CreateCustomCategoryModal = ({
     visible,
     onClose,
@@ -33,7 +40,7 @@ const CreateCustomCategoryModal = ({
 }: CreateCustomCategoryModalProps) => {
     const { t } = useTranslation()
     const [categoryName, setCategoryName] = useState('')
-    const [selectedImage, setSelectedImage] = useState<string | null>(null)
+    const [selectedImage, setSelectedImage] = useState<SelectedImageType>(null)
     const [loading, setLoading] = useState(false)
     const [imageUploading, setImageUploading] = useState(false)
 
@@ -48,7 +55,12 @@ const CreateCustomCategoryModal = ({
 
             if (!result.canceled && result.assets?.length) {
                 const asset = result.assets[0]
-                setSelectedImage(asset.uri)
+                setSelectedImage({
+                    uri: asset.uri,
+                    fileName: asset.fileName,
+                    fileSize: asset.fileSize,
+                    type: asset.type || 'image',
+                })
             }
         } catch (error) {
             console.error('Error picking image:', error)
@@ -72,14 +84,20 @@ const CreateCustomCategoryModal = ({
         try {
             if (selectedImage) {
                 setImageUploading(true)
-                const uploadResponse = await uploadfile({ file: selectedImage })
+
+                const uploadResponse = await uploadfile({
+                    file: selectedImage.uri,
+                    fileName: selectedImage.fileName,
+                    fileSize: selectedImage.fileSize,
+                    type: selectedImage.type,
+                })
 
                 if (uploadResponse.success && uploadResponse.status === 200) {
                     imageUrl = uploadResponse.data
                 } else {
                     showToast.error(
                         t('oops'),
-                        uploadResponse.message || t('failedtouploadimage')
+                        t('somethingwentwrong') || t('failedtouploadimage')
                     )
                     setLoading(false)
                     setImageUploading(false)
@@ -120,14 +138,13 @@ const CreateCustomCategoryModal = ({
             showToast.error(t('oops'), t('somethingwentwrong'))
         } finally {
             setLoading(false)
+            setImageUploading(false)
         }
     }
 
     const resetForm = () => {
         setCategoryName('')
         setSelectedImage(null)
-        setLoading(false)
-        setImageUploading(false)
     }
 
     const handleClose = () => {
@@ -164,8 +181,8 @@ const CreateCustomCategoryModal = ({
                             <View style={styles.imageContainer}>
                                 <Image
                                     source={
-                                        selectedImage
-                                            ? { uri: selectedImage }
+                                        selectedImage?.uri
+                                            ? { uri: selectedImage.uri }
                                             : ImagesAssets.PlaceholderImage
                                     }
                                     style={styles.categoryImage}
