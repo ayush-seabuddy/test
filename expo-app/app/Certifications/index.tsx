@@ -1,4 +1,3 @@
-// screens/CertificationsScreen.tsx
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -11,7 +10,6 @@ import {
     View,
     Text,
     TextInput,
-    ActivityIndicator,
     Platform,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
@@ -24,6 +22,7 @@ import CustomDateTimePicker from '@/src/components/Modals/CustomDateTimePicker';
 import { RootState } from '@/src/redux/store';
 import { Edit, Trash2, Award, Building, Calendar } from 'lucide-react-native';
 import CustomLottie from '@/src/components/CustomLottie';
+import CommonLoader from '@/src/components/CommonLoader';
 
 const { height, width } = Dimensions.get('screen');
 
@@ -390,7 +389,7 @@ const CertificationsScreen = () => {
                     disabled={loading}
                 >
                     {loading ? (
-                        <ActivityIndicator size="small" color="#fff" />
+                        <CommonLoader color='#fff'/>
                     ) : (
                         <Text style={styles.updateButtonText}>
                             {isUpdate ? t('editCertificate') : t('addCertificate')}
@@ -466,7 +465,7 @@ const CertificationsScreen = () => {
                                 disabled={loading}
                             >
                                 {loading ? (
-                                    <ActivityIndicator size="small" color="#fff" />
+                                    <CommonLoader color='#fff'/>
                                 ) : (
                                     <Text style={styles.deleteText}>{t('yes')}</Text>
                                 )}

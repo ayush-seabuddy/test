@@ -7,6 +7,7 @@ import { ChevronLeft, FastForward, Pause, Play, Repeat, Repeat1 } from 'lucide-r
 import React from 'react';
 import { ActivityIndicator, Dimensions, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Content } from './type';
+import CommonLoader from '@/src/components/CommonLoader';
 
 const { width, height } = Dimensions.get('window');
 
@@ -114,7 +115,7 @@ React.useEffect(() => {
               style={styles.playPauseButton}
             >
               {!status.isLoaded ? (
-                <ActivityIndicator color="#000" size="large" />
+                <CommonLoader fullScreen/>
               ) : status.playing ? (
                 <Pause size={24} color="#000" />
               ) : (

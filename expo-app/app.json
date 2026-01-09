@@ -121,7 +121,6 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "react-native-compressor",
       "expo-router",
       "expo-localization",
       "expo-font",

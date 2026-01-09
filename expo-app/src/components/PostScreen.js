@@ -35,6 +35,7 @@ import { ImagesAssets } from '../utils/ImageAssets';
 import BottomSheet from './BottomSheet';
 import CommentsSection from './CommentsSection';
 import { showToast } from './GlobalToast';
+import CommonLoader from './CommonLoader';
 
 const { width } = Dimensions.get('window');
 
@@ -376,7 +377,7 @@ const DeleteConfirmationModal = ({ visible, onClose, onConfirm, loading }) => (
             <Text style={styles.modalButtonTextCancel}>{t('no')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.modalButton, styles.modalButtonConfirm]} onPress={onConfirm} disabled={loading}>
-            {loading ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={styles.modalButtonTextConfirm}>{t('yes')}</Text>}
+            {loading ? <CommonLoader color="#FFFFFF" /> : <Text style={styles.modalButtonTextConfirm}>{t('yes')}</Text>}
           </TouchableOpacity>
         </View>
       </View>
@@ -419,7 +420,7 @@ const ReportModal = ({ visible, onClose, onSubmit, loading }) => {
               <Text style={styles.modalButtonTextCancel}>{t('cancel')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.modalButton, styles.modalButtonConfirm]} onPress={handleSubmit} disabled={loading || !reason.trim()}>
-              {loading ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={styles.modalButtonTextConfirm}>{t('submit')}</Text>}
+              {loading ? <CommonLoader color="#FFFFFF" /> : <Text style={styles.modalButtonTextConfirm}>{t('submit')}</Text>}
             </TouchableOpacity>
           </View>
         </View>
@@ -809,7 +810,10 @@ const styles = StyleSheet.create({
   sheetHeader: { alignItems: 'center', paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: '#eee' },
   sheetTitle: { fontSize: 15, fontFamily: 'Poppins-SemiBold', color: '#1F2937' },
   userItemContainer: { flexDirection: 'row', alignItems: 'center', padding: 10, marginVertical: 4, borderRadius: 10, backgroundColor: '#f9f9f9' },
-  userAvatar: { width: 35, height: 35, borderRadius: 20 },
+  userAvatar: {
+    width: 35, height: 35, borderRadius: 20, borderWidth: 0.5,
+    borderColor: '#B0B0B0',
+  },
   userName: { fontSize: 13, fontFamily: 'Poppins-Regular', color: '#1F2937' },
 });
 

@@ -21,6 +21,7 @@ import { ChevronLeft } from "lucide-react-native";
 import { ActivityIndicator, Modal } from "react-native-paper";
 import RelatedContentCard from "./RelatedContentCard";
 import { Content } from "./type";
+import CommonLoader from "@/src/components/CommonLoader";
 
 interface ContentDetails {
   id: string;
@@ -107,11 +108,7 @@ export default function VideosDetails({ data: fullDetails }: { data: Content }) 
       {/* Video Player */}
       <View style={{ flex: fullscreen ? 1 : 0 }}>
         {loading && (
-          <ActivityIndicator
-            size="large"
-            color={Colors.primary}
-            style={{ position: "absolute", top: "40%", left: "40%", zIndex: 2 }}
-          />
+          <CommonLoader fullScreen containerStyle={{ position: "absolute", top: "40%", left: "40%", zIndex: 2 }}/>
         )}
         <VideoPlayer uri={fullDetails?.contentUrl[0]} />
         {/* <Video

@@ -17,6 +17,7 @@ import CustomLottie from "@/src/components/CustomLottie";
 import WellnessOfficerCard from "@/src/screens/WellnessOfficerList/WellnessOfficerCard";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import Header from "./Header";
+import CommonLoader from "@/src/components/CommonLoader";
 // import { apiCallWithToken, apiServerUrl } from "../../Api";
 
 const { width, height } = Dimensions.get("window");
@@ -57,7 +58,7 @@ const WellnessOfficerList = ({ }) => {
         <View style={styles.contentContainer}>
 
 
-          {loading && <ActivityIndicator size="large" color={"#06361F"} />}
+          {loading && <CommonLoader fullScreen/>}
           {data?.length > 0 ? (
             <View style={styles.cardsContainer}>
               {data?.length > 0 &&

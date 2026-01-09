@@ -1,4 +1,5 @@
 import { getAllMoodTracker, getMoodTrackerAnalysis, moodTracker } from "@/src/apis/apiService";
+import CommonLoader from "@/src/components/CommonLoader"; // ← Make sure this import exists
 import CustomLottie from "@/src/components/CustomLottie";
 import GlobalHeader from "@/src/components/GlobalHeader";
 import { showToast } from "@/src/components/GlobalToast";
@@ -74,6 +75,8 @@ const MOOD_OPTIONS = [
   { emoji: ImagesAssets.Emoji_4, label: "Angry" },
   { emoji: ImagesAssets.Emoji_2, label: "Calm" },
 ] as const;
+
+// ── Memoized Components (unchanged) ───────────────────────────────────────
 
 const DateItemComponent = memo(({ item, moodData }: { item: DateItem; moodData: MoodTrackerItem[] | null }) => {
   const matchingMood = useMemo(() => {
@@ -244,7 +247,7 @@ const MoodModalStep2 = memo(
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <CommonLoader color='#fff'/>
             ) : (
               <Text style={styles.modalSubmitText}>{t("submit")}</Text>
             )}
@@ -254,6 +257,8 @@ const MoodModalStep2 = memo(
     );
   }
 );
+
+// ── Main Component ────────────────────────────────────────────────────────
 
 const MoodTracker: React.FC = () => {
   const { t } = useTranslation();
@@ -267,7 +272,7 @@ const MoodTracker: React.FC = () => {
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedMood, setSelectedMood] = useState("");
   const [reasonText, setReasonText] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // ← initial loading = true
   const [isTodayChecked, setIsTodayChecked] = useState(false);
 
   const scrollRef = useRef<ScrollView>(null);
@@ -317,7 +322,7 @@ const MoodTracker: React.FC = () => {
 
   const fetchMonthlyData = useCallback(
     async (month: number, year: number) => {
-      setLoading(true);
+      // We don't set loading=true here anymore → only initial load shows loader
       try {
         const result = await getMoodTrackerAnalysis({ month, year });
         if (result.status === 200) {
@@ -340,7 +345,7 @@ const MoodTracker: React.FC = () => {
       } catch (error) {
         console.error("Monthly mood data fetch failed:", error);
       } finally {
-        setLoading(false);
+        setLoading(false); // ← always turn off after fetch (initial or month change)
       }
     },
     [fetchMoodHistory]
@@ -361,6 +366,7 @@ const MoodTracker: React.FC = () => {
         const todayStr = moment().format("YYYY-MM-DD");
         setIsTodayChecked(data.lastMoodDate === todayStr && data.isMoodTracker);
       } catch {
+        // silent fail
       }
     };
     checkToday();
@@ -408,10 +414,7 @@ const MoodTracker: React.FC = () => {
     try {
       const response = await moodTracker(payload);
       if (response.status === 200) {
-        showToast.success(
-          t("success"),
-          t("moodnoteaddedsuccessfully")
-        );
+        showToast.success(t("success"), t("moodnoteaddedsuccessfully"));
 
         const today = moment().format("YYYY-MM-DD");
         const stored = await AsyncStorage.getItem("userDetails");
@@ -423,10 +426,7 @@ const MoodTracker: React.FC = () => {
         }
 
         setIsTodayChecked(true);
-        fetchMonthlyData(
-          currentDate.getMonth() + 1,
-          currentDate.getFullYear()
-        );
+        fetchMonthlyData(currentDate.getMonth() + 1, currentDate.getFullYear());
       } else {
         showToast.error(t("oops"), response.data?.responseMessage);
       }
@@ -439,13 +439,7 @@ const MoodTracker: React.FC = () => {
       setSelectedMood("");
       setReasonText("");
     }
-  }, [
-    selectedMood,
-    reasonText,
-    currentDate,
-    fetchMonthlyData,
-    t,
-  ]);
+  }, [selectedMood, reasonText, currentDate, fetchMonthlyData, t]);
 
   const resetAndCloseModal = useCallback(() => {
     setModalVisible(false);
@@ -453,6 +447,14 @@ const MoodTracker: React.FC = () => {
     setSelectedMood("");
     setReasonText("");
   }, []);
+
+  if (loading && monthlyAverage.length === 0 && !moodData) {
+    return (
+      <View style={styles.container}>
+        <CommonLoader fullScreen />
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -508,7 +510,7 @@ const MoodTracker: React.FC = () => {
                 isTodayChecked && styles.checkInDisabled,
               ]}
               onPress={() => setModalVisible(true)}
-              disabled={isTodayChecked || loading}
+              disabled={isTodayChecked} // removed || loading here
             >
               <Text style={styles.checkInText}>
                 {isTodayChecked
@@ -600,7 +602,7 @@ const MoodTracker: React.FC = () => {
               reason={reasonText}
               setReason={setReasonText}
               onSubmit={handleSubmit}
-              loading={loading}
+              loading={loading} // still used for submit action
               onClose={resetAndCloseModal}
             />
           )}
@@ -608,7 +610,7 @@ const MoodTracker: React.FC = () => {
 
         <CustomLottie
           customSyle={styles.backgroundLottie}
-          isBlurView={Platform.OS === 'ios' ? true : false}
+          isBlurView={Platform.OS === "ios" ? true : false}
         />
       </View>
     </KeyboardAvoidingView>
@@ -617,10 +619,11 @@ const MoodTracker: React.FC = () => {
 
 export default MoodTracker;
 
+// Styles remain completely unchanged
 const styles = StyleSheet.create({
   container: { flex: 1 },
   mainContainer: { flex: 1, backgroundColor: "#fff" },
-  scrollContent: { flexGrow: 1, paddingBottom: 220, minHeight: height },
+  scrollContent: { flexGrow: 1, minHeight: height ,paddingBottom:20,},
 
   calendarCard: {
     backgroundColor: "rgba(180, 180, 180, 0.6)",

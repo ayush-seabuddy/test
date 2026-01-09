@@ -4,6 +4,7 @@ import {
     listallusersfortag,
     uploadfile
 } from '@/src/apis/apiService'
+import CommonLoader from '@/src/components/CommonLoader'
 import GlobalButton from '@/src/components/GlobalButton'
 import GlobalHeader from '@/src/components/GlobalHeader'
 import { showToast } from '@/src/components/GlobalToast'
@@ -736,7 +737,7 @@ const CreateYourBuddyUpEvent = () => {
                 {isFetchingUsers && (
                     <View style={styles.globalLoaderOverlay}>
                         <View style={styles.globalLoaderContainer}>
-                            <ActivityIndicator size="large" color={Colors.lightGreen} />
+                            <CommonLoader fullScreen/>
                         </View>
                     </View>
                 )}
@@ -779,7 +780,7 @@ const CreateYourBuddyUpEvent = () => {
                             <View style={styles.dropdownContainer}>
                                 <MaterialIcons name="category" size={20} color={Colors.lightGreen} />
                                 <View style={styles.loadingContainerInline}>
-                                    <ActivityIndicator size="small" color={Colors.lightGreen} />
+                                    <CommonLoader/>
                                     <Text style={styles.loadingTextInline}>{t('loadingevents')}</Text>
                                 </View>
                             </View>

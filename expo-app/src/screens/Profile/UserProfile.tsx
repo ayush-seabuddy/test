@@ -15,6 +15,7 @@ import AssessmentList from '../health/AssessmentList'
 import About from './About'
 import ProfileTabs from './ProfileTabs'
 import UserPost from './UserPosts'
+import { ImagesAssets } from '@/src/utils/ImageAssets'
 
 const UserProfile = () => {
      const { t } = useTranslation();
@@ -59,7 +60,7 @@ const UserProfile = () => {
             </TouchableOpacity>
             <View style={{ display: "flex", justifyContent: "center", alignItems: "center", height: height * .35 }}>
                 <View style={{ position: "relative" }}>
-                    <Image source={userDetails.profileUrl} style={{ width: 100, height: 100, borderRadius: 50, borderColor: Colors.lightGreen, borderWidth: 2 }} />
+                    <Image source={userDetails.profileUrl} style={{ width: 100, height: 100, borderRadius: 50, borderColor: Colors.lightGreen, borderWidth: 2 }} placeholder={ImagesAssets.userIcon}/>
                     <TouchableOpacity style={{
                         position: "absolute", bottom: 3, right: 0,
                         borderColor: 'grey',

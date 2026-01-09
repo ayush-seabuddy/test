@@ -1,4 +1,5 @@
 import { viewContentDetails } from '@/src/apis/apiService';
+import CommonLoader from '@/src/components/CommonLoader';
 import ArticleDetails from '@/src/screens/ContentDetails/ArticleDetails';
 import AudioDetails from '@/src/screens/ContentDetails/AudioDetails';
 import VideoDetails from '@/src/screens/ContentDetails/VideoDetails';
@@ -71,7 +72,7 @@ const ContentDetailsScreen = () => {
           alignItems: 'center',
         }}
       >
-        <ActivityIndicator size="large" />
+       <CommonLoader fullScreen/>
       </View>
     );
   }

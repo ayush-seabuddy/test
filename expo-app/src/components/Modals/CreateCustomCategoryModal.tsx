@@ -19,6 +19,7 @@ import {
     View
 } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import CommonLoader from '../CommonLoader'
 
 interface CreateCustomCategoryModalProps {
     visible: boolean
@@ -250,7 +251,7 @@ const CreateCustomCategoryModal = ({
                                 disabled={!categoryName.trim() || loading}
                             >
                                 {loading || imageUploading ? (
-                                    <ActivityIndicator size="small" color="#fff" />
+                                   <CommonLoader color='#fff'/>
                                 ) : (
                                     <Text style={styles.createButtonText}>
                                         {t('create')}

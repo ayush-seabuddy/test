@@ -24,6 +24,7 @@ import {
 } from 'react-native-freshchat-sdk';
 import { getUserDetails } from '@/src/utils/helperFunctions';
 import { useRouter } from 'expo-router';
+import CommonLoader from '../CommonLoader';
 
 interface Helpline {
     id: string;
@@ -208,7 +209,7 @@ const HelplineAndAICards = () => {
     if (loading) {
         return (
             <View style={styles.centerContainer}>
-                <ActivityIndicator size="large" color={Colors.lightGreen} />
+                <CommonLoader fullScreen />
             </View>
         );
     }

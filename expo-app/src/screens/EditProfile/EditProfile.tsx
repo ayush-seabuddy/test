@@ -34,6 +34,8 @@ import { RootState } from '@/src/redux/store';
 import * as Yup from "yup";
 import Colors from '@/src/utils/Colors';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { router } from 'expo-router';
+import CommonLoader from '@/src/components/CommonLoader';
 
 // NOTE: validation schemas use translations and are created inside the component
 
@@ -99,7 +101,8 @@ const EditProfile = () => {
   const [selectedFavActivities, setSelectedFavActivities] = useState<string[]>([]);
 
   const [about, setAbout] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loadingdetails, setloadingdetails] = useState(false);
+  const [updatingdetails, setupdatingdetails] = useState(false);
   const [userId, setUserId] = useState<string | undefined>(undefined);
 
   const formatDateForDisplay = (date: Date | null) => {
@@ -205,7 +208,7 @@ const EditProfile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        setLoading(true);
+        setloadingdetails(true);
         const result = await viewProfile();
         if (result?.data) {
           const object = result.data;
@@ -240,7 +243,7 @@ const EditProfile = () => {
         console.error('viewProfile error', err);
         showToast.error(t('error'), 'Failed to load profile');
       } finally {
-        setLoading(false);
+        setloadingdetails(false);
       }
     };
 
@@ -302,11 +305,12 @@ const EditProfile = () => {
         }
       }
 
-      setLoading(true);
+      setupdatingdetails(true);
       const response = await updateprofile(body);
 
       if (response.status === 200 || response.success) {
         showToast.success(t('success'), t('profileupdatedsuccessfully'));
+        router.back();
       } else {
         showToast.error(t('error'), response?.message);
       }
@@ -325,7 +329,7 @@ const EditProfile = () => {
         showToast.error(t('oops') || 'Oops', t('failedtoupdateprofile') || 'Failed to update profile. Please try again');
       }
     } finally {
-      setLoading(false);
+      setupdatingdetails(false);
     }
   };
 
@@ -583,19 +587,19 @@ const EditProfile = () => {
         <TouchableOpacity
           style={styles.updateButton}
           onPress={handleUpdate}
-          disabled={loading}
+          disabled={updatingdetails}
         >
-          {loading ? (
-            <ActivityIndicator size="small" color={Colors.white} />
+          {updatingdetails ? (
+            <CommonLoader color='#fff' />
           ) : (
             <Text style={styles.updateButtonText}>{t('update')}</Text>
           )}
         </TouchableOpacity>
       </KeyboardAwareScrollView>
 
-      {loading && (
+      {loadingdetails && (
         <View style={styles.loadingOverlay} pointerEvents="none">
-          <ActivityIndicator size="large" color={Colors.lightGreen} />
+          <CommonLoader fullScreen/>
         </View>
       )}
     </View>

@@ -13,6 +13,7 @@ import { addupdateshipstatus, listallusers, offboardonboardcrew } from '@/src/ap
 import { getUserDetails } from '@/src/utils/helperFunctions'
 import { showToast } from '@/src/components/GlobalToast'
 import EmptyComponent from '@/src/components/EmptyComponent'
+import CommonLoader from '@/src/components/CommonLoader'
 
 interface UserProfile {
     id: string;
@@ -257,7 +258,7 @@ const CrewListingScreen = () => {
             }
             {loading ? (
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', }}>
-                    <ActivityIndicator size="large" color={Colors.lightGreen} />
+                   <CommonLoader fullScreen/>
                 </View>
             ) : (
                 <FlatList
@@ -268,7 +269,7 @@ const CrewListingScreen = () => {
                     onEndReachedThreshold={0.5}
                     ListFooterComponent={() => loadingMore && (
                         <View style={{ paddingVertical: 20 }}>
-                            <ActivityIndicator size="small" color={Colors.lightGreen} />
+                            <CommonLoader/>
                         </View>
                     )}
                     renderItem={({ item }) => {
@@ -430,7 +431,7 @@ const CrewListingScreen = () => {
                                     onPress={() => selectedUser && handleToggleBoard(selectedUser)}
                                     disabled={actionLoading}
                                 >
-                                    {actionLoading ? <ActivityIndicator size="small" color="#ffffff" /> : <Text style={styles.exitButtonText}>{t('yes')}</Text>}
+                                    {actionLoading ? <CommonLoader color='#fff'/>: <Text style={styles.exitButtonText}>{t('yes')}</Text>}
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -458,7 +459,7 @@ const CrewListingScreen = () => {
                                     onPress={handleRemoveFromShip}
                                     disabled={actionLoading}
                                 >
-                                    {actionLoading ? <ActivityIndicator size="small" color="#ffffff" /> : <Text style={styles.exitButtonText}>{t('yes')}</Text>}
+                                    {actionLoading ? <CommonLoader color='#fff'/> : <Text style={styles.exitButtonText}>{t('yes')}</Text>}
                                 </TouchableOpacity>
                             </View>
                         </View>

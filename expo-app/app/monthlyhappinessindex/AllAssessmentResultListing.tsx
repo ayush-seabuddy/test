@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import moment from 'moment';
 import { Image } from 'expo-image';
+import CommonLoader from '@/src/components/CommonLoader';
 
 const { width, height } = Dimensions.get('window');
 
@@ -168,7 +169,7 @@ const AllAssessmentResultListing = () => {
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#06361F" />
+                <CommonLoader fullScreen/>
             </View>
         );
     }

@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
+import CommonLoader from "../CommonLoader";
 
 const { height, width } = Dimensions.get("window");
 
@@ -86,7 +87,7 @@ const PDFModal:React.FC<PDFModalProps> = ({
                 originWhitelist={["*"]}
                 renderLoading={() => (
                   <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#007AFF" />
+                    <CommonLoader fullScreen/>
                     <Text>Loading PDF...</Text>
                   </View>
                 )}

@@ -21,6 +21,7 @@ import { RootState } from '@/src/redux/store';
 import { Edit, Trash2, Briefcase, Building, Calendar } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import CommonLoader from '@/src/components/CommonLoader';
 
 interface WorkExperience {
     id: string;
@@ -383,7 +384,7 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
                     disabled={loading}
                 >
                     {loading ? (
-                        <ActivityIndicator size="small" color="#fff" />
+                        <CommonLoader color="#fff" />
                     ) : (
                         <Text style={styles.updateButtonText}>
                             {isUpdate ? t('editexperience') : t('addexperience')}
@@ -459,7 +460,7 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
                                 disabled={loading}
                             >
                                 {loading ? (
-                                    <ActivityIndicator size="small" color="#fff" />
+                                    <CommonLoader color="#fff" />
                                 ) : (
                                     <Text style={styles.deleteText}>{t('yes')}</Text>
                                 )}

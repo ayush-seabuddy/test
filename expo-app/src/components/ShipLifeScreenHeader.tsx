@@ -13,21 +13,36 @@ import { House, Trophy } from "lucide-react-native";
 import { router, useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { getUserDetails } from "../utils/helperFunctions";
-import { getUnreadNotificationCount } from "../apis/apiService";
+import { getUnreadNotificationCount, viewProfile } from "../apis/apiService";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/src/redux/store";
+import { updateUserField } from '@/src/redux/userDetailsSlice';
 
 const ShipLifeScreenHeader = () => {
   const { t } = useTranslation();
-  const [userDetails, setUserDetails] = useState<any>(null);
   const [unreadNotification, setUnreadNotification] = useState(0);
+
+      const userDetails = useSelector((state: RootState) => state.userDetails)
+    const dispatch = useDispatch()
+
+    useFocusEffect(  useCallback(() => {
+        const fetchProfileDetails = async () => {
+            let result = await viewProfile();
+            console.log("userDetails: sdlfjsdlfjsd 2", result);
+            if (result?.data) {
+                const object = result.data
+                for (const property in object) {
+                    dispatch(updateUserField({ key: property, value: object[property] }))
+                }
+
+            }
+        }
+        fetchProfileDetails();
+    }, []));
 
   const fetchInitialData = useCallback(async () => {
     try {
-      const [userRes, notificationRes] = await Promise.all([
-        getUserDetails(),
-        getUnreadNotificationCount(),
-      ]);
-
-      setUserDetails(userRes);
+      const notificationRes= await getUnreadNotificationCount()
       setUnreadNotification(notificationRes.data.allNotifications ?? 0);
     } catch (error) {
       console.log("Error fetching initial header data:", error);
@@ -49,13 +64,6 @@ const ShipLifeScreenHeader = () => {
         .catch(() => {
           setUnreadNotification(0);
         });
-
-      // If userDetails is missing (e.g., first load or cleared), fetch it
-      if (!userDetails) {
-        getUserDetails()
-          .then(setUserDetails)
-          .catch(console.log);
-      }
     }, [userDetails])
   );
 
@@ -63,7 +71,7 @@ const ShipLifeScreenHeader = () => {
 
   // Determine the correct icon source with safe fallback
   const crewIconSource = userDetails
-    ? isCaptain
+    ?isCaptain && userDetails?.shipId
       ? ImagesAssets.crewListLogo
       : ImagesAssets.searchLogo
     : ImagesAssets.searchLogo;
@@ -111,7 +119,7 @@ const ShipLifeScreenHeader = () => {
           onPress={handleCrewButtonPress}
           // Only disable if we don't know yet if user is captain and action requires it
           disabled={userDetails === null && isCaptain === undefined}
-          accessibilityLabel={isCaptain ? t("crew_listing") : t("search")}
+          accessibilityLabel={isCaptain && userDetails?.shipId ? t("crew_listing") : t("search")}
         >
           <View style={styles.iconWrapper}>
             <Image source={crewIconSource} style={styles.iconImage} />

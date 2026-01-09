@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import CommonLoader from '@/src/components/CommonLoader';
 
 const { height, width } = Dimensions.get('screen');
 
@@ -271,7 +272,7 @@ const SocialMediaLinks = () => {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <CommonLoader color="#fff" />
           ) : (
             <Text style={styles.updateButtonText}>
               {editingPlatform ? t('updatelink') : t('savesocialmedialinks')}
@@ -343,7 +344,7 @@ const SocialMediaLinks = () => {
                 disabled={loading}
               >
                 {loading ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                  <CommonLoader color="#fff" />
                 ) : (
                   <Text style={styles.deleteText}>{t('yes')}</Text>
                 )}

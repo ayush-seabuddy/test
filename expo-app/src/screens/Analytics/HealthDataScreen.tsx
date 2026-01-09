@@ -1,3 +1,4 @@
+import CommonLoader from '@/src/components/CommonLoader';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import {
@@ -171,7 +172,7 @@ const HealthDataScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       {isLoading && (
-        <ActivityIndicator size="large" color="#059669" style={styles.loader} />
+        <CommonLoader containerStyle={styles.loader} />
       )}
 
       {!isLoading && sleepData.length > 0 && sleepData.some((d) => d.durationHours > 0) ? (

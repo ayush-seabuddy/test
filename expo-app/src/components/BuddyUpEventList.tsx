@@ -325,7 +325,7 @@ export default BuddyUpEventList;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: "50%" },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: "20%" },
 
   columnWrapper: {
     justifyContent: 'space-between',

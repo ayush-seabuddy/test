@@ -1,5 +1,6 @@
 import { updateprofile, viewProfile } from '@/src/apis/apiService';
 import { BASE_URL } from '@/src/apis/endpoints';
+import CommonLoader from '@/src/components/CommonLoader';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import { RootState } from '@/src/redux/store';
@@ -164,7 +165,7 @@ const ProfilePhoto = () => {
       <View style={styles.container}>
         <View style={styles.profilePhotoContainer}>
           {isLoading ? (
-            <ActivityIndicator size="large" color={Colors.lightGreen} />
+            <CommonLoader fullScreen/>
           ) : (
             <Image
               source={{ uri: userDetails?.profileUrl || 'https://via.placeholder.com/350' }}

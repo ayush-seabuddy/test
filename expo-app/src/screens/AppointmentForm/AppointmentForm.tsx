@@ -20,6 +20,7 @@ import DatePicker from 'react-native-date-picker';
 import { ScrollView } from 'react-native-gesture-handler';
 import DoctorProfileDetailsCard from './DoctorProfileDetailsCard';
 import { t } from 'i18next';
+import CommonLoader from '@/src/components/CommonLoader';
 
 const AppointmentForm = () => {
   const params = useLocalSearchParams<{ data: string }>();
@@ -191,7 +192,7 @@ const AppointmentForm = () => {
           disabled={!isFormValid || loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" size={22} />
+            <CommonLoader color='#fff'/>
           ) : (
             <Text style={styles.submitButtonText}>{t('submit')}</Text>
           )}

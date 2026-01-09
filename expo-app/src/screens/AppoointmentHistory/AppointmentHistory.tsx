@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import AppointmentCard from "./AppointmentCard";
 import Header from "./Header";
+import CommonLoader from "@/src/components/CommonLoader";
 
 const { width, height } = Dimensions.get("window");
 
@@ -87,7 +88,7 @@ const AppointmentHistory = () => {
       <Header />
 
       {loading && data.length === 0 ? (
-        <ActivityIndicator size="large" color="#06361F" style={{ marginTop: 20 }} />
+        <CommonLoader containerStyle={{marginTop:20}}/>
       ) : (
         <FlatList
           data={data}
@@ -99,7 +100,7 @@ const AppointmentHistory = () => {
           onEndReachedThreshold={0.3}
           ListFooterComponent={
             loadingMore ? (
-              <ActivityIndicator size="small" color="#06361F" style={{ marginVertical: 10 }} />
+              <CommonLoader containerStyle={{ marginVertical: 10 }}/>
             ) : null
           }
         />

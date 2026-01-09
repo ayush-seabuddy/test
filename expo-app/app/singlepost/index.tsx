@@ -10,6 +10,7 @@ import { showToast } from '@/src/components/GlobalToast';
 import { ScrollView } from 'react-native-gesture-handler';
 import { Image } from 'expo-image';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
+import CommonLoader from '@/src/components/CommonLoader';
 
 const SinglePostScreen = () => {
     const { t } = useTranslation();
@@ -79,7 +80,7 @@ const SinglePostScreen = () => {
 
             {loading ? (
                 <View style={styles.center}>
-                    <ActivityIndicator size="large" color="#8DAF02" />
+                    <CommonLoader fullScreen/>
                     <Text style={styles.loadingText}>{t('loading')}...</Text>
                 </View>
             ) : (

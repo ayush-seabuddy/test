@@ -23,6 +23,7 @@ import { router, useFocusEffect } from 'expo-router'
 import { t } from 'i18next'
 import { ActivityIndicator } from 'react-native-paper'
 import ChatHeader from './chatListHeader'
+import CommonLoader from '@/src/components/CommonLoader'
 
 const ChatLoungeList = () => {
   const dispatch = useDispatch()
@@ -184,7 +185,7 @@ const ChatLoungeList = () => {
         shipChatList.length == 0 && fleetChatList.length == 0 && 
         (loading ? (
           <View style={{ alignItems: 'center', marginTop: 50 }}>
-            <ActivityIndicator size="small" color={Colors.lightGreen} />
+            <CommonLoader/>
           </View>
         ) : (
           <View style={{ alignItems: 'center', marginTop: 50 }}>

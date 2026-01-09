@@ -21,6 +21,7 @@ import { useTranslation } from "react-i18next";
 import { PhoneCall, X } from "lucide-react-native";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import * as Haptics from 'expo-haptics';
+import CommonLoader from "../CommonLoader";
 
 const { width, height } = Dimensions.get("window");
 
@@ -114,7 +115,7 @@ const EmergencyModal: React.FC<EmergencyModalProps> = ({ visible, onClose }) => 
 
                     {loading ? (
                         <View style={{ flex: 1, justifyContent: 'center' }}>
-                            <ActivityIndicator size="large" color="#D32F2F" />
+                            <CommonLoader fullScreen color="#D32F2F" />
                         </View>
                     ) : list.length === 0 ? (
                         <Text style={styles.noData}>{t('no_emergency_numbers')}</Text>

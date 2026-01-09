@@ -3,7 +3,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
-  ActivityIndicator,
   Text,
   TextInput,
 } from 'react-native';
@@ -14,6 +13,7 @@ import { Eye, EyeOff } from 'lucide-react-native';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { changePassword } from '@/src/apis/apiService';
 import { showToast } from '@/src/components/GlobalToast';
+import CommonLoader from '@/src/components/CommonLoader';
 
 const ChangePasswordScreen = () => {
   const { t } = useTranslation();
@@ -139,7 +139,7 @@ const ChangePasswordScreen = () => {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <CommonLoader color='#fff'/>
           ) : (
             <Text style={styles.buttonText}>{t('change_password')}</Text>
           )}

@@ -9,7 +9,6 @@ import {
     Modal,
     Keyboard,
     Animated,
-    ActivityIndicator,
     TouchableWithoutFeedback,
     KeyboardAvoidingView,
     Platform,
@@ -24,6 +23,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import LottieView from 'lottie-react-native';
 import socketService from '@/src/utils/socketService';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import CommonLoader from '@/src/components/CommonLoader';
 
 const AIChatbotScreen = () => {
     const { chatbotType, chatbotName } = useLocalSearchParams();
@@ -370,7 +370,7 @@ const AIChatbotScreen = () => {
                             disabled={!question.trim()}
                         >
                             {isTyping ? (
-                                <ActivityIndicator color="#fff" size="small" />
+                                <CommonLoader color='#fff' />
                             ) : (
                                 <SendHorizonal size={20} color="#fff" />
                             )}

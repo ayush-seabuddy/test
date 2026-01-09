@@ -10,6 +10,7 @@ import {
   StyleProp,
 } from "react-native";
 import Colors from "../utils/Colors";
+import CommonLoader from "./CommonLoader";
 
 interface GlobalButtonProps extends TouchableOpacityProps {
   title: string;
@@ -39,7 +40,7 @@ const GlobalButton: React.FC<GlobalButtonProps> = ({
       {...rest}
     >
       {loading ? (
-        <ActivityIndicator color={Colors.white} size="small" />
+        <CommonLoader color="#fff"/>
       ) : (
         <Text
           style={[

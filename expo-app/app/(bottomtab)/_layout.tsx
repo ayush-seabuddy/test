@@ -45,7 +45,7 @@ const BottomTabbarLayout = () => {
           const isProfile = route.name === 'profile';
 
           const iconSource = isProfile
-            ? userDetails.profileUrl
+            ? userDetails.profileUrl ?? ImagesAssets.userIcon
             : TAB_ICONS[route.name]?.[
             focused ? 'focused' : 'unfocused'
             ];

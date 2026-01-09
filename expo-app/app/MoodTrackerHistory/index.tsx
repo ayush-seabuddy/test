@@ -18,6 +18,7 @@ import {
 } from "react-native";
 import Toast from "react-native-toast-message";
 import Colors from "@/src/utils/Colors";
+import CommonLoader from "@/src/components/CommonLoader";
 
 const { height } = Dimensions.get("screen");
 
@@ -128,7 +129,9 @@ const MoodTrackerHistory = () => {
           style={{ zIndex: 1 }}
           ListFooterComponent={
             loading ? (
-              <ActivityIndicator size="large" style={styles.loader} color={Colors.darkGreen} />
+              <View style={styles.loader}>
+              <CommonLoader fullScreen/>
+              </View>
             ) : null
           }
         />

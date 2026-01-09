@@ -23,7 +23,7 @@ const ActiveSailorsCard: React.FC<ActiveSailorsCardProps> = ({
   const { t } = useTranslation()
 
   return (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.activeSailorCard}
       onPress={onPress}
       activeOpacity={0.8}
@@ -118,6 +118,8 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     marginTop: 15,
     marginBottom: 8,
+    borderWidth: 0.5,
+    borderColor: '#B0B0B0',
   },
 
   sailorsName: {

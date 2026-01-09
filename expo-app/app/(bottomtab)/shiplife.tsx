@@ -1,4 +1,5 @@
 import { getalladminbuddyupcategories, GETALLBUDDYUPEVENTS, getleaderboard, viewProfile } from '@/src/apis/apiService'
+import CommonLoader from '@/src/components/CommonLoader'
 import GlobalPopOver from '@/src/components/GlobalPopover'
 import { showToast } from '@/src/components/GlobalToast'
 import AdminBuddyUpCategory from '@/src/components/ShipLifeComponent/AdminBuddyUpCategory'
@@ -14,7 +15,7 @@ import { router, useFocusEffect } from 'expo-router'
 import { InfoIcon } from 'lucide-react-native'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, Dimensions, FlatList, ListRenderItem, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Dimensions, FlatList, ListRenderItem, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 const { height } = Dimensions.get('screen');
 
@@ -413,7 +414,7 @@ const ShipLifeScreen = () => {
       <ShipLifeScreenHeader />
       {isLoading ? (
         <View style={styles.fullScreenLoader}>
-          <ActivityIndicator size="large" color={Colors.lightGreen} />
+          <CommonLoader fullScreen/>
         </View>
       ) : !shipId ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>

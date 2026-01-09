@@ -14,6 +14,7 @@ import {
     View,
 } from "react-native";
 import { WebView } from "react-native-webview";
+import CommonLoader from "../CommonLoader";
 
 const { width, height } = Dimensions.get("window");
 
@@ -73,7 +74,7 @@ const PdfImagePreviewModal: React.FC<PdfImagePreviewModalProps> = ({
             startInLoadingState={true}
             renderLoading={() => (
               <View style={styles.loadingOverlay}>
-                <ActivityIndicator size="large" color="#fff" />
+               <CommonLoader fullScreen/>
                 <Text style={styles.loadingText}>Loading PDF...</Text>
               </View>
             )}

@@ -20,6 +20,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
 import { showToast } from '@/src/components/GlobalToast';
 import { createpost, updatepostbyid } from '@/src/apis/apiService';
+import CommonLoader from '@/src/components/CommonLoader';
 
 const { width } = Dimensions.get('window');
 
@@ -312,7 +313,7 @@ const PreviewPostScreen: React.FC = () => {
                     disabled={loading}
                 >
                     {loading ? (
-                        <ActivityIndicator size="small" color="#fff" />
+                        <CommonLoader color="#fff" />
                     ) : (
                         <Text style={styles.shareButtonText}>
                             {isEditMode ? t('update') : t('share')}

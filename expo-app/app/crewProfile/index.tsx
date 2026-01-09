@@ -1,4 +1,5 @@
 import { viewProfile } from '@/src/apis/apiService';
+import CommonLoader from '@/src/components/CommonLoader';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import MediaPreviewModal from '@/src/components/Modals/MediaPreviewModal';
@@ -254,7 +255,7 @@ const Profile: React.FC = () => {
         {/* Loader overlay */}
         {imageLoading && crewProfileDetails.profileUrl && (
           <View style={styles.loaderOverlay}>
-            <ActivityIndicator size="large" color={Colors.primary} />
+           <CommonLoader fullScreen/>
           </View>
         )}
       </ImageBackground>

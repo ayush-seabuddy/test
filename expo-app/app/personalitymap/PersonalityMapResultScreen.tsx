@@ -23,6 +23,7 @@ import {
 } from "react-native";
 
 import { generateAndSharePersonalityPDF } from "@/src/components/PersonalityPDFReport";
+import CommonLoader from "@/src/components/CommonLoader";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -166,7 +167,7 @@ const PersonalityMapResultScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {loading ? <ActivityIndicator size={30} color={Colors.lightGreen} /> : <ScrollView
+      {loading ? <View style={styles.loader}><CommonLoader fullScreen/></View> : <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
       >
@@ -480,4 +481,7 @@ const styles = StyleSheet.create({
     left: 10,
     right: 10,
   },
+  loader:{
+    paddingTop:'50%'
+  }
 });

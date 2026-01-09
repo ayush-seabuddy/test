@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
   partnerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 30,
+    marginRight: 20,
     gap: 5,
   },
   partnerText: {

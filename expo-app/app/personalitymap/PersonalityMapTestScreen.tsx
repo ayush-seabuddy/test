@@ -20,6 +20,7 @@ import PersonalityMapResultModal from '@/src/components/PersonalityMapResultModa
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { BackHandler } from 'react-native';
 import moment from 'moment-timezone';
+import CommonLoader from '@/src/components/CommonLoader';
 
 type AnswerOption = { option: string; score: number };
 type Question = {
@@ -206,7 +207,7 @@ const PersonalityMapTestScreen = () => {
 
     return (
       <View style={styles.footerContainer}>
-        {loadingMore && <ActivityIndicator size="small" color="#84A402" style={{ marginVertical: 20 }} />}
+        {loadingMore && <CommonLoader containerStyle={{ marginVertical: 20 }} />}
         {allLoaded && (
           <>
             <Text style={styles.confidentialityText}>{t('happinessindexdisclaimer')}</Text>
@@ -225,7 +226,7 @@ const PersonalityMapTestScreen = () => {
   if (loading) {
     return (
       <View style={styles.main}>
-        <ActivityIndicator size="large" color="#84A402" />
+        <CommonLoader fullScreen/>
       </View>
     );
   }

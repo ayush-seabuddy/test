@@ -14,6 +14,7 @@ import Colors from '../utils/Colors';
 import PostScreen from './PostScreen';
 import { Image } from 'expo-image';
 import { ImagesAssets } from '../utils/ImageAssets';
+import CommonLoader from './CommonLoader';
 
 export interface Post {
   id: string | number;
@@ -137,7 +138,7 @@ const Posts: React.FC = () => {
     if (!loadingMore) return null;
     return (
       <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color={Colors.lightGreen} />
+        <CommonLoader/>
       </View>
     );
   };
@@ -156,7 +157,7 @@ const Posts: React.FC = () => {
   if (initialLoading && posts.length === 0) {
     return (
       <View style={styles.centerLoader}>
-        <ActivityIndicator size="small" color={Colors.lightGreen} />
+       <CommonLoader/>
       </View>
     );
   }
