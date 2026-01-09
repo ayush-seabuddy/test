@@ -1,9 +1,8 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import * as Notifications from "expo-notifications";
-import { Stack, router } from "expo-router";
+import { Stack, router, usePathname, useSegments } from "expo-router"; // ← added usePathname + useSegments
 import * as SplashScreen from "expo-splash-screen";
-
 import { useCallback, useEffect, useRef } from "react";
 import { I18nextProvider, useTranslation } from "react-i18next";
 import { Linking, Platform, StatusBar, StyleSheet, useColorScheme } from "react-native";
@@ -12,7 +11,6 @@ import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { Provider } from "react-redux";
-
 import { NotificationProvider, useNotification } from "@/Context/NotificationContext";
 import { showToast } from "@/src/components/GlobalToast";
 import { initI18n } from "@/src/localization/i18n";
@@ -23,6 +21,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as TaskManager from 'expo-task-manager';
 import i18n from "i18next";
 import { Appearance } from 'react-native';
+import * as Clarity from '@microsoft/react-native-clarity';
 
 Appearance.setColorScheme('light');
 
@@ -135,7 +134,6 @@ const NotificationHandler = () => {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-
   const { t } = useTranslation();
 
   const [fontsLoaded] = useFonts({
@@ -148,6 +146,32 @@ export default function RootLayout() {
     "WhyteInktrap-Medium": require("../assets/fonts/WhyteInktrap-Medium.ttf"),
   });
 
+  const pathname = usePathname();
+  const segments = useSegments();
+
+  useEffect(() => {
+    // Build a clean screen name (you can customize this format)
+    let screenName = '/';
+
+    if (segments.length > 0) {
+      // For tab + nested routes → e.g. "(bottomtab)/profile/settings" → "Profile/Settings"
+      screenName = segments
+        .filter(s => !s.startsWith('('))           // remove group names
+        .map(s => s.charAt(0).toUpperCase() + s.slice(1)) // capitalize
+        .join(' / ') || 'Home';
+    }
+
+    if (pathname === '/') screenName = 'Home';
+
+    try {
+      Clarity.setCurrentScreenName(screenName);
+      if (__DEV__) {
+        console.log(`[Clarity] Screen changed → ${screenName}`);
+      }
+    } catch (err) {
+      console.warn('[Clarity] setCurrentScreenName failed:', err);
+    }
+  }, [pathname, segments]);
 
   useEffect(() => {
     if (!fontsLoaded) return;
@@ -156,6 +180,12 @@ export default function RootLayout() {
       try {
         await initI18n();
         socketService.initializeSocket();
+        Clarity.initialize('t9oq6u2hhw', {
+          logLevel: __DEV__ ? Clarity.LogLevel.Verbose : Clarity.LogLevel.None,
+        });
+        if (__DEV__) {
+          console.log('[Clarity] Initialized successfully');
+        }
       } catch (e) {
         console.warn("Init error:", e);
       } finally {
@@ -165,8 +195,6 @@ export default function RootLayout() {
 
     initApp();
   }, [fontsLoaded]);
-
-
 
   if (!fontsLoaded) return null;
 

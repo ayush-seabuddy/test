@@ -21,7 +21,7 @@ interface CommonLoaderProps {
 }
 
 const CommonLoader: React.FC<CommonLoaderProps> = ({
-    color = Colors.lightGreen,
+    color = Colors.darkGreen,
     fullScreen = false,
     containerStyle,
 }) => {

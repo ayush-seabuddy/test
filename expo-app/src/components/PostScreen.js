@@ -29,6 +29,20 @@ import {
   View,
 } from 'react-native';
 import ReactTimeAgo from 'react-time-ago';
+import TimeAgo from 'javascript-time-ago';
+import en from 'javascript-time-ago/locale/en.json';
+
+// Ensure locale data is available for ReactTimeAgo. Use addLocale which is
+// safe to call multiple times. Wrap in try/catch to avoid crashes if the
+// library internals differ across versions or if locale is already present.
+try {
+  if (typeof TimeAgo.addLocale === 'function') {
+    TimeAgo.addLocale(en);
+  }
+} catch (e) {
+  // eslint-disable-next-line no-console
+  console.warn('Failed to ensure TimeAgo locale is registered:', e);
+}
 import { likecommentpost, updatepost } from '../apis/apiService';
 import Colors from '../utils/Colors';
 import { ImagesAssets } from '../utils/ImageAssets';
@@ -204,7 +218,7 @@ const PostMedia = ({
       return (
         <TouchableOpacity onPress={() => handleMediaPress(index)}>
           <View style={[styles.imageContainer, { height: (width - 66) * ratioValue }]}>
-            {imageLoading[item.uri] && <ActivityIndicator style={StyleSheet.absoluteFill} size="small" color="#8DAF02" />}
+            {imageLoading[item.uri] && <ActivityIndicator style={StyleSheet.absoluteFill} size="small" color={Colors.darkGreen} />}
             <Image
               style={{ width: '100%', height: '100%' }}
               source={{ uri: item.uri }}
@@ -287,7 +301,7 @@ const PostContent = ({
       </View>
       {post.createdAt && (
         <Text style={styles.postTimestamp}>
-          <ReactTimeAgo date={post.createdTime ? new Date(Number(post.createdTime)) : new Date(post.createdAt)} locale={i18n.language} component={Text} timeStyle="short" />
+          <ReactTimeAgo date={post.createdTime ? new Date(Number(post.createdTime)) : new Date(post.createdAt)} locale="en" component={Text} timeStyle="short" />
         </Text>
       )}
       {!hasMedia && hashtagsDisplay}
