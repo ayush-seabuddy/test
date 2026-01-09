@@ -107,7 +107,7 @@ const AssessmentList = ({ isProfileScreen = false }: { isProfileScreen?: boolean
 
   const handleHappinessPress = () => {
     const happinessData = testArray[0]
-    const path = happinessData?.open || profileDetails?.isHappinessIndex
+    const path = happinessData?.open
       ? '/monthlyhappinessindex'
       : '/monthlyhappinessindex/AllAssessmentResultListing';
     router.push({
@@ -120,7 +120,7 @@ const AssessmentList = ({ isProfileScreen = false }: { isProfileScreen?: boolean
 
   const handlePOMSPress = () => {
     const pomsData = testArray[1]
-    const path = pomsData?.open || profileDetails?.isPOMSAssessment
+    const path = pomsData?.open
       ? '/monthlywellbeingpulse'
       : '/monthlyhappinessindex/AllAssessmentResultListing';
     router.push({

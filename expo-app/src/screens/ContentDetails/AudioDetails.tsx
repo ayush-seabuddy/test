@@ -2,6 +2,7 @@ import CustomLottie from '@/src/components/CustomLottie';
 import Slider from '@react-native-community/slider';
 import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { router } from "expo-router";
+import { AppState, AppStateStatus } from 'react-native';
 import { ChevronLeft, FastForward, Pause, Play, Repeat, Repeat1 } from 'lucide-react-native';
 import React from 'react';
 import { ActivityIndicator, Dimensions, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -11,14 +12,15 @@ const { width, height } = Dimensions.get('window');
 
 const AudioDetails = ({ data: fullDetails }: { data: Content }) => {
   const audioUrl = fullDetails?.contentUrl?.[0];
+const appState = React.useRef(AppState.currentState);
+React.useEffect(() => {
+  setAudioModeAsync({
+    playsInSilentMode: true,
+    shouldPlayInBackground: false,
+    interruptionMode: 'mixWithOthers',
+  });
+}, []);
 
-  React.useEffect(() => {
-    setAudioModeAsync({
-      playsInSilentMode: true,
-      shouldPlayInBackground: true,
-      interruptionMode: 'mixWithOthers',
-    });
-  }, []);
 
   const player = useAudioPlayer(audioUrl ?? '', {
     updateInterval: 500,

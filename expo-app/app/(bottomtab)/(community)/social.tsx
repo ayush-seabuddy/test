@@ -36,7 +36,7 @@ const HomeTab = () => {
         style={styles.fab}
         activeOpacity={0.8}
         onPress={() => {
-          router.push('/newpost');
+          router.push('/customsurvey');
         }}
       >
         <Image source={ImagesAssets.PlusImage} style={{ height: 20, width: 20 }} />
