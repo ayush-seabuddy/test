@@ -3,12 +3,10 @@ import { formatDate, getUserDetails } from '@/src/utils/helperFunctions';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
 import moment from 'moment-timezone';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
   Dimensions,
   FlatList,
   Modal,
@@ -16,14 +14,13 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { addeditdeletebuddyupevent, GETALLBUDDYUPEVENTS } from '../apis/apiService';
-import Colors from '../utils/Colors';
+import CommonLoader from './CommonLoader';
+import EmptyComponent from './EmptyComponent';
 import GlobalHeader from './GlobalHeader';
 import { showToast } from './GlobalToast';
-import EmptyComponent from './EmptyComponent';
-import CommonLoader from './CommonLoader';
 
 const { width } = Dimensions.get('window');
 

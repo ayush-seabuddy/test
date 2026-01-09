@@ -322,7 +322,7 @@ export interface GetAnalyticsParams {
 }
 
 export interface signoutPayload {
-  deviceToken: string[]
+  deviceTokens: string[]
 }
 
 

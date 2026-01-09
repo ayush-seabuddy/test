@@ -13,7 +13,7 @@ import { RouteProp, useRoute } from '@react-navigation/native';
 import { Image } from 'expo-image';
 import * as ImagePicker from "expo-image-picker";
 import { router, useFocusEffect } from 'expo-router';
-import { Camera, Check, Edit, Paperclip, Reply, SendHorizonal, Trash2, X } from 'lucide-react-native';
+import { Camera, Check, Edit, Paperclip, RefreshCw, Reply, SendHorizonal, Trash2, X } from 'lucide-react-native';
 import moment from 'moment-timezone';
 import { useCallback, useRef, useState } from 'react';
 import type { TextInput as RNTextInput } from 'react-native';
@@ -34,15 +34,8 @@ const ChatRoomScreen = () => {
   const route = useRoute<ChatRoomRouteProp>()
   const chatRoomDetails = typeof route.params?.chatRoomDetails === 'string' ? JSON.parse(route.params?.chatRoomDetails) : route.params?.chatRoomDetails
   const chatRoomId = chatRoomDetails?.id || route.params?.chatRoomId;
-  const [participant , setParticipant] = useState(chatRoomDetails?.participantIds);
-  const [hederDetails ,setHeaderDetails] = useState({
-    navigation: () => router.back(),
-    data: chatRoomDetails,
-    participant: chatRoomDetails?.participants?.length,
-    GroupName: chatRoomDetails?.groupName,
-    setSearchValue: () => { },
-    participantIds: participant
-  });
+  const [participant, setParticipant] = useState(chatRoomDetails?.participantIds);
+
 
 
   const dispatch = useDispatch();
@@ -60,7 +53,7 @@ const ChatRoomScreen = () => {
   const [recording, setRecording] = useState(false);
   // const [audioRecorderPlayer] = useState(new AudioRecorderPlayer());
   const [audioPath, setAudioPath] = useState(null);
-  const flatListRef = useRef(null);
+  const flatListRef = useRef<FlatList>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPageDataWaiting, setLastPageDataWaiting] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -69,7 +62,7 @@ const ChatRoomScreen = () => {
   const [keyboardPadding, setKeyboardPadding] = useState(0);
   const [chatItemPadding, setChatItemPadding] = useState(0);
   const [mediaModalVisible, setMediaModalVisible] = useState(false);
-  const [selectedMedia, setSelectedMedia] = useState<{ uri: string; isVideo: boolean; imageUri?: string , fileName?: any , fileSize?: number , type?: any}>({ uri: "", isVideo: false });
+  const [selectedMedia, setSelectedMedia] = useState<{ uri: string; isVideo: boolean; imageUri?: string, fileName?: any, fileSize?: number, type?: any }>({ uri: "", isVideo: false });
   const [imageLoading, setImageLoading] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingMessage, setEditingMessage] = useState<ChatMessage | null>(null);
@@ -83,27 +76,55 @@ const ChatRoomScreen = () => {
   const PAGE_SIZE = 50;
   const bottomSheetRef = useRef<any>(null);
   const [reactionCountList, setReactionCountList] = useState<ReactionData[]>([]);
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState<any>([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
   const [searchQuery, setSearchQuery] = useState("");
+
+ const onSearch = (searchValue: string) => {
+    setSearchQuery(searchValue);
+    if (!searchValue || !chatListState || chatListState.length === 0) {
+      setSearchResults([]);
+      setCurrentSearchIndex(-1);
+      return;
+    }
+
+    const filtered = chatListState
+      .map((item, index) => ({ ...item, originalIndex: index }))
+      .filter((item) => item.content.toLowerCase().includes(searchValue.toLowerCase()));
+
+    setSearchResults(filtered);
+    setCurrentSearchIndex(filtered.length > 0 ? 0 : -1);
+
+    if (filtered.length > 0) {
+      flatListRef?.current?.scrollToIndex({ index: filtered[0].originalIndex, animated: true });
+    }
+  };
+  const [hederDetails, setHeaderDetails] = useState({
+    navigation: () => router.back(),
+    data: chatRoomDetails,
+    participant: chatRoomDetails?.participants?.length,
+    GroupName: chatRoomDetails?.groupName,
+    setSearchValue:onSearch,
+    participantIds: participant
+  });
 
   const emojis = ["👍", "😊", "❤️", "😂", "😮", "😢"];
 
   const { id: senderId, shipId } = useSelector((state: RootState) => state.userDetails)
 
-   
-          const fetchProfileDetails = async () => {
-              let result = await viewProfile();
-              if (result?.data) {
-                  const object = result.data
-                  for (const property in object) {
-                      console.log(`${property}: ${object[property]}`);
-                      dispatch(updateUserField({ key: property, value: object[property] }))
-                  }
-  
-              }
-          }
-       
+
+  const fetchProfileDetails = async () => {
+    let result = await viewProfile();
+    if (result?.data) {
+      const object = result.data
+      for (const property in object) {
+        console.log(`${property}: ${object[property]}`);
+        dispatch(updateUserField({ key: property, value: object[property] }))
+      }
+
+    }
+  }
+
 
   interface ReactionData {
     createdAt?: string;
@@ -384,11 +405,11 @@ const ChatRoomScreen = () => {
   );
 
 
- useFocusEffect(
+  useFocusEffect(
     useCallback(() => {
-     if(!senderId){
-       fetchProfileDetails()
-     }
+      if (!senderId) {
+        fetchProfileDetails()
+      }
 
     }, [senderId])
   );
@@ -399,8 +420,8 @@ const ChatRoomScreen = () => {
         setLoading(false);
         setLoadingMore(false);
       }, 5000);
-      if(!senderId){
-         return
+      if (!senderId) {
+        return
 
       }
       const payload = {
@@ -414,19 +435,17 @@ const ChatRoomScreen = () => {
       socketService.emit("joinChatRoom", payload);
 
       socketService.on("userPreviousMessages", (data) => {
-        if(!chatRoomDetails){
-         
-
-
-          setHeaderDetails((prev)=> {
-          return {
-            ...prev,
-          GroupName: data?.groupName,
-          participantIds: data?.participantIds,
-          setSearchValue: () => { },
-          participant: data?.participantIds?.length,
-          }})
-        }
+       
+          setHeaderDetails((prev) => {
+            return {
+              ...prev,
+              GroupName: data?.groupName,
+              participantIds: data?.participantIds,
+              setSearchValue: onSearch,
+              participant: data?.participantIds?.length,
+            }
+          })
+       
         setParticipant(data.participantIds);
         const newChatList = [...chatListState, ...data.previousMessages];
         setChatList(newChatList);
@@ -441,7 +460,7 @@ const ChatRoomScreen = () => {
         socketService.off("userPreviousMessages");
       }
 
-    }, [currentPage , senderId])
+    }, [currentPage, senderId])
   );
 
 
@@ -454,23 +473,42 @@ const ChatRoomScreen = () => {
   }
 
 
+  const retryFetch = () => {
+    setLoading(true)
+    // fetchChatRooms()
+    const payload = {
+      userId: senderId,
+      chatRoomId: chatRoomId,
+      page: 1,
+      limit: 30,
+    };
+    setLastPageDataWaiting(1);
 
-  const sendMessageImageUrl = async (contentImage: string  , chat_payload: {
-        senderId: string,
-        chatRoomId: string,
-        content: string,
-        createdAt: string,
-        messageType: string,
-        createdAtId: number,
-        replyTo: string | null,
-      }) => {
+    socketService.emit("joinChatRoom", payload);
+    // optional safety timeout
+    setTimeout(() => {
+      setLoading(false)
+    }, 4000)
+  }
+
+
+
+  const sendMessageImageUrl = async (contentImage: string, chat_payload: {
+    senderId: string,
+    chatRoomId: string,
+    content: string,
+    createdAt: string,
+    messageType: string,
+    createdAtId: number,
+    replyTo: string | null,
+  }) => {
     if (!contentImage || contentImage.trim() === "") return;
 
     try {
 
 
       socketService.emit("userSendMessage", chat_payload);
-      
+
       setContentImage("");
       setReplyingTo(null);
     } catch (error) {
@@ -479,7 +517,7 @@ const ChatRoomScreen = () => {
   };
 
 
-  const uploadImage = async (photo: string ,fileName: any , fileSize: any , type: any) => {
+  const uploadImage = async (photo: string, fileName: any, fileSize: any, type: any) => {
     if (!photo) return;
     setLoading(true);
     try {
@@ -496,16 +534,16 @@ const ChatRoomScreen = () => {
       };
       setChatList((prevMessageList) => [chat_payload as ChatMessage, ...prevMessageList]);
 
-      const apiResponse = await uploadfile({ file: photo , fileName: fileName , fileSize: fileSize , type: type });
+      const apiResponse = await uploadfile({ file: photo, fileName: fileName, fileSize: fileSize, type: type });
       if (apiResponse.success && apiResponse.status == 200) {
         setContentImage(apiResponse.data);
         chat_payload.content = apiResponse.data
-        await sendMessageImageUrl(apiResponse.data , chat_payload);
+        await sendMessageImageUrl(apiResponse.data, chat_payload);
 
       } else {
       }
     } catch (err) {
-      
+
     } finally {
       setLoading(false);
       setImageLoading(false);
@@ -531,8 +569,9 @@ const ChatRoomScreen = () => {
       if (!uri) return;
       console.log("uri: ", uri);
       setMediaModalVisible(true);
-      setSelectedMedia({ uri: uri, isVideo: false, imageUri: uri , 
-        fileName: result.assets?.[0]?.fileName ,
+      setSelectedMedia({
+        uri: uri, isVideo: false, imageUri: uri,
+        fileName: result.assets?.[0]?.fileName,
         fileSize: result.assets?.[0]?.fileSize,
         type: result.assets?.[0]?.type
       });
@@ -631,7 +670,15 @@ const ChatRoomScreen = () => {
         {loading ? (
           <ActivityIndicator size="small" color={Colors.lightGreen} />
         ) : (
+          <>
+          
           <Text style={{ color: Colors.lightGreen }}>No messages yet</Text>
+          <TouchableOpacity
+            onPress={retryFetch}
+            >
+          <RefreshCw size={30} color={Colors.lightGreen} />
+          </TouchableOpacity>
+          </>
         )}
       </View>
     );
@@ -645,7 +692,7 @@ const ChatRoomScreen = () => {
 
 
       <View style={styles.container}>
-        <ChatRoomHeader  {...hederDetails} />
+        <ChatRoomHeader  {...hederDetails}  />
         <FlatList
           ref={flatListRef}
           data={getGroupedChatList()}
@@ -882,7 +929,7 @@ const ChatRoomScreen = () => {
                 setImageUploading(true);
                 setLoading(true);
                 setMediaModalVisible(false);
-                uploadImage(selectedMedia.imageUri , selectedMedia.fileName , selectedMedia.fileSize , selectedMedia.type);
+                uploadImage(selectedMedia.imageUri, selectedMedia.fileName, selectedMedia.fileSize, selectedMedia.type);
               }
             }}
           />
@@ -996,7 +1043,7 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     marginVertical: 2,
-    marginHorizontal:8
+    marginHorizontal: 8
   },
   icon: {
     width: 23,

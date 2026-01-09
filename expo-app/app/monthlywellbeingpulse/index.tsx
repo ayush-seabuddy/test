@@ -1,23 +1,23 @@
+import { getallassessments, saveassessmentresponse } from '@/src/apis/apiService';
+import GlobalButton from '@/src/components/GlobalButton';
+import { showToast } from '@/src/components/GlobalToast';
+import Colors from '@/src/utils/Colors';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { ChevronLeft, TriangleAlert } from 'lucide-react-native';
+import moment from 'moment';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-    StyleSheet,
-    Text,
-    View,
-    ScrollView,
-    TouchableOpacity,
+    BackHandler,
     Dimensions,
     Modal,
-    BackHandler,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import Colors from '@/src/utils/Colors';
-import { useTranslation } from 'react-i18next';
-import { ChevronLeft, TriangleAlert } from 'lucide-react-native';
-import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { ProgressBar } from 'react-native-paper';
-import { getallassessments, saveassessmentresponse } from '@/src/apis/apiService';
-import { showToast } from '@/src/components/GlobalToast';
-import moment from 'moment';
-import GlobalButton from '@/src/components/GlobalButton';
 
 const { height } = Dimensions.get('window');
 
@@ -183,7 +183,7 @@ const MonthlyWellbeingPulseTestScreen = () => {
                 {!isRequiredTest && (
                     <TouchableOpacity
                         onPress={() =>
-                            router.canGoBack?.() ? router.back() : router.replace('/home')
+                            router.canGoBack() ? router.back() : router.replace('/home')
                         }
                         style={styles.backButton}
                         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}

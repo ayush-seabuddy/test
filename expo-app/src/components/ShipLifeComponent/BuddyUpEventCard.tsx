@@ -1,14 +1,14 @@
-import { Dimensions, FlatList, StyleSheet, Text, View, TouchableOpacity, Modal, StatusBar } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import { Image } from 'expo-image'
-import { useTranslation } from 'react-i18next'
+import { addeditdeletebuddyupevent } from '@/src/apis/apiService'
 import { ImagesAssets } from '@/src/utils/ImageAssets'
 import { formatDate, getUserDetails } from '@/src/utils/helperFunctions'
-import moment from 'moment-timezone'
-import { Ionicons } from "@expo/vector-icons";
-import { addeditdeletebuddyupevent } from '@/src/apis/apiService'
-import { showToast } from '../GlobalToast'
+import { Ionicons } from "@expo/vector-icons"
+import { Image } from 'expo-image'
 import { router } from 'expo-router'
+import moment from 'moment-timezone'
+import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Dimensions, FlatList, Modal, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { showToast } from '../GlobalToast'
 
 export interface BuddyUpEvent {
     id: string
@@ -214,7 +214,6 @@ export default BuddyUpEventCard
 const styles = StyleSheet.create({
     main: { flex: 1, backgroundColor: '#fff' },
     card: {
-        height: height * 0.38,
         width: 220,
         backgroundColor: '#f5f5f5',
         padding: 10,
@@ -228,10 +227,8 @@ const styles = StyleSheet.create({
     imageStyle: { height: 180, borderRadius: 10, width: '100%' },
     buddyupeventName: { marginTop: 8, fontSize: 14, color: "#222", fontFamily: "Poppins-SemiBold" },
     organizedby: { fontSize: 12, color: "grey", fontFamily: "Poppins-Regular" },
-
     menuWrapper: { position: "absolute", right: 20, top: 20 },
     menuIcon: { padding: 8, backgroundColor: '#fff', borderRadius: 40, borderWidth: 0.4, borderColor: 'grey' },
-
     dropdownMenu: {
         backgroundColor: "#fff",
         borderRadius: 6,

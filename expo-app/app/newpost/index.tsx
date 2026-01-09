@@ -31,7 +31,6 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { Video as VideoCompressor } from 'react-native-compressor';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 type AllUsers = {
@@ -231,14 +230,6 @@ const NewPostScreen = () => {
 
       for (let media of newMedia) {
         let mediaFile = media;
-        if(media.type === 'video' ) {
-          mediaFile.uri = await VideoCompressor.compress(media.uri,
-          {},
-          (progress) => {
-            console.log('Compression Progress: ', progress);
-          }
-        );
-        }
         const response = await uploadfile({
           file: mediaFile.uri,
           fileName: media.fileName,

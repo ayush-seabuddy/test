@@ -2,12 +2,11 @@ import Announcements from '@/src/components/Announcements';
 import Posts from '@/src/components/Posts';
 import SocialHeader from '@/src/screens/community/SocialHeader';
 import Colors from '@/src/utils/Colors';
-import React from 'react';
-import { FlatList, StyleSheet, View, TouchableOpacity } from 'react-native';
-import { Plus } from 'lucide-react-native';
-import { router } from 'expo-router';
-import { Image } from 'expo-image';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import React from 'react';
+import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 const HomeTab = () => {
   return (
@@ -36,7 +35,7 @@ const HomeTab = () => {
         style={styles.fab}
         activeOpacity={0.8}
         onPress={() => {
-          router.push('/customsurvey');
+          router.push('/newpost');
         }}
       >
         <Image source={ImagesAssets.PlusImage} style={{ height: 20, width: 20 }} />

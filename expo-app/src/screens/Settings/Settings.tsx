@@ -32,7 +32,7 @@ const Settings = () => {
 
             if (typeof ExpoPushToken === "string") {
                 const payload: signoutPayload = {
-                    deviceToken: [ExpoPushToken],
+                    deviceTokens: [ExpoPushToken],
                 };
 
                 console.log("payload:", payload);
