@@ -64,7 +64,6 @@ const ChatRoomScreen = () => {
   const [chatItemPadding, setChatItemPadding] = useState(0);
   const [mediaModalVisible, setMediaModalVisible] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<{ uri: string; isVideo: boolean; imageUri?: string, fileName?: any, fileSize?: number, type?: any }>({ uri: "", isVideo: false });
-  const [selectedMedia, setSelectedMedia] = useState<{ uri: string; isVideo: boolean; imageUri?: string, fileName?: any, fileSize?: number, type?: any }>({ uri: "", isVideo: false });
   const [imageLoading, setImageLoading] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingMessage, setEditingMessage] = useState<ChatMessage | null>(null);
