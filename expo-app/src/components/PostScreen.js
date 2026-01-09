@@ -1,40 +1,40 @@
-import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  ActivityIndicator,
-  FlatList,
-  Modal,
-  TextInput,
-  Image,
-} from 'react-native';
+import FullScreenMediaModal from '@/app/fullscreenmediapreview';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FlashList } from '@shopify/flash-list';
+import { useRouter } from 'expo-router';
+import { VideoView, useVideoPlayer } from 'expo-video';
+import { t } from 'i18next';
 import {
+  AlertTriangle,
   Heart,
   MessageCircle,
-  TrendingUp,
+  MoreVertical,
+  PencilIcon,
   Play,
   Trash,
-  AlertTriangle,
-  PencilIcon,
-  MoreVertical,
+  TrendingUp,
 } from 'lucide-react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  Image,
+  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import ReactTimeAgo from 'react-time-ago';
-import { VideoView, useVideoPlayer } from 'expo-video';
-import { useRouter } from 'expo-router';
-import BottomSheet from './BottomSheet';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { likecommentpost, updatepost } from '../apis/apiService';
-import { showToast } from './GlobalToast';
-import FullScreenMediaModal from '@/app/fullscreenmediapreview';
-import CommentsSection from './CommentsSection';
 import Colors from '../utils/Colors';
-import { t } from 'i18next';
 import { ImagesAssets } from '../utils/ImageAssets';
+import BottomSheet from './BottomSheet';
+import CommentsSection from './CommentsSection';
+import { showToast } from './GlobalToast';
 
 const { width } = Dimensions.get('window');
 
@@ -189,6 +189,7 @@ const PostMedia = ({
   viewabilityConfigCallbackPairs,
   hashtagsDisplay,
 }) => {
+  console.log("post: ", post);
   const ratioValue = post?.ratioValue || 1;
 
   const renderItem = useCallback(

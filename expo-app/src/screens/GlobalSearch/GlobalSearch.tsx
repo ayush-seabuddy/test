@@ -57,6 +57,20 @@ const GlobalSearch = () => {
     () => sections.map((section) => hasData(section.dataKey, section)),
     [results]
   );
+
+  useEffect(() => {
+    const isCurrentSectionVisible = visibleSections.find(
+      (s) => s.section.id === activeSection
+    )?.visible;
+
+    if (!isCurrentSectionVisible) {
+      const firstVisibleSection = visibleSections.find((s) => s.visible);
+      if (firstVisibleSection) {
+        setActiveSection(firstVisibleSection.section.id as any);
+      }
+    }
+  }, [visibleSections, activeSection]);
+
   const debounceTimeout = useRef<any>(null);
 
   const searchQuery = async (query: string) => {
