@@ -23,7 +23,6 @@ import { ArrowRightCircle, Hash, Play, Tag, X } from 'lucide-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
   FlatList,
   Keyboard,
   StyleSheet,

@@ -1,5 +1,6 @@
 import { viewContentDetails } from '@/src/apis/apiService';
 import CommonLoader from '@/src/components/CommonLoader';
+import EmptyComponent from '@/src/components/EmptyComponent';
 import ArticleDetails from '@/src/screens/ContentDetails/ArticleDetails';
 import AudioDetails from '@/src/screens/ContentDetails/AudioDetails';
 import VideoDetails from '@/src/screens/ContentDetails/VideoDetails';
@@ -72,7 +73,7 @@ const ContentDetailsScreen = () => {
           alignItems: 'center',
         }}
       >
-       <CommonLoader fullScreen/>
+        <CommonLoader fullScreen />
       </View>
     );
   }
@@ -80,7 +81,7 @@ const ContentDetailsScreen = () => {
   if (!data) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>{t('nodataavailable')}</Text>
+        <EmptyComponent text={t('nodataavailable')} />
       </View>
     );
   }
@@ -88,7 +89,7 @@ const ContentDetailsScreen = () => {
   switch (data.contentType) {
     case "ARTICLE":
       return <ArticleDetails data={data} />;
-   case "ANNOUNCEMENT":
+    case "ANNOUNCEMENT":
       return <ArticleDetails data={data} />;
     case "VIDEO":
       return <VideoDetails data={data} />;
