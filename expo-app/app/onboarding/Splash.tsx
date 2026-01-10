@@ -18,8 +18,9 @@ import { viewProfile, viewUserTest } from '@/src/apis/apiService';
 import AppContainer from '@/src/components/AppContainer';
 import { showToast } from '@/src/components/GlobalToast';
 import { RootState } from '@/src/redux/store';
+import { updateUserField } from '@/src/redux/userDetailsSlice';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const { height } = Dimensions.get('window');
 
@@ -53,6 +54,8 @@ const Splash = () => {
   const translateAnim = useRef(new Animated.Value(-height)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
   const headingSlideAnim = useRef(new Animated.Value(0)).current;
+  const dispatch = useDispatch();
+
 
   /** ---------------- API HELPERS ---------------- */
 
@@ -70,6 +73,13 @@ const Splash = () => {
         packageName,
         version,
       });
+
+      if (apiResponse?.data) {
+        const object = apiResponse.data
+        for (const property in object) {
+          dispatch(updateUserField({ key: property, value: object[property] }))
+        }
+      }
 
       if (apiResponse?.success && apiResponse?.status === 200) {
         return apiResponse.data;

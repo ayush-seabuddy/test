@@ -3,6 +3,7 @@ import CommonLoader from "@/src/components/CommonLoader"; // ← Make sure this 
 import CustomLottie from "@/src/components/CustomLottie";
 import GlobalHeader from "@/src/components/GlobalHeader";
 import { showToast } from "@/src/components/GlobalToast";
+import { MoodCheckInModal } from "@/src/components/Modals/MoodCheckInModal";
 import { RootState } from "@/src/redux/store";
 import Colors from "@/src/utils/Colors";
 import { height, width } from "@/src/utils/helperFunctions";
@@ -34,7 +35,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { ActivityIndicator, Modal } from "react-native-paper";
 import { useSelector } from "react-redux";
 
 interface MoodTrackerItem {
@@ -586,7 +586,7 @@ const MoodTracker: React.FC = () => {
           />
         </ScrollView>
 
-        <Modal
+        {/* <Modal
           visible={modalVisible}
           onDismiss={resetAndCloseModal}
           contentContainerStyle={styles.modalContainer}
@@ -606,7 +606,17 @@ const MoodTracker: React.FC = () => {
               onClose={resetAndCloseModal}
             />
           )}
-        </Modal>
+        </Modal> */}
+
+        <MoodCheckInModal
+  visible={modalVisible}
+  onClose={() => setModalVisible(false)}
+  onSuccess={() => {
+    setIsTodayChecked(true);
+    fetchMonthlyData(currentDate.getMonth() + 1, currentDate.getFullYear());
+  }}
+  userName={userDetails?.fullName?.split(" ")?.[0]}
+/>
 
         <CustomLottie
           customSyle={styles.backgroundLottie}
