@@ -15,6 +15,7 @@ import { X, Volume2, VolumeX } from "lucide-react-native";
 import ImageViewer from "react-native-image-zoom-viewer";
 import Video, { VideoRef } from "react-native-video";
 import Colors from "@/src/utils/Colors";
+import CommonLoader from "@/src/components/CommonLoader";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -157,7 +158,7 @@ const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
           
           {loadingStates[index] && (
             <View style={styles.loaderContainer}>
-              <ActivityIndicator size="large" color="#ffffff" />
+              <CommonLoader color="#ffffff" />
             </View>
           )}
           
@@ -248,7 +249,7 @@ const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
               renderIndicator={() => <View />}
               loadingRender={() => (
                 <View style={styles.loaderContainer}>
-                  <ActivityIndicator size="large" color="#ffffff" />
+                  <CommonLoader color="#ffffff" />
                 </View>
               )}
               backgroundColor="transparent"

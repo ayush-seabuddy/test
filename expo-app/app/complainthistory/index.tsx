@@ -10,10 +10,12 @@ import { formatDate, formatStatus } from '@/src/utils/helperFunctions'
 import Colors from '@/src/utils/Colors'
 import { Image } from 'expo-image'
 import { ImagesAssets } from '@/src/utils/ImageAssets'
+import CommonLoader from '@/src/components/CommonLoader'
 
 interface Complaint {
     id: string,
     status: string,
+    adminResponse:string,
     createdAt: string,
     helpline: {
         helplineName: string,
@@ -69,12 +71,12 @@ const ComplaintHistoryScreen = () => {
 
     const ListFooter = () =>
         loadingMore ? (
-            <ActivityIndicator size="small" style={{ marginVertical: 20 }} color={Colors.lightGreen} />
+            <CommonLoader/>
         ) : null;
 
     if (loading) return (
         <View style={styles.loaderView}>
-            <ActivityIndicator size="large" color={Colors.lightGreen} />
+            <CommonLoader fullScreen/>
         </View>
     );
 
@@ -97,6 +99,7 @@ const ComplaintHistoryScreen = () => {
                                     params: {
                                         complaintId: item.id,
                                         complaintStatus: item.status,
+                                        complaintResponse:item.adminResponse
                                     },
                                 });
                             }}

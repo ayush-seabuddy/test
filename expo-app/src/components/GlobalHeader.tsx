@@ -1,4 +1,6 @@
 import Colors from "@/src/utils/Colors";
+import { router } from "expo-router";
+import { ChevronLeft } from "lucide-react-native";
 import React, { ReactNode } from "react";
 import {
   Platform,
@@ -9,8 +11,6 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import { router } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
 
 interface GlobalHeaderProps {
   title?: string;
@@ -40,7 +40,7 @@ const GlobalHeader: React.FC<GlobalHeaderProps> = ({
     if (onLeftPress) {
       onLeftPress();
     } else {
-      router.back();
+     router.canGoBack() ? router.back() : router.replace('/home'); 
     }
   };
 
@@ -123,6 +123,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
+    marginTop:3,
     fontSize: 15,
     fontFamily: "Poppins-SemiBold",
     color: Colors.textPrimary || "#000",

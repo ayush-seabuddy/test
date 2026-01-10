@@ -12,6 +12,8 @@ import { Dropdown } from 'react-native-element-dropdown'
 import { addupdateshipstatus, listallusers, offboardonboardcrew } from '@/src/apis/apiService'
 import { getUserDetails } from '@/src/utils/helperFunctions'
 import { showToast } from '@/src/components/GlobalToast'
+import EmptyComponent from '@/src/components/EmptyComponent'
+import CommonLoader from '@/src/components/CommonLoader'
 
 interface UserProfile {
     id: string;
@@ -72,11 +74,11 @@ const CrewListingScreen = () => {
 
             if (apiResponse.success && apiResponse.status === 200) {
                 const newUsers = apiResponse.data.usersList || [];
-
+                const filteredUsers = newUsers.filter((user: UserProfile) => user.id !== userDetails.id);
                 if (append) {
-                    setCrewList(prev => [...prev, ...newUsers]);
+                    setCrewList(prev => [...prev, ...filteredUsers]);
                 } else {
-                    setCrewList(newUsers);
+                    setCrewList(filteredUsers);
                 }
 
                 setHasMore(newUsers.length === PAGE_SIZE);
@@ -256,7 +258,7 @@ const CrewListingScreen = () => {
             }
             {loading ? (
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', }}>
-                    <ActivityIndicator size="large" color={Colors.lightGreen} />
+                   <CommonLoader fullScreen/>
                 </View>
             ) : (
                 <FlatList
@@ -267,7 +269,7 @@ const CrewListingScreen = () => {
                     onEndReachedThreshold={0.5}
                     ListFooterComponent={() => loadingMore && (
                         <View style={{ paddingVertical: 20 }}>
-                            <ActivityIndicator size="small" color={Colors.lightGreen} />
+                            <CommonLoader/>
                         </View>
                     )}
                     renderItem={({ item }) => {
@@ -278,7 +280,14 @@ const CrewListingScreen = () => {
                             <View style={styles.crewlistView}>
                                 <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
                                     <View style={styles.rowView}>
-                                        <View style={styles.profileContainer}>
+                                        <TouchableOpacity style={styles.profileContainer} onPress={() => {
+                                            router.push({
+                                                pathname: '/crewProfile',
+                                                params: {
+                                                    crewId: item.id
+                                                }
+                                            })
+                                        }}>
                                             <Image
                                                 source={item.profileUrl}
                                                 style={styles.profileIcon}
@@ -286,7 +295,7 @@ const CrewListingScreen = () => {
                                                 contentFit="cover"
                                             />
                                             {item.isBoarded && <View style={styles.onlineDot} />}
-                                        </View>
+                                        </TouchableOpacity>
 
                                         <View style={styles.nameanddesignationView}>
                                             <Text style={styles.name}>{item.fullName}</Text>
@@ -309,6 +318,12 @@ const CrewListingScreen = () => {
                         );
                     }}
                     contentContainerStyle={{ paddingBottom: 50 }}
+                    ListEmptyComponent={
+                        <View style={styles.nocrewfound}>
+                            <EmptyComponent text={t('nocrewfound')} />
+
+                        </View>
+                    }
                 />
             )}
 
@@ -416,7 +431,7 @@ const CrewListingScreen = () => {
                                     onPress={() => selectedUser && handleToggleBoard(selectedUser)}
                                     disabled={actionLoading}
                                 >
-                                    {actionLoading ? <ActivityIndicator size="small" color="#ffffff" /> : <Text style={styles.exitButtonText}>{t('yes')}</Text>}
+                                    {actionLoading ? <CommonLoader color='#fff'/>: <Text style={styles.exitButtonText}>{t('yes')}</Text>}
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -444,7 +459,7 @@ const CrewListingScreen = () => {
                                     onPress={handleRemoveFromShip}
                                     disabled={actionLoading}
                                 >
-                                    {actionLoading ? <ActivityIndicator size="small" color="#ffffff" /> : <Text style={styles.exitButtonText}>{t('yes')}</Text>}
+                                    {actionLoading ? <CommonLoader color='#fff'/> : <Text style={styles.exitButtonText}>{t('yes')}</Text>}
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -502,6 +517,7 @@ const styles = StyleSheet.create({
     optionsModalContainer: { width: '80%', backgroundColor: '#ffffff', borderRadius: 15, overflow: 'hidden', elevation: 10, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 10, shadowOffset: { width: 0, height: 2 } },
     optionModalItem: { paddingVertical: 16, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: '#eee' },
     lastOptionItem: { borderBottomWidth: 0 },
+    nocrewfound: { justifyContent: 'center', alignItems: 'center', marginTop: "50%" },
     optionModalText: { fontSize: 14, color: '#333', fontFamily: 'Poppins-Medium', textAlign: 'center' },
     optionModalTextDestructive: { fontSize: 14, color: '#d32f2f', fontFamily: 'Poppins-Medium', textAlign: 'center' },
 });

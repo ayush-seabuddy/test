@@ -7,7 +7,6 @@ import {
   TextInput,
   TouchableOpacity,
   Switch,
-  ActivityIndicator,
   Modal,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
@@ -31,6 +30,7 @@ import Colors from '@/src/utils/Colors';
 import CustomLottie from '@/src/components/CustomLottie';
 import GlobalButton from '@/src/components/GlobalButton';
 import { formatStatus } from '@/src/utils/helperFunctions';
+import CommonLoader from '@/src/components/CommonLoader';
 
 interface Question {
   id: string;
@@ -54,11 +54,12 @@ const ANONYMOUS_DISABLED_IDS = [
 
 const HelplineFormScreen = () => {
   const { t } = useTranslation();
-  const { helplineName, helplineId, complaintId, complaintStatus } = useLocalSearchParams<{
+  const { helplineName, helplineId, complaintId, complaintStatus, complaintResponse } = useLocalSearchParams<{
     helplineName: string;
     helplineId: string;
     complaintId?: string;
-    complaintStatus?: string
+    complaintStatus?: string;
+    complaintResponse?: string;
   }>();
 
   const isViewMode = !!complaintId;
@@ -340,8 +341,24 @@ const HelplineFormScreen = () => {
 
       {/* Header Section */}
       {isViewMode ? (
-        <View style={styles.toggleContainer}>
-          <Text style={styles.toggleLabel}>{t('status')} : {formatStatus(complaintStatus ?? '')}</Text>
+        <View style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
+          {/* Status – always visible */}
+          <Text style={styles.boldText}>
+            {t('status')} :{' '}
+            <Text style={styles.toggleLabel}>
+              {formatStatus(complaintStatus ?? '')}
+            </Text>
+          </Text>
+
+          {/* Response – ONLY when status is CLOSED */}
+          {complaintStatus === 'CLOSED' && (
+            <Text style={styles.boldText}>
+              {t('reponse')} :{' '}
+              <Text style={styles.toggleLabel}>
+                {complaintResponse}
+              </Text>
+            </Text>
+          )}
         </View>
       ) : (
         <View style={styles.toggleContainer}>
@@ -355,13 +372,14 @@ const HelplineFormScreen = () => {
         </View>
       )}
 
+
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={Colors.lightGreen} />
+          <CommonLoader fullScreen/>
         </View>
       ) : (
         <View style={{ flex: 1 }}>
-          <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} componentHeight={height * 0.80} />
+          <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} componentHeight={complaintStatus === 'CLOSED' ? height * 0.70 : height * 0.80} />
 
           <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -449,7 +467,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#eee',
   },
-  toggleLabel: { fontSize: 14, fontWeight: '500', fontFamily: 'Poppins-Regular', paddingHorizontal: 10 },
+  toggleLabel: { fontSize: 14, fontWeight: '500', fontFamily: 'Poppins-Regular', paddingHorizontal: 10, lineHeight: 25 },
   questionContainer: {
     marginBottom: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -460,6 +478,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 3,
+  },
+  boldText: {
+    fontFamily: 'Poppins-SemiBold',
+    color: '#000',
   },
   questionText: {
     fontSize: 14,

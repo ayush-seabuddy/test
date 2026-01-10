@@ -3,6 +3,7 @@ import {
     BuddyUpStatus,
     viewbuddyupdetails,
 } from '@/src/apis/apiService';
+import CommonLoader from '@/src/components/CommonLoader';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import MediaPreviewModal from '@/src/components/Modals/MediaPreviewModal';
@@ -16,7 +17,6 @@ import { ChevronLeft } from 'lucide-react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-    ActivityIndicator,
     FlatList,
     ScrollView,
     StyleSheet,
@@ -246,7 +246,7 @@ const BuddyUpEventDescription = () => {
     if (loading && !buddyUpDetails) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={Colors.lightGreen} />
+                <CommonLoader fullScreen/>
             </View>
         );
     }
@@ -276,15 +276,15 @@ const BuddyUpEventDescription = () => {
             <GlobalHeader
                 title={t('activityDetails')}
                 leftIcon={<ChevronLeft />}
-                onLeftPress={() => router.back()}
+                onLeftPress={() => router.canGoBack() ? router.back() : router.replace('/(bottomtab)/shiplife')}
             />
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 80 }}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10 }}>
                 <View style={styles.imageView}>
                     <Image
-                        source={buddyUpDetails.imageUrls?.[0] || ImagesAssets.SeabuddyPlaceholder}
+                        source={buddyUpDetails.imageUrls?.[0] || ImagesAssets.PlaceholderImage}
                         style={styles.buddyupImage}
-                        placeholder={ImagesAssets.SeabuddyPlaceholder}
+                        placeholder={ImagesAssets.PlaceholderImage}
                         placeholderContentFit='cover'
                         contentFit="cover"
                         transition={300}
@@ -413,7 +413,7 @@ const BuddyUpEventDescription = () => {
                         disabled={isButtonDisabled() || loading}
                     >
                         {loading ? (
-                            <ActivityIndicator color="#fff" />
+                            <CommonLoader color='#fff'/>
                         ) : (
                             <Text style={styles.submitButtonText}>{getButtonText()}</Text>
                         )}

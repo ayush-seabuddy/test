@@ -1,826 +1,762 @@
-import { updateprofile, viewProfile } from '@/src/apis/apiService';
+import React, { useState, useEffect } from 'react';
+import {
+  StyleSheet,
+  View,
+  TextInput,
+  TouchableOpacity,
+  Text,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
 import GlobalHeader from '@/src/components/GlobalHeader';
-import CustomDateTimePicker from '@/src/components/Modals/CustomDateTimePicker';
-import { RootState } from '@/src/redux/store';
-import { updateUserField } from '@/src/redux/userDetailsSlice';
-import Colors from '@/src/utils/Colors';
-import { height } from '@/src/utils/helperFunctions';
-import { ImagesAssets } from '@/src/utils/ImageAssets';
-import { Image } from 'expo-image';
-import { router } from 'expo-router';
-import { useFormik } from "formik";
-import { t } from 'i18next';
-import { Calendar, ChevronLeft, CircleX, Heart, Mail, User, VenusAndMars } from 'lucide-react-native';
-import React, { ReactNode, useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { MultiSelect } from 'react-native-element-dropdown';
-import { ScrollView } from 'react-native-gesture-handler';
-import PhoneInput, { getCountryByPhoneNumber, ICountry } from "react-native-international-phone-number";
-import Toast from 'react-native-toast-message';
+import { useTranslation } from 'react-i18next';
+import {
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  Heart,
+  Activity,
+  X,
+  Mars,
+  HandHelpingIcon,
+  HeartPulseIcon,
+  Volleyball,
+  Blend,
+} from 'lucide-react-native';
+import DatePicker from 'react-native-date-picker';
+import { Dropdown } from 'react-native-element-dropdown';
+import { showToast } from '@/src/components/GlobalToast';
+import { viewProfile, updateprofile } from '@/src/apis/apiService';
 import { useDispatch, useSelector } from 'react-redux';
+import { updateUserField } from '@/src/redux/userDetailsSlice';
+import { RootState } from '@/src/redux/store';
 import * as Yup from "yup";
-import CustomDropdown from './CustomDropdown';
+import Colors from '@/src/utils/Colors';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { router } from 'expo-router';
+import CommonLoader from '@/src/components/CommonLoader';
 
-
-const validationSchema = Yup.object().shape({
-  name: Yup.string().required("Name is required"),
-  email: Yup.string().email("Invalid email").required("Email is required"),
-  dob: Yup.string().required("Date of birth is required"),
-  maritalStatus: Yup.string().required("Relationship status is required"),
-  gender: Yup.string().required("Gender is required"),
-  experience: Yup.string().required("Experience is required"),
-  ethnicity: Yup.string().required("Ethnicity is required"),
-  religion: Yup.string().required("Religion is required"),
-  hobbies: Yup.array()
-    .min(1, "Select at least one hobby")
-    .required("Hobbies are required"),
-  favoriteActivity: Yup.array()
-    .min(1, "Select at least one Onboard interests")
-    .required("Favorite activities are required"),
-  about: Yup.string()
-    .required("About is required")
-    .min(20, "About should be at least 20 characters")
-    .max(600, "About should not exceed 600 characters"),
-});
-const validationSchemaForSoreStaff = Yup.object().shape({
-  name: Yup.string().required("Name is required"),
-  email: Yup.string().email("Invalid email").required("Email is required"),
-  dob: Yup.string().required("Date of birth is required"),
-  maritalStatus: Yup.string().optional(),
-  gender: Yup.string().required("Gender is required"),
-  experience: Yup.string().optional(),
-  ethnicity: Yup.string().optional(),
-  religion: Yup.string().optional(),
-  hobbies: Yup.array()
-    .optional(),
-  favoriteActivity: Yup.array()
-    .optional(),
-  about: Yup.string()
-    .required("About is required")
-    .min(20, "About should be at least 20 characters")
-    .max(600, "About should not exceed 600 characters"),
-});
+// NOTE: validation schemas use translations and are created inside the component
 
 const EditProfile = () => {
+  const { t } = useTranslation();
 
+  // Validation schemas
+  const validationSchema = Yup.object().shape({
+    name: Yup.string().required(t('validation.name_required', 'Name is required')),
+    email: Yup.string().email(t('validation.invalid_email', 'Invalid email')).required(t('validation.email_required', 'Email is required')),
+    dob: Yup.string().required(t('validation.dob_required', 'Date of birth is required')),
+    maritalStatus: Yup.string().required(t('validation.relationship_required', 'Relationship status is required')),
+    gender: Yup.string().required(t('validation.gender_required', 'Gender is required')),
+    experience: Yup.string().required(t('validation.experience_required', 'Experience is required')),
+    ethnicity: Yup.string().required(t('validation.ethnicity_required', 'Ethnicity is required')),
+    religion: Yup.string().required(t('validation.religion_required', 'Religion is required')),
+    hobbies: Yup.array()
+      .min(1, t('validation.hobbies_min', 'Select at least one hobby'))
+      .required(t('validation.hobbies_required', 'Hobbies are required')),
+    favoriteActivity: Yup.array()
+      .min(1, t('validation.favorite_activity_min', 'Select at least one favorite activity'))
+      .required(t('validation.favorite_activity_required', 'Favorite activities are required')),
+    about: Yup.string()
+      .required(t('validation.about_required', 'About is required'))
+      .min(20, t('validation.about_min', 'About should be at least 20 characters'))
+      .max(600, t('validation.about_max', 'About should not exceed 600 characters')),
+  });
+
+  const validationSchemaForShoreStaff = Yup.object().shape({
+    name: Yup.string().required(t('validation.name_required', 'Name is required')),
+    email: Yup.string().email(t('validation.invalid_email', 'Invalid email')).required(t('validation.email_required', 'Email is required')),
+    dob: Yup.string().required(t('validation.dob_required', 'Date of birth is required')),
+    maritalStatus: Yup.string().optional(),
+    gender: Yup.string().required(t('validation.gender_required', 'Gender is required')),
+    experience: Yup.string().optional(),
+    ethnicity: Yup.string().optional(),
+    religion: Yup.string().optional(),
+    hobbies: Yup.array().optional(),
+    favoriteActivity: Yup.array().optional(),
+    about: Yup.string()
+      .required(t('validation.about_required', 'About is required'))
+      .min(20, t('validation.about_min', 'About should be at least 20 characters'))
+      .max(600, t('validation.about_max', 'About should not exceed 600 characters')),
+  });
+
+  const dispatch = useDispatch();
+  const profile = useSelector((state: RootState) => state.userDetails);
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [date, setDate] = useState<Date | null>(null);
+  const [openDatePicker, setOpenDatePicker] = useState(false);
+
+  const [gender, setGender] = useState<string | null>(null);
+  const [yearsOfExperience, setYearsOfExperience] = useState<string | null>(null);
+  const [race, setRace] = useState<string | null>(null);
+  const [maritalStatus, setMaritalStatus] = useState<string | null>(null);
+  const [nationality, setNationality] = useState<string | null>(null);
+  const [religion, setReligion] = useState<string | null>(null);
+
+  const [selectedHobbies, setSelectedHobbies] = useState<string[]>([]);
+  const [selectedFavActivities, setSelectedFavActivities] = useState<string[]>([]);
+
+  const [about, setAbout] = useState('');
+  const [loadingdetails, setloadingdetails] = useState(false);
+  const [updatingdetails, setupdatingdetails] = useState(false);
+  const [userId, setUserId] = useState<string | undefined>(undefined);
+
+  const formatDateForDisplay = (date: Date | null) => {
+    if (!date) return '';
+    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  };
+
+  const formatDateForValidation = (date: Date | null) => {
+    if (!date) return '';
+    return date.toLocaleDateString('en-GB');
+  };
+
+  const parseAPIDate = (dateString: string): Date | null => {
+    if (!dateString) return null;
+    try {
+      const parts = dateString.split('/');
+      if (parts.length === 3) {
+        const day = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const year = parseInt(parts[2], 10);
+        const parsed = new Date(year, month, day);
+        if (!isNaN(parsed.getTime())) {
+          return parsed;
+        }
+      }
+    } catch (error) {
+      console.error('Error parsing date:', error);
+    }
+    return null;
+  };
+
+  // Fixed dropdown data: value is stable key (e.g., 'male'), label is translated
   const GENDER = [
-    { label: t('genderOptions.male'), value: t('genderOptions.male') },
-    { label: t('genderOptions.female'), value: t('genderOptions.female') },
-    { label: t('genderOptions.other'), value: t('genderOptions.other') },
+    { label: t('genderOptions.male'), value: 'Male' },
+    { label: t('genderOptions.female'), value: 'Female' },
+    { label: t('genderOptions.other'), value: 'Other' },
   ];
 
   const EXPERIENCE = [
-    { label: t('experienceOptions.0_1'), value: t('experienceOptions.0_1') },
-    { label: t('experienceOptions.2_5'), value: t('experienceOptions.2_5') },
-    { label: t('experienceOptions.5_plus'), value: t('experienceOptions.5_plus') },
-  ];
-
-  const RELATIONSHIP = [
-    { label: t('relationshipOptions.single'), value: t('relationshipOptions.single') },
-    { label: t('relationshipOptions.married'), value: t('relationshipOptions.married') },
-    { label: t('relationshipOptions.divorced'), value: t('relationshipOptions.divorced') },
-    { label: t('relationshipOptions.widowed'), value: t('relationshipOptions.widowed') },
+    { label: t('experienceOptions.0_1'), value: '0-1 years' },
+    { label: t('experienceOptions.2_5'), value: '2-5 years' },
+    { label: t('experienceOptions.5_plus'), value: '5+ years' },
   ];
 
   const ETHNICITY = [
-    { label: t('ethnicityOptions.asian'), value: t('ethnicityOptions.asian') },
-    { label: t('ethnicityOptions.black'), value: t('ethnicityOptions.black') },
-    { label: t('ethnicityOptions.white'), value: t('ethnicityOptions.white') },
-    { label: t('ethnicityOptions.latino'), value: t('ethnicityOptions.latino') },
-    { label: t('ethnicityOptions.mena'), value: t('ethnicityOptions.mena') },
-    { label: t('ethnicityOptions.native'), value: t('ethnicityOptions.native') },
-    { label: t('ethnicityOptions.pacific'), value: t('ethnicityOptions.pacific') },
-    { label: t('ethnicityOptions.mixed'), value: t('ethnicityOptions.mixed') },
+    { label: t('ethnicityOptions.asian'), value: 'Asian' },
+    { label: t('ethnicityOptions.black'), value: 'Black / African Descent' },
+    { label: t('ethnicityOptions.white'), value: 'Caucasian / White' },
+    { label: t('ethnicityOptions.latino'), value: 'Hispanic / Latino' },
+    { label: t('ethnicityOptions.mena'), value: 'Middle Eastern / North African' },
+    { label: t('ethnicityOptions.native'), value: 'Native American / Indigenous' },
+    { label: t('ethnicityOptions.pacific'), value: 'Pacific Islander' },
+    { label: t('ethnicityOptions.mixed'), value: 'Mixed / Multiracial' },
   ];
 
+  const RELATIONSHIP = [
+    { label: t('relationshipOptions.single'), value: 'Single' },
+    { label: t('relationshipOptions.married'), value: 'Married' },
+    { label: t('relationshipOptions.divorced'), value: 'Divorced' },
+    { label: t('relationshipOptions.widowed'), value: 'Widowed' },
+  ];
   const RELIGION = [
-    { label: t('religionOptions.buddhism'), value: t('religionOptions.buddhism') },
-    { label: t('religionOptions.christianity'), value: t('religionOptions.christianity') },
-    { label: t('religionOptions.hinduism'), value: t('religionOptions.hinduism') },
-    { label: t('religionOptions.islam'), value: t('religionOptions.islam') },
-    { label: t('religionOptions.judaism'), value: t('religionOptions.judaism') },
-    { label: t('religionOptions.sikhism'), value: t('religionOptions.sikhism') },
-    { label: t('religionOptions.jainism'), value: t('religionOptions.jainism') },
-    { label: t('religionOptions.zoroastrianism'), value: t('religionOptions.zoroastrianism') },
-    { label: t('religionOptions.taoism'), value: t('religionOptions.taoism') },
-    { label: t('religionOptions.shinto'), value: t('religionOptions.shinto') },
-    { label: t('religionOptions.other'), value: t('religionOptions.other') },
-    { label: t('religionOptions.none'), value: t('religionOptions.none') },
+    { label: t('religionOptions.buddhism'), value: 'Buddhism' },
+    { label: t('religionOptions.christianity'), value: 'Christianity' },
+    { label: t('religionOptions.hinduism'), value: 'Hinduism' },
+    { label: t('religionOptions.islam'), value: 'Islam' },
+    { label: t('religionOptions.judaism'), value: 'Judaism' },
+    { label: t('religionOptions.sikhism'), value: 'Sikhism' },
+    { label: t('religionOptions.jainism'), value: 'Jainism' },
+    { label: t('religionOptions.zoroastrianism'), value: 'Zoroastrianism' },
+    { label: t('religionOptions.taoism'), value: 'Taoism' },
+    { label: t('religionOptions.shinto'), value: 'Shinto' },
+    { label: t('religionOptions.other'), value: 'Other' },
+    { label: t('religionOptions.none'), value: 'No Religion' },
   ];
-
-  const HEALTH_OPTIONS = [
-    { label: t('healthOptions.none'), value: t('healthOptions.none') },
-    { label: t('healthOptions.hypertension'), value: t('healthOptions.hypertension') },
-    { label: t('healthOptions.diabetes'), value: t('healthOptions.diabetes') },
-    { label: t('healthOptions.anxiety'), value: t('healthOptions.anxiety') },
-    { label: t('healthOptions.depression'), value: t('healthOptions.depression') },
-    { label: t('healthOptions.other'), value: t('healthOptions.other') },
-    { label: t('healthOptions.prefer_no'), value: t('healthOptions.prefer_no') },
-  ];
-
-  const SMOKING_OPTIONS = [
-    { label: t('smokingOptions.no'), value: t('smokingOptions.no') },
-    { label: t('smokingOptions.occasional'), value: t('smokingOptions.occasional') },
-    { label: t('smokingOptions.regular'), value: t('smokingOptions.regular') },
-    { label: t('smokingOptions.quit'), value: t('smokingOptions.quit') },
-    { label: t('smokingOptions.prefer_no'), value: t('smokingOptions.prefer_no') },
-  ];
-
-  const ALCOHOL_OPTIONS = [
-    { label: t('alcoholOptions.no'), value: t('alcoholOptions.no') },
-    { label: t('alcoholOptions.occasional'), value: t('alcoholOptions.occasional') },
-    { label: t('alcoholOptions.regular'), value: t('alcoholOptions.regular') },
-    { label: t('alcoholOptions.avoid'), value: t('alcoholOptions.avoid') },
-    { label: t('alcoholOptions.prefer_no'), value: t('alcoholOptions.prefer_no') },
-  ];
-
-  // NEW: Activity Level Dropdown
-  const ACTIVITY_OPTIONS = [
-    { label: t('activityOptions.inactive'), value: t('activityOptions.inactive') },
-    { label: t('activityOptions.light_active'), value: t('activityOptions.light_active') },
-    { label: t('activityOptions.moderate_active'), value: t('activityOptions.moderate_active') },
-    { label: t('activityOptions.very_active'), value: t('activityOptions.very_active') },
-    { label: t('activityOptions.prefer_no'), value: t('activityOptions.prefer_no') },
-  ];
-
-  const SOCIAL_OPTIONS = [
-    { label: t('socialOptions.connected'), value: t('socialOptions.connected') },
-    { label: t('socialOptions.isolated'), value: t('socialOptions.isolated') },
-    { label: t('socialOptions.alone'), value: t('socialOptions.alone') },
-  ];
-
   const HOBBIES_OPTIONS = [
-
-    { label: t('hobbiesOptions.art'), value: t('hobbiesOptions.art') },
-    { label: t('hobbiesOptions.music'), value: t('hobbiesOptions.music') },
-    { label: t('hobbiesOptions.photo'), value: t('hobbiesOptions.photo') },
-    { label: t('hobbiesOptions.dance'), value: t('hobbiesOptions.dance') },
-    { label: t('hobbiesOptions.yoga'), value: t('hobbiesOptions.yoga') },
-    { label: t('hobbiesOptions.gym'), value: t('hobbiesOptions.gym') },
-    { label: t('hobbiesOptions.gaming'), value: t('hobbiesOptions.gaming') },
-    { label: t('hobbiesOptions.reading'), value: t('hobbiesOptions.reading') },
-    { label: t('hobbiesOptions.movies'), value: t('hobbiesOptions.movies') },
-    { label: t('hobbiesOptions.cooking'), value: t('hobbiesOptions.cooking') },
-    { label: t('hobbiesOptions.sports'), value: t('hobbiesOptions.sports') },
-    { label: t('hobbiesOptions.meditation'), value: t('hobbiesOptions.meditation') },
+    { label: t('hobbiesOptions.art'), value: '🎨 Art & Craft' },
+    { label: t('hobbiesOptions.music'), value: '🎵 Music' },
+    { label: t('hobbiesOptions.photo'), value: '📸 Photography' },
+    { label: t('hobbiesOptions.dance'), value: '💃 Dancing' },
+    { label: t('hobbiesOptions.yoga'), value: '🧘‍♀️ Yoga' },
+    { label: t('hobbiesOptions.gym'), value: '🏋️‍♀️ Gym/Fitness' },
+    { label: t('hobbiesOptions.gaming'), value: '🎮 Gaming' },
+    { label: t('hobbiesOptions.reading'), value: '📖 Reading' },
+    { label: t('hobbiesOptions.movies'), value: '🎬 Movies' },
+    { label: t('hobbiesOptions.cooking'), value: '🍳 Cooking' },
+    { label: t('hobbiesOptions.sports'), value: '⚽ Sports' },
+    { label: t('hobbiesOptions.meditation'), value: '🧘‍♂️ Meditation' },
   ];
 
   const FAV_ACTIVITY_OPTIONS = [
-    { label: t('fav_activityOptions.movie'), value: t('fav_activityOptions.movie') },
-    { label: t('fav_activityOptions.gym'), value: t('fav_activityOptions.gym') },
-    { label: t('fav_activityOptions.karaoke'), value: t('fav_activityOptions.karaoke') },
-    { label: t('fav_activityOptions.games'), value: t('fav_activityOptions.games') },
-    { label: t('fav_activityOptions.jam'), value: t('fav_activityOptions.jam') },
-    { label: t('fav_activityOptions.meditation'), value: t('fav_activityOptions.meditation') },
-    { label: t('fav_activityOptions.cook'), value: t('fav_activityOptions.cook') },
-    { label: t('fav_activityOptions.sports'), value: t('fav_activityOptions.sports') },
-    { label: t('fav_activityOptions.drinks'), value: t('fav_activityOptions.drinks') },
+    { label: t('fav_activityOptions.movie'), value: 'Movie Night' },
+    { label: t('fav_activityOptions.gym'), value: 'Gym Session' },
+    { label: t('fav_activityOptions.karaoke'), value: 'Karaoke' },
+    { label: t('fav_activityOptions.games'), value: 'Crew Games (Cards, Ludo etc.)' },
+    { label: t('fav_activityOptions.jam'), value: 'Jam Session' },
+    { label: t('fav_activityOptions.meditation'), value: 'Meditation' },
+    { label: t('fav_activityOptions.cook'), value: 'Cooking Challenge' },
+    { label: t('fav_activityOptions.sports'), value: 'Sports Match' },
+    { label: t('fav_activityOptions.drinks'), value: 'Drinks and Chats' },
   ];
-  const scrollViewRef = useRef(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [inputRefs, setInputRefs] = useState({});
-  const [selectedDate, setSelectedDate] = useState(
-    new Date(new Date().setFullYear(new Date().getFullYear() - 18))
-  );
-  const handleDateConfirm = (event: any, date: any) => {
-    setShowDatePicker(false);
-    if (date) {
-      const formattedDate = date.toLocaleDateString("en-GB");
-      formik.setFieldValue("dob", formattedDate);
-    }
-  };
-  const datePickerRef = useRef(null);
-  const profile = useSelector((state: RootState) => state.userDetails)
-  const dispatch = useDispatch()
-  const countryData = getCountryByPhoneNumber(profile.mobileNumber);
-  const localNumber = extractLocalPhoneNumber(
-    profile.mobileNumber,
-    countryData?.idd?.root
-
-  );
-  const [selectedHobbies, setSelectedHobbies] = useState(profile?.hobbies || []);
-  const [selectedFavourite, setSelectedFavourite] = useState(profile?.favoriteActivity || []);
-  const [inputValue, setInputValue] = useState(localNumber);
-  const [selectedCountry, setSelectedCountry] = useState<ICountry | undefined>(countryData);
-  function handleSelectedCountry(country: any) {
-    setSelectedCountry(country);
-  }
-  function handleInputValue(phoneNumber: string) {
-    setInputValue(phoneNumber);
-  }
-  function extractLocalPhoneNumber(fullPhoneNumber: string, callingCode?: any) {
-    if (!callingCode?.startsWith("+")) {
-      callingCode = `+${callingCode}`;
-    }
-    return fullPhoneNumber?.replace(callingCode, "") || "";
-  }
 
   useEffect(() => {
-    const fetchProfileDetails = async () => {
-      let result = await viewProfile();
-      if (result?.data) {
-        const object = result.data
-        for (const property in object) {
-          console.log(`${property}: ${object[property]}`);
-          dispatch(updateUserField({ key: property, value: object[property] }))
-        }
-        const countryData = getCountryByPhoneNumber(result.data.mobileNumber);
-        const localNumber = extractLocalPhoneNumber(
-          result.data.mobileNumber,
-          countryData?.idd?.root
-        );
-        setInputValue(localNumber);
-        setSelectedCountry(countryData);
-
-      }
-    }
-    fetchProfileDetails();
-  }, []);
-
-  const formik = useFormik({
-    initialValues: {
-      name: profile?.fullName || "",
-      email: profile?.email || "",
-      phone: profile?.mobileNumber || "",
-      dob: profile?.dob || "",
-      maritalStatus: profile?.relationshipStatus || "",
-      gender: profile?.gender || "",
-      experience: profile?.experience || "",
-      ethnicity: profile?.ethnicity || "",
-      religion: profile?.religion || "",
-      country: profile?.nationality || "",
-      title: profile?.designation || "",
-      about: profile?.bio || "",
-      hobbies: profile?.hobbies || [],
-      favoriteActivity: profile?.favoriteActivity || [],
-    },
-    enableReinitialize: true,
-    // validationSchema,
-    onSubmit: async (values: any) => {
-      console.log("values: sdfjsdlfsdfsdlfksdlkf", values);
-
+    const fetchProfile = async () => {
       try {
-
-        console.log("profile?.department: ", profile?.department);
-        if (profile?.department === "Shore_Staff") {
-          await validationSchemaForSoreStaff.validate(values, { abortEarly: false });
-          setErrors({});
-        }
-        else {
-          await validationSchema.validate(values, { abortEarly: false });
-          setErrors({});
-        }
-
-        if (!profile) throw new Error("User details not found");
-
-        const body: Record<string, any> = {
-          userId: profile.id,
-          countryCode: profile.countryCode,
-          dob: values.dob,
-          mobileNumber: profile.mobileNumber,
-          email: profile.email,
-          fullName: values.name,
-          relationshipStatus: values.maritalStatus,
-          nationality: values.country,
-          hobbies: values.hobbies,
-          ethnicity: values.ethnicity,
-          gender: values.gender,
-          religion: values.religion,
-          experience: values.experience,
-          bio: values.about,
-          favoriteActivity: values.favoriteActivity,
-          isProfileCompleted: true,
-        };
-        for (const key in body) {
-          const value = body[key];
-
-          const isEmptyString = typeof value === "string" && value.trim() === "";
-          const isEmptyArray = Array.isArray(value) && value.length === 0;
-
-          if (isEmptyString || isEmptyArray) {
-            delete body[key];
+        setloadingdetails(true);
+        const result = await viewProfile();
+        if (result?.data) {
+          const object = result.data;
+          for (const property in object) {
+            dispatch(updateUserField({ key: property, value: object[property] }));
           }
-        }
 
-        setLoading(true);
-        const response = await updateprofile(body);
+          setUserId(object.id || object.userId || object._id);
+          setName(object.fullName || object.name || '');
+          setEmail(object.email || '');
+          setPhone(object.mobileNumber || '');
 
-        if (response.status === 200) {
-          Toast.show({
-            type: "success",
-            text1: "Profile updated successfully",
-            autoHide: true,
-            visibilityTime: 2000,
-            text1Style: {
-              fontFamily: "WhyteInkTrap-Bold",
-              lineHeight: 22,
-              fontSize: 16,
-              color: "#000",
-            },
-          });
-          router.back();
-        }
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          console.log("error.name:", error.name);
-
-          if (error.name === "ValidationError" && "inner" in error) {
-            const validationErrors: Record<string, string> = {};
-
-            const yupError = error as any; // Yup-specific narrowing
-
-            const errorMessages = yupError.inner
-              ?.map((err: any) => err.message)
-              .join("\n");
-
-            yupError.inner?.forEach((err: any) => {
-              if (err.path) {
-                validationErrors[err.path] = err.message;
-              }
-            });
-
-            setErrors(validationErrors);
-
-            Toast.show({
-              type: "error",
-              text1: "Validation Error",
-              text2: errorMessages || "Please fill all required fields correctly",
-              autoHide: true,
-              visibilityTime: 4000,
-              text2Style: {
-                fontSize: 14,
-                color: "#000",
-              },
-            });
-          } else {
-            Toast.show({
-              type: "error",
-              text1: "Error",
-              text2: "Failed to update profile. Please try again",
-              autoHide: true,
-              visibilityTime: 2000,
-              text2Style: {
-                fontSize: 14,
-                color: "#000",
-              },
-            });
-
-            console.error("Error updating profile:", error);
+          if (object.dob) {
+            const parsed = parseAPIDate(object.dob);
+            if (parsed && !isNaN(parsed.getTime())) {
+              setDate(parsed);
+            }
           }
+
+          // These now use stable keys (e.g., 'male', '0_1', 'asian') from backend
+          setGender(object.gender || null);
+          setYearsOfExperience(object.experience || null);
+          setRace(object.ethnicity || null);
+          setMaritalStatus(object.relationshipStatus || null);
+          setNationality(object.nationality || null);
+          setReligion(object.religion || null);
+          setSelectedHobbies(Array.isArray(object.hobbies) ? object.hobbies : []);
+          setSelectedFavActivities(Array.isArray(object.favoriteActivity) ? object.favoriteActivity : []);
+          setAbout(object.bio || object.about || '');
         }
+      } catch (err) {
+        console.error('viewProfile error', err);
+        showToast.error(t('error'), 'Failed to load profile');
       } finally {
-        setLoading(false);
+        setloadingdetails(false);
       }
-    }
-  });
-  const ErrorMessage = ({ error }: { error: string }) => {
-    if (!error) return null;
-    return <Text style={styles.errorText}>{error}</Text>;
-  };
+    };
 
-  const TextInputField = ({ icon, name, value, onChangeText, placeholder, editable = true }: { icon: ReactNode, value: string, name: string, onChangeText: (text: string) => void, placeholder: string, editable?: boolean }) => {
-    return <>
-      <View style={styles.inputContainer}>
-        {icon}
-        <TextInput
-          style={styles.textInput}
-          placeholder={placeholder}
-          placeholderTextColor="#B7B7B7"
-          value={value}
-          onChangeText={onChangeText}
-          editable={editable}
-          autoFocus={false}
-        />
-      </View>
-      {<ErrorMessage error={errors[name]} />}
-    </>
-  }
-
-  const inputTextArray = [
-    { name: "name", placeholder: "Full Name", value: formik.values.name, onChangeText: formik.handleChange("name"), icon: <User size={24} color="black" /> },
-    { name: "email", placeholder: "Email", value: formik.values.email, onChangeText: formik.handleChange("email"), icon: <Mail size={24} color="black" /> },
-
-  ]
-  const aboutInputRef = useRef(null);
-  useEffect(() => {
-    setInputRefs({ about: aboutInputRef });
+    fetchProfile();
   }, []);
 
+  const handleUpdate = async () => {
+    const values = {
+      name,
+      email,
+      phone,
+      dob: formatDateForValidation(date),
+      maritalStatus,
+      gender,
+      experience: yearsOfExperience,
+      ethnicity: race,
+      religion,
+      country: nationality,
+      about,
+      hobbies: selectedHobbies,
+      favoriteActivity: selectedFavActivities,
+    };
+
+    try {
+      if (profile?.department === "Shore_Staff") {
+        await validationSchemaForShoreStaff.validate(values, { abortEarly: false });
+      } else {
+        await validationSchema.validate(values, { abortEarly: false });
+      }
+
+      if (!profile) throw new Error("User details not found");
+
+      const body: Record<string, any> = {
+        userId: profile.id || userId,
+        countryCode: profile.countryCode,
+        dob: date ? formatDateForValidation(date) : undefined,
+        mobileNumber: profile.mobileNumber,
+        email,
+        fullName: name,
+        relationshipStatus: maritalStatus,
+        nationality,
+        hobbies: selectedHobbies,
+        ethnicity: race,
+        gender,
+        religion,
+        experience: yearsOfExperience,
+        bio: about,
+        favoriteActivity: selectedFavActivities,
+        isProfileCompleted: true,
+      };
+
+      for (const key in body) {
+        const value = body[key];
+        const isEmptyString = typeof value === "string" && value.trim() === "";
+        const isEmptyArray = Array.isArray(value) && value.length === 0;
+
+        if (isEmptyString || isEmptyArray || value === undefined || value === null) {
+          delete body[key];
+        }
+      }
+
+      setupdatingdetails(true);
+      const response = await updateprofile(body);
+
+      if (response.status === 200 || response.success) {
+        showToast.success(t('success'), t('profileupdatedsuccessfully'));
+        router.back();
+      } else {
+        showToast.error(t('error'), response?.message);
+      }
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'inner' in (error as any)) {
+        const yupError = error as any;
+        const errorMessages = yupError.inner
+          ?.map((err: any) => err.message)
+          .join('\n');
+
+        showToast.error(t('oops') || 'Oops', errorMessages || t('error'));
+      } else if (error instanceof Error) {
+        showToast.error(t('oops') || 'Oops', t('failedtoupdateprofile') || 'Failed to update profile. Please try again');
+        console.error('Error updating profile:', error);
+      } else {
+        showToast.error(t('oops') || 'Oops', t('failedtoupdateprofile') || 'Failed to update profile. Please try again');
+      }
+    } finally {
+      setupdatingdetails(false);
+    }
+  };
+
+  const renderSingleDropdown = (
+    data: any[],
+    value: string | null,
+    onChange: (item: any) => void,
+    placeholder: string,
+    icon: React.ReactNode
+  ) => (
+    <View style={styles.dropdownContainer}>
+      <Dropdown
+        style={styles.dropdown}
+        placeholderStyle={styles.placeholderStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        data={data}
+        labelField="label"
+        valueField="value"
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        renderLeftIcon={() => <View style={styles.dropdownLeftIcon}>{icon}</View>}
+        iconStyle={styles.dropdownIconStyle}
+      />
+    </View>
+  );
+
+  const renderMultiDropdown = (
+    data: any[],
+    selected: string[],
+    setSelected: (items: string[]) => void,
+    placeholder: string,
+    icon: React.ReactNode,
+    maxSelections = 3
+  ) => {
+    const toggleSelection = (item: any) => {
+      if (selected.includes(item.value)) {
+        setSelected(selected.filter((v) => v !== item.value));
+      } else {
+        if (selected.length >= maxSelections) {
+          showToast.error(t('error'), `${t('maxThreeItems')}`);
+          return;
+        }
+        setSelected([...selected, item.value]);
+      }
+    };
+
+    const selectedLabels = data
+      .filter((d) => selected.includes(d.value))
+      .map((d) => d.label)
+      .join(', ');
+
+    return (
+      <View>
+        <View style={styles.dropdownContainer}>
+          <Dropdown
+            style={styles.dropdown}
+            placeholderStyle={styles.placeholderStyle}
+            selectedTextStyle={styles.selectedTextStyle}
+            data={data}
+            labelField="label"
+            valueField="value"
+            placeholder={placeholder}
+            value={null}
+            onChange={toggleSelection}
+            mode="default"
+            renderLeftIcon={() => <View style={styles.dropdownLeftIcon}>{icon}</View>}
+            iconStyle={styles.dropdownIconStyle}
+            renderItem={(item) => (
+              <View style={styles.multiItem}>
+                <Text style={styles.multiItemText}>{item.label}</Text>
+                {selected.includes(item.value) && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+            )}
+          />
+        </View>
+
+        {selected.length > 0 && (
+          <View style={styles.wrappedChipsContainer}>
+            {data
+              .filter((d) => selected.includes(d.value))
+              .map((item) => (
+                <View key={item.value} style={styles.chip}>
+                  <Text style={styles.chipText}>{item.label}</Text>
+                  <TouchableOpacity
+                    onPress={() => setSelected(selected.filter((v) => v !== item.value))}
+                  >
+                    <X size={16} color="#000" />
+                  </TouchableOpacity>
+                </View>
+              ))}
+          </View>
+        )}
+      </View>
+    );
+  };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={50}
-      style={{ flex: 1 }}
-    >
-      <View style={{ flex: 1 }}>
-        <GlobalHeader title="Edit Profile" />
-        <ScrollView
-          ref={scrollViewRef}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollView}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* {loading && <ActivityIndicator size={60} />} */}
-          {inputTextArray.map((item, index) => <TextInputField key={index} {...item} />)}
-          <View style={styles.phoneInputContainer} pointerEvents="none">
-            <PhoneInput
-              value={inputValue}
-              onChangePhoneNumber={handleInputValue}
-              selectedCountry={selectedCountry}
-              onChangeSelectedCountry={handleSelectedCountry}
-              // textInputStyle={{ backgroundColor: "#ffffff" }}
-              // flagButtonStyle={{ backgroundColor: "#ffffff" }}
-              // codeTextStyle={{ backgroundColor: "#ffffff" }}
-              placeholder="Input your phone"
-              defaultCountry="SG"
-              // disableCountryChange={true}
-              phoneInputStyles={{ container: { borderWidth: 0 } }}
-              editable={false}
-              autoFocus={false} // New: Prevent auto-focus
-            />
-          </View>
+    <View style={styles.main}>
+      <GlobalHeader title={t('editprofile')} />
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+        enableOnAndroid
+        extraScrollHeight={Platform.OS === 'ios' ? 20 : 80}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Name */}
+        <View style={styles.inputContainer}>
+          <User size={20} color="#666" style={styles.icon} />
+          <TextInput
+            style={styles.textInput}
+            placeholder={t('enteryourname')}
+            value={name}
+            onChangeText={setName}
+            autoFocus={false}
+          />
+        </View>
 
+        {/* Email */}
+        <View style={styles.inputContainer} pointerEvents="none">
+          <Mail size={20} color="#666" style={styles.icon} />
+          <TextInput
+            style={styles.textInput}
+            placeholder={t('enteryouremail')}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoFocus={false}
+          />
+        </View>
 
-          <TouchableOpacity
-            style={styles.inputContainer}
-            onPress={() => {
-              setShowDatePicker(true);
-              // datePickerRef.current?.click();
-            }}
-          >
-            <Calendar size={24} color="black" />
-            <Text style={styles.dateText}>{formik.values.dob || "Select Your DOB"}</Text>
-          </TouchableOpacity>
-          {formik.errors.dob && formik.touched.dob && <ErrorMessage error={formik.errors.dob as string} />}
-          {showDatePicker && (
-            <CustomDateTimePicker
-              // ref={datePickerRef}
-              value={selectedDate}
-              mode="date"
-              onChange={handleDateConfirm}
-              isVisible={showDatePicker}
-              onClose={() => setShowDatePicker(false)}
-              cancelText="Cancel"
-              confirmText="Done"
-              containerStyle={{ backgroundColor: "#fff" }}
-              buttonTextStyle={{ fontSize: 18, color: "#84A402" }}
-              maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 18))}
-            />
+        {/* Phone (Read-only) */}
+        <View style={styles.inputContainer} pointerEvents="none">
+          <Phone size={20} color="#666" style={styles.icon} />
+          <TextInput
+            style={styles.textInput}
+            placeholder={t('enteryourphonenumber')}
+            value={phone}
+            editable={false}
+            autoFocus={false}
+          />
+        </View>
+
+        {/* Date of Birth */}
+        <TouchableOpacity style={styles.inputContainer} onPress={() => setOpenDatePicker(true)}>
+          <Calendar size={20} color="#666" style={styles.icon} />
+          {date ? (
+            <Text style={styles.dateText}>{formatDateForDisplay(date)}</Text>
+          ) : (
+            <Text style={styles.datePlaceholder}>{t('dateofbirth')}</Text>
           )}
+        </TouchableOpacity>
 
-          {/* {
-          DropDownList.map((item, index) => <CustomDropdown 
-          key={index} 
-          data={item.data} 
-          onChange={item.onChange}
-          value={item.value}
-          placeholder={item.placeholder}
-          dropdownStyle={item.dropdownStyle}
-          renderLeftIcon={item.renderLeftIcon}
-          
-          />)
-        } */}
+        <DatePicker
+          modal
+          open={openDatePicker}
+          date={date || new Date(new Date().setFullYear(new Date().getFullYear() - 18))}
+          mode="date"
+          maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 18))}
+          onConfirm={(selectedDate) => {
+            setOpenDatePicker(false);
+            setDate(selectedDate);
+          }}
+          onCancel={() => setOpenDatePicker(false)}
+          title={t('dateofbirth')}
+          confirmText="Done"
+          cancelText="Cancel"
+        />
 
-          <View style={styles.postOption}>
-            <View style={styles.TextInputText}>
-              <CustomDropdown
-                data={GENDER}
-                value={formik.values.gender}
-                onChange={(value) => formik.setFieldValue("gender", value)}
-                placeholder="Select Gender"
-                dropdownStyle={{ width: "100%" }}
-                renderLeftIcon={() => (
-                  <VenusAndMars />
-                )}
-              />
-            </View>
-          </View>
-          <ErrorMessage error={errors.gender} />
+        {/* Gender */}
+        {renderSingleDropdown(
+          GENDER,
+          gender,
+          (item) => setGender(item.value),
+          t('gender'),
+          <Mars size={20} color="#666" />
+        )}
 
-          <View style={styles.postOption}>
-            <View style={styles.TextInputText}>
-              <CustomDropdown
-                data={EXPERIENCE}
-                value={formik.values.experience}
-                onChange={(value) => formik.setFieldValue("experience", value)}
-                placeholder="Select Experience"
-                dropdownStyle={{ width: "100%" }}
-                renderLeftIcon={() => (
-                  <Image
-                    style={styles.icon}
-                    source={ImagesAssets.expertiseIcon}
-                  />
-                )}
-              />
-            </View>
-          </View>
-          <ErrorMessage error={errors.experience} />
+        {/* Years of Experience */}
+        {renderSingleDropdown(
+          EXPERIENCE,
+          yearsOfExperience,
+          (item) => setYearsOfExperience(item.value),
+          t('years_of_experience'),
+          <HandHelpingIcon size={20} color="#666" />
+        )}
 
-          <View style={styles.postOption}>
-            <View style={styles.TextInputText}>
-              <CustomDropdown
-                data={ETHNICITY}
-                value={formik.values.ethnicity}
-                onChange={(value) => formik.setFieldValue("ethnicity", value)}
-                placeholder="Select Ethnicity"
-                dropdownStyle={{ width: "100%" }}
-                renderLeftIcon={() => (
-                  <Image
-                    style={[styles.icon, { width: 20, height: 20, marginLeft: -2, marginRight: 10 }]}
-                    source={ImagesAssets.ethnicityIcon}
-                  />
-                )}
-              />
-            </View>
-          </View>
-          <ErrorMessage error={errors.ethnicity} />
+        {/* Ethnicity */}
+        {renderSingleDropdown(
+          ETHNICITY,
+          race,
+          (item) => setRace(item.value),
+          t('selectethnicity'),
+          <Heart size={20} color="#666" />
+        )}
 
-          <View style={styles.postOption}>
-            <View style={styles.TextInputText}>
-              <CustomDropdown
-                data={RELATIONSHIP}
-                value={formik.values.maritalStatus}
-                onChange={(value) => formik.setFieldValue("maritalStatus", value)}
-                placeholder="Select Relationship Status"
-                dropdownStyle={{ width: "100%" }}
-                renderLeftIcon={() => (
-                  <Image
-                    style={[styles.icon, { width: 20, height: 20, marginLeft: -2, marginRight: 10 }]}
-                    source={ImagesAssets.relationshipIcon}
-                  />
-                )}
-              />
-            </View>
-          </View>
-          <ErrorMessage error={errors.maritalStatus} />
+        {/* Marital Status */}
+        {renderSingleDropdown(
+          RELATIONSHIP,
+          maritalStatus,
+          (item) => setMaritalStatus(item.value),
+          t('selectrelationshipstatus'),
+          <HeartPulseIcon size={20} color="#666" />
+        )}
 
-          <View style={styles.postOption}>
-            <View style={styles.TextInputText}>
-              <CustomDropdown
-                data={RELIGION}
-                value={formik.values.religion}
-                onChange={(value) => formik.setFieldValue("religion", value)}
-                placeholder="Select Religion"
-                dropdownStyle={{ width: "100%" }}
-                renderLeftIcon={() => (
-                  <Image
-                    style={[styles.icon, { width: 20, height: 20, marginLeft: -2, marginRight: 10 }]}
-                    source={ImagesAssets.religionIcon}
-                  />
-                )}
-              />
-            </View>
-          </View>
-          <ErrorMessage error={errors.religion} />
+        {/* Religion */}
+        {renderSingleDropdown(
+          RELIGION,
+          religion,
+          (item) => setReligion(item.value),
+          t('religion'),
+          <Blend size={20} color="#666" />
+        )}
 
-          <MultiSelect
-            style={styles.dropdown}
-            placeholderStyle={styles.placeholderStyle}
-            // selectedTextStyle={styles.selectedTextStyle}
-            inputSearchStyle={styles.inputSearchStyle}
-            iconStyle={styles.iconStyle}
-            // itemSelectedStyle={styles.itemSelectedStyle}
-            activeColor={Colors.lightGreen}
-            data={HOBBIES_OPTIONS}
-            labelField="label"
-            valueField="value"
-            placeholder="Pick your hobbies (Multi-Select)"
-            value={formik.values.hobbies}
-            // onChange={(items) => {
-            //   if (items.length <= 3) {
-            //     setSelectedHobbies(items);
-            //     formik.setFieldValue("hobbies", items);
-            //   } else {
-            //   }
-            // }}
-            onChange={(items) => {
-              // if (items.length >3) return
-              setSelectedHobbies(items);
-              formik.setFieldValue("hobbies", items);
-            }}
-            renderSelectedItem={(item, unSelect) => (
-              <TouchableOpacity
-                style={styles.selectedStyle}
-                onPress={() => unSelect && unSelect(item)}
-              >
-                <Text style={styles.textSelectedStyle}>{item.label}</Text>
-                <CircleX size={16} />
-              </TouchableOpacity>
-            )}
-            renderLeftIcon={() => (
-              <Image
-                style={[styles.icon, { width: 20, height: 20, marginLeft: 4, marginRight: 10 }]}
-                source={ImagesAssets.hobbiesIcon}
-              />
-            )}
-          />
-          <ErrorMessage error={errors.hobbies} />
+        {/* Hobbies */}
+        {renderMultiDropdown(
+          HOBBIES_OPTIONS,
+          selectedHobbies,
+          setSelectedHobbies,
+          t('selectHobbies'),
+          <Volleyball size={20} color="#666" />,
+          3
+        )}
 
-          <MultiSelect
-            style={styles.dropdown}
-            placeholderStyle={styles.placeholderStyle}
-            // selectedTextStyle={styles.selectedTextStyle}
-            inputSearchStyle={styles.inputSearchStyle}
-            iconStyle={styles.iconStyle}
-            // itemSelectedStyle={styles.itemSelectedStyle}
-            activeColor={Colors.lightGreen}
-            data={FAV_ACTIVITY_OPTIONS}
-            labelField="label"
-            valueField="value"
-            placeholder="Favourite onboard activity (Multi-Select)"
-            value={formik.values.favoriteActivity}
-            onChange={(items) => {
-              // if (items.length >3) return
-              setSelectedFavourite(items);
-              formik.setFieldValue("favoriteActivity", items);
-            }}
-            renderSelectedItem={(item, unSelect) => (
-              <TouchableOpacity
-                style={styles.selectedStyle}
-                onPress={() => unSelect && unSelect(item)}
-              >
-                <Text style={styles.textSelectedStyle}>{item.label}</Text>
-                <CircleX size={16} />
-              </TouchableOpacity>
-            )}
-            renderLeftIcon={() => (
-              <Heart size={20} style={styles.icon} />
-            )}
-          />
-          <ErrorMessage error={errors.favoriteActivity} />
+        {/* Favorite Activity */}
+        {renderMultiDropdown(
+          FAV_ACTIVITY_OPTIONS,
+          selectedFavActivities,
+          setSelectedFavActivities,
+          t('selectFavActivity'),
+          <Activity size={20} color="#666" />,
+          3
+        )}
 
-          <View style={[styles.inputContainerTextArea, { height: 100, marginTop: 10 }]}>
-            <TextInput
-              ref={aboutInputRef}
+        {/* About Yourself */}
+        <TextInput
+          style={styles.multilineInput}
+          placeholder={t('about_yourself')}
+          value={about}
+          onChangeText={setAbout}
+          multiline
+          maxLength={600}
+          textAlignVertical="top"
+          autoCorrect={false}
+          autoComplete="off"
+          spellCheck={false}
+          autoFocus={false}
+        />
 
-              placeholder="Tell Us About Yourself."
-              placeholderTextColor="#B7B7B7"
-              value={formik.values.about}
-              onChangeText={formik.handleChange("about")}
-              multiline
-              maxLength={600}
-              style={[styles.input, { height: 100, textAlignVertical: "top" }]}
+        <Text style={styles.charCount}>{about.length}/600</Text>
 
-              // onSelectionChange={handleSelectionChange}
-              // onContentSizeChange={handleContentSizeChange}
-              autoCorrect={false}
-              autoComplete="off"
-              spellCheck={false}
-              keyboardType="default"
-              autoFocus={false} // New: Prevent auto-focus
-            />
-          </View>
-          <ErrorMessage error={errors.about} />
+        {/* Update Button */}
+        <TouchableOpacity
+          style={styles.updateButton}
+          onPress={handleUpdate}
+          disabled={updatingdetails}
+        >
+          {updatingdetails ? (
+            <CommonLoader color='#fff' />
+          ) : (
+            <Text style={styles.updateButtonText}>{t('update')}</Text>
+          )}
+        </TouchableOpacity>
+      </KeyboardAwareScrollView>
 
-          <TouchableOpacity style={styles.button}
-            onPress={() => formik.handleSubmit()}
-          >
-            <Text style={styles.buttonText}>Update</Text>
-          </TouchableOpacity>
+      {loadingdetails && (
+        <View style={styles.loadingOverlay} pointerEvents="none">
+          <CommonLoader fullScreen/>
+        </View>
+      )}
+    </View>
+  );
+};
 
-        </ScrollView>
-
-      </View>
-    </KeyboardAvoidingView>
-  )
-}
-
-export default EditProfile
-
+export default EditProfile;
 
 const styles = StyleSheet.create({
-  loaderStyle: {
+  main: {
     flex: 1,
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-
+    backgroundColor: '#ededed',
   },
-  scrollView: {
-    paddingBottom: Platform.OS === "ios" ? 200 : 150,
-    paddingHorizontal: 16,
-    paddingTop: 20
-  },
-  textInput: {
-    marginLeft: 8, color: "#454545",
-    flex: 1,
-    fontSize: 16,
-  },
-  errorText: {
-    color: "red",
-    fontSize: 12,
-    marginTop: -10,
-    marginBottom: 10,
-    marginLeft: 10,
+  container: {
+    padding: 20,
+    paddingBottom: Platform.OS === 'ios' ? 200 : 150,
   },
   inputContainer: {
-    height: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     borderRadius: 10,
     paddingHorizontal: 15,
     marginBottom: 15,
-    flexDirection: "row",
-    alignItems: "center",
-    // backgroundColor:"red"
-  },
-  phoneInputContainer: {
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-  },
-  dateText: {
-    fontSize: 16,
-    color: "#454545",
-    paddingLeft: 10,
-  },
-  postOption: {
-    flexDirection: "row",
-    paddingHorizontal: 10,
-    width: "100%",
-    height: height * 0.055,
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#FFFFFFB2",
-    borderRadius: 10,
-    borderWidth: 0.5,
-    marginBottom: 10,
-    borderColor: "#ccc",
-  },
-  TextInputText: {
-    flexDirection: "row",
-    alignItems: "center",
+    height: 50,
+    backgroundColor: '#fff',
   },
   icon: {
-    width: 20,
-    height: 20,
-    marginLeft: -2,
-    marginRight: 10
+    marginRight: 8,
   },
-  dropdown: {
-    marginTop: 5,
-    marginBottom: 5,
-    height: 50,
-    backgroundColor: "white",
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: "#ccc",
-  },
-  placeholderStyle: {
-    color: "#B7B7B7",
-  },
-  inputSearchStyle: {
-    height: 40,
-    fontSize: 16,
-  },
-  iconStyle: {
-    width: 20,
-    height: 20,
-  },
-  selectedStyle: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    marginRight: 10,
-    marginVertical: 10,
-    borderWidth: 1,
-    borderColor: "#c1c1c1",
-    borderRadius: 20,
-    backgroundColor: Colors.lightGreen,
-  },
-  textSelectedStyle: {
-    color: "#000",
-    fontSize: 12,
-  },
-  inputContainerTextArea: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    marginBottom: 15,
-  },
-  input: {
+  textInput: {
     flex: 1,
     fontSize: 16,
+    color: '#454545',
   },
-  button: {
-    height: 50,
-    backgroundColor: "#000",
-    justifyContent: "center",
-    alignItems: "center",
+  dateText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#454545',
+    paddingVertical: Platform.OS === 'ios' ? 0 : 2,
+  },
+  datePlaceholder: {
+    flex: 1,
+    fontSize: 16,
+    color: '#B7B7B7',
+    paddingVertical: Platform.OS === 'ios' ? 0 : 2,
+  },
+  dropdownContainer: {
+    borderWidth: 1,
+    borderColor: '#ccc',
     borderRadius: 10,
+    marginBottom: 10,
+    backgroundColor: '#fff',
+    height: 50,
+    justifyContent: 'center',
   },
-  buttonText: {
-    lineHeight: 22,
-    fontFamily: "Poppins-SemiBold",
+  dropdown: {
+    height: 50,
+    paddingHorizontal: 15,
+  },
+  dropdownLeftIcon: {
+    marginRight: 10,
+  },
+  dropdownIconStyle: {
+    width: 20,
+    height: 20,
+  },
+  placeholderStyle: {
+    fontSize: 16,
+    color: '#B7B7B7',
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+    color: '#454545',
+  },
+  multiItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 0.5,
+    borderBottomColor: '#e0e0e0',
+  },
+  multiItemText: {
+    fontSize: 16,
+    color: '#454545',
+    flex: 1,
+  },
+  checkmark: {
+    fontSize: 18,
+    color: Colors.lightGreen || '#4CAF50',
+    fontWeight: 'bold',
+  },
+  wrappedChipsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 5,
+    marginTop: 5,
+    paddingHorizontal: 2,
+  },
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.lightGreen || '#E8F5E9',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginRight: 8,
+    marginBottom: 8,
+    borderWidth: 0.5,
+    borderColor: '#c1c1c1',
+  },
+  chipText: {
+    color: '#000',
+    marginRight: 6,
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  multilineInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 5,
+    fontSize: 16,
+    textAlignVertical: 'top',
+    backgroundColor: '#fff',
+    height: 100,
+    color: '#454545',
+  },
+  charCount: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'right',
+    marginBottom: 15,
+    marginTop: -5,
+  },
+  updateButton: {
+    backgroundColor: '#000',
+    borderRadius: 10,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  updateButtonText: {
+    color: '#fff',
     fontSize: 14,
-    color: "#fff",
+    fontFamily: 'Poppins-SemiBold',
+    lineHeight: 22,
   },
-})
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999,
+  },
+});

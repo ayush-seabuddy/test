@@ -1,6 +1,6 @@
 import Colors from '@/src/utils/Colors';
-import { t } from 'i18next';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dimensions,
   StyleSheet,
@@ -23,6 +23,7 @@ const ProfileTabs: React.FC<ProfileTabsProps> = ({
   activeTab,
   setActiveTab,
 }) => {
+  const { t } = useTranslation();
   return (
     <View style={styles.container}>
       <View style={styles.tabsWrapper}>

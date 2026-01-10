@@ -13,6 +13,7 @@ import { getDataUsage } from '@/src/apis/apiService';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import Colors from '@/src/utils/Colors';
 import { useTranslation } from 'react-i18next';
+import CommonLoader from '@/src/components/CommonLoader';
 
 const GraphScreen: React.FC = () => {
   const [dataUsed, setDataUsed] = useState<string>('0');
@@ -77,7 +78,7 @@ const GraphScreen: React.FC = () => {
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color={Colors.lightGreen} />
+        <CommonLoader fullScreen/>
       ) : (
         <View style={styles.dataUsageContainer}>
           <Text style={styles.dataUsageText}>

@@ -103,7 +103,6 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
     ];
 
     return (
-        <View style={styles.container}>
             <View style={styles.frameWrapper}>
                 <BlurView style={StyleSheet.absoluteFill} tint="regular" intensity={800} />
 
@@ -122,37 +121,39 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
                                     {t("chat_with_your_crewmates")}
                                 </Text>
                             </View>
+                            <View style={styles.greetingNotification}>
                             <Image
                                 style={styles.chatIcon}
                                 resizeMode="cover"
                                 source={ImagesAssets.ChatLogo}
                             />
-                            {unreadMessageCount > 0 && (
+                            {unreadMessageCount >= 0 && (
                                 <View style={styles.badge}>
                                     <Text style={styles.badgeText}>
 
-                                        {unreadMessageCount > 9 ? "9+" : unreadMessageCount}
-                                    </Text>
-                                </View>
-                            )}
+                                    {unreadMessageCount > 9 ? "9+" : unreadMessageCount}
+                                </Text>
+                            </View>
+                        )}
                         </View>
-                    </TouchableOpacity>
-                </View>
+                    </View>
+                </TouchableOpacity>
+            </View>
 
-                <View style={styles.featuresContainer}>
-                    <View style={styles.featuresGrid}>
-                        {features
-                            .reduce<Feature[][]>((rows, _, i) => {
-                                if (i % 2 === 0) rows.push(features.slice(i, i + 2));
-                                return rows;
-                            }, [])
-                            .map((row, index) => (
-                                <View key={index} style={styles.featureRow}>
-                                    {row.map((feature, i) => (
-                                        <FeatureCard key={i} {...feature} />
-                                    ))}
-                                </View>
-                            ))}
+            <View style={styles.featuresContainer}>
+                <View style={styles.featuresGrid}>
+                    {features
+                        .reduce<Feature[][]>((rows, _, i) => {
+                            if (i % 2 === 0) rows.push(features.slice(i, i + 2));
+                            return rows;
+                        }, [])
+                        .map((row, index) => (
+                            <View key={index} style={styles.featureRow}>
+                                {row.map((feature, i) => (
+                                    <FeatureCard key={i} {...feature} />
+                                ))}
+                            </View>
+                        ))}
 
                         {/* App Guide */}
                         <TouchableOpacity
@@ -171,7 +172,6 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
                     </View>
                 </View>
             </View>
-        </View>
     );
 };
 
@@ -183,13 +183,14 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         overflow: "hidden",
         marginVertical: isProMax ? 10 : 0,
+        backgroundColor:"red"
     },
     frameWrapper: {
+        marginHorizontal: 16,
         borderRadius: 32,
         backgroundColor: "rgba(218,218,218,0.4)",
         paddingHorizontal: 20,
         alignItems: "center",
-        width: "100%",
         overflow: "hidden",
     },
     greetingSection: {
@@ -200,7 +201,6 @@ const styles = StyleSheet.create({
         marginTop: 16,
         alignItems: "center",
         width: "100%",
-        marginBottom: isProMax ? -15 : -10,
     },
     greetingCard: {
         backgroundColor: "#FFFFFF33",
@@ -220,6 +220,13 @@ const styles = StyleSheet.create({
         flexDirection: "column",
         paddingBottom: 6,
     },
+    greetingNotification: {
+        position: "relative",
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+    },
     greetingText: {
         marginTop: isProMax ? 10 : 6,
         fontSize: isProMax ? 18 : 16,
@@ -235,7 +242,6 @@ const styles = StyleSheet.create({
     chatIcon: {
         height: 25,
         width: 25,
-        marginRight: 10,
     },
     featuresContainer: {
         gap: 16,
@@ -295,8 +301,8 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.lightGreen,
         borderRadius: 50,
         position: "absolute",
-        top: 8,
-        right: Platform.OS === 'ios' ? -5 : -18,
+        top: -8,
+        right: Platform.OS === 'ios' ? -5 : -10,
         minWidth: 18,
         height: 18,
         justifyContent: "center",

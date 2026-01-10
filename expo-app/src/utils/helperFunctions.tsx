@@ -195,3 +195,24 @@ export const formatStatus = (status: string) => {
 export const width = Dimensions.get("window").width;
 export const height = Dimensions.get("window").height;
 export const isShipStaff = (role: string) => role !== "Shore_Staff"
+
+export const getFileNameFromUrl = (uri: string): string => {
+  try {
+    return new URL(uri).pathname.split('/').pop() ?? '';
+  } catch {
+    // fallback for invalid URLs
+    return uri.split('/').pop() ?? '';
+  }
+};
+
+export const getMimeType = (fileName: string, type?: string) => {
+  if (type?.startsWith('image')) return 'image/jpeg';
+  if (type?.startsWith('video')) return 'video/mp4';
+
+  const ext = fileName.split('.').pop()?.toLowerCase();
+  if (ext === 'png') return 'image/png';
+  if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg';
+  if (ext === 'mp4' || ext === 'mov') return 'video/mp4';
+
+  return 'application/octet-stream';
+};

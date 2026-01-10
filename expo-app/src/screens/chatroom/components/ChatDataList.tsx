@@ -7,6 +7,7 @@ import { router } from "expo-router";
 import { Text, TouchableOpacity, View } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
 import { ChatMessage } from "../../chat/types/chatRoom";
+import CommonLoader from "@/src/components/CommonLoader";
 
 
 type ChatsProps = {
@@ -193,16 +194,12 @@ const Chats = ({
                       <TouchableOpacity onPress={() => handleMediaPress(item?.parentMessage?.content)}>
                         <View style={{ height: 60, width: 200 }}>
                           {imageLoading && (
-                            <ActivityIndicator
-                              style={{
-                                position: "absolute",
-                                top: "50%",
-                                left: "50%",
-                                transform: [{ translateX: -15 }, { translateY: -15 }],
-                              }}
-                              size="large"
-                              color={Colors.darkGreen}
-                            />
+                            <CommonLoader fullScreen containerStyle={{
+                              position: "absolute",
+                              top: "50%",
+                              left: "50%",
+                              transform: [{ translateX: -15 }, { translateY: -15 }],
+                            }} />
                           )}
                           <View
                             style={{
@@ -275,7 +272,7 @@ const Chats = ({
                             borderRadius: 10,
                           }}
                         >
-                          <ActivityIndicator size="large" color={Colors.darkGreen} />
+                          <CommonLoader fullScreen/>
                         </View>
                       )}
                     </View>

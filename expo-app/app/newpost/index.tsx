@@ -1,37 +1,37 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+
+
+import { createpost, listallusersfortag, updatepostbyid, uploadfile } from '@/src/apis/apiService';
+import CommonLoader from '@/src/components/CommonLoader';
+import GlobalHeader from '@/src/components/GlobalHeader';
+import { showToast } from '@/src/components/GlobalToast';
+import Colors from '@/src/utils/Colors';
+import { getUserDetails } from '@/src/utils/helperFunctions';
+import { ImagesAssets } from '@/src/utils/ImageAssets';
 import {
-  ScrollView,
+  BottomSheetBackdrop,
+  BottomSheetFlatList,
+  BottomSheetModal,
+  BottomSheetModalProvider,
+  BottomSheetView,
+} from '@gorhom/bottom-sheet';
+import { ResizeMode, Video } from 'expo-av';
+import * as FileSystem from 'expo-file-system';
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
+import { router, useLocalSearchParams } from 'expo-router';
+import { ArrowRightCircle, Hash, Play, Tag, X } from 'lucide-react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  ActivityIndicator,
+  FlatList,
+  Keyboard,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
-  Keyboard,
-  FlatList,
-  ActivityIndicator,
+  View
 } from 'react-native';
-import GlobalHeader from '@/src/components/GlobalHeader';
-import { useTranslation } from 'react-i18next';
-import * as FileSystem from 'expo-file-system';
-import { ArrowRightCircle, Hash, Tag, Play, X } from 'lucide-react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import { Image } from 'expo-image';
-import { ImagesAssets } from '@/src/utils/ImageAssets';
-import { Video, ResizeMode } from 'expo-av';
-import Colors from '@/src/utils/Colors';
-import * as ImagePicker from 'expo-image-picker';
-import {
-  BottomSheetModal,
-  BottomSheetView,
-  BottomSheetBackdrop,
-  BottomSheetFlatList,
-  BottomSheetModalProvider,
-} from '@gorhom/bottom-sheet';
-import { showToast } from '@/src/components/GlobalToast';
-import { createpost, listallusersfortag, updatepost, updatepostbyid } from '@/src/apis/apiService';
-import { getUserDetails } from '@/src/utils/helperFunctions';
-import { BASE_URL } from '@/src/apis/endpoints';
-import axios from 'axios';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 type AllUsers = {
@@ -46,6 +46,9 @@ type MediaItem = {
   type: 'image' | 'video';
   id: string;
   isExisting?: boolean;
+  fileName?: string;
+  fileSize?: number;
+  mimeType?: string;
 };
 
 const renderBackdrop = (props: any) => (
@@ -61,7 +64,7 @@ const renderBackdrop = (props: any) => (
 const NewPostScreen = () => {
   const { t } = useTranslation();
   const params = useLocalSearchParams();
-  const MAX_FILE_SIZE_BYTES = 200 * 1024 * 1024;
+  const MAX_FILE_SIZE_BYTES = 200 * 1024 * 1024; // 200 MB
   const isEditMode = params.editMode === 'true';
   const editPostId = params.postId as string;
 
@@ -132,137 +135,121 @@ const NewPostScreen = () => {
     }
   }, [t]);
 
-  const getMimeType = (uri: string, type: 'image' | 'video') => {
-    return type === 'video' ? 'video/mp4' : 'image/jpeg';
-  };
+  const pickMedia = async (type: 'photo' | 'video' | 'gallery') => {
+    try {
+      mediaSheetRef.current?.dismiss();
+      setIsLoading(true);
+      let result;
 
-const pickMedia = async (type: 'photo' | 'video' | 'gallery') => {
-  try {
-    mediaSheetRef.current?.dismiss();
-    setIsLoading(true);
-    let result;
-
-    if (type === 'photo') {
-      result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        quality: 0.8,
-        allowsEditing: true,
-      });
-    } else if (type === 'video') {
-      result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-        videoMaxDuration: 45,
-      });
-    } else {
-      result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
-        allowsMultipleSelection: true,
-        quality: 0.8,
-        videoMaxDuration: 45,
-      });
-    }
-
-    if (!result.canceled) {
-      const assets = result.assets || [];
-
-      // Check video duration first (existing logic)
-      const invalidVideos = assets.filter(
-        (asset) =>
-          asset.type === 'video' &&
-          asset.duration &&
-          asset.duration > 45000
-      );
-
-      if (invalidVideos.length > 0) {
-        const longestSeconds = Math.round(
-          Math.max(...invalidVideos.map((v) => v.duration || 0)) / 1000
-        );
-        showToast.error(
-          t('oops'),
-          t('videotoolong', { seconds: longestSeconds, max: 45 })
-        );
-        return;
+      if (type === 'photo') {
+        result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          quality: 0.8,
+          allowsEditing: true,
+        });
+      } else if (type === 'video') {
+        result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+          videoMaxDuration: 45,
+        });
+      } else {
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.All,
+          allowsMultipleSelection: true,
+          quality: 0.8,
+          videoMaxDuration: 45,
+        });
       }
 
-      // New: Check file sizes
-      const oversizedFilesInfo: { asset: ImagePicker.ImagePickerAsset; size: number }[] = [];
-      for (const asset of assets) {
-        if (asset.uri) {
-          try {
-            const info = await FileSystem.getInfoAsync(asset.uri);
-            const size = info && info.exists && info.size ? info.size : 0;
-            if (size > MAX_FILE_SIZE_BYTES) {
-              oversizedFilesInfo.push({ asset, size });
+      if (!result.canceled) {
+        const assets = result.assets || [];
+
+        // Check video duration
+        const invalidVideos = assets.filter(
+          (asset) => asset.type === 'video' && asset.duration && asset.duration > 45000
+        );
+
+        if (invalidVideos.length > 0) {
+          const longestSeconds = Math.round(Math.max(...invalidVideos.map((v) => v.duration || 0)) / 1000);
+          showToast.error(t('oops'), t('videotoolong', { seconds: longestSeconds, max: 45 }));
+          return;
+        }
+
+        // Check file sizes
+        const oversizedFilesInfo: { asset: ImagePicker.ImagePickerAsset; size: number }[] = [];
+        for (const asset of assets) {
+          if (asset.uri) {
+            try {
+              const info = await FileSystem.getInfoAsync(asset.uri);
+              const size = info.exists && info.size ? info.size : 0;
+              if (size > MAX_FILE_SIZE_BYTES) {
+                oversizedFilesInfo.push({ asset, size });
+              }
+            } catch (err) {
+              console.warn('Could not get file size for:', asset.uri, err);
             }
-          } catch (err) {
-            console.warn('Could not get file size for:', asset.uri, err);
           }
         }
+
+        if (oversizedFilesInfo.length > 0) {
+          const largestMB = Math.round(Math.max(...oversizedFilesInfo.map(i => i.size)) / (1024 * 1024));
+          showToast.error(t('oops'), t('filetoolarge', { mb: largestMB, max: 200 }));
+          return;
+        }
+
+        const newMedia: MediaItem[] = assets.map((asset) => ({
+          uri: asset.uri,
+          type: asset.type === 'video' ? 'video' : 'image',
+          id: `${asset.uri}-${Date.now()}-${Math.random()}`,
+          isExisting: false,
+          fileName: asset.fileName || `media_${Date.now()}.${asset.type === 'video' ? 'mp4' : 'jpg'}`,
+          fileSize: asset.fileSize,
+          mimeType: asset.type === 'video' ? 'video/mp4' : 'image/jpeg',
+        }));
+
+        setSelectedMedia((prev) => [...prev, ...newMedia]);
+        showToast.success(t('success'), t('mediaitemsadded', { count: newMedia.length }));
       }
-
-      if (oversizedFilesInfo.length > 0) {
-        const largestBytes = Math.max(...oversizedFilesInfo.map(i => i.size));
-        const largestMB = Math.round(largestBytes / (1024 * 1024));
-        showToast.error(
-          t('oops'),
-          t('filetoolarge', { mb: largestMB, max: 200 })
-        );
-        return;
+    } catch (error: any) {
+      if (!error.message?.includes('User cancelled')) {
+        console.error('Error picking media:', error);
+        showToast.error(t('error'), t('imagePickFailed'));
       }
-
-      const newMedia: MediaItem[] = assets.map((asset) => ({
-        uri: asset.uri,
-        type: asset.type === 'video' ? 'video' : 'image',
-        id: `${asset.uri}-${Date.now()}-${Math.random()}`,
-        isExisting: false,
-      }));
-
-      setSelectedMedia((prev) => [...prev, ...newMedia]);
-      showToast.success(
-        t('success'),
-        t('mediaitemsadded', { count: newMedia.length })
-      );
+    } finally {
+      setIsLoading(false);
     }
-  } catch (error: any) {
-    if (!error.message?.includes('User cancelled')) {
-      console.error('Error picking media:', error);
-      showToast.error(t('error'), t('imagePickFailed'));
-    }
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
+  // Upload only new media using uploadfile (presigned S3)
   const uploadNewMediaOnly = async (): Promise<string[]> => {
     const newMedia = selectedMedia.filter((m) => !m.isExisting);
     if (newMedia.length === 0) return [];
 
     try {
       setIsLoading(true);
-      const userData = await getUserDetails();
       const uploadedUrls: string[] = [];
 
-      for (let i = 0; i < newMedia.length; i++) {
-        const media = newMedia[i];
-        const formData = new FormData();
-        formData.append('file', {
-          uri: media.uri,
-          name: `media_${i}.${media.type === 'video' ? 'mp4' : 'jpg'}`,
-          type: getMimeType(media.uri, media.type),
-        } as any);
-
-        const response = await axios.post(`${BASE_URL}/user/uploadFile`, formData, {
-          headers: {
-            authToken: userData.authToken,
-            'Content-Type': 'multipart/form-data',
-            Accept: 'application/json',
-          },
+      for (let media of newMedia) {
+        let mediaFile = media;
+        // if(media.type === 'video' ) {
+        //   mediaFile.uri = await VideoCompressor.compress(media.uri,
+        //   {},
+        //   (progress) => {
+        //     console.log('Compression Progress: ', progress);
+        //   }
+        // );
+        // }
+        const response = await uploadfile({
+          file: mediaFile.uri,
+          fileName: media.fileName,
+          fileSize: media.fileSize,
+          type: media.mimeType || (media.type === 'video' ? 'video/mp4' : 'image/jpeg'),
         });
 
-        if (response.data?.responseCode === 200 && response.data.result) {
-          uploadedUrls.push(response.data.result);
+        if (response.success && response.status === 200 && response.data) {
+          uploadedUrls.push(response.data);
         } else {
-          throw new Error(response.data?.message || 'Upload failed');
+          throw new Error('Upload failed for a file');
         }
       }
 
@@ -277,7 +264,7 @@ const pickMedia = async (type: 'photo' | 'video' | 'gallery') => {
     }
   };
 
-  // Helper to get final media URLs (existing + newly uploaded)
+  // Get final list of media URLs (existing + newly uploaded)
   const getFinalMediaUrls = async (): Promise<string[]> => {
     const existingUrls = selectedMedia
       .filter((m) => m.isExisting)
@@ -303,6 +290,7 @@ const pickMedia = async (type: 'photo' | 'video' | 'gallery') => {
             caption: caption.trim(),
             tags: taggedUsers.map(u => String(u.id)),
             hashtags,
+            imageUrls, // assuming backend expects this field
             createdAt: new Date().toISOString(),
           },
         ],
@@ -334,6 +322,7 @@ const pickMedia = async (type: 'photo' | 'video' | 'gallery') => {
         caption: caption.trim(),
         tags: taggedUsers.map(u => String(u.id)),
         hashtags,
+        imageUrls, // assuming backend expects this
       };
 
       const apiResponse = await updatepostbyid(payload);
@@ -364,14 +353,14 @@ const pickMedia = async (type: 'photo' | 'video' | 'gallery') => {
 
     try {
       if (selectedMedia.length === 0) {
-        // No media → directly create/update post with empty imageUrls
+        // No media → directly create/update
         if (isEditMode) {
           await updatePost([]);
         } else {
           await createPost([]);
         }
       } else {
-        // Has media → upload new ones, then go to preview
+        // Upload new media first, then go to preview with final URLs
         const finalMediaUrls = await getFinalMediaUrls();
 
         const mediaForPreview = finalMediaUrls.map((uri) => ({
@@ -500,7 +489,7 @@ const pickMedia = async (type: 'photo' | 'video' | 'gallery') => {
 
         {(isLoading || loadingUsers || loading) && (
           <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color={Colors.lightGreen} />
+            <CommonLoader fullScreen/>
           </View>
         )}
 
@@ -510,6 +499,7 @@ const pickMedia = async (type: 'photo' | 'video' | 'gallery') => {
           keyboardShouldPersistTaps="handled"
           extraScrollHeight={120}
         >
+          {/* Rest of your UI remains exactly the same */}
           <Text style={styles.headingText}>
             {t('keepitpositive')}{'\n'}
             {t('keepitpositive_description')}
@@ -635,7 +625,7 @@ const pickMedia = async (type: 'photo' | 'video' | 'gallery') => {
           </TouchableOpacity>
         </KeyboardAwareScrollView>
 
-        {/* Media Selection Bottom Sheet */}
+        {/* Bottom Sheets remain unchanged */}
         <BottomSheetModal
           ref={mediaSheetRef}
           index={0}
@@ -664,7 +654,6 @@ const pickMedia = async (type: 'photo' | 'video' | 'gallery') => {
           </BottomSheetView>
         </BottomSheetModal>
 
-        {/* Tag People Bottom Sheet */}
         <BottomSheetModal
           ref={tagSheetRef}
           snapPoints={tagSnapPoints}
@@ -702,7 +691,7 @@ const pickMedia = async (type: 'photo' | 'video' | 'gallery') => {
 
 export default NewPostScreen;
 
-// Styles remain unchanged
+// Styles unchanged (same as your original)
 const styles = StyleSheet.create({
   main: { flex: 1, backgroundColor: '#fff' },
   loadingOverlay: {

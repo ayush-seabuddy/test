@@ -5,19 +5,23 @@ import {
     Dimensions,
     FlatList,
     Modal,
-    Pressable,
     StyleSheet,
     TouchableOpacity,
     View,
+    Text,
+    TextInput,
+    ActivityIndicator,
+    Platform,
 } from 'react-native';
-import { Text, TextInput } from 'react-native-paper';
 import { updateprofile, viewProfile } from '@/src/apis/apiService';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import CustomDateTimePicker from '@/src/components/Modals/CustomDateTimePicker';
 import { RootState } from '@/src/redux/store';
-import { Edit, Trash2 } from 'lucide-react-native';
+import { Edit, Trash2, Briefcase, Building, Calendar } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import CommonLoader from '@/src/components/CommonLoader';
 
 interface WorkExperience {
     id: string;
@@ -30,20 +34,6 @@ interface WorkExperience {
 interface UserDetails {
     id: string;
     authToken: string;
-}
-
-interface Errors {
-    jobTitle: string;
-    company: string;
-    startDate: string;
-    endDate: string;
-}
-
-interface TouchedFields {
-    jobTitle: boolean;
-    company: boolean;
-    startDate: boolean;
-    endDate: boolean;
 }
 
 const { height, width } = Dimensions.get('screen');
@@ -79,143 +69,133 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
     const [isUpdate, setIsUpdate] = useState<boolean>(false);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
 
-    const [errors, setErrors] = useState<Errors>({
-        jobTitle: '',
-        company: '',
-        startDate: '',
-        endDate: '',
-    });
-
-    // Track which fields have been touched for real-time validation
-    const [touched, setTouched] = useState<TouchedFields>({
-        jobTitle: false,
-        company: false,
-        startDate: false,
-        endDate: false,
-    });
-
-    const formatDate = (dateInput: Date | null | { nativeEvent?: { timestamp: number } }): string => {
-        if (!dateInput) return '';
-
-        let actualDate: Date;
-
-        if (dateInput instanceof Date) {
-            actualDate = dateInput;
-        }
-        else if (dateInput && 'nativeEvent' in dateInput && dateInput.nativeEvent?.timestamp) {
-            const timestamp = dateInput.nativeEvent.timestamp;
-            actualDate = new Date(timestamp);
-        }
-        else {
+    // Format date for display
+    const formatDateForDisplay = (date: Date | null): string => {
+        if (!date) return '';
+        try {
+            return date.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        } catch (error) {
+            console.error('Error formatting date:', error);
             return '';
         }
+    };
 
-        return actualDate.toLocaleDateString('en-GB');
+    // Format date for API (DD/MM/YYYY)
+    const formatDateForAPI = (date: Date | null): string => {
+        if (!date) return '';
+        try {
+            return date.toLocaleDateString('en-GB');
+        } catch (error) {
+            console.error('Error formatting date for API:', error);
+            return '';
+        }
     };
 
     const parseDDMMYYYY = (dateStr: string): Date | null => {
         if (!dateStr) return null;
         const [day, month, year] = dateStr.split('/').map(Number);
         if (!day || !month || !year) return null;
-        return new Date(year, month - 1, day);
+        const parsedDate = new Date(year, month - 1, day);
+        return isNaN(parsedDate.getTime()) ? null : parsedDate;
     };
 
-    // Real-time validation for job title
-    const handleJobTitleChange = (text: string) => {
-        setJobTitle(text);
+    // FIXED: Handle date picker event object
+    const handleStartDateConfirm = (event: any) => {
+        console.log('Start date event:', event); // Debug log
 
-        // Real-time validation
-        if (touched.jobTitle) {
-            if (!text.trim()) {
-                setErrors((prev) => ({ ...prev, jobTitle: t('jobTitleRequired') }));
+        try {
+            if (event && event.nativeEvent && event.nativeEvent.timestamp) {
+                const timestamp = event.nativeEvent.timestamp;
+                const selectedDate = new Date(timestamp);
+
+                console.log('Parsed start date:', selectedDate);
+
+                if (!isNaN(selectedDate.getTime())) {
+                    setStartDate(selectedDate);
+
+                    // Validate against end date
+                    if (endDate && selectedDate > endDate) {
+                        showToast.error(t('oops'), t('startAfterEnd'));
+                    }
+                } else {
+                    console.error('Invalid start date timestamp:', timestamp);
+                }
             } else {
-                setErrors((prev) => ({ ...prev, jobTitle: '' }));
+                console.error('Invalid start date event structure:', event);
             }
+        } catch (error) {
+            console.error('Error handling start date:', error);
         }
-    };
 
-    // Real-time validation for company
-    const handleCompanyChange = (text: string) => {
-        setCompany(text);
-
-        // Real-time validation
-        if (touched.company) {
-            if (!text.trim()) {
-                setErrors((prev) => ({ ...prev, company: t('companyRequired') }));
-            } else {
-                setErrors((prev) => ({ ...prev, company: '' }));
-            }
-        }
-    };
-
-    const handleStartDateConfirm = (date: Date) => {
         setShowStartDatePicker(false);
-        if (date) {
-            setStartDate(date);
-            setTouched((prev) => ({ ...prev, startDate: true }));
-
-            // Clear start date error
-            setErrors((prev) => ({ ...prev, startDate: '' }));
-
-            // Validate against end date if it exists
-            if (endDate && date > endDate) {
-                setErrors((prev) => ({
-                    ...prev,
-                    startDate: t('startAfterEnd'),
-                    endDate: t('endBeforeStart')
-                }));
-            } else if (endDate) {
-                setErrors((prev) => ({ ...prev, endDate: '' }));
-            }
-        }
     };
 
-    const handleEndDateConfirm = (date: Date) => {
-        setShowEndDatePicker(false);
-        if (date) {
-            setEndDate(date);
-            setTouched((prev) => ({ ...prev, endDate: true }));
+    // FIXED: Handle date picker event object
+    const handleEndDateConfirm = (event: any) => {
+        console.log('End date event:', event); // Debug log
 
-            // Clear end date error
-            setErrors((prev) => ({ ...prev, endDate: '' }));
+        try {
+            if (event && event.nativeEvent && event.nativeEvent.timestamp) {
+                const timestamp = event.nativeEvent.timestamp;
+                const selectedDate = new Date(timestamp);
 
-            // Validate against start date if it exists
-            if (startDate && startDate > date) {
-                setErrors((prev) => ({
-                    ...prev,
-                    startDate: t('startAfterEnd'),
-                    endDate: t('endBeforeStart')
-                }));
-            } else if (startDate) {
-                setErrors((prev) => ({ ...prev, startDate: '' }));
+                console.log('Parsed end date:', selectedDate);
+
+                if (!isNaN(selectedDate.getTime())) {
+                    setEndDate(selectedDate);
+
+                    // Validate against start date
+                    if (startDate && startDate > selectedDate) {
+                        showToast.error(t('oops'), t('endBeforeStart'));
+                    }
+                } else {
+                    console.error('Invalid end date timestamp:', timestamp);
+                }
+            } else {
+                console.error('Invalid end date event structure:', event);
             }
+        } catch (error) {
+            console.error('Error handling end date:', error);
         }
+
+        setShowEndDatePicker(false);
+    };
+
+    // Handle date picker close
+    const handleStartDateClose = () => {
+        setShowStartDatePicker(false);
+    };
+
+    const handleEndDateClose = () => {
+        setShowEndDatePicker(false);
     };
 
     const validateInputs = (): boolean => {
-        const newErrors: Errors = {
-            jobTitle: jobTitle.trim() ? '' : t('jobTitleRequired'),
-            company: company.trim() ? '' : t('companyRequired'),
-            startDate: startDate ? '' : t('startDateRequired'),
-            endDate: endDate ? '' : t('endDateRequired'),
-        };
-
-        if (startDate && endDate && startDate > endDate) {
-            newErrors.startDate = t('startAfterEnd');
-            newErrors.endDate = t('endBeforeStart');
+        if (!jobTitle.trim()) {
+            showToast.error(t('oops'), t('jobTitleRequired'));
+            return false;
         }
-
-        setErrors(newErrors);
-
-        // Mark all fields as touched
-        setTouched({
-            jobTitle: true,
-            company: true,
-            startDate: true,
-            endDate: true,
-        });
-
-        return Object.values(newErrors).every((err) => !err);
+        if (!company.trim()) {
+            showToast.error(t('oops'), t('companyRequired'));
+            return false;
+        }
+        if (!startDate) {
+            showToast.error(t('oops'), t('startDateRequired'));
+            return false;
+        }
+        if (!endDate) {
+            showToast.error(t('oops'), t('endDateRequired'));
+            return false;
+        }
+        if (startDate && endDate && startDate > endDate) {
+            showToast.error(t('oops'), t('startAfterEnd'));
+            return false;
+        }
+        return true;
     };
 
     const addExperience = async () => {
@@ -224,8 +204,8 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
         const payload: Partial<WorkExperience> = {
             companyName: company,
             role: jobTitle,
-            from: formatDate(startDate),
-            to: formatDate(endDate),
+            from: formatDateForAPI(startDate),
+            to: formatDateForAPI(endDate),
         };
 
         if (isUpdate && editId) {
@@ -241,18 +221,6 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
         setEndDate(null);
         setIsUpdate(false);
         setEditId('');
-        setErrors({
-            jobTitle: '',
-            company: '',
-            startDate: '',
-            endDate: '',
-        });
-        setTouched({
-            jobTitle: false,
-            company: false,
-            startDate: false,
-            endDate: false,
-        });
     };
 
     const updateWorkExperience = async (experience: Partial<WorkExperience>) => {
@@ -283,7 +251,7 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
             }
         } catch (error: any) {
             console.error('Update error:', error.response?.data || error.message);
-            showToast.error(t('somethingWentWrong'));
+            showToast.error(t('error'), t('somethingwentwrong'));
         } finally {
             setLoading(false);
         }
@@ -320,167 +288,122 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
     return (
         <View style={styles.main}>
             <GlobalHeader title={t('shipboard_experience')} />
-            <View style={styles.screenContainer}>
+            <KeyboardAwareScrollView
+                contentContainerStyle={styles.container}
+                keyboardShouldPersistTaps="handled"
+                enableOnAndroid
+                extraScrollHeight={Platform.OS === 'ios' ? 20 : 80}
+                showsVerticalScrollIndicator={false}
+            >
+                {/* Job Title Input */}
                 <View style={styles.inputContainer}>
+                    <Briefcase size={20} color="#666" style={styles.icon} />
                     <TextInput
-                        label={t('jobtitle')}
+                        style={styles.textInput}
+                        placeholder={t('jobtitle')}
+                        placeholderTextColor="#B7B7B7"
                         value={jobTitle}
-                        onChangeText={handleJobTitleChange}
-                        onBlur={() => {
-                            setTouched((prev) => ({ ...prev, jobTitle: true }));
-                            if (!jobTitle.trim()) {
-                                setErrors((prev) => ({ ...prev, jobTitle: t('jobTitleRequired') }));
-                            }
-                        }}
-                        mode="outlined"
+                        onChangeText={setJobTitle}
                         autoCapitalize="none"
                         autoCorrect={false}
-                        textColor="#000"
-                        style={styles.input}
-                        error={touched.jobTitle && !!errors.jobTitle}
-                        theme={{
-                            colors: {
-                                primary: '#000',
-                                outline: touched.jobTitle && errors.jobTitle ? 'red' : '#000',
-                                placeholder: '#666',
-                                background: '#fff',
-                            },
-                        }}
                     />
-                    {touched.jobTitle && errors.jobTitle ? (
-                        <Text style={styles.error}>{errors.jobTitle}</Text>
-                    ) : null}
                 </View>
 
+                {/* Company Input */}
                 <View style={styles.inputContainer}>
+                    <Building size={20} color="#666" style={styles.icon} />
                     <TextInput
-                        label={t('companyname')}
+                        style={styles.textInput}
+                        placeholder={t('companyname')}
+                        placeholderTextColor="#B7B7B7"
                         value={company}
-                        onChangeText={handleCompanyChange}
-                        onBlur={() => {
-                            setTouched((prev) => ({ ...prev, company: true }));
-                            if (!company.trim()) {
-                                setErrors((prev) => ({ ...prev, company: t('companyRequired') }));
-                            }
-                        }}
-                        mode="outlined"
+                        onChangeText={setCompany}
                         autoCapitalize="none"
                         autoCorrect={false}
-                        textColor="#000"
-                        style={styles.input}
-                        error={touched.company && !!errors.company}
-                        theme={{
-                            colors: {
-                                primary: '#000',
-                                outline: touched.company && errors.company ? 'red' : '#000',
-                                placeholder: '#666',
-                                background: '#fff',
-                            },
-                        }}
                     />
-                    {touched.company && errors.company ? (
-                        <Text style={styles.error}>{errors.company}</Text>
-                    ) : null}
                 </View>
 
-                <View style={styles.inputContainer}>
-                    <Pressable onPress={() => setShowStartDatePicker(true)}>
-                        <TextInput
-                            label={t('startdate')}
-                            value={formatDate(startDate)}
-                            mode="outlined"
-                            editable={false}
-                            pointerEvents="none"
-                            textColor="#000"
-                            style={styles.input}
-                            error={touched.startDate && !!errors.startDate}
-                            theme={{
-                                colors: {
-                                    primary: '#000',
-                                    outline: touched.startDate && errors.startDate ? 'red' : '#000',
-                                    placeholder: '#666',
-                                    background: '#fff',
-                                },
-                            }}
-                        />
-                    </Pressable>
-                    {showStartDatePicker && (
-                        <CustomDateTimePicker
-                            value={new Date()}
-                            mode="date"
-                            onChange={handleStartDateConfirm}
-                            isVisible={showStartDatePicker}
-                            onClose={() => setShowStartDatePicker(false)}
-                            cancelText="Cancel"
-                            confirmText="Done"
-                            containerStyle={{ backgroundColor: "#fff" }}
-                            buttonTextStyle={{ fontSize: 18, color: "#84A402" }}
-                            maximumDate={new Date()}
-                        />
+                {/* Start Date */}
+                <TouchableOpacity
+                    style={styles.inputContainer}
+                    onPress={() => setShowStartDatePicker(true)}
+                >
+                    <Calendar size={20} color="#666" style={styles.icon} />
+                    {startDate ? (
+                        <Text style={styles.dateText}>{formatDateForDisplay(startDate)}</Text>
+                    ) : (
+                        <Text style={styles.datePlaceholder}>{t('startdate')}</Text>
                     )}
-                    {touched.startDate && errors.startDate ? (
-                        <Text style={styles.error}>{errors.startDate}</Text>
-                    ) : null}
-                </View>
-
-                <View style={styles.inputContainer}>
-                    <Pressable onPress={() => setShowEndDatePicker(true)}>
-                        <TextInput
-                            label={t('enddate')}
-                            value={formatDate(endDate)}
-                            mode="outlined"
-                            editable={false}
-                            pointerEvents="none"
-                            textColor="#000"
-                            style={styles.input}
-                            error={touched.endDate && !!errors.endDate}
-                            theme={{
-                                colors: {
-                                    primary: '#000',
-                                    outline: touched.endDate && errors.endDate ? 'red' : '#000',
-                                    placeholder: '#666',
-                                    background: '#fff',
-                                },
-                            }}
-                        />
-                    </Pressable>
-                    {touched.endDate && errors.endDate ? (
-                        <Text style={styles.error}>{errors.endDate}</Text>
-                    ) : null}
-                    {showEndDatePicker && (
-                        <CustomDateTimePicker
-                            value={new Date()}
-                            mode="date"
-                            onChange={handleEndDateConfirm}
-                            isVisible={showEndDatePicker}
-                            onClose={() => setShowEndDatePicker(false)}
-                            cancelText="Cancel"
-                            confirmText="Done"
-                            containerStyle={{ backgroundColor: "#fff" }}
-                            buttonTextStyle={{ fontSize: 18, color: "#84A402" }}
-                            maximumDate={new Date()}
-                        />
-                    )}
-                </View>
-
-                <TouchableOpacity onPress={addExperience} style={styles.addButton}>
-                    <Text style={styles.addButtonText}>
-                        {isUpdate ? t('editexperience') : t('addexperience')}
-                    </Text>
                 </TouchableOpacity>
 
+                {/* Start Date Picker */}
+                <CustomDateTimePicker
+                    value={startDate || new Date()}
+                    mode="date"
+                    onChange={handleStartDateConfirm}
+                    onClose={handleStartDateClose}
+                    isVisible={showStartDatePicker}
+                    cancelText={t('cancel') || "Cancel"}
+                    confirmText={t('done') || "Done"}
+                    containerStyle={{ backgroundColor: "#fff" }}
+                    buttonTextStyle={{ fontSize: 18, color: "#84A402" }}
+                    maximumDate={new Date()}
+                />
+
+                {/* End Date */}
+                <TouchableOpacity
+                    style={styles.inputContainer}
+                    onPress={() => setShowEndDatePicker(true)}
+                >
+                    <Calendar size={20} color="#666" style={styles.icon} />
+                    {endDate ? (
+                        <Text style={styles.dateText}>{formatDateForDisplay(endDate)}</Text>
+                    ) : (
+                        <Text style={styles.datePlaceholder}>{t('enddate')}</Text>
+                    )}
+                </TouchableOpacity>
+
+                {/* End Date Picker */}
+                <CustomDateTimePicker
+                    value={endDate || new Date()}
+                    mode="date"
+                    onChange={handleEndDateConfirm}
+                    onClose={handleEndDateClose}
+                    isVisible={showEndDatePicker}
+                    cancelText={t('cancel') || "Cancel"}
+                    confirmText={t('done') || "Done"}
+                    containerStyle={{ backgroundColor: "#fff" }}
+                    buttonTextStyle={{ fontSize: 18, color: "#84A402" }}
+                    maximumDate={new Date()}
+                />
+
+                {/* Add/Update Button */}
+                <TouchableOpacity
+                    onPress={addExperience}
+                    style={styles.updateButton}
+                    disabled={loading}
+                >
+                    {loading ? (
+                        <CommonLoader color="#fff" />
+                    ) : (
+                        <Text style={styles.updateButtonText}>
+                            {isUpdate ? t('editexperience') : t('addexperience')}
+                        </Text>
+                    )}
+                </TouchableOpacity>
+
+                {/* Experiences List */}
                 <FlatList
                     data={experiences}
                     keyExtractor={(item) => item.id}
-                    showsVerticalScrollIndicator={false}
+                    scrollEnabled={false}
                     renderItem={({ item }) => (
                         <View style={styles.experienceCard}>
-                            <View style={styles.flex1}>
-                                <Text style={styles.companyName}>{item.companyName}</Text>
-                                <Text style={styles.role}>{item.role}</Text>
+                            <View style={styles.experienceContent}>
+                                <Text style={styles.companyName}>{item.role}</Text>
+                                <Text style={styles.role}>{item.companyName}</Text>
                                 <Text style={styles.duration}>{item.from} - {item.to}</Text>
                             </View>
-
                             <View style={styles.actions}>
                                 <TouchableOpacity
                                     onPress={() => {
@@ -490,36 +413,27 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
                                         setStartDate(parseDDMMYYYY(item.from));
                                         setEndDate(parseDDMMYYYY(item.to));
                                         setIsUpdate(true);
-                                        setTouched({
-                                            jobTitle: false,
-                                            company: false,
-                                            startDate: false,
-                                            endDate: false,
-                                        });
-                                        setErrors({
-                                            jobTitle: '',
-                                            company: '',
-                                            startDate: '',
-                                            endDate: '',
-                                        });
                                     }}
+                                    style={styles.actionButton}
                                 >
-                                    <Edit size={20} color="#000" strokeWidth={2} />
+                                    <Edit size={20} color="#000" />
                                 </TouchableOpacity>
-
                                 <TouchableOpacity
                                     onPress={() => {
                                         setDeleteId(item.id);
                                         setModalVisible(true);
                                     }}
+                                    style={styles.actionButton}
                                 >
-                                    <Trash2 size={20} color="red" strokeWidth={2} />
+                                    <Trash2 size={20} color="red" />
                                 </TouchableOpacity>
                             </View>
                         </View>
                     )}
                 />
-            </View>
+            </KeyboardAwareScrollView>
+
+            {/* Delete Confirmation Modal */}
             <Modal
                 visible={modalVisible}
                 transparent
@@ -540,8 +454,16 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
                             >
                                 <Text style={styles.cancelText}>{t('no')}</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={handleDelete} style={styles.deleteButton}>
-                                <Text style={styles.deleteText}>{t('yes')}</Text>
+                            <TouchableOpacity
+                                onPress={handleDelete}
+                                style={styles.deleteButton}
+                                disabled={loading}
+                            >
+                                {loading ? (
+                                    <CommonLoader color="#fff" />
+                                ) : (
+                                    <Text style={styles.deleteText}>{t('yes')}</Text>
+                                )}
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -556,30 +478,56 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#ededed',
     },
-    input: {
-        fontFamily: 'Poppins-Regular',
-        fontSize: 16,
+    container: {
+        padding: 20,
+        paddingBottom: 20,
+    },
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 10,
+        paddingHorizontal: 15,
+        marginBottom: 15,
+        height: 50,
         backgroundColor: '#fff',
     },
-    error: {
-        color: 'red',
-        fontFamily: 'Poppins-Regular',
-        fontSize: 12,
-        marginTop: 4,
-        marginLeft: 4,
+    icon: {
+        marginRight: 8,
     },
-    addButton: {
-        borderRadius: 8,
-        marginVertical: 20,
-        height: 50,
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#000',
-    },
-    addButtonText: {
-        color: '#fff',
-        fontFamily: 'WhyteInktrap-Medium',
+    textInput: {
+        flex: 1,
         fontSize: 16,
+        color: '#454545',
+    },
+    dateText: {
+        flex: 1,
+        fontSize: 16,
+        color: '#454545',
+        paddingLeft: 5,
+        paddingVertical: Platform.OS === 'ios' ? 0 : 2,
+    },
+    datePlaceholder: {
+        flex: 1,
+        fontSize: 16,
+        color: '#B7B7B7',
+        paddingLeft: 5,
+        paddingVertical: Platform.OS === 'ios' ? 0 : 2,
+    },
+    updateButton: {
+        backgroundColor: '#000',
+        borderRadius: 10,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    updateButtonText: {
+        color: '#fff',
+        fontSize: 14,
+        fontFamily: 'Poppins-SemiBold',
+        lineHeight: 22,
     },
     experienceCard: {
         flexDirection: 'row',
@@ -589,16 +537,23 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         padding: 12,
         backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+    },
+    experienceContent: {
+        flex: 1,
     },
     companyName: {
         fontFamily: 'Poppins-SemiBold',
         fontSize: 14,
         color: '#333',
+        marginBottom: 4,
     },
     role: {
         fontFamily: 'Poppins-Regular',
         fontSize: 13,
         color: '#666',
+        marginBottom: 2,
     },
     duration: {
         fontFamily: 'Poppins-Regular',
@@ -607,7 +562,10 @@ const styles = StyleSheet.create({
     },
     actions: {
         flexDirection: 'row',
-        gap: 16,
+        gap: 12,
+    },
+    actionButton: {
+        padding: 8,
     },
     modalContainer: {
         flex: 1,
@@ -665,27 +623,12 @@ const styles = StyleSheet.create({
         fontFamily: 'Poppins-Medium',
         fontSize: 13,
     },
-    background: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: height * 0.5,
-        backgroundColor: '#c1c1c1',
-        borderTopLeftRadius: 50,
-        borderTopRightRadius: 50,
-        overflow: 'hidden',
-        zIndex: -1,
-    },
-    screenContainer: {
-        flex: 1,
-        padding: 14,
-    },
-    inputContainer: {
-        marginBottom: 16,
-    },
-    flex1: {
-        flex: 1,
+    loadingOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(255,255,255,0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 999,
     },
 });
 

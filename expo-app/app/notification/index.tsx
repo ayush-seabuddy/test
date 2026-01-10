@@ -25,6 +25,7 @@ import {
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
+import CommonLoader from '@/src/components/CommonLoader';
 const { height, width } = Dimensions.get("screen");
 interface Notification {
     id: string;
@@ -202,7 +203,7 @@ const NotificationScreen = () => {
     const renderFooter = useCallback(() => {
         return loadingMore ? (
             <View style={styles.footerLoader}>
-                <ActivityIndicator size="small" color={Colors.lightGreen} />
+               <CommonLoader/>
             </View>
         ) : null;
     }, [loadingMore]);
@@ -312,8 +313,12 @@ const NotificationScreen = () => {
                 </View>
 
                 <View style={styles.headerRight}>
-                    <TouchableOpacity onPress={() => setClearAllModalVisible(true)}>
-                        <CircleX size={24} color="#000" />
+                    <TouchableOpacity
+                        disabled={notifications.length === 0}
+                        onPress={() => setClearAllModalVisible(true)}
+                        style={{ opacity: notifications.length === 0 ? 0.5 : 1 }}
+                    >
+                        {notifications.length > 0 && <CircleX size={24} color="#000" />}
                     </TouchableOpacity>
                     <TouchableOpacity
                         onPress={() => {
@@ -333,7 +338,7 @@ const NotificationScreen = () => {
             <View style={styles.content}>
                 {loading && notifications.length === 0 ? (
                     <View style={styles.centerLoader}>
-                        <ActivityIndicator size="large" color={Colors.lightGreen} />
+                        <CommonLoader fullScreen/>
                     </View>
                 ) : notifications.length === 0 ? (
                     <View style={styles.centerLoader}>

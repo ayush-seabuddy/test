@@ -20,6 +20,7 @@ import PersonalityMapResultModal from '@/src/components/PersonalityMapResultModa
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { BackHandler } from 'react-native';
 import moment from 'moment-timezone';
+import CommonLoader from '@/src/components/CommonLoader';
 
 type AnswerOption = { option: string; score: number };
 type Question = {
@@ -31,6 +32,7 @@ type Question = {
 };
 
 const PAGE_SIZE = 10;
+const STORAGE_KEY = 'personality_test_answers';
 
 const PersonalityMapTestScreen = () => {
   const { t } = useTranslation();
@@ -52,6 +54,40 @@ const PersonalityMapTestScreen = () => {
 
   const isRequiredTest = parsedTestData?.isRequires === true;
 
+  // Load saved answers from AsyncStorage
+  const loadSavedAnswers = useCallback(async () => {
+    try {
+      const savedAnswers = await AsyncStorage.getItem(STORAGE_KEY);
+      if (savedAnswers) {
+        const parsed = JSON.parse(savedAnswers);
+        setAnswers(parsed);
+        console.log('Loaded saved answers:', Object.keys(parsed).length);
+      }
+    } catch (error) {
+      console.error('Error loading saved answers:', error);
+    }
+  }, []);
+
+  // Save answers to AsyncStorage whenever they change
+  const saveAnswersToStorage = useCallback(async (answersToSave: Record<string, number>) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(answersToSave));
+      console.log('Saved answers to storage:', Object.keys(answersToSave).length);
+    } catch (error) {
+      console.error('Error saving answers:', error);
+    }
+  }, []);
+
+  // Clear saved answers from storage
+  const clearSavedAnswers = useCallback(async () => {
+    try {
+      await AsyncStorage.removeItem(STORAGE_KEY);
+      console.log('Cleared saved answers from storage');
+    } catch (error) {
+      console.error('Error clearing saved answers:', error);
+    }
+  }, []);
+
   const fetchQuestions = useCallback(async () => {
     setLoading(true);
     try {
@@ -65,11 +101,20 @@ const PersonalityMapTestScreen = () => {
           order: q.order,
         }));
 
-        const sorted = raw.sort((a: Question, b: Question) => +a.order - +b.order);
+        // Better sorting that handles string-to-number conversion properly
+        const sorted = raw.sort((a: Question, b: Question) => {
+          const orderA = parseInt(a.order, 10) || 0;
+          const orderB = parseInt(b.order, 10) || 0;
+          return orderA - orderB;
+        });
+        
         const unique = Array.from(new Map(sorted.map(q => [q.id, q])).values()) as Question[];
 
         setAllQuestions(unique);
         setDisplayedQuestions(unique.slice(0, PAGE_SIZE));
+        
+        // Load saved answers after questions are loaded
+        await loadSavedAnswers();
       } else {
         showToast.error(t('oops'), res.message || t('somethingwentwrong'));
       }
@@ -78,11 +123,18 @@ const PersonalityMapTestScreen = () => {
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [t, loadSavedAnswers]);
 
   useEffect(() => {
     fetchQuestions();
   }, [fetchQuestions]);
+
+  // Auto-save answers whenever they change
+  useEffect(() => {
+    if (Object.keys(answers).length > 0) {
+      saveAnswersToStorage(answers);
+    }
+  }, [answers, saveAnswersToStorage]);
 
   useFocusEffect(
     useCallback(() => {
@@ -110,16 +162,19 @@ const PersonalityMapTestScreen = () => {
   const answeredCount = Object.keys(answers).length;
   const totalQuestions = allQuestions.length;
   const progress = totalQuestions > 0 ? answeredCount / totalQuestions : 0;
-  const isComplete = answeredCount === totalQuestions;
+  const isComplete = answeredCount === totalQuestions && totalQuestions > 0;
 
   const handleSelect = (questionId: string, score: number) => {
     setAnswers(prev => ({ ...prev, [questionId]: score }));
   };
 
   const scrollToFirstUnanswered = () => {
-    const idx = displayedQuestions.findIndex(q => !answers[q.id]);
-    if (idx !== -1) {
-      flatListRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0.5 });
+    const firstUnanswered = allQuestions.find(q => !answers[q.id]);
+    if (firstUnanswered) {
+      const idx = displayedQuestions.findIndex(q => q.id === firstUnanswered.id);
+      if (idx !== -1) {
+        flatListRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0.5 });
+      }
       showToast.error(t('incomplete'), t('please_answer_all'));
     }
   };
@@ -158,6 +213,9 @@ const PersonalityMapTestScreen = () => {
           }
         } catch (_) { }
 
+        // Clear saved answers after successful submission
+        await clearSavedAnswers();
+        
         setShowResultPopup(true);
       } else {
         showToast.error(t('error'), res.message || t('somethingwentwrong'));
@@ -171,11 +229,13 @@ const PersonalityMapTestScreen = () => {
 
   const renderQuestion = ({ item }: { item: Question }) => {
     const selectedScore = answers[item.id];
+    const questionIndex = allQuestions.findIndex(q => q.id === item.id);
+    const questionNumber = questionIndex !== -1 ? questionIndex + 1 : displayedQuestions.indexOf(item) + 1;
 
     return (
       <View style={styles.questionContainer}>
         <Text style={styles.questionText}>
-          {displayedQuestions.indexOf(item) + 1}. {item.question}
+          {questionNumber}. {item.question}
         </Text>
 
         <View style={styles.radioRow}>
@@ -206,7 +266,7 @@ const PersonalityMapTestScreen = () => {
 
     return (
       <View style={styles.footerContainer}>
-        {loadingMore && <ActivityIndicator size="small" color="#84A402" style={{ marginVertical: 20 }} />}
+        {loadingMore && <CommonLoader containerStyle={{ marginVertical: 20 }} />}
         {allLoaded && (
           <>
             <Text style={styles.confidentialityText}>{t('happinessindexdisclaimer')}</Text>
@@ -225,7 +285,7 @@ const PersonalityMapTestScreen = () => {
   if (loading) {
     return (
       <View style={styles.main}>
-        <ActivityIndicator size="large" color="#84A402" />
+        <CommonLoader fullScreen/>
       </View>
     );
   }

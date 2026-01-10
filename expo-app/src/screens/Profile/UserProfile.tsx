@@ -6,17 +6,19 @@ import Colors from '@/src/utils/Colors'
 import { height, width } from '@/src/utils/helperFunctions'
 import { Image } from 'expo-image'
 import { router } from 'expo-router'
-import { t } from 'i18next'
 import { Settings, SquarePen } from 'lucide-react-native'
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import AssessmentList from '../health/AssessmentList'
 import About from './About'
 import ProfileTabs from './ProfileTabs'
 import UserPost from './UserPosts'
+import { ImagesAssets } from '@/src/utils/ImageAssets'
 
 const UserProfile = () => {
+     const { t } = useTranslation();
     const userDetails = useSelector((state: RootState) => state.userDetails)
     const dispatch = useDispatch()
     const [activeTab, setActiveTab] = useState<'about' | 'posts' | 'buddyuponprofile' | 'assessments'>('about');
@@ -58,7 +60,7 @@ const UserProfile = () => {
             </TouchableOpacity>
             <View style={{ display: "flex", justifyContent: "center", alignItems: "center", height: height * .35 }}>
                 <View style={{ position: "relative" }}>
-                    <Image source={userDetails.profileUrl} style={{ width: 100, height: 100, borderRadius: 50, borderColor: Colors.lightGreen, borderWidth: 2 }} />
+                    <Image source={userDetails.profileUrl} style={{ width: 100, height: 100, borderRadius: 50, borderColor: Colors.lightGreen, borderWidth: 2 }} placeholder={ImagesAssets.userIcon}/>
                     <TouchableOpacity style={{
                         position: "absolute", bottom: 3, right: 0,
                         borderColor: 'grey',

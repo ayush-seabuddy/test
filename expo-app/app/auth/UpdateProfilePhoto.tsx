@@ -27,6 +27,11 @@ const UploadProfilePhoto = () => {
   const { t } = useTranslation();
   const router = useRouter();
   const [photo, setPhoto] = useState<string | null>(null);
+  const [fileData, setFileData] = useState<{ fileName: any, fileSize: any, type: any }>({
+    fileName: "",
+    fileSize: 0,
+    type: ""
+  })
   const [loading, setLoading] = useState(false);
 
   const requestPermissions = async (type: "camera" | "library") => {
@@ -72,6 +77,9 @@ const UploadProfilePhoto = () => {
       if (result.canceled) return;
 
       const uri = result.assets?.[0]?.uri;
+      const fileName = result.assets?.[0]?.fileName
+      const fileSize = result.assets?.[0]?.fileSize
+      const filetype = result.assets?.[0]?.type
       if (!uri) return;
 
       const compressed = await ImageManipulator.manipulateAsync(
@@ -81,6 +89,7 @@ const UploadProfilePhoto = () => {
       );
 
       setPhoto(compressed.uri);
+      setFileData({ fileName, fileSize, type: filetype })
     } catch (err) {
       Alert.alert(t("error"), t("imagePickFailed"));
     }
@@ -90,13 +99,13 @@ const UploadProfilePhoto = () => {
     if (!photo) return;
     setLoading(true);
     try {
-      const apiResponse = await uploadfile({ file: photo });
+      const apiResponse = await uploadfile({ file: photo, ...fileData });
       setLoading(false);
       if (apiResponse.success && apiResponse.status == 200) {
-        showToast.success(t("success"), apiResponse.message);
+        showToast.success(t("success"), t("photouploadedsuccessfully"));
         router.push({ pathname: "/auth/UpdateProfile", params: { profilePhoto: apiResponse.data } });
       } else {
-        showToast.error(t("oops"), apiResponse.message);
+        showToast.error(t("oops"), t("somethingwentwrong"));
       }
     } catch (err) {
       showToast.error(t("error"), t("somethingwentwrong"));

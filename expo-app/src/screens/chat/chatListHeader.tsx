@@ -13,7 +13,6 @@ const ChatHeader = ({ }) => {
   const [profile, setProfile] = useState({});
   const [unreadNotification, setUnreadNotification] = useState(0);
   const { t } = useTranslation();
-  console.log("unreadNotification: ", unreadNotification);
 
   useEffect(() => {
     const getUserDetails = async () => {

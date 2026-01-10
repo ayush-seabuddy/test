@@ -1,40 +1,55 @@
-import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  ActivityIndicator,
-  FlatList,
-  Modal,
-  TextInput,
-  Image,
-} from 'react-native';
+import FullScreenMediaModal from '@/app/fullscreenmediapreview';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FlashList } from '@shopify/flash-list';
+import { useRouter } from 'expo-router';
+import { VideoView, useVideoPlayer } from 'expo-video';
+import { t } from 'i18next';
 import {
+  AlertTriangle,
   Heart,
   MessageCircle,
-  TrendingUp,
+  MoreVertical,
+  PencilIcon,
   Play,
   Trash,
-  AlertTriangle,
-  PencilIcon,
-  MoreVertical,
+  TrendingUp,
 } from 'lucide-react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  ActivityIndicator,
+  Dimensions,
+  FlatList,
+  Image,
+  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import ReactTimeAgo from 'react-time-ago';
-import { VideoView, useVideoPlayer } from 'expo-video';
-import { useRouter } from 'expo-router';
-import BottomSheet from './BottomSheet';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import TimeAgo from 'javascript-time-ago';
+import en from 'javascript-time-ago/locale/en.json';
+
+// Ensure locale data is available for ReactTimeAgo. Use addLocale which is
+// safe to call multiple times. Wrap in try/catch to avoid crashes if the
+// library internals differ across versions or if locale is already present.
+try {
+  if (typeof TimeAgo.addLocale === 'function') {
+    TimeAgo.addLocale(en);
+  }
+} catch (e) {
+  // eslint-disable-next-line no-console
+  console.warn('Failed to ensure TimeAgo locale is registered:', e);
+}
 import { likecommentpost, updatepost } from '../apis/apiService';
-import { showToast } from './GlobalToast';
-import FullScreenMediaModal from '@/app/fullscreenmediapreview';
-import CommentsSection from './CommentsSection';
 import Colors from '../utils/Colors';
-import { t } from 'i18next';
 import { ImagesAssets } from '../utils/ImageAssets';
+import BottomSheet from './BottomSheet';
+import CommentsSection from './CommentsSection';
+import { showToast } from './GlobalToast';
+import CommonLoader from './CommonLoader';
 
 const { width } = Dimensions.get('window');
 
@@ -189,6 +204,7 @@ const PostMedia = ({
   viewabilityConfigCallbackPairs,
   hashtagsDisplay,
 }) => {
+  console.log("post: ", post);
   const ratioValue = post?.ratioValue || 1;
 
   const renderItem = useCallback(
@@ -202,7 +218,7 @@ const PostMedia = ({
       return (
         <TouchableOpacity onPress={() => handleMediaPress(index)}>
           <View style={[styles.imageContainer, { height: (width - 66) * ratioValue }]}>
-            {imageLoading[item.uri] && <ActivityIndicator style={StyleSheet.absoluteFill} size="small" color="#8DAF02" />}
+            {imageLoading[item.uri] && <ActivityIndicator style={StyleSheet.absoluteFill} size="small" color={Colors.darkGreen} />}
             <Image
               style={{ width: '100%', height: '100%' }}
               source={{ uri: item.uri }}
@@ -285,7 +301,7 @@ const PostContent = ({
       </View>
       {post.createdAt && (
         <Text style={styles.postTimestamp}>
-          <ReactTimeAgo date={post.createdTime ? new Date(Number(post.createdTime)) : new Date(post.createdAt)} locale={i18n.language} component={Text} timeStyle="short" />
+          <ReactTimeAgo date={post.createdTime ? new Date(Number(post.createdTime)) : new Date(post.createdAt)} locale="en" component={Text} timeStyle="short" />
         </Text>
       )}
       {!hasMedia && hashtagsDisplay}
@@ -316,9 +332,8 @@ const PostFooter = ({ post, isLiked, likesCount, handleLikeToggle, isLikeLoading
 
 // Menu as BottomSheet
 const MenuBottomSheet = ({ visible, onClose, isOwner, onEdit, onDeleteTrigger, onReportTrigger }) => {
-  const snapPoints = isOwner ? ["20%"] : ["18%"];
   return (
-    <BottomSheet visible={visible} onClose={onClose} snapPoints={snapPoints}>
+    <BottomSheet visible={visible} onClose={onClose} snapPoints={['20%']}>
       <View style={styles.menuSheetContent}>
         {isOwner ? (
           <>
@@ -344,19 +359,19 @@ const MenuBottomSheet = ({ visible, onClose, isOwner, onEdit, onDeleteTrigger, o
             </TouchableOpacity>
           </>
         ) : (
-            <View>
-              <Text style={styles.reportdisclaimerText}>If you believe this post violates our community guidelines, please report it.</Text>
-              <TouchableOpacity
-                style={styles.menuRow}
-                onPress={() => {
-                  onClose();
-                  onReportTrigger();
-                }}
-              >
-                <AlertTriangle size={20} color="#EF4444" />
-                <Text style={[styles.menuText, { color: '#EF4444' }]}>{t('report')}</Text>
-              </TouchableOpacity>
-            </View>
+          <View>
+            <Text style={styles.reportdisclaimerText}>{t('report_description')}</Text>
+            <TouchableOpacity
+              style={styles.menuRow}
+              onPress={() => {
+                onClose();
+                onReportTrigger();
+              }}
+            >
+              <AlertTriangle size={20} color="#EF4444" />
+              <Text style={[styles.menuText, { color: '#EF4444' }]}>{t('report')}</Text>
+            </TouchableOpacity>
+          </View>
 
         )}
       </View>
@@ -376,7 +391,7 @@ const DeleteConfirmationModal = ({ visible, onClose, onConfirm, loading }) => (
             <Text style={styles.modalButtonTextCancel}>{t('no')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.modalButton, styles.modalButtonConfirm]} onPress={onConfirm} disabled={loading}>
-            {loading ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={styles.modalButtonTextConfirm}>{t('yes')}</Text>}
+            {loading ? <CommonLoader color="#FFFFFF" /> : <Text style={styles.modalButtonTextConfirm}>{t('yes')}</Text>}
           </TouchableOpacity>
         </View>
       </View>
@@ -419,7 +434,7 @@ const ReportModal = ({ visible, onClose, onSubmit, loading }) => {
               <Text style={styles.modalButtonTextCancel}>{t('cancel')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.modalButton, styles.modalButtonConfirm]} onPress={handleSubmit} disabled={loading || !reason.trim()}>
-              {loading ? <ActivityIndicator size="small" color="#FFFFFF" /> : <Text style={styles.modalButtonTextConfirm}>{t('submit')}</Text>}
+              {loading ? <CommonLoader color="#FFFFFF" /> : <Text style={styles.modalButtonTextConfirm}>{t('submit')}</Text>}
             </TouchableOpacity>
           </View>
         </View>
@@ -809,7 +824,10 @@ const styles = StyleSheet.create({
   sheetHeader: { alignItems: 'center', paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: '#eee' },
   sheetTitle: { fontSize: 15, fontFamily: 'Poppins-SemiBold', color: '#1F2937' },
   userItemContainer: { flexDirection: 'row', alignItems: 'center', padding: 10, marginVertical: 4, borderRadius: 10, backgroundColor: '#f9f9f9' },
-  userAvatar: { width: 35, height: 35, borderRadius: 20 },
+  userAvatar: {
+    width: 35, height: 35, borderRadius: 20, borderWidth: 0.5,
+    borderColor: '#B0B0B0',
+  },
   userName: { fontSize: 13, fontFamily: 'Poppins-Regular', color: '#1F2937' },
 });
 

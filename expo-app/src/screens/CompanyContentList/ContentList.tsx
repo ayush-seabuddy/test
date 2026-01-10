@@ -1,10 +1,13 @@
 import { getallcontents } from '@/src/apis/apiService';
+import CommonLoader from '@/src/components/CommonLoader';
+import EmptyComponent from '@/src/components/EmptyComponent';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import Colors from '@/src/utils/Colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Dimensions,
@@ -16,9 +19,6 @@ import {
   View
 } from 'react-native';
 
-// Dummy data generator
-
-
 
 const { width, height } = Dimensions.get('window')
 const CompanyContentList = ({headerTitle, contentType}:{headerTitle:string , contentType:string}) => {
@@ -28,7 +28,7 @@ const CompanyContentList = ({headerTitle, contentType}:{headerTitle:string , con
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(false);
-
+  const { t } = useTranslation();
 
   const getContentTypeConfig = (contentType: 'ARTICLE' | 'VIDEO' | 'MUSIC') => {
     switch (contentType) {
@@ -123,9 +123,10 @@ const CompanyContentList = ({headerTitle, contentType}:{headerTitle:string , con
     );
   };
 
-  const generateDummyData = async (page: number, perPage: number = 18) => {
+  const GetContentList = async (page: number, perPage: number = 18) => {
 
     try {
+      setLoading(true)
       const response = await getallcontents({
         page: page,
         limit: perPage,
@@ -150,6 +151,8 @@ const CompanyContentList = ({headerTitle, contentType}:{headerTitle:string , con
     } catch (error) {
       console.log("error: ", error);
       return []
+    }finally{
+      setLoading(false)
     }
 
   };
@@ -161,7 +164,7 @@ const CompanyContentList = ({headerTitle, contentType}:{headerTitle:string , con
   const getData = async () => {
     try {
       setLoading(true);
-      const newData = await generateDummyData(1);
+      const newData = await GetContentList(1);
       setData(newData);
     } catch (error) {
 
@@ -181,7 +184,7 @@ const CompanyContentList = ({headerTitle, contentType}:{headerTitle:string , con
 
     setLoading(true);
     setTimeout(async () => {
-      const newItems = await generateDummyData(nextPage);
+      const newItems = await GetContentList(nextPage);
 
       if (newItems.length > 0) {
         setData((prev) => [...prev, ...newItems]);
@@ -198,7 +201,7 @@ const CompanyContentList = ({headerTitle, contentType}:{headerTitle:string , con
     if (!loading) return null;
     return (
       <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#000" />
+        <CommonLoader/>
       </View>
     );
   };
@@ -224,7 +227,7 @@ const CompanyContentList = ({headerTitle, contentType}:{headerTitle:string , con
 
           <View style={styles.empty}>
 
-            {loading ? <ActivityIndicator size="large" color="#000" /> : <Text>No data found</Text>}
+            {loading ? <CommonLoader fullScreen/> :<EmptyComponent text={t('nodatafound')}/>}
           </View>
         }
       />

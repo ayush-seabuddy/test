@@ -4,6 +4,7 @@ import { View, StyleSheet } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import KeyboardAvoidingWrapper from '@/src/components/KeyboardAvoidingWrapper';
+// ChatHeader is optional in some builds; keep import commented to avoid missing module errors
 // import ChatHeader from './components/ChatHeader';
 import ChatMessageList from './components/ChatMessageList';
 import ChatInputBar from './components/ChatInputBar';
@@ -13,7 +14,7 @@ import MessageActionsModal from './components/MessageItem/MessageActionsModal';
 const ChatRoomScreen = () => {
   const route = useRoute<ChatRoomRouteProp>();
   const { id: senderId } = useSelector((state: RootState) => state.userDetails);
-  const chatRoomDetails = /* parse route params */;
+  const chatRoomDetails = (route.params as any) || {};
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);

@@ -108,8 +108,8 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
   const bottomSheetRef = useRef<RBSheetRef>(null);
 
   const dummyUsers = useMemo(
-    () => participantIds || data.participantIds,
-    [participantIds, data.participantIds]
+    () => participantIds || data?.participantIds,
+    [participantIds, data]
   );
 
   const openSheet = () => {
@@ -154,7 +154,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
           {/* ← Back Button */}
           <TouchableOpacity
             onPress={() =>
-              router.back()
+              router.canGoBack() ? router.back() : router.replace("/(bottomtab)/(community)/chats")
             }
             style={{ padding: 12 }}
           >

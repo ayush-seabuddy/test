@@ -25,6 +25,7 @@ type GlobalDropdownProps<T> = {
   labelField: keyof T;
   valueField: keyof T;
   searchable?: boolean;
+  searchableplaceholder?:string
   multiple?: boolean;
   containerStyle?: ViewStyle;
   dropdownStyle?: ViewStyle;
@@ -49,6 +50,8 @@ const GlobalDropdown = <T,>({
   valueField,
 
   searchable = false,
+
+  searchableplaceholder = "Select an option",
   multiple = false,
 
   containerStyle,
@@ -184,6 +187,7 @@ const GlobalDropdown = <T,>({
           valueField={String(valueField)}
           placeholder={getTriggerText()}
           search={searchable}
+          searchPlaceholder={searchableplaceholder}
           value={value}
           onChange={(item) => onChange(item[valueField])}
           disable={disable}

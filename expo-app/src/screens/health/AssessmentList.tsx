@@ -90,6 +90,8 @@ const AssessmentList = ({ isProfileScreen = false }: { isProfileScreen?: boolean
 
 
 
+
+
   const currentMonth = new Date().toLocaleString('en', { month: 'long' });
   const lastDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
   const ordinalSuffix =
@@ -104,7 +106,8 @@ const AssessmentList = ({ isProfileScreen = false }: { isProfileScreen?: boolean
             : 'th';
 
   const handleHappinessPress = () => {
-    const path = profileDetails?.isHappinessIndex
+    const happinessData = testArray[0]
+    const path = happinessData?.open
       ? '/monthlyhappinessindex'
       : '/monthlyhappinessindex/AllAssessmentResultListing';
     router.push({
@@ -116,7 +119,8 @@ const AssessmentList = ({ isProfileScreen = false }: { isProfileScreen?: boolean
   };
 
   const handlePOMSPress = () => {
-    const path = profileDetails?.isPOMSAssessment
+    const pomsData = testArray[1]
+    const path = pomsData?.open
       ? '/monthlywellbeingpulse'
       : '/monthlyhappinessindex/AllAssessmentResultListing';
     router.push({

@@ -25,6 +25,7 @@ import { showToast } from './GlobalToast';
 import BottomSheet from './BottomSheet';
 import { t } from 'i18next';
 import { ImagesAssets } from '../utils/ImageAssets';
+import CommonLoader from './CommonLoader';
 
 // Fixed Light Mode Colors
 const ColorsLight = {
@@ -156,7 +157,7 @@ const DeleteConfirmationModal = ({ visible, onClose, onConfirm, loading }) => (
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator size="small" color="#FFFFFF" />
+              <CommonLoader color="#FFFFFF" />
             ) : (
               <Text style={styles.modalButtonTextConfirm}>{t('yes')}</Text>
             )}
@@ -478,7 +479,7 @@ const CommentsSection = ({
 
           {commentLoading ? (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <ActivityIndicator size="large" color={ColorsLight.likeColor} />
+             <CommonLoader fullScreen/>
             </View>
           ) : (
             <FlashList
@@ -556,7 +557,7 @@ const CommentsSection = ({
               />
               <TouchableOpacity onPress={postComment} disabled={!commentText.trim() || sendingComment}>
                 {sendingComment ? (
-                  <ActivityIndicator size="small" color={ColorsLight.likeColor} />
+                  <CommonLoader/>
                 ) : (
                   <View style={{
                     backgroundColor: commentText.trim() ? ColorsLight.likeColor : ColorsLight.textTertiary,

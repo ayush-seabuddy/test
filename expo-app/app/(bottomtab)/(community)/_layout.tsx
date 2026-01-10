@@ -4,33 +4,35 @@ import { RootState } from "@/src/redux/store";
 import Colors from "@/src/utils/Colors";
 import { router, Tabs, useFocusEffect, usePathname } from "expo-router";
 import React, { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Text, TouchableOpacity, View } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
 export default function CommunityLayout() {
+  const { t } = useTranslation();
   const unreadCount = 5;
   const pathname = usePathname();
   const routes = ["/social", "/chats"] as const;
 
-    const { unreadMessageCount } = useSelector((state: RootState) => state.chatList);
+  const { unreadMessageCount } = useSelector((state: RootState) => state.chatList);
 
-    const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
-      const getUnReadCounts = async () => {
-          const response = await getUnreadMessageCount();
-          if (response.status === 200) {
-              dispatch(updateUnreadMessageCount(response.data.unReadCount));
-              dispatch(updateUnreadNotificationCount(response.data.unSeenCount));
-          }
-      }
+  const getUnReadCounts = async () => {
+    const response = await getUnreadMessageCount();
+    if (response.status === 200) {
+      dispatch(updateUnreadMessageCount(response.data.unReadCount));
+      dispatch(updateUnreadNotificationCount(response.data.unSeenCount));
+    }
+  }
 
-      
+
   useFocusEffect(
     useCallback(() => {
       getUnReadCounts();
     }, [])
   );
-  
+
 
 
   return (
@@ -53,12 +55,12 @@ export default function CommunityLayout() {
       >
         {['social', 'chat'].map((name, index) => {
           const isFocused =
-          () => {
-            if(name === 'social' && pathname === '/') {
-              return true;
-            }
-            return pathname.includes(name);
-          };
+            () => {
+              if (name === 'social' && pathname === '/') {
+                return true;
+              }
+              return pathname.includes(name);
+            };
           return (
             <TouchableOpacity
               key={name}
@@ -82,7 +84,7 @@ export default function CommunityLayout() {
                   fontSize: 13,
                 }}
               >
-                {name === "social" ? "Hangout" : "Chats"}
+                {name === "social" ? t('hangout') : t('chat')}
               </Text>
 
 
@@ -134,11 +136,11 @@ export default function CommunityLayout() {
       >
         <Tabs.Screen
           name="social"
-          options={{ title: "Hangout" }}
+          options={{ title: t('hangout') }}
         />
         <Tabs.Screen
           name="chats"
-          options={{ title: "Chats" }}
+          options={{ title: t('chat') }}
         />
       </Tabs>
     </View>

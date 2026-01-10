@@ -97,16 +97,12 @@ const ChangeLanguageScreen = () => {
   };
 
   return (
-    <>
+    <View style={styles.main}>
       <GlobalHeader
         title={t('change_language')}
       />
 
       <View style={styles.container}>
-        <Text style={styles.instructionText}>
-          {t('select_language')}
-        </Text>
-
         <FlatList
           data={languages}
           keyExtractor={(item) => item.id}
@@ -120,25 +116,18 @@ const ChangeLanguageScreen = () => {
       </View>
 
       <Toast />
-
-      <View style={styles.backgroundLottie}>
-        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
-      </View>
-    </>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  main: {
+    flex: 1,
+    backgroundColor: "#ededed"
+  },
   container: {
     flex: 1,
     padding: 14,
-  },
-  instructionText: {
-    fontFamily: 'Poppins-Regular',
-    fontSize: 14,
-    color: '#555',
-    marginBottom: 16,
-    textAlign: 'center',
   },
   languageItem: {
     flexDirection: 'row',
@@ -183,19 +172,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-SemiBold',
     fontWeight: '500',
     fontSize: 14,
-  },
-  backgroundLottie: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: '50%',
-    backgroundColor: '#c1c1c1',
-    borderTopLeftRadius: 50,
-    borderTopRightRadius: 50,
-    overflow: 'hidden',
-    zIndex: -1,
-  },
+  }
 });
 
 export default ChangeLanguageScreen;

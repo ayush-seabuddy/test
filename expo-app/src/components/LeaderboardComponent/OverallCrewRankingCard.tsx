@@ -5,6 +5,8 @@ import { Image } from 'expo-image'
 import { ImagesAssets } from '@/src/utils/ImageAssets'
 import Colors from '@/src/utils/Colors'
 import { router } from 'expo-router'
+import EmptyComponent from '../EmptyComponent'
+import CommonLoader from '../CommonLoader'
 
 interface CrewMember {
     id: string
@@ -44,9 +46,9 @@ const OverallCrewRankingCard: React.FC<OverallCrewRankingCardProps> = ({
     }, [])
 
     const renderItem = useCallback(({ item }: { item: CrewMember }) => (
-        <TouchableOpacity 
-            style={styles.card} 
-            onPress={() => handleCardPress(item)} 
+        <TouchableOpacity
+            style={styles.card}
+            onPress={() => handleCardPress(item)}
             activeOpacity={0.7}
         >
             <View style={styles.rankCircle}>
@@ -86,7 +88,7 @@ const OverallCrewRankingCard: React.FC<OverallCrewRankingCardProps> = ({
         if (loadingMore) {
             return (
                 <View style={styles.footerLoader}>
-                    <ActivityIndicator size="small" color="#06361F" />
+                    <CommonLoader/>
                     <Text style={styles.loadingText}>{t('loading')}</Text>
                 </View>
             )
@@ -109,7 +111,7 @@ const OverallCrewRankingCard: React.FC<OverallCrewRankingCardProps> = ({
     if (loading || (isFiltering && overallCrewList.length === 0)) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color={Colors.lightGreen} />
+                <CommonLoader fullScreen/>
                 <Text style={styles.loadingText}>{t('loading')}</Text>
             </View>
         )
@@ -119,12 +121,7 @@ const OverallCrewRankingCard: React.FC<OverallCrewRankingCardProps> = ({
     if (overallCrewList.length === 0) {
         return (
             <View style={styles.emptyContainer}>
-                <Image 
-                    source={ImagesAssets.nodatafound} 
-                    style={styles.nodatafoundImage} 
-                    contentFit="contain" 
-                />
-                <Text style={styles.emptyText}>{t('nocrewfound')}</Text>
+                <EmptyComponent text={t('nocrewfound')} />
             </View>
         )
     }
@@ -179,33 +176,35 @@ const styles = StyleSheet.create({
         width: 30,
         borderRadius: 15,
     },
-    rankText: { 
-        fontSize: 12, 
-        fontFamily: 'Poppins-Regular', 
-        color: '#fff' 
+    rankText: {
+        fontSize: 12,
+        fontFamily: 'Poppins-Regular',
+        color: '#fff'
     },
-    userImage: { 
-        height: 45, 
-        width: 45, 
+    userImage: {
+        height: 45,
+        width: 45,
         borderRadius: 22.5,
+        borderWidth: 0.5,
+        borderColor: '#B0B0B0',
         backgroundColor: '#f0f0f0',
     },
-    userInfo: { 
-        flex: 1, 
+    userInfo: {
+        flex: 1,
         justifyContent: 'center',
         paddingHorizontal: 4,
     },
-    userName: { 
-        fontSize: 12, 
-        color: '#636363', 
-        fontFamily: 'Poppins-Medium', 
-        lineHeight: 15 
+    userName: {
+        fontSize: 12,
+        color: '#636363',
+        fontFamily: 'Poppins-Medium',
+        lineHeight: 15
     },
-    userDesignation: { 
-        fontSize: 10, 
-        color: '#949494', 
-        fontFamily: 'Poppins-Regular', 
-        lineHeight: 14 
+    userDesignation: {
+        fontSize: 10,
+        color: '#949494',
+        fontFamily: 'Poppins-Regular',
+        lineHeight: 14
     },
     milesView: {
         padding: 10,
@@ -216,48 +215,48 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#ededed',
     },
-    rewardText: { 
-        fontSize: 12, 
-        color: '#06361F', 
-        fontFamily: 'Poppins-SemiBold' 
+    rewardText: {
+        fontSize: 12,
+        color: '#06361F',
+        fontFamily: 'Poppins-SemiBold'
     },
-    milesText: { 
-        fontSize: 8, 
-        color: '#B7B7B7', 
-        fontFamily: 'Poppins-Regular' 
+    milesText: {
+        fontSize: 8,
+        color: '#B7B7B7',
+        fontFamily: 'Poppins-Regular'
     },
-    loadingContainer: { 
-        marginTop: 150, 
+    loadingContainer: {
+        marginTop: 150,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    emptyContainer: { 
-        flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        marginTop: 40,
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: '40%',
         paddingHorizontal: 20,
     },
-    emptyText: { 
-        textAlign: 'center', 
-        color: '#454545', 
-        fontSize: 14, 
-        marginTop: 20, 
-        fontFamily: 'Poppins-Regular' 
+    emptyText: {
+        textAlign: 'center',
+        color: '#454545',
+        fontSize: 14,
+        marginTop: 20,
+        fontFamily: 'Poppins-Regular'
     },
-    nodatafoundImage: { 
-        height: 150, 
-        width: 150 
+    nodatafoundImage: {
+        height: 150,
+        width: 150
     },
-    footerLoader: { 
-        paddingVertical: 20, 
-        alignItems: 'center', 
-        justifyContent: 'center' 
+    footerLoader: {
+        paddingVertical: 20,
+        alignItems: 'center',
+        justifyContent: 'center'
     },
-    loadingText: { 
-        marginTop: 8, 
-        fontSize: 12, 
-        color: '#06361F', 
-        fontFamily: 'Poppins-Regular' 
+    loadingText: {
+        marginTop: 8,
+        fontSize: 12,
+        color: '#06361F',
+        fontFamily: 'Poppins-Regular'
     },
 })

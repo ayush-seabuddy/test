@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import ImageViewer from "react-native-image-zoom-viewer";
 import Video from "react-native-video"; // ← Only this
+import CommonLoader from "../CommonLoader";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -201,7 +202,7 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
           renderIndicator={() => <View />}
           loadingRender={() => (
             <View style={styles.loaderContainer}>
-              <ActivityIndicator size="large" color="#ffffff" />
+              <CommonLoader fullScreen color="#fff"/>
             </View>
           )}
           backgroundColor="transparent"

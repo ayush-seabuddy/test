@@ -29,7 +29,10 @@ export interface ResetPasswordRequest {
 }
 
 export interface UploadFileRequest {
-  file: string;
+  file: any;
+  fileName: any;
+  fileSize: any;
+  type: any
 }
 
 export interface SocialPostParams {
@@ -318,6 +321,10 @@ export interface GetAnalyticsParams {
   toMonth: string
 }
 
+export interface signoutPayload {
+  deviceTokens: string[]
+}
+
 
 export interface ReadSingleNotificationRequest {
   notificationId: string
@@ -445,28 +452,51 @@ export const resetpassword = async (
 };
 
 
-
-
 export const uploadfile = async (payload: UploadFileRequest) => {
   try {
     const token = await AsyncStorage.getItem('authToken');
-    const formData = new FormData();
-    formData.append('file', {
-      uri: payload.file,
-      name: 'image.jpg',
-      type: 'image/jpeg',
-    } as any);
+    const data = {
+      fileName: payload.fileName,
+      fileType: payload.type,
+      fileSize: payload.fileSize,
+    };
+    console.log("data: sdfnskldfld", data);
     const response = await apiRequest({
       method: 'POST',
-      url: ENDPOINTS.UPLOADFILE,
-      data: formData,
+      url: ENDPOINTS.uploadFileUrl,
+      data: data,
     });
-    return response;
+
+    console.log("response: ", response);
+    const  { uploadUrl, key } = response.data;
+        // 2️⃣ Convert file URI to blob
+    const fileResponse = await fetch(payload.file);
+    const blob = await fileResponse.blob();
+
+    // 3️⃣ Upload to S3
+    const uploadRes = await fetch(uploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': payload.type,
+      },
+      body: blob,
+    });
+
+    console.log("uploadRes: ", uploadRes);
+    if (!uploadRes.ok) {
+      throw new Error('S3 upload failed');
+    }
+    return {
+      success:true, 
+       status:200,
+       data:`https://seabuddy.s3.us-east-1.amazonaws.com/${key}`
+    }
   } catch (error) {
     console.log('UPLOAD ERROR:', error);
     throw error;
   }
 };
+
 
 export const getallcountries = async (): Promise<ApiResponse> => {
   return await apiRequest({
@@ -929,5 +959,14 @@ export const getAnalytics = async (params?: GetAnalyticsParams): Promise<ApiResp
     method: "GET",
     params,
     url: ENDPOINTS.GETANALYTICS,
+  });
+}
+
+
+export const logout = async (payload: signoutPayload): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "POST",
+    url: ENDPOINTS.LOGOUT,
+    data: payload,
   });
 }

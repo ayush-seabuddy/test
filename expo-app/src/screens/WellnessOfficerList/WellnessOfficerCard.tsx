@@ -1,96 +1,73 @@
+import { ImagesAssets } from "@/src/utils/ImageAssets";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import * as React from "react";
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
-} from "react-native";
-
+import React from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export interface WellnessOfficer {
   id?: string;
   doctorName?: string;
-  description?: string;
-  specialization?: string;
-  experience?: string;
-  expertise?: string[];
-  qualification?: string[];
-  language?: string[];
-  nationality?: string;
-  rating?: string;
-  status?: string;
-
-  address?: string;
   country?: string;
-  contactDetails?: string;
-  phoneNumber?: string | null;
-
+  language?: string[];
   profileUrl?: string;
-
-  certificates?: any[];
-
-  createdAt?: string;
-  updatedAt?: string;
-
-  [key: string]: any; // additional dynamic fields
+  [key: string]: any;
 }
 
+interface Props {
+  data: WellnessOfficer;
+  onPress?: () => void;
+}
 
-const WellnessOfficerCard = ({  data }:WellnessOfficer) => {
-  console.log("data: ", data);
-  const [item, setitem] = React.useState(data);
+const WellnessOfficerCard: React.FC<Props> = ({ data, onPress }) => {
+  const handlePress = () => {
+    if (onPress) {
+      onPress();
+      return;
+    }
+
+    router.push({
+      pathname: "/wellnessOfficerProfile",
+      params: { item: JSON.stringify(data) },
+    });
+  };
+
   return (
     <TouchableOpacity
-      style={[styles.frameParent, styles.frameFlexBox]}
-      onPress={() => {
-        router.push({
-          pathname: "/wellnessOfficerProfile",
-          params: {
-            item: JSON.stringify(item),
-          },
-        })
-        
-      }}
+      style={styles.card}
+      activeOpacity={0.8}
+      onPress={handlePress}
     >
-      <View style={[styles.frameGroup, styles.parentFlexBox]}>
-        <View style={[styles.rectangleParent, styles.parentFlexBox]}>
-          <View style={[styles.frameChild, styles.frameFlexBox]}>
-            <Image
-              style={styles.happyWhiteHairedMedicalDocIcon}
-              resizeMode="cover" // Changed to "cover" for better fit in a circle
-              source={{ uri: item?.profileUrl }}
-            />
-          </View>
+      <View style={styles.container}>
+        {/* Profile Image */}
+        <View style={styles.imageContainer}>
+          <Image
+            style={styles.profileImage}
+            source={{ uri: data?.profileUrl || ImagesAssets.userIcon }}
+            contentFit="cover"
+            placeholder={ImagesAssets.userIcon}
+            transition={300}
+          />
         </View>
-        <View style={styles.frameWrapper}>
-          <View style={styles.drStrangeParent}>
-            <Text style={styles.drStrange}>{item?.doctorName}</Text>
-            <View style={styles.frameContainer}>
-              <View style={styles.counselingPsychologyParent}>
-                {item?.country && (
-                  <Text
-                    style={[styles.birminghamUk, styles.ratingTypo, { fontSize: 12 }]}
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                  >
-                    {item?.country}
-                  </Text>
-                )}
-                <Text
-                  style={[styles.birminghamUk, styles.ratingTypo]}
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  {item?.language.map((quali: string, index: number) => {
-                    if (index === item?.language.length - 1) return quali;
-                    else return quali + ", ";
-                  })}
-                </Text>
-              </View>
-            </View>
-          </View>
+
+        {/* Details */}
+        <View style={styles.details}>
+          {!!data?.doctorName && (
+            <Text style={styles.doctorName} numberOfLines={1}>
+              {data.doctorName}
+            </Text>
+          )}
+
+          {!!data?.country && (
+            <Text style={styles.country} numberOfLines={1}>
+              {data.country}
+            </Text>
+          )}
+
+          {!!data?.language?.length && (
+            <Text style={styles.languages} numberOfLines={1}>
+              {data.language.join(", ")}
+            </Text>
+          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -98,86 +75,62 @@ const WellnessOfficerCard = ({  data }:WellnessOfficer) => {
 };
 
 const styles = StyleSheet.create({
-  frameFlexBox: {
-    borderRadius: 50,
-    flex: 1,
-    alignSelf: "stretch",
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 12,
+    marginVertical: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  parentFlexBox: {
-    alignItems: "center",
+
+  container: {
     flexDirection: "row",
-  },
-  ratingTypo: {
-    // fontSize: FontSize.captionC10Regular_size,
-    // color: Color.textText400,
-    lineHeight: 18,
-    fontSize: 11,
-  },
-  frameChild: {
-    backgroundColor: "#d9d9d9",
-    width: 90, // Equal width and height for a square base
-    height: 90, // Equal width and height for a square base
-    borderRadius: 53.5, // Half of width/height for a circle
-    overflow: "hidden", // Ensures content is clipped to the circular shape
-    justifyContent: "center",
     alignItems: "center",
-   
-  },
-  happyWhiteHairedMedicalDocIcon: {
-    width: 90,
-    height: "100%",
-    borderRadius: 53.5, // Half of width/height for a circle
-     borderWidth: 2,
-    borderColor: "#fff",
-  },
-  rectangleParent: {
-    width: "30%",
-    height: 90,
-  },
-  drStrange: {
-    fontSize: 15,
-    lineHeight:15,
-    // fontFamily: FontFamily.bodyB14SemiBold,
-    color: "#262626",
-    paddingTop: 20,
-    alignSelf: "stretch",
-  },
-  birminghamUk: {
-    fontFamily: 'Poppins-Regular',
-    // fontSize: FontSize.captionC10Regular_size,
-    paddingRight: 10,
-  },
-  counselingPsychologyParent: {
-    gap: 4,
-    alignSelf: "stretch",
-  },
-  frameContainer: {
-    gap: 20,
-    alignSelf: "stretch",
-  },
-  drStrangeParent: {
-    flex: 1,
-    gap: 4,
-    alignItems: "center",
-  },
-  frameWrapper: {
-    flex: 1,
-    justifyContent: "space-evenly",
-    // alignItems: "start",
-  },
-  frameGroup: {
     gap: 16,
-    alignSelf: "stretch",
   },
-  frameParent: {
-    width: "100%",
-    // paddingLeft: Padding.p_5xs,
-    paddingTop: 5,
-    paddingBottom: 5,
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.1)",
+
+  imageContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     overflow: "hidden",
+    backgroundColor: "#f0f0f0",
+  },
+
+  profileImage: {
+    width: "100%",
+    height: "100%",
+  },
+
+  details: {
+    flex: 1,
+    justifyContent: "center",
+  },
+
+  doctorName: {
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 14,
+    color: "#262626",
+  },
+
+  country: {
+    fontFamily: "Poppins-Medium",
+    fontSize: 13,
+    color: "#555",
+    textTransform: "capitalize",
+    marginBottom: 2,
+  },
+
+  languages: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 12,
+    color: "#777",
+    textTransform: "capitalize",
   },
 });
 
-export default WellnessOfficerCard;
+export default React.memo(WellnessOfficerCard);

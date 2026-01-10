@@ -1,7 +1,8 @@
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Application from 'expo-application';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Animated,
@@ -10,15 +11,16 @@ import {
   Platform,
   StatusBar,
   StyleSheet,
-  View
+  View,
 } from 'react-native';
 
 import { viewProfile, viewUserTest } from '@/src/apis/apiService';
 import AppContainer from '@/src/components/AppContainer';
 import { showToast } from '@/src/components/GlobalToast';
 import { RootState } from '@/src/redux/store';
+import { updateUserField } from '@/src/redux/userDetailsSlice';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const { height } = Dimensions.get('window');
 
@@ -37,22 +39,32 @@ type AppRoute =
   | '/monthlywellbeingpulse'
   | '/personalitymap';
 
-const Splash: React.FC = () => {
+const Splash = () => {
   const { t } = useTranslation();
   const router = useRouter();
-  const notificationDetails = useSelector((state: RootState) => state.notification);
-  console.log("notificationDetails: ", notificationDetails);
- 
+  const notificationDetails = useSelector(
+    (state: RootState) => state.notification
+  );
 
+  /** 🔑 Used to cancel async flows */
+  const flowIdRef = useRef(0);
+
+  /** Animations */
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const translateAnim = useRef(new Animated.Value(-height)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
   const headingSlideAnim = useRef(new Animated.Value(0)).current;
+  const dispatch = useDispatch();
+
+
+  /** ---------------- API HELPERS ---------------- */
 
   const viewUserProfile = async (userId: string) => {
     try {
-      const packageName = Application.applicationId || 'co.seabuddy.platform';
-      const version = Application.nativeApplicationVersion || '1.0.0';
+      const packageName =
+        Application.applicationId || 'co.seabuddy.platform';
+      const version =
+        Application.nativeApplicationVersion || '1.0.0';
       const os = Platform.OS === 'ios' ? 'ios' : 'android';
 
       const apiResponse = await viewProfile({
@@ -62,14 +74,123 @@ const Splash: React.FC = () => {
         version,
       });
 
-      if (apiResponse.success && apiResponse.status == 200) {
+      if (apiResponse?.data) {
+        const object = apiResponse.data
+        for (const property in object) {
+          dispatch(updateUserField({ key: property, value: object[property] }))
+        }
+      }
+
+      if (apiResponse?.success && apiResponse?.status === 200) {
+        return apiResponse.data;
       } else {
-        showToast.error(t('oops'), apiResponse.message);
+        showToast.error(t('oops'), apiResponse?.message);
+        return null;
       }
     } catch {
       showToast.error(t('oops'), t('somethingwentwrong'));
+      return null;
     }
   };
+
+  /** ---------------- MAIN FLOW ---------------- */
+
+  const initializeAndNavigate = useCallback(
+    async (flowId: number) => {
+      try {
+        /** Stop immediately if notification active */
+        const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+        await wait(4000);
+
+        const userDetailsStr = await AsyncStorage.getItem('userDetails');
+        if (flowId !== flowIdRef.current) return;
+
+        if (!userDetailsStr) {
+          router.replace('/auth/Login' as any);
+          return;
+        }
+
+        const userDetails = JSON.parse(userDetailsStr);
+        const userId = userDetails?.id;
+
+        if (!userId) {
+          router.replace('/auth/Login' as any);
+          return;
+        }
+
+        const userData = await viewUserProfile(userId);
+        if (flowId !== flowIdRef.current) return;
+
+        if (!userData || userData.isProfileCompleted !== true) {
+          router.replace('/onboarding' as any);
+          return;
+        }
+
+        const response = await viewUserTest();
+        if (flowId !== flowIdRef.current) return;
+
+        if (response?.status === 200 && Array.isArray(response.data)) {
+          const tests: TestItem[] = response.data;
+
+          const targetTest = tests.find(
+            test => test?.open && test?.isSplash
+          );
+
+          const getRoute = (testName: string): AppRoute => {
+            switch (testName) {
+              case 'Happiness':
+                return '/monthlyhappinessindex';
+              case 'POMS':
+                return '/monthlywellbeingpulse';
+              case 'Personality':
+                return '/personalitymap';
+              default:
+                return '/home';
+            }
+          };
+
+          if (targetTest) {
+            router.replace({
+              pathname: getRoute(targetTest.testName) as any,
+              params: {
+                showPopup: targetTest.isRequires.toString(),
+                testName: targetTest.testName,
+                testData: JSON.stringify(targetTest),
+              },
+            });
+          } else {
+            router.replace('/home' as any);
+          }
+        } else {
+          showToast.error(t('oops'), response?.message);
+          router.replace('/home' as any);
+        }
+      } catch (error) {
+        console.error('Splash Initialization Error:', error);
+        showToast.error(t('oops'), t('somethingwentwrong'));
+        router.replace('/auth/Login' as any);
+      }
+    },
+    [router, t]
+  );
+
+  /** ---------------- EFFECT: RESTART ON CHANGE ---------------- */
+
+  useEffect(() => {
+    // Cancel previous flow
+
+    flowIdRef.current += 1;
+    const currentFlowId = flowIdRef.current;
+
+    initializeAndNavigate(currentFlowId);
+
+    // Cleanup cancels async work
+    return () => {
+      flowIdRef.current += 1;
+    };
+  }, [initializeAndNavigate]);
+
+  /** ---------------- ANIMATIONS ---------------- */
 
   useEffect(() => {
     Animated.parallel([
@@ -101,120 +222,25 @@ const Splash: React.FC = () => {
     ]).start();
   }, []);
 
-  useEffect(() => {
-    const initializeAndNavigate = async () => {
-      try {
-        // 1. Check if user is logged in
-        const userDetailsStr = await AsyncStorage.getItem('userDetails');
-        if (!userDetailsStr) {
-          // No user → Go to login
-          setTimeout(() => router.replace('/auth/Login' as any), 3000);
-          return;
-        }
-
-        const userDetails = JSON.parse(userDetailsStr);
-        const { isProfileCompleted, id: userId } = userDetails;
-
-        // 2. Call viewUserProfile API with all required parameters
-        if (userId) {
-          await viewUserProfile(userId);
-        }
-
-        // 3. If profile not completed → Force onboarding
-        if (isProfileCompleted !== true) {
-          setTimeout(() => {
-            router.replace('/onboarding' as any);
-          }, 3000);
-          return;
-        }
-
-        // 4. Fetch test status from API
-        const response = await viewUserTest();
-
-        if (response?.status === 200 && Array.isArray(response?.data)) {
-          const tests: TestItem[] = response.data;
-
-          // Find test in priority order: Happiness → POMS → Personality
-          let targetTest: TestItem | undefined;
-
-          // Check tests in priority order
-          for (let i = 0; i < Math.min(tests.length, 3); i++) {
-            if (tests[i]?.open && tests[i]?.isSplash) {
-              targetTest = tests[i];
-              break;
-            }
-          }
-
-          // Map testName to route with proper typing
-          const getRoute = (testName: string): AppRoute => {
-            switch (testName) {
-              case 'Happiness':
-                return '/monthlyhappinessindex';
-              case 'POMS':
-                return '/monthlywellbeingpulse';
-              case 'Personality':
-                return '/personalitymap';
-              default:
-                return '/home';
-            }
-          };
-
-          // Navigate after splash animation
-          setTimeout(() => {
-            if (targetTest) {
-              const route = getRoute(targetTest.testName);
-
-              // Type assertion to fix TypeScript error
-              router.replace({
-                pathname: route as any,
-                params: {
-                  showPopup: targetTest.isRequires.toString(),
-                  testName: targetTest.testName,
-                  testData: JSON.stringify(targetTest),
-                },
-              });
-            } else {
-              // No test to show → Go to main dashboard
-              router.replace('/home' as any);
-            }
-          }, 3000);
-        } else {
-          showToast.error(t('oops'), response?.message);
-          setTimeout(() => router.replace('/home' as any), 3000);
-        }
-      } catch (error) {
-        console.error('Splash Initialization Error:', error);
-        showToast.error(t('oops'), t('somethingwentwrong'));
-        setTimeout(() => router.replace('/auth/Login' as any), 3000);
-      }
-    };
-    if (notificationDetails.isNotification == true && notificationDetails.page) {
-      let param = notificationDetails.params;
-      if (param) router.push({ pathname: notificationDetails.page, params: notificationDetails.params } as any);
-      else router.push({ pathname: notificationDetails.page } as any);
-    } else {
-      initializeAndNavigate();
-    }
-
-
-  }, [notificationDetails]);
+  /** ---------------- UI ---------------- */
 
   return (
     <AppContainer>
       <StatusBar backgroundColor="#ECECEC99" barStyle="dark-content" />
 
       <View style={styles.container}>
-        {/* Main Logo */}
         <Animated.View
           style={{
             opacity: fadeAnim,
             transform: [{ translateY: translateAnim }],
           }}
         >
-          <Image source={ImagesAssets.splashHeadingImage} style={styles.logoImage} />
+          <Image
+            source={ImagesAssets.splashHeadingImage}
+            style={styles.logoImage}
+          />
         </Animated.View>
 
-        {/* Captain Character */}
         <Animated.View
           style={{
             position: 'absolute',
@@ -237,7 +263,6 @@ const Splash: React.FC = () => {
           />
         </Animated.View>
 
-        {/* Sliding Out Heading */}
         <Animated.View
           style={{
             position: 'absolute',
@@ -254,7 +279,10 @@ const Splash: React.FC = () => {
             ],
           }}
         >
-          <Image source={ImagesAssets.splashHeadingImage} style={styles.logoImage} />
+          <Image
+            source={ImagesAssets.splashHeadingImage}
+            style={styles.logoImage}
+          />
         </Animated.View>
       </View>
     </AppContainer>

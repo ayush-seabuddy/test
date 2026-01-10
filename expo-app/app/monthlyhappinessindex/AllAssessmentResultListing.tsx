@@ -17,6 +17,8 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import moment from 'moment';
+import { Image } from 'expo-image';
+import CommonLoader from '@/src/components/CommonLoader';
 
 const { width, height } = Dimensions.get('window');
 
@@ -167,7 +169,7 @@ const AllAssessmentResultListing = () => {
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#06361F" />
+                <CommonLoader fullScreen/>
             </View>
         );
     }
@@ -188,6 +190,7 @@ const AllAssessmentResultListing = () => {
                 />
             ) : (
                 <View style={styles.emptyContainer}>
+                    <Image source={ImagesAssets.nodatafound} style={styles.nodatafoundImage} />
                     <Text style={styles.emptyText}>{noDataMessage}</Text>
                 </View>
             )}
@@ -201,6 +204,11 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#f8f8f8',
+    },
+    nodatafoundImage: {
+        height: 150,
+        width: 150,
+        marginBottom: 20,
     },
     loadingContainer: {
         flex: 1,
@@ -277,11 +285,10 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 40,
-        marginTop: height * 0.2,
     },
     emptyText: {
         fontSize: 16,
-        color: '#fff',
+        color: '#000',
         textAlign: 'center',
         fontFamily: 'Poppins-Regular',
         lineHeight: 22,

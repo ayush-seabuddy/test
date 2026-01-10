@@ -2,6 +2,7 @@ import { useFocusEffect } from "expo-router";
 import { PlayerError, VideoPlayerStatus, VideoView, useVideoPlayer } from "expo-video";
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
+import CommonLoader from "./CommonLoader";
 
 interface Props {
   uri: string;
@@ -12,21 +13,21 @@ const VideoPlayer: React.FC<Props> = ({ uri }) => {
     player.loop = false;
     player.play();
   });
-const [playerStatus, setPlayerStatus] = useState<VideoPlayerStatus>('idle');
+  const [playerStatus, setPlayerStatus] = useState<VideoPlayerStatus>('idle');
 
-const [playerError, setPlayerError] = useState<PlayerError|undefined>();
-console.log("playerError: ", playerError);
-useEffect(() => {
-  const subscription = player.addListener('statusChange', ({ status, error }) => {
-    setPlayerStatus(status);
-    setPlayerError(error);
-    console.log('Player status changed: ', status);
-  });
+  const [playerError, setPlayerError] = useState<PlayerError | undefined>();
+  console.log("playerError: ", playerError);
+  useEffect(() => {
+    const subscription = player.addListener('statusChange', ({ status, error }) => {
+      setPlayerStatus(status);
+      setPlayerError(error);
+      console.log('Player status changed: ', status);
+    });
 
-  return () => {
-    subscription.remove();
-  };
-}, []);
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -46,7 +47,7 @@ useEffect(() => {
     <View style={styles.container}>
       {['loading', 'idle'].includes(playerStatus) && (
         <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#ffffff" />
+          <CommonLoader fullScreen color="#fff" />
         </View>
       )}
 

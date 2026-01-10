@@ -23,6 +23,7 @@ import { router, useFocusEffect } from 'expo-router'
 import { t } from 'i18next'
 import { ActivityIndicator } from 'react-native-paper'
 import ChatHeader from './chatListHeader'
+import CommonLoader from '@/src/components/CommonLoader'
 
 const ChatLoungeList = () => {
   const dispatch = useDispatch()
@@ -72,18 +73,51 @@ const ChatLoungeList = () => {
     )
   }
 
-  // useFocusEffect(useCallback(() => {
-  //   setLoading(true)
-  //   const timer = setTimeout(() => {
-  //     setLoading(false)
-  //   }, 4000);
-  //   fetchChatRooms()
-  //   return () => {
-  //     socketService.off('groupChatRooms')
-  //     socketService.off('groupChatRoomsEmployer')
-  //     clearTimeout(timer);
-  //   }
-  // }, [dispatch])
+
+
+
+  const updateChatCount = async (data: any) => {
+    console.log("data: ", data);
+    const userId = await AsyncStorage.getItem('userId')
+    
+
+    const preShipChatList = shipChatList.map((item: ChatRoom) =>
+      item.id === data.chatRoomId ? {
+        ...item,
+        lastMessage:data.data,
+        isUnReadMessage: true,
+        unReadMessages:  data?.participants?.find((p: any) => p.userId === userId)?.unReadMessages ?? 0,
+      } : item
+    )
+
+    const preFleetChatList = fleetChatList.map((item: ChatRoom) =>
+      item.id === data.chatRoomId ? {
+        ...item,
+        lastMessage:data.data,
+        isUnReadMessage: true,
+        unReadMessages:  data?.participants?.find((p: any) => p.userId === userId)?.unReadMessages ?? 0,
+      } : item
+    )
+
+    preShipChatList?.map((item: ChatRoom) => {
+      console.log("item: ", item);
+        dispatch(updateOneShipChat(item))
+      })
+      preFleetChatList?.map((item: ChatRoom) => {
+        console.log("item: ", item);
+        dispatch(updateOneFleetChat(item))
+      })
+
+  }
+
+
+  useFocusEffect(useCallback(() => {
+    socketService.on("newMessage", updateChatCount);
+
+    return () => {
+      socketService.off("newMessage", updateChatCount);
+    }
+  }, [dispatch]))
 
 
   useFocusEffect(
@@ -173,18 +207,18 @@ const ChatLoungeList = () => {
 
   return (
     <View style={styles.container}>
-     
+
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
       >
-         <ChatHeader />
+        <ChatHeader />
 
         {
         shipChatList.length == 0 && fleetChatList.length == 0 && 
         (loading ? (
           <View style={{ alignItems: 'center', marginTop: 50 }}>
-            <ActivityIndicator size="small" color={Colors.lightGreen} />
+            <CommonLoader/>
           </View>
         ) : (
           <View style={{ alignItems: 'center', marginTop: 50 }}>
@@ -194,37 +228,37 @@ const ChatLoungeList = () => {
         }
 
         <View style={styles.chatListContainer}>
-        {loungeSections.map((section) => {
-          if (section.rooms.length === 0) return null
+          {loungeSections.map((section) => {
+            if (section.rooms.length === 0) return null
 
-          return (
-            <View key={section.title} style={styles.sectionContainer}>
-              <View style={styles.sectionHeader}>
-                <Image
-                  source={section.icon}
-                  style={styles.sectionIcon}
-                  contentFit="cover"
-                  cachePolicy="memory-disk"
-                />
-                <View style={styles.headerText}>
-                  <Text style={styles.sectionTitle}>{section.title}</Text>
-                  <Text style={styles.sectionDescription}>{section.description}</Text>
+            return (
+              <View key={section.title} style={styles.sectionContainer}>
+                <View style={styles.sectionHeader}>
+                  <Image
+                    source={section.icon}
+                    style={styles.sectionIcon}
+                    contentFit="cover"
+                    cachePolicy="memory-disk"
+                  />
+                  <View style={styles.headerText}>
+                    <Text style={styles.sectionTitle}>{section.title}</Text>
+                    <Text style={styles.sectionDescription}>{section.description}</Text>
+                  </View>
+                </View>
+                <View style={styles.chatRowContainer}>
+                  {section.rooms.map(renderChatRow)}
                 </View>
               </View>
-              <View style={styles.chatRowContainer}>
-                {section.rooms.map(renderChatRow)}
-              </View>
-            </View>
-          )
-        })}
-         </View>
+            )
+          })}
+        </View>
       </ScrollView>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1,  backgroundColor: "#FFFFFF",  },
+  container: { flex: 1, backgroundColor: "#FFFFFF", },
   contentContainer: {
     paddingBottom: 150,
     gap: 25,
@@ -235,8 +269,8 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     overflow: 'hidden',
   },
-  chatListContainer:{
-    marginTop:60
+  chatListContainer: {
+    marginTop: 60
 
   },
   sectionHeader: {

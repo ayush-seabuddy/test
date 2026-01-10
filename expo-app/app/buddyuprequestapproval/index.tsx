@@ -1,5 +1,6 @@
 import { addeditdeletebuddyupevent } from '@/src/apis/apiService'
 import { BASE_URL } from '@/src/apis/endpoints'
+import CommonLoader from '@/src/components/CommonLoader'
 import GlobalButton from '@/src/components/GlobalButton'
 import GlobalHeader from '@/src/components/GlobalHeader'
 import { showToast } from '@/src/components/GlobalToast'
@@ -300,7 +301,7 @@ const BuddyUpRequestApprovalScreen = () => {
                 )}
                 {item.uploading && (
                     <View style={styles.statusOverlay}>
-                        <ActivityIndicator size="small" color={Colors.lightGreen} />
+                        <CommonLoader/>
                         <Text style={styles.overlayText}>
                             {(item.retryCount ?? 0) > 0
                                 ? `Retrying... (${item.retryCount ?? 0}/5)`
@@ -334,7 +335,7 @@ const BuddyUpRequestApprovalScreen = () => {
 
             {loading && (
                 <View style={styles.loadingOverlay}>
-                    <ActivityIndicator size="large" color="#000" />
+                    <CommonLoader fullScreen/>
                 </View>
             )}
 

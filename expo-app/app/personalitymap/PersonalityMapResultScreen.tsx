@@ -1,32 +1,28 @@
+import { getallassessmentsResult } from "@/src/apis/apiService";
+import GlobalButton from "@/src/components/GlobalButton";
+import { showToast } from "@/src/components/GlobalToast";
+import Colors from "@/src/utils/Colors";
+import { ImagesAssets } from "@/src/utils/ImageAssets";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BlurView } from "expo-blur";
+import { Image } from "expo-image";
+import { router, useLocalSearchParams } from "expo-router";
+import { ChevronDown, InfoIcon, Share2 } from "lucide-react-native";
+import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  TouchableOpacity,
+  Alert,
   Animated,
   Dimensions,
-  Alert,
-  Platform,
-  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
-import React, { useEffect, useState } from "react";
-import { ChevronDown, InfoIcon, Share2 } from "lucide-react-native";
-import Colors from "@/src/utils/Colors";
-import { useTranslation } from "react-i18next";
-import { Image } from "expo-image";
-import { ImagesAssets } from "@/src/utils/ImageAssets";
-import GlobalButton from "@/src/components/GlobalButton";
-import { BlurView } from "expo-blur";
-import { getallassessmentsResult } from "@/src/apis/apiService";
-import { showToast } from "@/src/components/GlobalToast";
-import { router } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import * as Print from "expo-print";
-import * as Sharing from "expo-sharing";
-import { File, Paths } from "expo-file-system";
 import { generateAndSharePersonalityPDF } from "@/src/components/PersonalityPDFReport";
+import CommonLoader from "@/src/components/CommonLoader";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -52,7 +48,7 @@ const PersonalityMapResultScreen = () => {
   const [data, setData] = useState<PersonalityInsight | null>(null);
   const [userName, setUserName] = useState("User");
   const [pdfUri, setPdfUri] = useState<string | null>(null);
-
+  const { newuser } = useLocalSearchParams();
   const [descExpanded, setDescExpanded] = useState(false);
   const [traitsExpanded, setTraitsExpanded] = useState(false);
   const [careerExpanded, setCareerExpanded] = useState(false);
@@ -170,7 +166,7 @@ const PersonalityMapResultScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {loading ? <ActivityIndicator size={30} color={Colors.lightGreen} /> : <ScrollView
+      {loading ? <View style={styles.loader}><CommonLoader fullScreen /></View> : <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
       >
@@ -339,7 +335,9 @@ const PersonalityMapResultScreen = () => {
       </ScrollView>}
       {!loading &&
         <View style={styles.buttonContainer}>
-          <GlobalButton title={t("goback")} onPress={() => router.back()} />
+          <GlobalButton
+            title={t("goback")} onPress={() => newuser === "true" ? router.replace("/home") : router.replace("/(bottomtab)/health")}
+          />
         </View>}
     </View>
   );
@@ -484,4 +482,7 @@ const styles = StyleSheet.create({
     left: 10,
     right: 10,
   },
+  loader: {
+    paddingTop: '80%',
+  }
 });

@@ -1,32 +1,38 @@
-
 import { updateprofile, viewProfile } from '@/src/apis/apiService';
-import CustomLottie from '@/src/components/CustomLottie';
 import GlobalHeader from '@/src/components/GlobalHeader';
+import { showToast } from '@/src/components/GlobalToast';
 import { RootState } from '@/src/redux/store';
-import { router } from 'expo-router';
-import { ChevronLeft, Edit, Trash2 } from 'lucide-react-native';
+import { Edit, Trash2 } from 'lucide-react-native';
+import { AntDesign, Entypo } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Alert,
   Dimensions,
   FlatList,
-  TextInput as NativeTextInput,
-  Platform,
+  Modal,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
+  Text,
+  TextInput,
+  ActivityIndicator,
+  Platform,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
 import { useSelector } from 'react-redux';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import CommonLoader from '@/src/components/CommonLoader';
 
-const { height } = Dimensions.get('screen');
+const { height, width } = Dimensions.get('screen');
 
 interface SocialLink {
   platform: string;
   link: string;
 }
+
+// Replace with your actual color value or import if defined elsewhere
+const ProfileColors = {
+  linkIcon: '#666', // fallback color matching WorkExperienceScreen icons
+};
 
 const SocialMediaLinks = () => {
   const { t } = useTranslation();
@@ -36,7 +42,7 @@ const SocialMediaLinks = () => {
     linkedin: '',
     instagram: '',
     facebook: '',
-    X: '',
+    x: '',
   });
 
   const [savedLinks, setSavedLinks] = useState<SocialLink[]>(
@@ -44,6 +50,8 @@ const SocialMediaLinks = () => {
   );
   const [loading, setLoading] = useState(false);
   const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [deletePlatform, setDeletePlatform] = useState<string>('');
 
   useEffect(() => {
     getProfileDetails();
@@ -76,7 +84,7 @@ const SocialMediaLinks = () => {
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
-      Toast.show({ type: 'error', text1: t('somethingWentWrong') });
+      showToast.error(t('error'), t('somethingWentWrong'));
     } finally {
       setLoading(false);
     }
@@ -91,7 +99,7 @@ const SocialMediaLinks = () => {
       }));
 
     if (validLinks.length === 0) {
-      Toast.show({ type: 'error', text1: t('atleastOneLinkRequired') });
+      showToast.error(t('oops'), t('atleastOneLinkRequired'));
       return;
     }
 
@@ -114,21 +122,19 @@ const SocialMediaLinks = () => {
       if (response.status === 200) {
         setSavedLinks(updatedLinks);
         setEditingPlatform(null);
-        // Clear input fields after successful save
-        setLinks({
-          linkedin: '',
-          instagram: '',
-          facebook: '',
-          X: '',
-        });
-        Toast.show({
-          type: 'success',
-          text1: t('socialmediaaddedsuccessfully') || 'Links saved successfully!',
-        });
+        const mappedKeep = updatedLinks.reduce((acc: any, { platform, link }: SocialLink) => {
+          acc[platform.toLowerCase()] = link || '';
+          return acc;
+        }, {});
+        setLinks((prev) => ({ ...prev, ...mappedKeep }));
+        showToast.success(
+          t('success'),
+          t('socialmediaaddedsuccessfully') || 'Links saved successfully!'
+        );
       }
     } catch (error) {
       console.error('Update error:', error);
-      Toast.show({ type: 'error', text1: t('failedToSaveLinks') });
+      showToast.error(t('error'), t('failedToSaveLinks'));
     } finally {
       setLoading(false);
     }
@@ -136,240 +142,359 @@ const SocialMediaLinks = () => {
 
   const handleEdit = (platform: string, link: string) => {
     setEditingPlatform(platform.toLowerCase());
-    setLinks((prev) => ({
-      ...prev,
-      [platform.toLowerCase()]: link,
-    }));
+    setLinks((prev) => ({ ...prev, [platform.toLowerCase()]: link }));
   };
 
-  const handleDelete = (platformToDelete: string) => {
-    const platformLower = platformToDelete.toLowerCase();
+  const handleDelete = (platform: string) => {
+    setDeletePlatform(platform);
+    setModalVisible(true);
+  };
 
-    Alert.alert(
-      t('deletelink'),
-      `${t('remove')} ${platformToDelete}?`,
-      [
-        { text: t('cancel'), style: 'cancel' },
-        {
-          text: t('delete'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setLoading(true);
-              const updatedLinks = savedLinks.filter(
-                (item) => item.platform.toLowerCase() !== platformLower
-              );
+  const handleConfirmDelete = async () => {
+    const platformLower = deletePlatform.toLowerCase();
 
-              const body = {
-                userId: userDetails.id,
-                SocialMediaLinks: updatedLinks,
-              };
+    try {
+      setLoading(true);
+      const updatedLinks = savedLinks.filter(
+        (item) => item.platform.toLowerCase() !== platformLower
+      );
 
-              const response = await updateprofile(body);
+      const body = {
+        userId: userDetails.id,
+        SocialMediaLinks: updatedLinks,
+      };
 
-              if (response.status === 200) {
-                setSavedLinks(updatedLinks);
-                setLinks((prev) => ({ ...prev, [platformLower]: '' }));
-                Toast.show({
-                  type: 'success',
-                  text1: t('linkdeletedsuccessfully') || 'Link deleted successfully',
-                });
-              }
-            } catch (error) {
-              Toast.show({ type: 'error', text1: t('failedToDeleteLink') });
-            } finally {
-              setLoading(false);
-            }
-          },
-        },
-      ]
-    );
+      const response = await updateprofile(body);
+
+      if (response.status === 200) {
+        setSavedLinks(updatedLinks);
+        setLinks((prev) => ({ ...prev, [platformLower]: '' }));
+        showToast.success(t('success'), t('linkdeletedsuccessfully'));
+      }
+    } catch (error) {
+      showToast.error(t('error'), t('failedToDeleteLink'));
+    } finally {
+      setLoading(false);
+      setModalVisible(false);
+      setDeletePlatform('');
+    }
+  };
+
+  const renderPlatformIcon = (platform: string) => {
+    switch (platform.toLowerCase()) {
+      case 'facebook':
+        return <Entypo name="facebook" size={20} color={ProfileColors.linkIcon} />;
+      case 'x':
+        return <AntDesign name="x" size={20} color={ProfileColors.linkIcon} />;
+      case 'instagram':
+        return <Entypo name="instagram" size={20} color={ProfileColors.linkIcon} />;
+      case 'linkedin':
+        return <Entypo name="linkedin" size={20} color={ProfileColors.linkIcon} />;
+      default:
+        return null;
+    }
   };
 
   return (
-    <>
-      <GlobalHeader
-        title={t('social_media')}
-      />
+    <View style={styles.main}>
+      <GlobalHeader title={t('social_media')} />
+      <KeyboardAwareScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+        enableOnAndroid
+        extraScrollHeight={Platform.OS === 'ios' ? 20 : 80}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* LinkedIn Input */}
+        <View style={styles.inputContainer}>
+          {renderPlatformIcon('linkedin')}
+          <TextInput
+            style={styles.textInput}
+            placeholder={t('linkedin_url')}
+            placeholderTextColor="#B7B7B7"
+            value={links.linkedin}
+            onChangeText={(text) => setLinks((prev) => ({ ...prev, linkedin: text }))}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+          />
+        </View>
 
-      <View style={{ flex: 1, padding: 14 }}>
-        {/* Input Fields */}
-        <BlackInput
-          label={t('linkedin')}
-          value={links.linkedin}
-          onChangeText={(text) =>
-            setLinks((prev) => ({ ...prev, linkedin: text }))
-          }
-          placeholder="https://www.linkedin.com/in/username"
-        />
+        {/* Instagram Input */}
+        <View style={styles.inputContainer}>
+          {renderPlatformIcon('instagram')}
+          <TextInput
+            style={styles.textInput}
+            placeholder={t('instagram_url')}
+            placeholderTextColor="#B7B7B7"
+            value={links.instagram}
+            onChangeText={(text) => setLinks((prev) => ({ ...prev, instagram: text }))}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+          />
+        </View>
 
-        <BlackInput
-          label={t('instagram')}
-          value={links.instagram}
-          onChangeText={(text) =>
-            setLinks((prev) => ({ ...prev, instagram: text }))
-          }
-          placeholder="https://www.instagram.com/username"
-        />
+        {/* Facebook Input */}
+        <View style={styles.inputContainer}>
+          {renderPlatformIcon('facebook')}
+          <TextInput
+            style={styles.textInput}
+            placeholder={t('twitter_url')}
+            placeholderTextColor="#B7B7B7"
+            value={links.facebook}
+            onChangeText={(text) => setLinks((prev) => ({ ...prev, facebook: text }))}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+          />
+        </View>
 
-        <BlackInput
-          label={t('facebook')}
-          value={links.facebook}
-          onChangeText={(text) =>
-            setLinks((prev) => ({ ...prev, facebook: text }))
-          }
-          placeholder="https://www.facebook.com/username"
-        />
+        {/* X Input */}
+        <View style={styles.inputContainer}>
+          {renderPlatformIcon('x')}
+          <TextInput
+            style={styles.textInput}
+            placeholder={t('twitter_url')}
+            placeholderTextColor="#B7B7B7"
+            value={links.x}
+            onChangeText={(text) => setLinks((prev) => ({ ...prev, x: text }))}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+          />
+        </View>
 
-        <BlackInput
-          label={t('X')}
-          value={links.X}
-          onChangeText={(text) =>
-            setLinks((prev) => ({ ...prev, X: text }))
-          }
-          placeholder="https://X.com/username"
-        />
-
-        <TouchableOpacity onPress={updateSocialMediaLinks} style={styles.saveButton}>
-          <Text style={styles.saveButtonText}>
-            {editingPlatform ? t('updatelink') : t('savesocialmedialinks')}
-          </Text>
+        {/* Save/Update Button */}
+        <TouchableOpacity
+          onPress={updateSocialMediaLinks}
+          style={styles.updateButton}
+          disabled={loading}
+        >
+          {loading ? (
+            <CommonLoader color="#fff" />
+          ) : (
+            <Text style={styles.updateButtonText}>
+              {editingPlatform ? t('updatelink') : t('savesocialmedialinks')}
+            </Text>
+          )}
         </TouchableOpacity>
 
         {/* Saved Links List */}
-        {savedLinks.length > 0 && (
-          <FlatList
-            data={savedLinks}
-            keyExtractor={(item) => item.platform}
-            showsVerticalScrollIndicator={false}
-            renderItem={({ item }) => (
-              <View style={styles.savedCard}>
-                <View>
-                  <Text style={styles.platformText}>
+        <FlatList
+          data={savedLinks}
+          keyExtractor={(item) => item.platform}
+          scrollEnabled={false}
+          renderItem={({ item }) => (
+            <View style={styles.experienceCard}>
+              <View style={styles.experienceContent}>
+                <View style={styles.platformRow}>
+                  {renderPlatformIcon(item.platform)}
+                  <Text style={styles.companyName}>
                     {item.platform.charAt(0).toUpperCase() + item.platform.slice(1)}
                   </Text>
-                  <Text style={styles.linkText}>{item.link}</Text>
                 </View>
-
-                <View style={styles.actions}>
-                  <TouchableOpacity onPress={() => handleEdit(item.platform, item.link)}>
-                    <Edit size={20} color="#000" strokeWidth={2} />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleDelete(item.platform)}>
-                    <Trash2 size={20} color="red" strokeWidth={2} />
-                  </TouchableOpacity>
-                </View>
+                <Text style={styles.role}>{item.link}</Text>
               </View>
-            )}
-          />
-        )}
-      </View>
+              <View style={styles.actions}>
+                <TouchableOpacity
+                  onPress={() => handleEdit(item.platform, item.link)}
+                  style={styles.actionButton}
+                >
+                  <Edit size={20} color="#000" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => handleDelete(item.platform)}
+                  style={styles.actionButton}
+                >
+                  <Trash2 size={20} color="red" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        />
+      </KeyboardAwareScrollView>
 
-      {/* Background Lottie */}
-      <View style={styles.backgroundLottie}>
-        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false}/>
-      </View>
-
-      <Toast />
-    </>
+      {/* Delete Confirmation Modal */}
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalHeaderText}>{t('deletelink')}</Text>
+            <Text style={styles.modalText}>
+              {t('remove')} {deletePlatform}?
+            </Text>
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                onPress={() => {
+                  setDeletePlatform('');
+                  setModalVisible(false);
+                }}
+                style={styles.cancelButton}
+              >
+                <Text style={styles.cancelText}>{t('no')}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleConfirmDelete}
+                style={styles.deleteButton}
+                disabled={loading}
+              >
+                {loading ? (
+                  <CommonLoader color="#fff" />
+                ) : (
+                  <Text style={styles.deleteText}>{t('yes')}</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
 };
 
-// === BlackInput Component (Moved Outside to Prevent Re-creation) ===
-const BlackInput = ({
-  label,
-  value,
-  onChangeText,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  placeholder?: string;
-}) => (
-  <View style={{ marginBottom: 16 }}>
-    <Text style={styles.label}>{label}</Text>
-    <View style={styles.inputWrapper}>
-      <NativeTextInput
-        value={value}
-        onChangeText={onChangeText}
-        style={styles.nativeInput}
-        placeholder={placeholder}
-        placeholderTextColor="#666"
-        keyboardType="url"
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-    </View>
-  </View>
-);
-
 const styles = StyleSheet.create({
-  label: {
-    fontFamily: 'Poppins-SemiBold',
-    fontSize: 14,
-    color: '#000',
-    marginBottom: 6,
+  main: {
+    flex: 1,
+    backgroundColor: '#ededed',
   },
-  inputWrapper: {
+  container: {
+    padding: 20,
+    paddingBottom: 20,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#000',
-    borderRadius: 8,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    marginBottom: 15,
+    height: 50,
     backgroundColor: '#fff',
   },
-  nativeInput: {
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    fontSize: 16,
+  icon: {
+    marginRight: 8,
+  },
+  textInput: {
+    flex: 1,
+    fontSize: 14,
+    marginTop: 5,
     fontFamily: 'Poppins-Regular',
-    color: '#000',
+    color: '#454545',
   },
-  saveButton: {
-    borderRadius: 8,
-    height: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
+  updateButton: {
     backgroundColor: '#000',
-    marginVertical: 20,
+    borderRadius: 10,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
   },
-  saveButtonText: {
+  updateButtonText: {
     color: '#fff',
-    fontFamily: 'WhyteInktrap-Medium',
-    fontSize: 18,
+    fontSize: 14,
+    fontFamily: 'Poppins-SemiBold',
+    lineHeight: 22,
   },
-  savedCard: {
+  experienceCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    padding: 12,
-    borderRadius: 12,
+    borderRadius: 8,
     marginBottom: 10,
-    elevation: 2,
+    padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
   },
-  platformText: {
+  experienceContent: {
+    flex: 1,
+  },
+  platformRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  companyName: {
     fontFamily: 'Poppins-SemiBold',
     fontSize: 14,
+    color: '#333',
+    marginLeft: 8,
   },
-  linkText: {
+  role: {
     fontFamily: 'Poppins-Regular',
     fontSize: 12,
-    color: '#555',
+    color: '#666',
+    width: '90%'
   },
   actions: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 5,
   },
-  backgroundLottie: {
-    position: 'absolute',
-    bottom: 0,
-    height: height * 0.5,
+  actionButton: {
+    padding: 8,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    width: width * 0.85,
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalHeaderText: {
+    fontSize: 16,
+    fontFamily: 'Poppins-SemiBold',
+    textAlign: 'center',
+    marginBottom: 10,
+    color: '#000',
+  },
+  modalText: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Regular',
+    textAlign: 'center',
+    marginBottom: 18,
+    color: '#000',
+  },
+  modalActions: {
+    flexDirection: 'row',
     width: '100%',
-    backgroundColor: '#c1c1c1',
-    overflow: 'hidden',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    zIndex: -1,
+    gap: 12,
+  },
+  cancelButton: {
+    flex: 1,
+    paddingVertical: 12,
+    backgroundColor: '#ccc',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  deleteButton: {
+    flex: 1,
+    paddingVertical: 12,
+    backgroundColor: 'red',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelText: {
+    color: '#000',
+    fontFamily: 'Poppins-Medium',
+    fontSize: 13,
+  },
+  deleteText: {
+    color: '#fff',
+    fontFamily: 'Poppins-Medium',
+    fontSize: 13,
   },
 });
 
