@@ -80,8 +80,7 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
             icon: ImagesAssets.GlobeLogo,
             title: t("social"),
             description: t("social_description"),
-            // onPress: () => router.push("/(bottomtab)/(community)/social"),
-             onPress: () => router.push("/personalitymap/PersonalityMapTestScreen"),
+            onPress: () => router.push("/(bottomtab)/(community)/social"),
         },
         {
             icon: ImagesAssets.UsersLogo,
