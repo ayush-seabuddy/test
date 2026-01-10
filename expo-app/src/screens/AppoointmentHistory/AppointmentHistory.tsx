@@ -1,31 +1,30 @@
 import { getAllBookedAppointments } from "@/src/apis/apiService";
-import CustomLottie from "@/src/components/CustomLottie";
-import { ImagesAssets } from "@/src/utils/ImageAssets";
-import { Image } from "expo-image";
+import CommonLoader from "@/src/components/CommonLoader";
+import EmptyComponent from "@/src/components/EmptyComponent";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Dimensions,
   FlatList,
-  Platform,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
-import AppointmentCard from "./AppointmentCard";
 import Header from "./Header";
-import CommonLoader from "@/src/components/CommonLoader";
+import { useTranslation } from "react-i18next";
+import { router } from "expo-router";
+import WellnessOfficerCard, {
+  type WellnessOfficer,
+} from "../WellnessOfficerList/WellnessOfficerCard";
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 const AppointmentHistory = () => {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const { t } = useTranslation();
 
-  // 🔥 Fetch Data (supports pagination)
   const fetchAppointments = async (pageNumber = 1) => {
     if (loading || loadingMore) return;
 
@@ -37,17 +36,13 @@ const AppointmentHistory = () => {
         limit: 20,
       });
 
-      if (response.data) {
-        const newData = response.data.appointmentsList || [];
+      const newData = response?.data?.appointmentsList || [];
 
-        // If less than limit → no more data
-        if (newData.length < 20) setHasMore(false);
+      if (newData.length < 20) setHasMore(false);
 
-        // Append or Set
-        setData(prev =>
-          pageNumber === 1 ? newData : [...prev, ...newData]
-        );
-      }
+      setData(prev =>
+        pageNumber === 1 ? newData : [...prev, ...newData]
+      );
     } catch (error) {
       console.log(error);
     } finally {
@@ -60,102 +55,89 @@ const AppointmentHistory = () => {
     fetchAppointments(1);
   }, []);
 
-  // 🔥 Load more when end reached
   const handleEndReached = () => {
     if (!hasMore || loadingMore) return;
     const nextPage = page + 1;
     setPage(nextPage);
     fetchAppointments(nextPage);
   };
+  const renderItem = ({ item }: { item: any }) => {
+    const doctor = item?.doctorDetails;
 
-  const renderItem = ({ item }) => (
-    <View style={styles.cardWrapper}>
-      <AppointmentCard data={item} />
-    </View>
-  );
+    const wellnessOfficerData: WellnessOfficer = {
+      id: doctor?.id,
+      doctorName: doctor?.doctorName,
+      country: doctor?.country,
+      language: doctor?.language,
+      profileUrl: doctor?.profileUrl,
+    };
 
-  const ListEmptyComponent = () => (
-    !loading && (
-      <View style={styles.emptyContainer}>
-        <Image style={{ height: 130, width: 130 }} source={ImagesAssets.NoContent} />
-        <Text style={styles.emptyText}>No booked appointment found!</Text>
+    return (
+      <View style={styles.cardWrapper}>
+        <WellnessOfficerCard
+          data={wellnessOfficerData}
+          onPress={() => {
+            router.push({
+              pathname: "/wellnessOfficerProfile",
+              params: { item: JSON.stringify(item) },
+            });
+          }}
+        />
       </View>
-    )
-  );
+    );
+  };
+
+
+  const ListEmptyComponent = () =>
+    !loading ? (
+      <View style={styles.emptyContainer}>
+        <EmptyComponent text={t("nobookedappointmentfound")} />
+      </View>
+    ) : null;
 
   return (
     <View style={styles.container}>
       <Header />
 
       {loading && data.length === 0 ? (
-        <CommonLoader containerStyle={{marginTop:20}}/>
+        <CommonLoader containerStyle={{ marginTop: 20 }} />
       ) : (
         <FlatList
           data={data}
           renderItem={renderItem}
-          keyExtractor={(item, index) => item.id || index.toString()}
+          keyExtractor={(item, index) =>
+            item?.id?.toString() || index.toString()
+          }
           contentContainerStyle={styles.flatListContent}
           ListEmptyComponent={ListEmptyComponent}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.3}
           ListFooterComponent={
             loadingMore ? (
-              <CommonLoader containerStyle={{ marginVertical: 10 }}/>
+              <CommonLoader containerStyle={{ marginVertical: 10 }} />
             ) : null
           }
         />
       )}
-
-      {/* Bottom Animation */}
-      <View style={styles.bottomCard}>
-        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
-      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "transparent", alignContent: "flex-start" },
+  container: { flex: 1, backgroundColor: '#fff' },
 
   flatListContent: {
-    flexGrow: 1,
     paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 80,
-    alignContent: "flex-start"
+    paddingVertical: 10,
   },
 
   cardWrapper: {
-    marginTop: 7,
+    marginTop: 6,
   },
 
   emptyContainer: {
-    flex: 1,
-    width: width - 32,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 80,
-  },
-
-  emptyText: {
-    fontSize: 16,
-    color: "#000",
-    fontFamily: "Poppins-SemiBold",
-    marginTop: 20,
-  },
-
-  bottomCard: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    top: 60,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-    zIndex: -1,
-    borderTopLeftRadius: 35,
-    borderTopRightRadius: 35,
-    backgroundColor: "rgba(0, 0, 0, 0.05)",
   },
 });
 

@@ -6,12 +6,11 @@ import { ImagesAssets } from "@/src/utils/ImageAssets";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
 import { Image } from "expo-image";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { ChevronDown, InfoIcon, Share2 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
   Alert,
   Animated,
   Dimensions,
@@ -49,7 +48,7 @@ const PersonalityMapResultScreen = () => {
   const [data, setData] = useState<PersonalityInsight | null>(null);
   const [userName, setUserName] = useState("User");
   const [pdfUri, setPdfUri] = useState<string | null>(null);
-
+  const { newuser } = useLocalSearchParams();
   const [descExpanded, setDescExpanded] = useState(false);
   const [traitsExpanded, setTraitsExpanded] = useState(false);
   const [careerExpanded, setCareerExpanded] = useState(false);
@@ -167,7 +166,7 @@ const PersonalityMapResultScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {loading ? <View style={styles.loader}><CommonLoader fullScreen/></View> : <ScrollView
+      {loading ? <View style={styles.loader}><CommonLoader fullScreen /></View> : <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
       >
@@ -336,7 +335,9 @@ const PersonalityMapResultScreen = () => {
       </ScrollView>}
       {!loading &&
         <View style={styles.buttonContainer}>
-          <GlobalButton title={t("goback")} onPress={() => router.replace("/(bottomtab)/health")} />
+          <GlobalButton
+            title={t("goback")} onPress={() => newuser === "true" ? router.replace("/home") : router.replace("/(bottomtab)/health")}
+          />
         </View>}
     </View>
   );
@@ -481,7 +482,7 @@ const styles = StyleSheet.create({
     left: 10,
     right: 10,
   },
-  loader:{
-    paddingTop:'50%'
+  loader: {
+    paddingTop: '80%',
   }
 });

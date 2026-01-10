@@ -17,7 +17,6 @@
 
     "preview": {
       "channel": "preview",
-      "distribution": "internal",
       "autoIncrement": true,
       "env": {
         "APP_ENV": "staging",
@@ -25,10 +24,12 @@
         "SOCKET_URL": "$SOCKET_URL"
       },
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "distribution": "internal"
       },
       "ios": {
-        "buildConfiguration": "Release"
+        "buildConfiguration": "Release",
+        "simulator": true
       }
     },
 
@@ -53,13 +54,17 @@
 
   "submit": {
     "production": {
-      "ios": {},
+      "ios": {
+        "ascAppId": "6739109542"
+      },
       "android": {
         "track": "internal"
       }
     },
     "preview": {
-      "ios": {},
+      "ios": {
+        "ascAppId": "6739109542"
+      },
       "android": {
         "track": "internal"
       }

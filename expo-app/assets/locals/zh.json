@@ -930,5 +930,6 @@
   "readless": "- 收起",
   "yourbookedappointment": "您预约的时间",
   "photouploadedsuccessfully": "照片上传成功！",
-  "reponse": "回复"
+  "reponse": "回复",
+  "nobookedappointmentfound": "未找到已预约的日期！"
 }

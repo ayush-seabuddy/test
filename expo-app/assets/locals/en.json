@@ -941,5 +941,6 @@
   "readless":"- Read less",
   "yourbookedappointment":"Your Booked Appointment",
   "photouploadedsuccessfully":"Photo Uploaded Successfully!",
-  "reponse":"Response"
+  "reponse":"Response",
+  "nobookedappointmentfound":"No booked appointment found!"
 }
