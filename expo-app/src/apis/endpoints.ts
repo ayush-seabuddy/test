@@ -75,5 +75,7 @@ export const ENDPOINTS = {
   FETCHCUSTOMSURVEY: `${BASE_URL}/user/viewUserTestList`,
   GETANALYTICS: `${BASE_URL}/user/getAnalytics`,
   LOGOUT: `${BASE_URL}/user/logout`,
+  GETSURVEYBYID:`${BASE_URL}/company/getSurveyById`,
+  SUBMITSURVEY:`${BASE_URL}/user/submitSurvey`,
 
 };

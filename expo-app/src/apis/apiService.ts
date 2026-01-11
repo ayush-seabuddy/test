@@ -321,10 +321,21 @@ export interface GetAnalyticsParams {
   toMonth: string
 }
 
+export interface GetSurveyByIdParams {
+  surveyId: string
+}
+
 export interface signoutPayload {
   deviceTokens: string[]
 }
 
+export interface SubmitSurveyPayload {
+  surveyId: string;
+  responseJson: Array<{
+    questionId: string;
+    answer: any;  // string | number | string[] | { fileName: string; url: string } | null
+  }>;
+}
 
 export interface ReadSingleNotificationRequest {
   notificationId: string
@@ -468,8 +479,8 @@ export const uploadfile = async (payload: UploadFileRequest) => {
     });
 
     console.log("response: ", response);
-    const  { uploadUrl, key } = response.data;
-        // 2️⃣ Convert file URI to blob
+    const { uploadUrl, key } = response.data;
+    // 2️⃣ Convert file URI to blob
     const fileResponse = await fetch(payload.file);
     const blob = await fileResponse.blob();
 
@@ -487,9 +498,9 @@ export const uploadfile = async (payload: UploadFileRequest) => {
       throw new Error('S3 upload failed');
     }
     return {
-      success:true, 
-       status:200,
-       data:`https://seabuddy.s3.us-east-1.amazonaws.com/${key}`
+      success: true,
+      status: 200,
+      data: `https://seabuddy.s3.us-east-1.amazonaws.com/${key}`
     }
   } catch (error) {
     console.log('UPLOAD ERROR:', error);
@@ -967,6 +978,22 @@ export const logout = async (payload: signoutPayload): Promise<ApiResponse> => {
   return await apiRequest({
     method: "POST",
     url: ENDPOINTS.LOGOUT,
+    data: payload,
+  });
+}
+
+export const getsurveybyid = async (params?: GetSurveyByIdParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    params,
+    url: ENDPOINTS.GETSURVEYBYID,
+  });
+}
+
+export const submitsurvey = async (payload: SubmitSurveyPayload): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "POST",
+    url: ENDPOINTS.SUBMITSURVEY,
     data: payload,
   });
 }

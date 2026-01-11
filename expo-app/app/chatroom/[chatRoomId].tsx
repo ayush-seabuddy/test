@@ -676,8 +676,9 @@ const ChatRoomScreen = () => {
           <Text style={{ color: Colors.lightGreen }}>No messages yet</Text>
           <TouchableOpacity
             onPress={retryFetch}
+            style={{display:"flex" , flexDirection:"row" , marginTop:5 , justifyContent:"center",alignItems:"center" , gap:5}}
             >
-          <RefreshCw size={30} color={Colors.lightGreen} />
+           <Text style={{ color: Colors.lightGreen }}>Refresh</Text> <RefreshCw size={25} color={Colors.lightGreen} />
           </TouchableOpacity>
           </>
         )}
