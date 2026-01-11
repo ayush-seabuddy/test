@@ -49,3 +49,5 @@ ios.json
 android.json
 credentials.json
 credentials/
+
+.env.local
