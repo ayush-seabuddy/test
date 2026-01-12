@@ -944,5 +944,6 @@
   "reponse": "Response",
   "nobookedappointmentfound": "No booked appointment found!",
   "noFileChosen": "Add a photo",
-    "surveysubmitted": "Survey submitted successfully!"
+  "surveysubmitted": "Survey submitted successfully!",
+  "noaudiourl": "No Audio URL Available"
 }

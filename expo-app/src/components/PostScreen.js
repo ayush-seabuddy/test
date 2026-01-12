@@ -213,7 +213,6 @@ const PostMedia = ({
   viewabilityConfigCallbackPairs,
   hashtagsDisplay,
 }) => {
-  console.log("post: ", post);
   const ratioValue = post?.ratioValue || 1;
 
   const renderItem = useCallback(
@@ -232,6 +231,9 @@ const PostMedia = ({
               style={{ width: '100%', height: '100%' }}
               source={{ uri: item.uri }}
               contentFit="cover"
+              cachePolicy="memory-disk"
+              recyclingKey={item.uri}
+              priority="normal"
               placeholder={ImagesAssets.PlaceholderImage}
               placeholderContentFit='cover'
               onLoadStart={() => setImageLoading((prev) => ({ ...prev, [item.uri]: true }))}
