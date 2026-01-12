@@ -73,6 +73,13 @@ const Home = () => {
           height: result?.data.companyLogoHeight
         });
       }
+      if(result?.data?.imageLimit && result?.data?.videoLimit){
+        const imageLimit = result?.data.imageLimit || 100;
+        const videoLimit = result?.data.videoLimit||200;
+        await AsyncStorage.setItem("imageLimit", JSON.stringify(imageLimit));
+        await AsyncStorage.setItem("videoLimit", JSON.stringify(videoLimit));
+
+      } 
       Object.entries(result.data).forEach(([key, value]) => {
         dispatch(updateUserField({ key, value }));
       });
