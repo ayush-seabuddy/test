@@ -2,21 +2,17 @@ import { getallassessmentsResult } from "@/src/apis/apiService";
 import GlobalButton from "@/src/components/GlobalButton";
 import { showToast } from "@/src/components/GlobalToast";
 import Colors from "@/src/utils/Colors";
-import { BackHandler } from "react-native";
-import { useFocusEffect, useNavigation } from "expo-router";
-import { useCallback } from "react";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
 import { Image } from "expo-image";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
 import { ChevronDown, InfoIcon, Share2 } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Alert,
-  Animated,
-  Dimensions,
+  Animated, BackHandler, Dimensions,
   ScrollView,
   StyleSheet,
   Text,
@@ -24,8 +20,8 @@ import {
   View
 } from "react-native";
 
-import { generateAndSharePersonalityPDF } from "@/src/components/PersonalityPDFReport";
 import CommonLoader from "@/src/components/CommonLoader";
+import { generateAndSharePersonalityPDF } from "@/src/components/PersonalityPDFReport";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -374,9 +370,13 @@ const PersonalityMapResultScreen = () => {
       </ScrollView>}
       {!loading &&
         <View style={styles.buttonContainer}>
-          <GlobalButton
+         {data !== null ? <GlobalButton
             title={t("goback")} onPress={() => newuser === "true" ? router.replace("/home") : router.replace("/(bottomtab)/health")}
           />
+          : <GlobalButton
+            title={t("refresh")} onPress={getAssessmentResult}
+          />}
+      
         </View>}
     </View>
   );

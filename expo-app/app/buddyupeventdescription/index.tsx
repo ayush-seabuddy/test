@@ -9,7 +9,6 @@ import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import MediaPreviewModal from '@/src/components/Modals/MediaPreviewModal';
 import { RootState } from '@/src/redux/store';
-import Colors from '@/src/utils/Colors';
 import { formatDate } from '@/src/utils/helperFunctions';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
 import { Image } from 'expo-image';
