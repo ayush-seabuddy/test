@@ -79,7 +79,6 @@ type MediaItem = {
 const CreateYourBuddyUpEvent = () => {
     const { t } = useTranslation()
     const params = useLocalSearchParams()
-
     const [eventDescription, setEventDescription] = useState('')
     const [eventLocation, setEventLocation] = useState<string | null>(null)
     const [eventType, setEventType] = useState<string | null>(null)
@@ -103,6 +102,7 @@ const CreateYourBuddyUpEvent = () => {
     const [customCategoryModalVisible, setCustomCategoryModalVisible] = useState(false)
     const [dateSelected, setDateSelected] = useState(false)
     const [customCategories, setCustomCategories] = useState<AllEvents[]>([])
+    const [preInvitedUserIds, setPreInvitedUserIds] = useState<string[]>([]);
 
     // Edit mode states
     const [isEditMode, setIsEditMode] = useState(false)
@@ -205,6 +205,17 @@ const CreateYourBuddyUpEvent = () => {
                         const tags = JSON.parse(params.hashtags as string);
                         if (Array.isArray(tags)) setHashtags(tags);
                     } catch (e) { }
+                }
+
+                if (params.invitedPeoples) {
+                    try {
+                        const invitedIds = JSON.parse(params.invitedPeoples as string);
+                        if (Array.isArray(invitedIds)) {
+                            setPreInvitedUserIds(invitedIds);
+                        }
+                    } catch (e) {
+                        console.log("Could not parse invitedPeoples", e);
+                    }
                 }
 
                 setDateSelected(true);
@@ -561,7 +572,16 @@ const CreateYourBuddyUpEvent = () => {
                 )
 
                 setAvailableUsers(filteredUsers)
-
+               if (isEditMode && preInvitedUserIds.length > 0 && selectedParticipants.length === 0) {
+                const preSelected = filteredUsers.filter((user: any) =>
+                    preInvitedUserIds.includes(user.id)
+                );
+                
+                if (preSelected.length > 0) {
+                    setSelectedParticipants(preSelected);
+                    console.log(`Pre-selected ${preSelected.length} invited users`);
+                }
+            }
                 if (filteredUsers.length === 0) {
                     showToast.error(t('oops'), t('nousersboarded'))
                 } else {
@@ -579,7 +599,49 @@ const CreateYourBuddyUpEvent = () => {
         } finally {
             setIsFetchingUsers(false)
         }
-    }, [t, eventType, isFetchingUsers])
+    }, [t, eventType, isFetchingUsers, preInvitedUserIds])
+    
+
+
+    const addTagUser = useCallback( async () => {
+        try {
+            const userData = await getUserDetails()
+
+            const apiResponse = await listallusersfortag({
+                shipId: userData.shipId,
+            })
+
+           
+            if (apiResponse.success && apiResponse.status === 200) {
+                const usersList = apiResponse.data?.usersList || []
+                const filteredUsers = usersList.filter(
+                    (user: any) => user.id !== userData.id
+                )
+
+               
+               if (isEditMode && preInvitedUserIds.length > 0 && selectedParticipants.length === 0) {
+                
+                const preSelected = filteredUsers.filter((user: any) =>
+                    preInvitedUserIds.includes(user.id)
+                );
+                
+                if (preSelected.length > 0) {
+                    setSelectedParticipants(preSelected);
+                }
+            }
+        }
+        } catch (error: any) {
+            console.log('Error fetching users:', error)
+            showToast.error(t('error'), 'Failed to load users')
+        } finally {
+        }
+    }, [preInvitedUserIds])
+
+    useEffect(() => {
+        console.log('preInvitedUserIds changed:', preInvitedUserIds);
+        
+        addTagUser()
+    }, [preInvitedUserIds])
 
 
     const toggleTagUser = useCallback((user: AllParticipants) => {
