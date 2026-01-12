@@ -932,5 +932,6 @@
   "photouploadedsuccessfully": "照片上传成功！",
   "reponse": "回复",
   "noFileChosen": "添加照片",
-  "surveysubmitted": "调查提交成功！"
+  "surveysubmitted": "调查提交成功！",
+  "refresh":"刷新"
 }
