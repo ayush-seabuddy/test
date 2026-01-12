@@ -37,7 +37,6 @@ import moment from 'moment'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-    ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -675,7 +674,7 @@ const CreateYourBuddyUpEvent = () => {
                     endDateTime,
                     location: eventLocation,
                     imageUrls,
-                    joinedPeople: eventType === 'Invite Buddy' ? joinedPeople : [],
+                    invitedPeoples: eventType === 'Invite Buddy' ? joinedPeople : [],
                     categoryId: selectedEventId,
                     hashtags: hashtags.length > 0 ? hashtags : undefined,
                     isPublic: eventType === 'Public (All Crew)',

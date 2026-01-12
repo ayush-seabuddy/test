@@ -1,20 +1,19 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { Image } from 'expo-image';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
+  FlatList,
   RefreshControl,
-  View,
   StyleSheet,
   Text,
-  FlatList,
+  View
 } from 'react-native';
 import { getallposts } from '../apis/apiService';
-import { showToast } from './GlobalToast';
-import { useTranslation } from 'react-i18next';
 import Colors from '../utils/Colors';
-import PostScreen from './PostScreen';
-import { Image } from 'expo-image';
 import { ImagesAssets } from '../utils/ImageAssets';
 import CommonLoader from './CommonLoader';
+import { showToast } from './GlobalToast';
+import PostScreen from './PostScreen';
 
 export interface Post {
   id: string | number;

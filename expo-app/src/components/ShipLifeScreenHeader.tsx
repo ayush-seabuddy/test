@@ -1,22 +1,21 @@
-import React, { useCallback, useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Platform,
-  Image,
-} from "react-native";
-import { ImagesAssets } from "@/src/utils/ImageAssets";
-import Colors from "@/src/utils/Colors";
-import { House, Trophy } from "lucide-react-native";
-import { router, useFocusEffect } from "expo-router";
-import { useTranslation } from "react-i18next";
-import { getUserDetails } from "../utils/helperFunctions";
-import { getUnreadNotificationCount, viewProfile } from "../apis/apiService";
-import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/src/redux/store";
 import { updateUserField } from '@/src/redux/userDetailsSlice';
+import Colors from "@/src/utils/Colors";
+import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { router, useFocusEffect } from "expo-router";
+import { House, Trophy } from "lucide-react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Image,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { getUnreadNotificationCount, viewProfile } from "../apis/apiService";
 
 const ShipLifeScreenHeader = () => {
   const { t } = useTranslation();
@@ -28,7 +27,6 @@ const ShipLifeScreenHeader = () => {
     useFocusEffect(  useCallback(() => {
         const fetchProfileDetails = async () => {
             let result = await viewProfile();
-            console.log("userDetails: sdlfjsdlfjsd 2", result);
             if (result?.data) {
                 const object = result.data
                 for (const property in object) {
