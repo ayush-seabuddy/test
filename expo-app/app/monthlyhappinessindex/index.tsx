@@ -128,7 +128,7 @@ const MonthlyHappinessIndexTestScreen = () => {
 
   const calculateProgress = useMemo(() => {
     const total = requiredQuestionIds.length;
-    if (total === 0) return 1;
+    if (total === 0) return 0;
 
     const filled = requiredQuestionIds.filter(id => {
       const val = answers[id];
@@ -137,6 +137,7 @@ const MonthlyHappinessIndexTestScreen = () => {
 
     return filled / total;
   }, [answers, requiredQuestionIds]);
+
 
   const handleSubmit = async () => {
     if (calculateProgress < 1) {

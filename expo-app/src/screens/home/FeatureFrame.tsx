@@ -127,7 +127,7 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
                                 resizeMode="cover"
                                 source={ImagesAssets.ChatLogo}
                             />
-                            {unreadMessageCount >= 0 && (
+                            {unreadMessageCount > 0 && (
                                 <View style={styles.badge}>
                                     <Text style={styles.badgeText}>
 

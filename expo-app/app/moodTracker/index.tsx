@@ -1,5 +1,5 @@
 import { getAllMoodTracker, getMoodTrackerAnalysis, moodTracker } from "@/src/apis/apiService";
-import CommonLoader from "@/src/components/CommonLoader"; // ← Make sure this import exists
+import CommonLoader from "@/src/components/CommonLoader";
 import CustomLottie from "@/src/components/CustomLottie";
 import GlobalHeader from "@/src/components/GlobalHeader";
 import { showToast } from "@/src/components/GlobalToast";
@@ -247,7 +247,7 @@ const MoodModalStep2 = memo(
             disabled={loading}
           >
             {loading ? (
-              <CommonLoader color='#fff'/>
+              <CommonLoader color='#fff' />
             ) : (
               <Text style={styles.modalSubmitText}>{t("submit")}</Text>
             )}
@@ -448,24 +448,13 @@ const MoodTracker: React.FC = () => {
     setReasonText("");
   }, []);
 
-  if (loading && monthlyAverage.length === 0 && !moodData) {
-    return (
-      <View style={styles.container}>
-        <CommonLoader fullScreen />
-      </View>
-    );
-  }
-
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
-    >
-      <View style={styles.mainContainer}>
-        <GlobalHeader title={t("moodTracker")} />
-
-        <ScrollView
+    <View style={styles.mainContainer}>
+      <GlobalHeader title={t("moodTracker")} />
+      {
+        loading && monthlyAverage.length === 0 && !moodData ? <View style={styles.container}>
+          <CommonLoader fullScreen />
+        </View> : <ScrollView
           ref={scrollRef}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
@@ -585,55 +574,28 @@ const MoodTracker: React.FC = () => {
             scrollEnabled={false}
           />
         </ScrollView>
+      }
 
-        {/* <Modal
-          visible={modalVisible}
-          onDismiss={resetAndCloseModal}
-          contentContainerStyle={styles.modalContainer}
-        >
-          {step === 1 ? (
-            <MoodModalStep1
-              onSelect={handleMoodSelect}
-              onClose={resetAndCloseModal}
-              userName={userDetails?.fullName?.split(" ")?.[0]}
-            />
-          ) : (
-            <MoodModalStep2
-              reason={reasonText}
-              setReason={setReasonText}
-              onSubmit={handleSubmit}
-              loading={loading} // still used for submit action
-              onClose={resetAndCloseModal}
-            />
-          )}
-        </Modal> */}
 
-        <MoodCheckInModal
-  visible={modalVisible}
-  onClose={() => setModalVisible(false)}
-  onSuccess={() => {
-    setIsTodayChecked(true);
-    fetchMonthlyData(currentDate.getMonth() + 1, currentDate.getFullYear());
-  }}
-  userName={userDetails?.fullName?.split(" ")?.[0]}
-/>
-
-        <CustomLottie
-          customSyle={styles.backgroundLottie}
-          isBlurView={Platform.OS === "ios" ? true : false}
-        />
-      </View>
-    </KeyboardAvoidingView>
+      <MoodCheckInModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSuccess={() => {
+          setIsTodayChecked(true);
+          fetchMonthlyData(currentDate.getMonth() + 1, currentDate.getFullYear());
+        }}
+        userName={userDetails?.fullName?.split(" ")?.[0]}
+      />
+    </View>
   );
 };
 
 export default MoodTracker;
 
-// Styles remain completely unchanged
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   mainContainer: { flex: 1, backgroundColor: "#fff" },
-  scrollContent: { flexGrow: 1, minHeight: height ,paddingBottom:20,},
+  scrollContent: { flexGrow: 1, minHeight: height, paddingBottom: 20, },
 
   calendarCard: {
     backgroundColor: "rgba(180, 180, 180, 0.6)",
@@ -873,14 +835,4 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalSubmitText: { color: "white", fontSize: 16, fontWeight: "500" },
-
-  backgroundLottie: {
-    width: width,
-    height: height * 0.68,
-    borderTopLeftRadius: 50,
-    borderTopRightRadius: 50,
-    position: "absolute",
-    bottom: 0,
-    zIndex: -2,
-  },
 });

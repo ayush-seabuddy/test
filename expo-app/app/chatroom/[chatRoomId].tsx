@@ -119,7 +119,6 @@ const ChatRoomScreen = () => {
     if (result?.data) {
       const object = result.data
       for (const property in object) {
-        console.log(`${property}: ${object[property]}`);
         dispatch(updateUserField({ key: property, value: object[property] }))
       }
 

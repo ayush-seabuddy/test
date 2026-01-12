@@ -18,7 +18,7 @@ import UserPost from './UserPosts'
 import { ImagesAssets } from '@/src/utils/ImageAssets'
 
 const UserProfile = () => {
-     const { t } = useTranslation();
+    const { t } = useTranslation();
     const userDetails = useSelector((state: RootState) => state.userDetails)
     const dispatch = useDispatch()
     const [activeTab, setActiveTab] = useState<'about' | 'posts' | 'buddyuponprofile' | 'assessments'>('about');
@@ -29,7 +29,6 @@ const UserProfile = () => {
             if (result?.data) {
                 const object = result.data
                 for (const property in object) {
-                    console.log(`${property}: ${object[property]}`);
                     dispatch(updateUserField({ key: property, value: object[property] }))
                 }
 
@@ -60,7 +59,7 @@ const UserProfile = () => {
             </TouchableOpacity>
             <View style={{ display: "flex", justifyContent: "center", alignItems: "center", height: height * .35 }}>
                 <View style={{ position: "relative" }}>
-                    <Image source={userDetails.profileUrl} style={{ width: 100, height: 100, borderRadius: 50, borderColor: Colors.lightGreen, borderWidth: 2 }} placeholder={ImagesAssets.userIcon}/>
+                    <Image source={userDetails.profileUrl} style={{ width: 100, height: 100, borderRadius: 50, borderColor: Colors.lightGreen, borderWidth: 2 }} placeholder={ImagesAssets.userIcon} />
                     <TouchableOpacity style={{
                         position: "absolute", bottom: 3, right: 0,
                         borderColor: 'grey',
@@ -115,6 +114,7 @@ const styles = StyleSheet.create({
     fullName: {
         marginTop: 10,
         fontSize: 25,
+        textAlign: 'center',
         fontWeight: "700",
         color: "black",
         fontFamily: "Poppins-Bold",

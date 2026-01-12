@@ -294,11 +294,11 @@ const BuddyUpEventDescription = () => {
                     <Text style={styles.title}>{buddyUpDetails.eventName}</Text>
                     <View style={styles.rowBetween}>
                         <Text style={styles.organizerText}>
-                            {t('organizedBy')} {buddyUpDetails.activityUser.fullName}
+                            {t('organizedBy')} {isCreator ? t('you') : buddyUpDetails.activityUser.fullName}
                         </Text>
                         <View style={styles.pointsView}>
                             <Text style={styles.pointsText}>
-                                {buddyUpDetails.groupActivityCategory.points} Points
+                                {buddyUpDetails.groupActivityCategory.points} {t('points')}
                             </Text>
                         </View>
                     </View>

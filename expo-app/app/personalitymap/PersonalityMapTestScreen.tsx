@@ -37,7 +37,7 @@ const STORAGE_KEY = 'personality_test_answers';
 const PersonalityMapTestScreen = () => {
   const { t } = useTranslation();
   const router = useRouter();
-  const params = useLocalSearchParams<{ testData?: string }>();
+  const params = useLocalSearchParams<{ testData?: string, screenName: string }>();
   const flatListRef = useRef<FlatList>(null);
   const previousMonth = moment().subtract(1, 'month');
   const [allQuestions, setAllQuestions] = useState<Question[]>([]);
@@ -51,6 +51,8 @@ const PersonalityMapTestScreen = () => {
   const parsedTestData = params.testData
     ? JSON.parse(params.testData as string)
     : null;
+  const parsedScreeName = params.screenName
+
 
   const isRequiredTest = parsedTestData?.isRequires === true;
 
@@ -107,12 +109,12 @@ const PersonalityMapTestScreen = () => {
           const orderB = parseInt(b.order, 10) || 0;
           return orderA - orderB;
         });
-        
+
         const unique = Array.from(new Map(sorted.map(q => [q.id, q])).values()) as Question[];
 
         setAllQuestions(unique);
         setDisplayedQuestions(unique.slice(0, PAGE_SIZE));
-        
+
         // Load saved answers after questions are loaded
         await loadSavedAnswers();
       } else {
@@ -131,10 +133,15 @@ const PersonalityMapTestScreen = () => {
 
   // Auto-save answers whenever they change
   useEffect(() => {
-    if (Object.keys(answers).length > 0) {
-      saveAnswersToStorage(answers);
-    }
-  }, [answers, saveAnswersToStorage]);
+    const id = setTimeout(() => {
+      if (Object.keys(answers).length > 0) {
+        saveAnswersToStorage(answers);
+      }
+    }, 300);
+
+    return () => clearTimeout(id);
+  }, [answers]);
+
 
   useFocusEffect(
     useCallback(() => {
@@ -147,17 +154,22 @@ const PersonalityMapTestScreen = () => {
     }, [isRequiredTest])
   );
 
-  const loadMoreQuestions = () => {
+  const loadMoreQuestions = useCallback(() => {
     if (loadingMore || displayedQuestions.length >= allQuestions.length) return;
+
     setLoadingMore(true);
-    setTimeout(() => {
-      const nextStart = displayedQuestions.length;
-      const nextEnd = Math.min(nextStart + PAGE_SIZE, allQuestions.length);
-      const more = allQuestions.slice(nextStart, nextEnd);
-      setDisplayedQuestions(prev => [...prev, ...more]);
-      setLoadingMore(false);
-    }, 500);
-  };
+
+    const nextStart = displayedQuestions.length;
+    const nextEnd = Math.min(nextStart + PAGE_SIZE, allQuestions.length);
+
+    setDisplayedQuestions(prev => [
+      ...prev,
+      ...allQuestions.slice(nextStart, nextEnd),
+    ]);
+
+    setLoadingMore(false);
+  }, [loadingMore, displayedQuestions, allQuestions]);
+
 
   const answeredCount = Object.keys(answers).length;
   const totalQuestions = allQuestions.length;
@@ -215,7 +227,7 @@ const PersonalityMapTestScreen = () => {
 
         // Clear saved answers after successful submission
         await clearSavedAnswers();
-        
+
         setShowResultPopup(true);
       } else {
         showToast.error(t('error'), res.message || t('somethingwentwrong'));
@@ -226,40 +238,41 @@ const PersonalityMapTestScreen = () => {
       setSubmitting(false);
     }
   };
+  const renderQuestion = useCallback(
+    ({ item }: { item: Question }) => {
+      const selectedScore = answers[item.id];
 
-  const renderQuestion = ({ item }: { item: Question }) => {
-    const selectedScore = answers[item.id];
-    const questionIndex = allQuestions.findIndex(q => q.id === item.id);
-    const questionNumber = questionIndex !== -1 ? questionIndex + 1 : displayedQuestions.indexOf(item) + 1;
+      return (
+        <View style={styles.questionContainer}>
+          <Text style={styles.questionText}>
+            {item.order}. {item.question}
+          </Text>
 
-    return (
-      <View style={styles.questionContainer}>
-        <Text style={styles.questionText}>
-          {questionNumber}. {item.question}
-        </Text>
+          <View style={styles.radioRow}>
+            {item.answerOptions.map((opt, idx) => {
+              const isSelected = selectedScore === opt.score;
+              const showLabel = idx === 0 || idx === item.answerOptions.length - 1;
 
-        <View style={styles.radioRow}>
-          {item.answerOptions.map((opt, idx) => {
-            const isSelected = selectedScore === opt.score;
-            const showLabel = idx === 0 || idx === item.answerOptions.length - 1;
-
-            return (
-              <Pressable
-                key={opt.score}
-                onPress={() => handleSelect(item.id, opt.score)}
-                style={styles.optionContainer}
-              >
-                <View style={[styles.radioOuter, isSelected && styles.radioOuterActive]}>
-                  {isSelected && <View style={styles.radioInner} />}
-                </View>
-                {showLabel && <Text style={styles.radioLabelText}>{opt.option}</Text>}
-              </Pressable>
-            );
-          })}
+              return (
+                <Pressable
+                  key={opt.score}
+                  onPress={() => handleSelect(item.id, opt.score)}
+                  style={styles.optionContainer}
+                >
+                  <View style={[styles.radioOuter, isSelected && styles.radioOuterActive]}>
+                    {isSelected && <View style={styles.radioInner} />}
+                  </View>
+                  {showLabel && <Text style={styles.radioLabelText}>{opt.option}</Text>}
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
-      </View>
-    );
-  };
+      );
+    },
+    [answers]
+  );
+
 
   const renderFooter = () => {
     const allLoaded = displayedQuestions.length >= allQuestions.length;
@@ -282,32 +295,20 @@ const PersonalityMapTestScreen = () => {
     );
   };
 
-  if (loading) {
-    return (
-      <View style={styles.main}>
-        <CommonLoader fullScreen/>
-      </View>
-    );
-  }
-
-  if (allQuestions.length === 0) {
-    return (
-      <View style={styles.main}>
-        <Text style={styles.noQuestionsText}>{t('noquestionsavailable')}</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.main}>
-      <PersonalityMapResultModal visible={showResultPopup} setModalVisible={setShowResultPopup} />
-
+      {showResultPopup && (
+        <PersonalityMapResultModal
+          visible={showResultPopup}
+          setModalVisible={setShowResultPopup}
+        />
+      )}
       <View style={styles.header}>
         <View style={styles.innerView}>
           <Text style={styles.personalitymaptext}>{t('personalitymap')}</Text>
           {!isRequiredTest && (
             <TouchableOpacity
-              onPress={() => router.replace('/home')}
+              onPress={() => parsedScreeName === 'HealthScreen' ? router.back() : router.replace('/home')}
               style={styles.skipView}
             >
               <Text style={styles.skip}>{t('skip')}</Text>
@@ -338,8 +339,9 @@ const PersonalityMapTestScreen = () => {
             : t('mandatoryindays', { diffDays: 7 })}
         </Text>
       </View>
-
-      <FlatList
+      {loading ? <View style={styles.loader}>
+        <CommonLoader fullScreen />
+      </View> : <FlatList
         ref={flatListRef}
         data={displayedQuestions}
         renderItem={renderQuestion}
@@ -349,7 +351,17 @@ const PersonalityMapTestScreen = () => {
         onEndReachedThreshold={0.3}
         ListFooterComponent={renderFooter}
         contentContainerStyle={{ paddingBottom: 40 }}
+        removeClippedSubviews
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={7}
+        updateCellsBatchingPeriod={50}
+        extraData={answers}
       />
+
+      }
+
+
     </View>
   );
 };
@@ -358,6 +370,7 @@ export default PersonalityMapTestScreen;
 
 const styles = StyleSheet.create({
   main: { flex: 1, backgroundColor: Colors.captainanimatedlayoutbg },
+  loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: { margin: 16, gap: 10, paddingBottom: 10 },
   innerView: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   personalitymaptext: { fontSize: 20, lineHeight: 22, color: '#161616', fontFamily: 'WhyteInktrap-Bold' },

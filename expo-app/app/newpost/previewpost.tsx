@@ -52,6 +52,7 @@ const frameOptions: FrameOption[] = [
 
 const PreviewPostScreen: React.FC = () => {
     const { t } = useTranslation();
+    const [isLoading, setIsLoading] = useState(true);
     const params = useLocalSearchParams<{
         mediaFiles?: string;
         caption?: string;
@@ -122,14 +123,27 @@ const PreviewPostScreen: React.FC = () => {
                         resizeMode="cover"
                         repeat
                         muted
-                        paused={false} // Ensure it plays
+                        paused={false}
                     />
                 ) : (
-                    <Image
-                        source={{ uri }}
-                        style={styles.media}
-                        contentFit="cover"
-                    />
+                    <View style={{ flex: 1 }}>
+                        {isLoading && (
+                            <View style={styles.loadingOverlay}>
+                                <CommonLoader fullScreen color="#ffffff" />
+                            </View>
+                        )}
+
+                        <Image
+                            source={{ uri }}
+                            style={[
+                                styles.media,
+                                isLoading && { opacity: 0 },
+                            ]}
+                            contentFit="cover"
+                            onLoad={() => setIsLoading(false)}
+                            transition={150}
+                        />
+                    </View>
                 )}
             </View>
         );
@@ -277,12 +291,12 @@ const PreviewPostScreen: React.FC = () => {
                                 <View key={user.id} style={styles.taggedUser}>
                                     <Image
                                         source={
-                                            user.profileUrl
-                                                ? { uri: user.profileUrl }
-                                                : ImagesAssets.userIcon
+                                            { uri: user.profileUrl }
                                         }
                                         style={styles.taggedAvatar}
                                         contentFit="cover"
+                                        placeholder={ImagesAssets.userIcon}
+                                        placeholderContentFit='cover'
                                     />
 
                                     <Text style={styles.taggedName}>{user.fullName}</Text>
@@ -378,6 +392,12 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         padding: 12,
         backgroundColor: '#f9f9f9',
+    },
+    loadingOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: '#00000080',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     frameButton: {
         paddingHorizontal: 16,

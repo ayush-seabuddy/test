@@ -2,6 +2,9 @@ import { getallassessmentsResult } from "@/src/apis/apiService";
 import GlobalButton from "@/src/components/GlobalButton";
 import { showToast } from "@/src/components/GlobalToast";
 import Colors from "@/src/utils/Colors";
+import { BackHandler } from "react-native";
+import { useFocusEffect, useNavigation } from "expo-router";
+import { useCallback } from "react";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
@@ -44,6 +47,7 @@ interface PersonalityInsight {
 
 const PersonalityMapResultScreen = () => {
   const { t } = useTranslation();
+  const navigation = useNavigation();
   const [loading, setloading] = useState(false);
   const [data, setData] = useState<PersonalityInsight | null>(null);
   const [userName, setUserName] = useState("User");
@@ -52,7 +56,7 @@ const PersonalityMapResultScreen = () => {
   const [descExpanded, setDescExpanded] = useState(false);
   const [traitsExpanded, setTraitsExpanded] = useState(false);
   const [careerExpanded, setCareerExpanded] = useState(false);
-
+  const { screenName } = useLocalSearchParams();
   const rotateDescAnim = React.useRef(new Animated.Value(0)).current;
   const rotateTraitsAnim = React.useRef(new Animated.Value(0)).current;
   const rotateCareerAnim = React.useRef(new Animated.Value(0)).current;
@@ -69,6 +73,41 @@ const PersonalityMapResultScreen = () => {
       useNativeDriver: true,
     }).start();
   };
+
+  // Handle hardware back button
+  useFocusEffect(
+    useCallback(() => {
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          screenName === 'HealthScreen' ? router.back() : router.replace("/home");
+          return true;
+        }
+      );
+
+      return () => subscription.remove();
+    }, [screenName])
+  );
+
+  // Handle system back gesture (swipe/gesture navigation)
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      // Prevent default behavior
+      e.preventDefault();
+
+      // Remove listener to avoid infinite loop
+      unsubscribe();
+
+      // Navigate based on screenName
+      if (screenName === 'HealthScreen') {
+        navigation.dispatch(e.data.action);
+      } else {
+        router.replace("/home");
+      }
+    });
+
+    return unsubscribe;
+  }, [navigation, screenName]);
 
   useEffect(() => {
     (async () => {

@@ -10,7 +10,6 @@ import {
     View,
     Text,
     TextInput,
-    ActivityIndicator,
     Platform,
 } from 'react-native';
 import { updateprofile, viewProfile } from '@/src/apis/apiService';
@@ -22,6 +21,7 @@ import { Edit, Trash2, Briefcase, Building, Calendar } from 'lucide-react-native
 import { useDispatch, useSelector } from 'react-redux';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import CommonLoader from '@/src/components/CommonLoader';
+import { updateUserField } from '@/src/redux/userDetailsSlice';
 
 interface WorkExperience {
     id: string;
@@ -246,6 +246,15 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
             const response = await updateprofile(body);
 
             if (response.status === 200) {
+                const fetchProfileDetails = async () => {
+                    let result = await viewProfile();
+                    if (result?.data) {
+                        const object = result.data
+                        for (const property in object) {
+                            dispatch(updateUserField({ key: property, value: object[property] }))
+                        }
+                    }
+                }
                 await fetchProfileDetails();
                 showToast.success(t('success'), t('workingexperienceaddedsuccessfully'))
             }

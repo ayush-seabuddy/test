@@ -7,18 +7,18 @@ import { Dimensions, Image, Pressable, StyleSheet, Text, View } from "react-nati
 
 const { width, height } = Dimensions.get("window");
 const isProMax = height >= 926;
-const PersonalityTestCard = ({  data, ApiData , testArray }:{data: any; ApiData: any; testArray: any}) => {
+const PersonalityTestCard = ({  data, ApiData , testArray ,screenName }:{data: any; ApiData: any; testArray: any; screenName:string}) => {
  
   const { t } = useTranslation();
   return (
     <Pressable
       style={styles.frameParent}
       onPress={() => {
-        console.log(data);
+        console.log(screenName);
         {
           testArray && testArray[2] && testArray[2].open
-            ?  router.push('/personalitymap/PersonalityMapTestScreen')
-            : router.push('/personalitymap/PersonalityMapResultScreen')
+            ?  router.push({pathname:'/personalitymap/PersonalityMapTestScreen',params:{screenName:screenName}})
+            : router.push({pathname:'/personalitymap/PersonalityMapResultScreen',params:{screenName:screenName}})
         }
       }}
     >

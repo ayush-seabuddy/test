@@ -19,6 +19,7 @@ import {
 import Toast from "react-native-toast-message";
 import Colors from "@/src/utils/Colors";
 import CommonLoader from "@/src/components/CommonLoader";
+import { showToast } from "@/src/components/GlobalToast";
 
 const { height } = Dimensions.get("screen");
 
@@ -65,11 +66,7 @@ const MoodTrackerHistory = () => {
           setHasMore(res.data?.totalPages > currentPage);
         }
       } catch (error) {
-        Toast.show({
-          type: "error",
-          text1: t("somethingwentwrong"),
-          position: "bottom",
-        });
+        showToast.error(t('oops'), t('somethingwentwrong'))
       } finally {
         setLoading(false);
       }
@@ -130,7 +127,7 @@ const MoodTrackerHistory = () => {
           ListFooterComponent={
             loading ? (
               <View style={styles.loader}>
-              <CommonLoader fullScreen/>
+                <CommonLoader fullScreen />
               </View>
             ) : null
           }
@@ -156,7 +153,7 @@ const styles = StyleSheet.create({
   },
 
   listContent: {
-    paddingBottom: 140,
+    paddingBottom: 20,
   },
 
   moodCard: {
@@ -182,13 +179,14 @@ const styles = StyleSheet.create({
   },
 
   moodTitle: {
-    fontSize: 16,
+    fontSize: 14,
+    fontFamily:'Poppins-SemiBold',
     fontWeight: "600",
     color: "#262626",
   },
 
   dateText: {
-    fontSize: 11,
+    fontSize: 12,
     color: "#636363",
     marginTop: 2,
   },

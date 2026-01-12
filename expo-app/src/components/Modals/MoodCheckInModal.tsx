@@ -1,30 +1,24 @@
-// MoodCheckInModal.tsx
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
 import { X } from "lucide-react-native";
 import moment from "moment-timezone";
 import { memo, useCallback, useState } from "react";
-import { useTranslation } from "react-i18next";
-import { Keyboard, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Modal, Portal } from "react-native-paper";
-
+import { Pressable } from "react-native";
+import { useTranslation } from "react-i18next";
+import { Keyboard, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View, Dimensions } from "react-native";
 import { moodTracker } from "@/src/apis/apiService";
 import CommonLoader from "@/src/components/CommonLoader";
 import { showToast } from "@/src/components/GlobalToast";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import { Image } from "expo-image";
 
-
-// ============================================================================
-// Types & Constants (you can also move them to separate file)
-// ============================================================================
 interface MoodCheckInModalProps {
   visible: boolean;
   onClose: () => void;
-  onSuccess?: () => void;      // called after successful submission
+  onSuccess?: () => void;
   userName?: string;
 }
-
 
 const MOOD_CONFIG = {
   HAPPY: { color: "#B0DB0266", emoji: ImagesAssets.Emoji_1 },
@@ -42,7 +36,6 @@ const MOOD_OPTIONS = [
   { emoji: ImagesAssets.Emoji_2, label: "Calm" },
 ] as const;
 
-// Step 1 - Mood Selection
 const MoodModalStep1 = memo(
   ({
     onSelect,
@@ -65,10 +58,9 @@ const MoodModalStep1 = memo(
 
     return (
       <View style={styles.modalStepContainer}>
-        {/* <BlurView style={StyleSheet.absoluteFill} intensity={80} tint="light" /> */}
         <View style={styles.modalContent}>
           <TouchableOpacity style={styles.modalCloseButton} onPress={onClose}>
-            <X size={28} color="#929292" />
+            <X size={24} color="#929292" />
           </TouchableOpacity>
 
           <View style={styles.modalGreetingContainer}>
@@ -96,7 +88,6 @@ const MoodModalStep1 = memo(
   }
 );
 
-// Step 2 - Note / Reason
 const MoodModalStep2 = memo(
   ({
     reason,
@@ -117,19 +108,20 @@ const MoodModalStep2 = memo(
       <TouchableOpacity
         activeOpacity={1}
         onPress={Keyboard.dismiss}
-        style={styles.modalStepContainer}
+        style={styles.modalStep2Container}
       >
-        <BlurView style={StyleSheet.absoluteFill} intensity={80} tint="light" />
-        <View style={styles.modalContent}>
-          <TouchableOpacity style={styles.modalCloseButton} onPress={onClose}>
-            <X size={28} color="#929292" />
-          </TouchableOpacity>
+        <View style={styles.modalContentCenter}>
 
-          <Text style={styles.modalTitle}>{t("wouldyouliketoshare")}</Text>
-          <Text style={styles.modalSubtitle}>{t("addnote_description")}</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text style={styles.modalTitleCenter}>{t("wouldyouliketoshare")}</Text>
+            <TouchableOpacity onPress={onClose}>
+              <X size={24} color="#929292" />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.modalSubtitleCenter}>{t("addnote_description")}</Text>
 
           <TextInput
-            style={styles.modalTextInput}
+            style={styles.modalTextInputCenter}
             placeholder={t("writeyourthoughts")}
             value={reason}
             onChangeText={setReason}
@@ -139,7 +131,7 @@ const MoodModalStep2 = memo(
           />
 
           <TouchableOpacity
-            style={styles.modalSubmitButton}
+            style={styles.modalSubmitButtonCenter}
             onPress={onSubmit}
             disabled={loading}
           >
@@ -151,9 +143,6 @@ const MoodModalStep2 = memo(
   }
 );
 
-// ============================================================================
-// Main Reusable Modal Component
-// ============================================================================
 export const MoodCheckInModal = ({
   visible,
   onClose,
@@ -212,7 +201,7 @@ export const MoodCheckInModal = ({
           await AsyncStorage.setItem("userDetails", JSON.stringify(parsed));
         }
 
-        onSuccess?.(); // Let parent refresh data / disable button
+        onSuccess?.();
         handleClose();
       } else {
         showToast.error(t("oops"), response.data?.responseMessage || "Something went wrong");
@@ -224,45 +213,66 @@ export const MoodCheckInModal = ({
       setLoading(false);
     }
   }, [selectedMood, reasonText, onSuccess, handleClose, t]);
-return (
-  <Portal>
-    <Modal
-      visible={visible}
-      onDismiss={handleClose}
-      contentContainerStyle={styles.modalContainer}
-      dismissable
-    >
-      {step === 1 ? (
-        <MoodModalStep1
-          onSelect={handleMoodSelect}
-          onClose={handleClose}
-          userName={userName}
-        />
-      ) : (
-        <MoodModalStep2
-          reason={reasonText}
-          setReason={setReasonText}
-          onSubmit={handleSubmit}
-          loading={loading}
-          onClose={handleClose}
+
+  return (
+    <Portal>
+      {visible && (
+        <Pressable
+          style={styles.backdrop}
+          onPress={handleClose}
         />
       )}
-    </Modal>
-  </Portal>
-);
+
+      <Modal
+        visible={visible}
+        onDismiss={handleClose}
+        contentContainerStyle={[
+          styles.modalContainer,
+          step === 2
+            ? styles.modalContainerCenter
+            : styles.modalContainerBottom,
+        ]}
+        dismissable
+      >
+        {step === 1 ? (
+          <MoodModalStep1
+            onSelect={handleMoodSelect}
+            onClose={handleClose}
+            userName={userName}
+          />
+        ) : (
+          <MoodModalStep2
+            reason={reasonText}
+            setReason={setReasonText}
+            onSubmit={handleSubmit}
+            loading={loading}
+            onClose={handleClose}
+          />
+        )}
+      </Modal>
+    </Portal>
+  );
+
+
 };
 
-// Keep your existing styles (or move them to a separate file)
 const styles = StyleSheet.create({
-  // ── Modal Container & Background ─────────────────────────────────────
   modalContainer: {
+    backgroundColor: "transparent",
+  },
+
+  modalContainerBottom: {
     backgroundColor: "white",
-    width: "100%",
-    position: "absolute",
-    bottom: Platform.OS === "ios" ? -40 : -20,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    
+    marginHorizontal: 18,
+    overflow: 'hidden',
+    borderRadius: 20,
+  },
+
+  modalContainerCenter: {
+    backgroundColor: "transparent",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
   },
 
   modalStepContainer: {
@@ -271,37 +281,62 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 32,
   },
 
+  modalStep2Container: {
+    backgroundColor: "white",
+    borderRadius: 16,
+  },
+
   modalContent: {
-    backgroundColor: "#FFFFFFCC", // semi-transparent white
+    backgroundColor: "#FFFFFFCC",
     paddingHorizontal: 20,
     paddingVertical: 20,
   },
 
-  // ── Header / Close / Greeting ────────────────────────────────────────
+  modalContentCenter: {
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 20,
+    paddingVertical: 25,
+    borderRadius: 16,
+    width: "100%",
+  },
+
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
   modalCloseButton: {
     position: "absolute",
     right: 20,
-    top: 35,
+    top: 30,
     zIndex: 10,
     padding: 4,
   },
 
   modalGreetingContainer: {
-    marginVertical: 15,
+    marginVertical: 10,
   },
 
   modalUserName: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: "600",
     color: "#262626",
     fontFamily: "Poppins-SemiBold",
   },
 
   modalTitle: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "600",
     color: "#262626",
     fontFamily: "Poppins-Regular",
+  },
+
+  modalTitleCenter: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#262626",
+    fontFamily: "Poppins-SemiBold",
+    width: '90%',
+    marginBottom: 8,
   },
 
   modalSubtitle: {
@@ -313,7 +348,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  // ── Mood Selection Grid ───────────────────────────────────────────────
+  modalSubtitleCenter: {
+    fontSize: 12,
+    color: "gray",
+    fontFamily: "Poppins-Regular",
+    marginBottom: 10,
+  },
+
   moodSelectionGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -340,7 +381,6 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
 
-  // ── Note Input & Submit ───────────────────────────────────────────────
   modalTextInput: {
     width: "100%",
     borderWidth: 1,
@@ -354,7 +394,28 @@ const styles = StyleSheet.create({
     color: "#000000",
   },
 
+  modalTextInputCenter: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 10,
+    padding: 10,
+    height: 80,
+    textAlignVertical: "top",
+    marginBottom: 16,
+    backgroundColor: "#FFFFFF",
+    color: "#000000",
+    fontSize: 14,
+    fontFamily: 'Poppins-Regular'
+  },
+
   modalSubmitButton: {
+    backgroundColor: "#02130B",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+
+  modalSubmitButtonCenter: {
     backgroundColor: "#02130B",
     padding: 15,
     borderRadius: 10,

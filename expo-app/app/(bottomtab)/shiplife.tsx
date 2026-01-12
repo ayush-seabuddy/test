@@ -1,5 +1,6 @@
 import { getalladminbuddyupcategories, GETALLBUDDYUPEVENTS, getleaderboard, viewProfile } from '@/src/apis/apiService'
 import CommonLoader from '@/src/components/CommonLoader'
+import EmptyComponent from '@/src/components/EmptyComponent'
 import GlobalPopOver from '@/src/components/GlobalPopover'
 import { showToast } from '@/src/components/GlobalToast'
 import AdminBuddyUpCategory from '@/src/components/ShipLifeComponent/AdminBuddyUpCategory'
@@ -387,17 +388,11 @@ const ShipLifeScreen = () => {
           return (
             <View style={{
               width: '100%',
-              height: height * 0.2,
+              height: height * 0.4,
               justifyContent: "center",
               alignItems: "center",
             }}>
-              <Text style={{
-                fontSize: 20,
-                color: "gray",
-                fontFamily: "Poppins-Regular",
-              }}>
-                {t('nobuddyupfound')}
-              </Text>
+            <EmptyComponent text={t('nobuddyupfound')}/>
             </View>
           );
         }

@@ -550,19 +550,29 @@ const CreateYourBuddyUpEvent = () => {
 
         try {
             const userData = await getUserDetails()
-            const apiResponse = await listallusersfortag({ shipId: userData.shipId })
+
+            const apiResponse = await listallusersfortag({
+                shipId: userData.shipId,
+            })
 
             if (apiResponse.success && apiResponse.status === 200) {
                 const usersList = apiResponse.data?.usersList || []
-                setAvailableUsers(usersList)
+                const filteredUsers = usersList.filter(
+                    (user: any) => user.id !== userData.id
+                )
 
-                if (usersList.length === 0) {
+                setAvailableUsers(filteredUsers)
+
+                if (filteredUsers.length === 0) {
                     showToast.error(t('oops'), t('nousersboarded'))
                 } else {
                     participantsSheetRef.current?.expand()
                 }
             } else {
-                showToast.error(t('oops'), apiResponse.message || 'Failed to fetch users')
+                showToast.error(
+                    t('oops'),
+                    apiResponse.message || 'Failed to fetch users'
+                )
             }
         } catch (error: any) {
             console.log('Error fetching users:', error)
@@ -571,6 +581,7 @@ const CreateYourBuddyUpEvent = () => {
             setIsFetchingUsers(false)
         }
     }, [t, eventType, isFetchingUsers])
+
 
     const toggleTagUser = useCallback((user: AllParticipants) => {
         setSelectedParticipants(prev =>
@@ -737,7 +748,7 @@ const CreateYourBuddyUpEvent = () => {
                 {isFetchingUsers && (
                     <View style={styles.globalLoaderOverlay}>
                         <View style={styles.globalLoaderContainer}>
-                            <CommonLoader fullScreen/>
+                            <CommonLoader fullScreen />
                         </View>
                     </View>
                 )}
@@ -780,8 +791,8 @@ const CreateYourBuddyUpEvent = () => {
                             <View style={styles.dropdownContainer}>
                                 <MaterialIcons name="category" size={20} color={Colors.lightGreen} />
                                 <View style={styles.loadingContainerInline}>
-                                    <CommonLoader/>
-                                    <Text style={styles.loadingTextInline}>{t('loadingevents')}</Text>
+                                    <CommonLoader />
+                                    <Text style={styles.loadingTextInline}>{t('loading')}</Text>
                                 </View>
                             </View>
                         ) : (

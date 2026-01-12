@@ -152,9 +152,18 @@ const PostHeader = ({
     <View style={styles.userInfo}>
       <TouchableOpacity onPress={onProfilePress}>
         <Text style={styles.username}>
-          {userName ? userName.charAt(0).toUpperCase() + userName.slice(1) : ''}
+          {userName
+            ? (() => {
+              const formatted =
+                userName.charAt(0).toUpperCase() + userName.slice(1);
+              return formatted.length > 20
+                ? formatted.slice(0, 20) + "…"
+                : formatted;
+            })()
+            : ""}
         </Text>
       </TouchableOpacity>
+
       <Text style={styles.timestamp}>{designation}</Text>
 
       {taggedUsers?.length > 0 && (

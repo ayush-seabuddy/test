@@ -18,9 +18,10 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import CommonLoader from '@/src/components/CommonLoader';
+import { updateUserField } from '@/src/redux/userDetailsSlice';
 
 const { height, width } = Dimensions.get('screen');
 
@@ -48,6 +49,7 @@ const SocialMediaLinks = () => {
   const [savedLinks, setSavedLinks] = useState<SocialLink[]>(
     userDetails.SocialMediaLinks || []
   );
+  const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [editingPlatform, setEditingPlatform] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
@@ -73,6 +75,16 @@ const SocialMediaLinks = () => {
 
       if (response.status === 200) {
         const fetchedLinks = response.data.SocialMediaLinks || [];
+        const fetchProfileDetails = async () => {
+          let result = await viewProfile();
+          if (result?.data) {
+            const object = result.data
+            for (const property in object) {
+              dispatch(updateUserField({ key: property, value: object[property] }))
+            }
+          }
+        }
+        await fetchProfileDetails();
         setSavedLinks(fetchedLinks);
 
         const mappedLinks = fetchedLinks.reduce((acc: any, { platform, link }: SocialLink) => {
@@ -240,7 +252,7 @@ const SocialMediaLinks = () => {
           {renderPlatformIcon('facebook')}
           <TextInput
             style={styles.textInput}
-            placeholder={t('twitter_url')}
+            placeholder={t('facebook_url')}
             placeholderTextColor="#B7B7B7"
             value={links.facebook}
             onChangeText={(text) => setLinks((prev) => ({ ...prev, facebook: text }))}
