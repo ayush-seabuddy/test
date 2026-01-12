@@ -1,7 +1,6 @@
 import { globalSearch } from '@/src/apis/apiService';
 import BuddyUpEventList from '@/src/components/BuddyUpEventList';
 import ContentListing from '@/src/components/ContentListing';
-import { showToast } from '@/src/components/GlobalToast';
 import PostScreen from '@/src/components/PostScreen';
 import { UserDetails } from '@/src/redux/userDetailsSlice';
 import Colors from '@/src/utils/Colors';
@@ -88,10 +87,20 @@ const GlobalSearch = () => {
     }
   }
 
-  const handlePostReported = useCallback(() => {
-    showToast.success(t('success'), t('reportsubmitted'));
-    router.back();
-  }, [t]);
+  const handlePostReported = useCallback((reportedId: string | number) => {
+  
+  setResults((prev: any) => ({
+    ...prev,
+    posts: {
+      ...prev.posts,
+      hangoutsList: prev.posts.hangoutsList.filter(
+        (p: PostInterface) => p.id !== reportedId
+      ),
+    },
+  }));
+
+  }, []);
+
   useEffect(() => {
     if (debounceTimeout.current) {
       clearTimeout(debounceTimeout.current);

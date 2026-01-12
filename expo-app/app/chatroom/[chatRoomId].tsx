@@ -18,8 +18,7 @@ import { Camera, Check, Edit, Paperclip, RefreshCw, Reply, SendHorizonal, Trash2
 import moment from 'moment-timezone';
 import { useCallback, useRef, useState } from 'react';
 import type { TextInput as RNTextInput } from 'react-native';
-import { TextInput } from 'react-native';
-import { Dimensions, Linking, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Linking, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import { useDispatch, useSelector } from 'react-redux';
@@ -419,7 +418,7 @@ const ChatRoomScreen = () => {
       let timeoutId = setTimeout(() => {
         setLoading(false);
         setLoadingMore(false);
-      }, 5000);
+      }, 10000);
       if (!senderId) {
         return
 

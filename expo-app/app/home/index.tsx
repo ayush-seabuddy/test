@@ -28,6 +28,10 @@ const Home = () => {
 
   const [exitModalVisible, setExitModalVisible] = useState(false);
   const [companyLogo, setCompanyLogo] = useState("");
+  const [companyLogoSize ,setCompanyLogoSize] = useState({
+    width: 60,
+    height: 60,
+  });
 
   const [pdfState, setPdfState] = useState({
     visible: false,
@@ -44,6 +48,7 @@ const Home = () => {
       if (userDetails?.companyLogo) {
         setCompanyLogo(userDetails.companyLogo);
       }
+    
     } catch (error) {
       console.error("Error fetching logo:", error);
     }
@@ -58,6 +63,16 @@ const Home = () => {
       const result = await viewProfile();
       if (!result?.data) return;
 
+      if (result?.data?.companyLogo) {
+        setCompanyLogo(result?.data.companyLogo);
+      }
+    
+      if(result?.data?.companyLogoWidth && result?.data?.companyLogoHeight){
+        setCompanyLogoSize({
+          width: result?.data.companyLogoWidth,
+          height: result?.data.companyLogoHeight
+        });
+      }
       Object.entries(result.data).forEach(([key, value]) => {
         dispatch(updateUserField({ key, value }));
       });
@@ -95,7 +110,7 @@ const Home = () => {
 
   return (
     <View style={styles.container}>
-      <HeaderBanner companyLogo={companyLogo} isProMax={isProMax} />
+      <HeaderBanner companyLogo={companyLogo} isProMax={isProMax} companyLogoSize={companyLogoSize} />
 
       <View style={styles.contentContainer}>
         <View style={styles.backgroundOverlay}>
