@@ -2,6 +2,7 @@ import {
     addeditdeletebuddyupevent,
     BuddyUpStatus,
     viewbuddyupdetails,
+    viewProfile,
 } from '@/src/apis/apiService';
 import CommonLoader from '@/src/components/CommonLoader';
 import EmptyComponent from '@/src/components/EmptyComponent';
@@ -9,6 +10,7 @@ import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import MediaPreviewModal from '@/src/components/Modals/MediaPreviewModal';
 import { RootState } from '@/src/redux/store';
+import { updateUserField } from '@/src/redux/userDetailsSlice';
 import { formatDate } from '@/src/utils/helperFunctions';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
 import { Image } from 'expo-image';
@@ -24,7 +26,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 interface EnrichedUser {
     id: string;
@@ -75,6 +77,21 @@ const BuddyUpEventDescription = () => {
     const { eventId } = useLocalSearchParams<{ eventId: string }>();
     const userDetails = useSelector((state: RootState) => state.userDetails);
     const { t } = useTranslation();
+    const dispatch = useDispatch();
+
+        useEffect(() => {
+            const fetchProfileDetails = async () => {
+                let result = await viewProfile();
+                if (result?.data) {
+                    const object = result.data
+                    for (const property in object) {
+                        dispatch(updateUserField({ key: property, value: object[property] }))
+                    }
+    
+                }
+            }
+            fetchProfileDetails();
+        }, []);
 
     const [loading, setLoading] = useState(true);
     const [buddyUpDetails, setBuddyUpDetails] = useState<GroupActivityDetail | null>(null);
@@ -207,6 +224,8 @@ const BuddyUpEventDescription = () => {
         try {
             setLoading(true);
             const updatedJoined = [...buddyUpDetails.joinedPeople, userDetails.id];
+            console.log("sdflksdjflksdfklfklsfdlksd", updatedJoined );
+            
 
             const response = await addeditdeletebuddyupevent({
                 groupActivities: [{ eventId: buddyUpDetails.id, joinedPeople: updatedJoined }],
