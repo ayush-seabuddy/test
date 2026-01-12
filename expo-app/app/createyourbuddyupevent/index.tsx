@@ -37,7 +37,6 @@ import moment from 'moment'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-    ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -80,7 +79,6 @@ type MediaItem = {
 const CreateYourBuddyUpEvent = () => {
     const { t } = useTranslation()
     const params = useLocalSearchParams()
-
     const [eventDescription, setEventDescription] = useState('')
     const [eventLocation, setEventLocation] = useState<string | null>(null)
     const [eventType, setEventType] = useState<string | null>(null)
@@ -104,6 +102,7 @@ const CreateYourBuddyUpEvent = () => {
     const [customCategoryModalVisible, setCustomCategoryModalVisible] = useState(false)
     const [dateSelected, setDateSelected] = useState(false)
     const [customCategories, setCustomCategories] = useState<AllEvents[]>([])
+    const [preInvitedUserIds, setPreInvitedUserIds] = useState<string[]>([]);
 
     // Edit mode states
     const [isEditMode, setIsEditMode] = useState(false)
@@ -206,6 +205,17 @@ const CreateYourBuddyUpEvent = () => {
                         const tags = JSON.parse(params.hashtags as string);
                         if (Array.isArray(tags)) setHashtags(tags);
                     } catch (e) { }
+                }
+
+                if (params.invitedPeoples) {
+                    try {
+                        const invitedIds = JSON.parse(params.invitedPeoples as string);
+                        if (Array.isArray(invitedIds)) {
+                            setPreInvitedUserIds(invitedIds);
+                        }
+                    } catch (e) {
+                        console.log("Could not parse invitedPeoples", e);
+                    }
                 }
 
                 setDateSelected(true);
@@ -435,7 +445,6 @@ const CreateYourBuddyUpEvent = () => {
             return
         }
 
-        // setCustomCategories(prev => [...prev, preEvent]);
 
         // Add to all events list
         setAllEvents(prev => [...prev.filter(item => item.id !== preEvent.id && item.id !== 'create_your_own'), preEvent, CREATE_YOUR_OWN_OPTION]);
@@ -550,19 +559,38 @@ const CreateYourBuddyUpEvent = () => {
 
         try {
             const userData = await getUserDetails()
-            const apiResponse = await listallusersfortag({ shipId: userData.shipId })
+
+            const apiResponse = await listallusersfortag({
+                shipId: userData.shipId,
+            })
 
             if (apiResponse.success && apiResponse.status === 200) {
                 const usersList = apiResponse.data?.usersList || []
-                setAvailableUsers(usersList)
+                const filteredUsers = usersList.filter(
+                    (user: any) => user.id !== userData.id
+                )
 
-                if (usersList.length === 0) {
+                setAvailableUsers(filteredUsers)
+               if (isEditMode && preInvitedUserIds.length > 0 && selectedParticipants.length === 0) {
+                const preSelected = filteredUsers.filter((user: any) =>
+                    preInvitedUserIds.includes(user.id)
+                );
+                
+                if (preSelected.length > 0) {
+                    setSelectedParticipants(preSelected);
+                    console.log(`Pre-selected ${preSelected.length} invited users`);
+                }
+            }
+                if (filteredUsers.length === 0) {
                     showToast.error(t('oops'), t('nousersboarded'))
                 } else {
                     participantsSheetRef.current?.expand()
                 }
             } else {
-                showToast.error(t('oops'), apiResponse.message || 'Failed to fetch users')
+                showToast.error(
+                    t('oops'),
+                    apiResponse.message || 'Failed to fetch users'
+                )
             }
         } catch (error: any) {
             console.log('Error fetching users:', error)
@@ -570,7 +598,50 @@ const CreateYourBuddyUpEvent = () => {
         } finally {
             setIsFetchingUsers(false)
         }
-    }, [t, eventType, isFetchingUsers])
+    }, [t, eventType, isFetchingUsers, preInvitedUserIds])
+    
+
+
+    const addTagUser = useCallback( async () => {
+        try {
+            const userData = await getUserDetails()
+
+            const apiResponse = await listallusersfortag({
+                shipId: userData.shipId,
+            })
+
+           
+            if (apiResponse.success && apiResponse.status === 200) {
+                const usersList = apiResponse.data?.usersList || []
+                const filteredUsers = usersList.filter(
+                    (user: any) => user.id !== userData.id
+                )
+
+               
+               if (isEditMode && preInvitedUserIds.length > 0 && selectedParticipants.length === 0) {
+                
+                const preSelected = filteredUsers.filter((user: any) =>
+                    preInvitedUserIds.includes(user.id)
+                );
+                
+                if (preSelected.length > 0) {
+                    setSelectedParticipants(preSelected);
+                }
+            }
+        }
+        } catch (error: any) {
+            console.log('Error fetching users:', error)
+            showToast.error(t('error'), 'Failed to load users')
+        } finally {
+        }
+    }, [preInvitedUserIds])
+
+    useEffect(() => {
+        console.log('preInvitedUserIds changed:', preInvitedUserIds);
+        
+        addTagUser()
+    }, [preInvitedUserIds])
+
 
     const toggleTagUser = useCallback((user: AllParticipants) => {
         setSelectedParticipants(prev =>
@@ -623,9 +694,6 @@ const CreateYourBuddyUpEvent = () => {
 
         try {
             if (selectedMedia && selectedMedia.uri) {
-                //   const apiResponse = await uploadfile({ file: photo , fileName: fileName , fileSize: fileSize , type: type });
-                //       if (apiResponse.success && apiResponse.status == 200) {
-                //         setContentImage(apiResponse.data);
                 const uploadResponse = await uploadfile({
                     file: selectedMedia.uri,
                     fileName: selectedMedia.fileName,
@@ -649,7 +717,7 @@ const CreateYourBuddyUpEvent = () => {
                 .minute(selectedStartTime!.getMinutes())
                 .second(0)
                 .millisecond(0)
-                .format('YYYY-MM-DD HH:mm:ss');  // Changed here
+                .format('YYYY-MM-DD HH:mm:ss');
 
             let endDateTime = startDateTime;
             if (selectedEndDate && selectedEndTime) {
@@ -658,7 +726,7 @@ const CreateYourBuddyUpEvent = () => {
                     .minute(selectedEndTime.getMinutes())
                     .second(0)
                     .millisecond(0)
-                    .format('YYYY-MM-DD HH:mm:ss');  // Changed here
+                    .format('YYYY-MM-DD HH:mm:ss');
             }
 
             const imageUrls: string[] = []
@@ -675,7 +743,7 @@ const CreateYourBuddyUpEvent = () => {
                     endDateTime,
                     location: eventLocation,
                     imageUrls,
-                    joinedPeople: eventType === 'Invite Buddy' ? joinedPeople : [],
+                    invitedPeoples: eventType === 'Invite Buddy' ? joinedPeople : [],
                     categoryId: selectedEventId,
                     hashtags: hashtags.length > 0 ? hashtags : undefined,
                     isPublic: eventType === 'Public (All Crew)',
@@ -704,7 +772,6 @@ const CreateYourBuddyUpEvent = () => {
     }
 
     const renderDropdownItem = (item: AllEvents) => {
-        // Special styling for "Create Your Own" option
         if (item.id === 'create_your_own') {
             return (
                 <View style={[styles.dropdownItem, styles.createYourOwnItem]}>
@@ -737,7 +804,7 @@ const CreateYourBuddyUpEvent = () => {
                 {isFetchingUsers && (
                     <View style={styles.globalLoaderOverlay}>
                         <View style={styles.globalLoaderContainer}>
-                            <CommonLoader fullScreen/>
+                            <CommonLoader fullScreen />
                         </View>
                     </View>
                 )}
@@ -780,8 +847,8 @@ const CreateYourBuddyUpEvent = () => {
                             <View style={styles.dropdownContainer}>
                                 <MaterialIcons name="category" size={20} color={Colors.lightGreen} />
                                 <View style={styles.loadingContainerInline}>
-                                    <CommonLoader/>
-                                    <Text style={styles.loadingTextInline}>{t('loadingevents')}</Text>
+                                    <CommonLoader />
+                                    <Text style={styles.loadingTextInline}>{t('loading')}</Text>
                                 </View>
                             </View>
                         ) : (

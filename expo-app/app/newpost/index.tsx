@@ -23,7 +23,6 @@ import { ArrowRightCircle, Hash, Play, Tag, X } from 'lucide-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
   FlatList,
   Keyboard,
   StyleSheet,
@@ -113,27 +112,36 @@ const NewPostScreen = () => {
     setLoadingUsers(true);
     try {
       const userData = await getUserDetails();
-      const apiResponse = await listallusersfortag({ shipId: userData.shipId });
+
+      const apiResponse = await listallusersfortag({
+        shipId: userData.shipId,
+      });
 
       if (apiResponse.success && apiResponse.status === 200) {
         const usersList = apiResponse.data?.usersList || [];
-        setAllUsers(usersList);
 
-        if (usersList.length === 0) {
-          showToast.error(t('oops'), t('nousersboarded'));
+        const filteredUsers = usersList.filter(
+          (user: any) => user.id !== userData.id
+        );
+
+        setAllUsers(filteredUsers);
+
+        if (filteredUsers.length === 0) {
+          showToast.error(t("oops"), t("nousersboarded"));
         } else {
           tagSheetRef.current?.present();
         }
       } else {
-        showToast.error(t('oops'), apiResponse.message);
+        showToast.error(t("oops"), apiResponse.message);
       }
     } catch (error: any) {
-      console.log('Error fetching users:', error);
-      showToast.error(t('error'), 'Failed to load users');
+      console.log("Error fetching users:", error);
+      showToast.error(t("error"), "Failed to load users");
     } finally {
       setLoadingUsers(false);
     }
   }, [t]);
+
 
   const pickMedia = async (type: 'photo' | 'video' | 'gallery') => {
     try {
@@ -489,7 +497,7 @@ const NewPostScreen = () => {
 
         {(isLoading || loadingUsers || loading) && (
           <View style={styles.loadingOverlay}>
-            <CommonLoader fullScreen/>
+            <CommonLoader fullScreen />
           </View>
         )}
 

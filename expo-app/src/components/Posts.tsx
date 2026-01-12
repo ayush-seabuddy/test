@@ -1,20 +1,19 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { Image } from 'expo-image';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
+  FlatList,
   RefreshControl,
-  View,
   StyleSheet,
   Text,
-  FlatList,
+  View
 } from 'react-native';
 import { getallposts } from '../apis/apiService';
-import { showToast } from './GlobalToast';
-import { useTranslation } from 'react-i18next';
 import Colors from '../utils/Colors';
-import PostScreen from './PostScreen';
-import { Image } from 'expo-image';
 import { ImagesAssets } from '../utils/ImageAssets';
 import CommonLoader from './CommonLoader';
+import { showToast } from './GlobalToast';
+import PostScreen from './PostScreen';
 
 export interface Post {
   id: string | number;
@@ -43,11 +42,15 @@ export interface Post {
   [key: string]: any;
 }
 
-const Posts: React.FC = () => {
+interface PostsProps {
+  ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
+}
+
+const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
   const { t } = useTranslation();
   const [posts, setPosts] = useState<Post[]>([]);
-  const [initialLoading, setInitialLoading] = useState(true); // For first load
-  const [loadingMore, setLoadingMore] = useState(false);     // For pagination
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -127,18 +130,26 @@ const Posts: React.FC = () => {
         ...item,
         imageUrls: item.imageUrls || item.images || [],
       };
-      return <PostScreen post={normalizedPost} index={index} onPostDeleted={handlePostDeleted} onPostReported={handlePostReported} />;
+      return (
+        <PostScreen
+          post={normalizedPost}
+          index={index}
+          onPostDeleted={handlePostDeleted}
+          onPostReported={handlePostReported}
+        />
+      );
     },
-    [handlePostDeleted]
+    [handlePostDeleted, handlePostReported]
   );
 
   const keyExtractor = useCallback((item: Post) => item.id.toString(), []);
 
   const ListFooter = () => {
-    if (!loadingMore) return null;
+    if (!loadingMore) return <View style={{ marginBottom: 120 }} />;
     return (
       <View style={styles.footerLoader}>
-        <CommonLoader/>
+        <CommonLoader />
+        <View style={{ marginBottom: 120 }} />
       </View>
     );
   };
@@ -153,17 +164,17 @@ const Posts: React.FC = () => {
     );
   };
 
-  // Full screen initial loader
   if (initialLoading && posts.length === 0) {
     return (
       <View style={styles.centerLoader}>
-       <CommonLoader/>
+        <CommonLoader fullScreen/>
       </View>
     );
   }
 
   return (
     <FlatList
+      ListHeaderComponent={ListHeaderComponent}
       data={posts}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
@@ -175,8 +186,8 @@ const Posts: React.FC = () => {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={['#8DAF02']}
-          tintColor={Colors.lightGreen}
+          colors={[Colors.darkGreen]}
+          tintColor={Colors.darkGreen}
         />
       }
       showsVerticalScrollIndicator={false}
@@ -184,7 +195,7 @@ const Posts: React.FC = () => {
       maxToRenderPerBatch={10}
       windowSize={21}
       initialNumToRender={10}
-      contentContainerStyle={posts.length === 0 ? styles.emptyContainer : { paddingBottom: 20 }}
+      contentContainerStyle={posts.length === 0 ? styles.emptyContainer : undefined}
     />
   );
 };
@@ -192,7 +203,6 @@ const Posts: React.FC = () => {
 const styles = StyleSheet.create({
   centerLoader: {
     flex: 1,
-    marginTop: 200,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#fff',
@@ -200,12 +210,6 @@ const styles = StyleSheet.create({
   footerLoader: {
     paddingVertical: 30,
     alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 14,
-    color: '#666',
-    fontFamily: 'Poppins-Regular',
   },
   emptyContainer: {
     flexGrow: 1,

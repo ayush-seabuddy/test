@@ -1,4 +1,3 @@
-// CustomHeader.js
 import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import { Image } from "expo-image";

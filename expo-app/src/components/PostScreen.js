@@ -152,9 +152,18 @@ const PostHeader = ({
     <View style={styles.userInfo}>
       <TouchableOpacity onPress={onProfilePress}>
         <Text style={styles.username}>
-          {userName ? userName.charAt(0).toUpperCase() + userName.slice(1) : ''}
+          {userName
+            ? (() => {
+              const formatted =
+                userName.charAt(0).toUpperCase() + userName.slice(1);
+              return formatted.length > 20
+                ? formatted.slice(0, 20) + "…"
+                : formatted;
+            })()
+            : ""}
         </Text>
       </TouchableOpacity>
+
       <Text style={styles.timestamp}>{designation}</Text>
 
       {taggedUsers?.length > 0 && (
@@ -204,7 +213,6 @@ const PostMedia = ({
   viewabilityConfigCallbackPairs,
   hashtagsDisplay,
 }) => {
-  console.log("post: ", post);
   const ratioValue = post?.ratioValue || 1;
 
   const renderItem = useCallback(
@@ -223,6 +231,9 @@ const PostMedia = ({
               style={{ width: '100%', height: '100%' }}
               source={{ uri: item.uri }}
               contentFit="cover"
+              cachePolicy="memory-disk"
+              recyclingKey={item.uri}
+              priority="normal"
               placeholder={ImagesAssets.PlaceholderImage}
               placeholderContentFit='cover'
               onLoadStart={() => setImageLoading((prev) => ({ ...prev, [item.uri]: true }))}

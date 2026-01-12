@@ -49,7 +49,7 @@ const WellnessOfficerList = () => {
       <Header />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.contentContainer}>
-          {loading && <CommonLoader fullScreen />}
+          {loading && <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><CommonLoader fullScreen /></View>}
 
           {data.length > 0 ? (
             <View style={styles.cardsContainer}>

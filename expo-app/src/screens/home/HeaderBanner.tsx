@@ -1,14 +1,22 @@
-import React from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
-import { useTranslation } from "react-i18next";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { Image, StyleSheet, Text, View } from "react-native";
 
 type HeaderBannerProps = {
   companyLogo?: string;
   isProMax?: boolean;
+  companyLogoSize?: {
+    width: number;
+    height: number;
+  };
 };
 
-const HeaderBanner: React.FC<HeaderBannerProps> = ({ companyLogo, isProMax = false }) => {
+const HeaderBanner: React.FC<HeaderBannerProps> = ({ companyLogo, isProMax = false , companyLogoSize={
+  width: 60,
+  height: 60,
+} }) => {
+  console.log("companyLogoSize: ", companyLogoSize);
   const { t } = useTranslation();
 
   return (
@@ -19,7 +27,7 @@ const HeaderBanner: React.FC<HeaderBannerProps> = ({ companyLogo, isProMax = fal
         <View style={styles.logoContainer}>
           {companyLogo ? (
             <Image
-              style={styles.companyLogo}
+              style={companyLogoSize}
               resizeMode="contain"
               source={{ uri: companyLogo }}
             />

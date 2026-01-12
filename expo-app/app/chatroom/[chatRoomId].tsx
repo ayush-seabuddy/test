@@ -18,8 +18,7 @@ import { Camera, Check, Edit, Paperclip, RefreshCw, Reply, SendHorizonal, Trash2
 import moment from 'moment-timezone';
 import { useCallback, useRef, useState } from 'react';
 import type { TextInput as RNTextInput } from 'react-native';
-import { TextInput } from 'react-native';
-import { Dimensions, Linking, Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Linking, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import { useDispatch, useSelector } from 'react-redux';
@@ -119,7 +118,6 @@ const ChatRoomScreen = () => {
     if (result?.data) {
       const object = result.data
       for (const property in object) {
-        console.log(`${property}: ${object[property]}`);
         dispatch(updateUserField({ key: property, value: object[property] }))
       }
 
@@ -420,7 +418,7 @@ const ChatRoomScreen = () => {
       let timeoutId = setTimeout(() => {
         setLoading(false);
         setLoadingMore(false);
-      }, 5000);
+      }, 10000);
       if (!senderId) {
         return
 
@@ -676,8 +674,9 @@ const ChatRoomScreen = () => {
           <Text style={{ color: Colors.lightGreen }}>No messages yet</Text>
           <TouchableOpacity
             onPress={retryFetch}
+            style={{display:"flex" , flexDirection:"row" , marginTop:5 , justifyContent:"center",alignItems:"center" , gap:5}}
             >
-          <RefreshCw size={30} color={Colors.lightGreen} />
+           <Text style={{ color: Colors.lightGreen }}>Refresh</Text> <RefreshCw size={25} color={Colors.lightGreen} />
           </TouchableOpacity>
           </>
         )}

@@ -931,5 +931,8 @@
   "yourbookedappointment": "您预约的时间",
   "photouploadedsuccessfully": "照片上传成功！",
   "reponse": "回复",
-  "nobookedappointmentfound": "未找到已预约的日期！"
+  "noFileChosen": "添加照片",
+  "surveysubmitted": "调查提交成功！",
+  "refresh":"刷新",
+  "noaudiourl": "没有可用的音频 URL"
 }

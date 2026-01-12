@@ -4,11 +4,11 @@ import {
     viewbuddyupdetails,
 } from '@/src/apis/apiService';
 import CommonLoader from '@/src/components/CommonLoader';
+import EmptyComponent from '@/src/components/EmptyComponent';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import MediaPreviewModal from '@/src/components/Modals/MediaPreviewModal';
 import { RootState } from '@/src/redux/store';
-import Colors from '@/src/utils/Colors';
 import { formatDate } from '@/src/utils/helperFunctions';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
 import { Image } from 'expo-image';
@@ -246,7 +246,7 @@ const BuddyUpEventDescription = () => {
     if (loading && !buddyUpDetails) {
         return (
             <View style={styles.loadingContainer}>
-                <CommonLoader fullScreen/>
+                <CommonLoader fullScreen />
             </View>
         );
     }
@@ -258,9 +258,7 @@ const BuddyUpEventDescription = () => {
                     title={t('activityDetails')}
                 />
                 <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: '60%' }}>
-                    <Image source={ImagesAssets.nodatafound} style={{ height: 120, width: 120 }} />
-                    <Text style={styles.notFoundText}>{t('nodataavailable')}</Text>
-
+                    <EmptyComponent text={t('nodataavailable')} />
                 </View>
 
             </View>
@@ -295,11 +293,11 @@ const BuddyUpEventDescription = () => {
                     <Text style={styles.title}>{buddyUpDetails.eventName}</Text>
                     <View style={styles.rowBetween}>
                         <Text style={styles.organizerText}>
-                            {t('organizedBy')} {buddyUpDetails.activityUser.fullName}
+                            {t('organizedBy')} {isCreator ? t('you') : buddyUpDetails.activityUser.fullName}
                         </Text>
                         <View style={styles.pointsView}>
                             <Text style={styles.pointsText}>
-                                {buddyUpDetails.groupActivityCategory.points} Points
+                                {buddyUpDetails.groupActivityCategory.points} {t('points')}
                             </Text>
                         </View>
                     </View>
@@ -413,7 +411,7 @@ const BuddyUpEventDescription = () => {
                         disabled={isButtonDisabled() || loading}
                     >
                         {loading ? (
-                            <CommonLoader color='#fff'/>
+                            <CommonLoader color='#fff' />
                         ) : (
                             <Text style={styles.submitButtonText}>{getButtonText()}</Text>
                         )}

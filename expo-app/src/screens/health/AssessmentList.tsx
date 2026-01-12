@@ -172,6 +172,7 @@ const AssessmentList = ({ isProfileScreen = false }: { isProfileScreen?: boolean
                 data={isPersonalityTestCompleted}
                 ApiData={apiData}
                 testArray={testArray}
+                screenName='HealthScreen'
               />
             </View>
           )}

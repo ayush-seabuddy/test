@@ -4,7 +4,6 @@ import CommonLoader from '@/src/components/CommonLoader'
 import GlobalButton from '@/src/components/GlobalButton'
 import GlobalHeader from '@/src/components/GlobalHeader'
 import { showToast } from '@/src/components/GlobalToast'
-import Colors from '@/src/utils/Colors'
 import { getUserDetails } from '@/src/utils/helperFunctions'
 import { ImagesAssets } from '@/src/utils/ImageAssets'
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet'
@@ -14,10 +13,10 @@ import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { router } from 'expo-router'
 import { useLocalSearchParams } from 'expo-router/build/hooks'
-import { ChevronLeft, Play, X } from 'lucide-react-native'
+import { Play, X } from 'lucide-react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { FlatList, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 
 const getMimeType = (uri: string, type: 'image' | 'video'): string => {
     if (type === 'video') return 'video/mp4';
@@ -322,6 +321,9 @@ const BuddyUpRequestApprovalScreen = () => {
         [removeMedia]
     );
 
+    const buttonName = (userDetails.designation === "Captain" ||
+                            userDetails.designation === "Chief engineer") ? t("sharetofeed") : t("requestapprovalform")
+
     return (
         <View style={styles.main}>
             <GlobalHeader
@@ -380,7 +382,7 @@ const BuddyUpRequestApprovalScreen = () => {
                 </View>
 
                 <GlobalButton
-                    title={t('shareforapproval')}
+                    title={buttonName}
                     onPress={handleShare}
                     disabled={!isButtonEnabled || loading}
                 />

@@ -11,6 +11,7 @@ import { ScrollView } from 'react-native-gesture-handler';
 import { Image } from 'expo-image';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
 import CommonLoader from '@/src/components/CommonLoader';
+import EmptyComponent from '@/src/components/EmptyComponent';
 
 const SinglePostScreen = () => {
     const { t } = useTranslation();
@@ -92,9 +93,7 @@ const SinglePostScreen = () => {
                         onPostReported={handlePostReported}
                         /> :
                             <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: '60%' }}>
-                                <Image source={ImagesAssets.nodatafound} style={{ height: 120, width: 120 }} />
-                                <Text style={styles.notFoundText}>{t('nodataavailable')}</Text>
-
+                                <EmptyComponent text={t('nodataavailable')}/>
                             </View>
 
                         }

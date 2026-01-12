@@ -1,29 +1,26 @@
-import React, { useCallback, useEffect, useState } from "react";
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  Image,
-  Dimensions,
-  Platform,
-  ScrollView,
-} from "react-native";
-import { ImagesAssets } from "../assets/ImagesAssets";
-import FocusAwareStatusBar from "../statusbar/FocusAwareStatusBar";
-import Colors from "../colors/Colors";
-import DoctorProfileHeader from "../component/headers/HelpLineScreensHeader/DoctorProfileHeader";
-import WorkoutBuddiesCrds from "../component/Cards/WorkoutBuddiesCrds";
-import WorkoutBuddiesHeader from "../component/headers/WorkoutBuddiesHeader";
-import { useFocusEffect } from "@react-navigation/native";
-import { apiServerUrl } from "../Api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import Loader from "../component/Loader";
-import Toast from "react-native-toast-message";
-import { Modal } from "react-native-paper";
-import api from "../CustomAxios";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  Dimensions,
+  Image,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Modal } from "react-native-paper";
+import Toast from "react-native-toast-message";
+import { apiServerUrl } from "../Api";
+import Colors from "../colors/Colors";
+import WorkoutBuddiesCrds from "../component/Cards/WorkoutBuddiesCrds";
+import WorkoutBuddiesHeader from "../component/headers/WorkoutBuddiesHeader";
+import Loader from "../component/Loader";
+import api from "../CustomAxios";
+import FocusAwareStatusBar from "../statusbar/FocusAwareStatusBar";
 const { width, height } = Dimensions.get("window");
 
 const WorkoutBuddies = ({ navigation, route }) => {

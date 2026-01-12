@@ -9,67 +9,52 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
 
 const HomeTab = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [isTodayChecked, setIsTodayChecked] = useState(false);
   const userDetails = useSelector((state: RootState) => state.userDetails);
-  console.log("userDetails: ", userDetails);
- useFocusEffect(
-  useCallback(() => {
-    const checkMoodTracker = async () => {
-      const checkToday = await AsyncStorage.getItem("MoodTrackerOpen");
 
-      if (checkToday) {
-        const lastOpenDate = Number(checkToday);
-        const ONE_DAY = 24 * 60 * 60 * 1000;
+  useFocusEffect(
+    useCallback(() => {
+      const checkMoodTracker = async () => {
+        const checkToday = await AsyncStorage.getItem("MoodTrackerOpen");
 
-        if (Date.now() > lastOpenDate + ONE_DAY) {
+        if (checkToday) {
+          const lastOpenDate = Number(checkToday);
+          const ONE_DAY = 24 * 60 * 60 * 1000;
+
+          if (Date.now() > lastOpenDate + ONE_DAY) {
+            setModalVisible(true);
+            await AsyncStorage.setItem(
+              "MoodTrackerOpen",
+              String(Date.now())
+            );
+          }
+        } else {
           setModalVisible(true);
-          await AsyncStorage.setItem(
-            "MoodTrackerOpen",
-            String(Date.now())
-          );
+          await AsyncStorage.setItem("MoodTrackerOpen", String(Date.now()));
         }
-      }else{
-        setModalVisible(true);
-        await AsyncStorage.setItem("MoodTrackerOpen", String(Date.now()));
-      }
-      
-    };
+      };
 
-    checkMoodTracker();
+      checkMoodTracker();
 
-    // optional cleanup
-    return () => {};
-  }, [])
-);
-
+      return () => { };
+    }, [])
+  );
 
   return (
     <View style={styles.container}>
       <SocialHeader />
 
-      <FlatList
+      <Posts
         ListHeaderComponent={
           <Announcements onlyAnnouncement={true} page={1} limit={5} />
         }
-        data={[]}
-        renderItem={null}
-        ListEmptyComponent={null}
-        ListFooterComponent={
-          <>
-            <Posts />
-            <View style={{ marginBottom: 120 }} />
-          </>
-        }
-        showsVerticalScrollIndicator={false}
-        removeClippedSubviews
-        maxToRenderPerBatch={10}
-        windowSize={21}
       />
+
       <TouchableOpacity
         style={styles.fab}
         activeOpacity={0.8}
@@ -99,7 +84,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.white,
   },
-
   fab: {
     position: 'absolute',
     bottom: 90,

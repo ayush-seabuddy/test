@@ -23,6 +23,7 @@ import { RootState } from '@/src/redux/store';
 import { Edit, Trash2, Award, Building, Calendar } from 'lucide-react-native';
 import CustomLottie from '@/src/components/CustomLottie';
 import CommonLoader from '@/src/components/CommonLoader';
+import { updateUserField } from '@/src/redux/userDetailsSlice';
 
 const { height, width } = Dimensions.get('screen');
 
@@ -248,9 +249,18 @@ const CertificationsScreen = () => {
             const response = await updateprofile(body);
 
             if (response.status === 200) {
+                const fetchProfileDetails = async () => {
+                    let result = await viewProfile();
+                    if (result?.data) {
+                        const object = result.data
+                        for (const property in object) {
+                            dispatch(updateUserField({ key: property, value: object[property] }))
+                        }
+                    }
+                }
                 await fetchProfileDetails();
                 showToast.success(
-                    t('success'), 
+                    t('success'),
                     isUpdate ? t('certificateupdated') : t('certificateaddedsuccessfully')
                 );
             }
@@ -389,7 +399,7 @@ const CertificationsScreen = () => {
                     disabled={loading}
                 >
                     {loading ? (
-                        <CommonLoader color='#fff'/>
+                        <CommonLoader color='#fff' />
                     ) : (
                         <Text style={styles.updateButtonText}>
                             {isUpdate ? t('editCertificate') : t('addCertificate')}
@@ -465,7 +475,7 @@ const CertificationsScreen = () => {
                                 disabled={loading}
                             >
                                 {loading ? (
-                                    <CommonLoader color='#fff'/>
+                                    <CommonLoader color='#fff' />
                                 ) : (
                                     <Text style={styles.deleteText}>{t('yes')}</Text>
                                 )}

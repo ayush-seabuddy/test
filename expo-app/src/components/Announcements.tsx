@@ -73,31 +73,31 @@ const Announcements: React.FC<AnnouncementsProps> = ({
         }
     };
 
-    // const getallsurvey = async () => {
-    //     setloading(true);
-    //     try {
-    //         const apiResponse = await fetchcustomsurvey();
+    const getallsurvey = async () => {
+        setloading(true);
+        try {
+            const apiResponse = await fetchcustomsurvey();
 
-    //         setloading(false);
+            setloading(false);
 
-    //         if (apiResponse.success && apiResponse.status === 200) {
-    //             // Filter for CUSTOM_SURVEY type and get the first one
-    //             const customSurveyList = (apiResponse.data || []).filter(
-    //                 (item: Survey) => item.type === "CUSTOM_SURVEY"
-    //             );
-    //             setsurveyData(customSurveyList.length > 0 ? customSurveyList[0] : null);
-    //         } else {
-    //             showToast.error(t('oops'), apiResponse.message);
-    //         }
-    //     } catch (error) {
-    //         setloading(false);
-    //         showToast.error(t('oops'), t('somethingwentwrong'));
-    //     }
-    // };
+            if (apiResponse.success && apiResponse.status === 200) {
+                // Filter for CUSTOM_SURVEY type and get the first one
+                const customSurveyList = (apiResponse.data || []).filter(
+                    (item: Survey) => item.type === "CUSTOM_SURVEY"
+                );
+                setsurveyData(customSurveyList.length > 0 ? customSurveyList[0] : null);
+            } else {
+                showToast.error(t('oops'), apiResponse.message);
+            }
+        } catch (error) {
+            setloading(false);
+            showToast.error(t('oops'), t('somethingwentwrong'));
+        }
+    };
 
     useEffect(() => {
         getAllAnnouncements();
-        // getallsurvey();
+        getallsurvey();
     }, []);
 
     useEffect(() => {
@@ -212,10 +212,10 @@ const Announcements: React.FC<AnnouncementsProps> = ({
                     />
                 ))}
             </View>
-            
-            {/* {surveyData && (
+
+            {surveyData && (
                 <CustomSurveyCard surveyData={surveyData} />
-            )} */}
+            )}
         </View>
     );
 };

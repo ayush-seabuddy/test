@@ -1,3 +1,4 @@
+import Colors from "@/src/utils/Colors";
 import { router } from "expo-router";
 import { ChevronDown, ChevronLeft } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
@@ -9,7 +10,7 @@ import {
   View
 } from "react-native";
 
-const Header = ({  title, setContentType }: { title: string; setContentType: (contentType: string) => void;}) => {
+const Header = ({ title, setContentType }: { title: string; setContentType: (contentType: string) => void; }) => {
   const [selectedFilter, setSelectedFilter] = useState("All");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -43,9 +44,9 @@ const Header = ({  title, setContentType }: { title: string; setContentType: (co
   return (
     <View style={styles.container}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-        <TouchableOpacity 
-        onPress={() => router.back()}
-         style={styles.headerButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.headerButton}>
           <View style={styles.iconBackground}>
             <ChevronLeft size={24} color="black" />
           </View>
@@ -62,7 +63,7 @@ const Header = ({  title, setContentType }: { title: string; setContentType: (co
           onPress={() => setIsDropdownOpen(!isDropdownOpen)}
         >
           <Text style={styles.dropdownText}>{selectedFilter}</Text>
-          <ChevronDown size={20} color="black" />  
+          <ChevronDown size={20} color="black" />
         </TouchableOpacity>
 
         {isDropdownOpen && (
@@ -79,9 +80,9 @@ const Header = ({  title, setContentType }: { title: string; setContentType: (co
           </View>
         )}
       </View>
-      
+
     </View>
- 
+
   );
 };
 
@@ -96,10 +97,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
   },
   health: {
-    fontSize: 18,
-    lineHeight: 24,
-    fontFamily: "Poppins-Regular",
-    color: "#262626",
+    fontSize: 15,
+    fontFamily: "Poppins-SemiBold",
+    color: Colors.textPrimary || "#000",
   },
   headerButtonsContainer: {
     flexDirection: "row",

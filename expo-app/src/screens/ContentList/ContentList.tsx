@@ -7,7 +7,6 @@ import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
   FlatList,
-  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -15,6 +14,9 @@ import {
 } from 'react-native';
 import Header from './Header';
 import CommonLoader from '@/src/components/CommonLoader';
+import { Image } from 'expo-image';
+import { ImagesAssets } from '@/src/utils/ImageAssets';
+import EmptyComponent from '@/src/components/EmptyComponent';
 
 const { width } = Dimensions.get('window');
 
@@ -64,7 +66,8 @@ const ContentList = () => {
         <View style={config.cardContentStyle}>
           <Image
             style={config.imageStyle}
-            resizeMode="cover"
+            contentFit="cover"
+            placeholder={ImagesAssets.PlaceholderImage}
             source={{ uri: item?.thumbnail }}
           />
 
@@ -175,7 +178,7 @@ const ContentList = () => {
             {initialLoading ? (
               <CommonLoader fullScreen />
             ) : (
-              <Text>{t('nodataavailable')}</Text>
+              <EmptyComponent text={t('nodataavailable')} />
             )}
           </View>
         }
@@ -220,7 +223,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 100,
   },
   titleText: {
     fontSize: 12,

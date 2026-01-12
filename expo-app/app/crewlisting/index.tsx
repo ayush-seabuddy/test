@@ -216,6 +216,7 @@ const CrewListingScreen = () => {
             const crewMembers = updatedList.map(user => ({
                 userId: user.id
             }));
+            crewMembers.push({userId:userDetails.id})
             const payload = {
                 shipId: userDetails.shipId,
                 crewMembers: crewMembers,

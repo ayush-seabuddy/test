@@ -310,6 +310,16 @@ const EditProfile = () => {
 
       if (response.status === 200 || response.success) {
         showToast.success(t('success'), t('profileupdatedsuccessfully'));
+        const fetchProfileDetails = async () => {
+          let result = await viewProfile();
+          if (result?.data) {
+            const object = result.data
+            for (const property in object) {
+              dispatch(updateUserField({ key: property, value: object[property] }))
+            }
+          }
+        }
+        await fetchProfileDetails();
         router.back();
       } else {
         showToast.error(t('error'), response?.message);
@@ -599,7 +609,7 @@ const EditProfile = () => {
 
       {loadingdetails && (
         <View style={styles.loadingOverlay} pointerEvents="none">
-          <CommonLoader fullScreen/>
+          <CommonLoader fullScreen />
         </View>
       )}
     </View>
