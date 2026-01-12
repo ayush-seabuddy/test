@@ -434,7 +434,6 @@ const CreateYourBuddyUpEvent = () => {
             return
         }
 
-        // setCustomCategories(prev => [...prev, preEvent]);
 
         // Add to all events list
         setAllEvents(prev => [...prev.filter(item => item.id !== preEvent.id && item.id !== 'create_your_own'), preEvent, CREATE_YOUR_OWN_OPTION]);
@@ -633,9 +632,6 @@ const CreateYourBuddyUpEvent = () => {
 
         try {
             if (selectedMedia && selectedMedia.uri) {
-                //   const apiResponse = await uploadfile({ file: photo , fileName: fileName , fileSize: fileSize , type: type });
-                //       if (apiResponse.success && apiResponse.status == 200) {
-                //         setContentImage(apiResponse.data);
                 const uploadResponse = await uploadfile({
                     file: selectedMedia.uri,
                     fileName: selectedMedia.fileName,
@@ -659,7 +655,7 @@ const CreateYourBuddyUpEvent = () => {
                 .minute(selectedStartTime!.getMinutes())
                 .second(0)
                 .millisecond(0)
-                .format('YYYY-MM-DD HH:mm:ss');  // Changed here
+                .format('YYYY-MM-DD HH:mm:ss');
 
             let endDateTime = startDateTime;
             if (selectedEndDate && selectedEndTime) {
@@ -668,7 +664,7 @@ const CreateYourBuddyUpEvent = () => {
                     .minute(selectedEndTime.getMinutes())
                     .second(0)
                     .millisecond(0)
-                    .format('YYYY-MM-DD HH:mm:ss');  // Changed here
+                    .format('YYYY-MM-DD HH:mm:ss');
             }
 
             const imageUrls: string[] = []
@@ -714,7 +710,6 @@ const CreateYourBuddyUpEvent = () => {
     }
 
     const renderDropdownItem = (item: AllEvents) => {
-        // Special styling for "Create Your Own" option
         if (item.id === 'create_your_own') {
             return (
                 <View style={[styles.dropdownItem, styles.createYourOwnItem]}>

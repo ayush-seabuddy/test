@@ -18,6 +18,7 @@ export interface BuddyUpEvent {
     endDateTime: string
     location?: string
     imageUrls: string[]
+    invitedPeoples: string[]
     joinedPeople: string[]
     categoryId?: string
     hashtags?: string[]
@@ -98,6 +99,7 @@ const BuddyUpEventCard = ({
                 categoryId: event.categoryId || '',
                 hashtags: event.hashtags ? JSON.stringify(event.hashtags) : '',
                 isPublic: event.isPublic ? 'Public (All Crew)' : 'Invite Buddy',
+                invitedPeople: event.invitedPeoples ? JSON.stringify(event.invitedPeoples) : '[]',
                 joinedPeople: event.joinedPeople ? JSON.stringify(event.joinedPeople) : '[]',
             }
         })
