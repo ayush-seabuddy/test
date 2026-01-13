@@ -44,6 +44,12 @@ export default ({ config: appConfig }) => {
       ...appConfig.ios,
       // Only increment build number in production/staging
       ...(isProduction || isStaging ? { buildNumber: String(Date.now()) } : {}),
+      infoPlist: {
+        ...appConfig.ios?.infoPlist,
+        NSCameraUsageDescription: 'This app uses the camera to let you take photos.',
+        NSPhotoLibraryUsageDescription: 'This app needs access to your photo library to select images.',
+        NSPhotoLibraryAddUsageDescription: 'This app saves photos to your library.'
+      },
     },
     // Environment-specific Android configuration
     android: {

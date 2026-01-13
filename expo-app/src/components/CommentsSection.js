@@ -1,31 +1,30 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
-  Keyboard,
-  Modal,
-} from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
+import { t } from 'i18next';
 import {
   PencilIcon,
-  SendHorizonal,
   Reply,
+  SendHorizonal,
   Trash,
 } from 'lucide-react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import { getallcomments, likecommentpost } from '../apis/apiService';
-import { showToast } from './GlobalToast';
-import BottomSheet from './BottomSheet';
-import { t } from 'i18next';
 import { ImagesAssets } from '../utils/ImageAssets';
+import BottomSheet from './BottomSheet';
 import CommonLoader from './CommonLoader';
+import { showToast } from './GlobalToast';
 
 // Fixed Light Mode Colors
 const ColorsLight = {
@@ -129,6 +128,9 @@ const CommentItem = React.memo(({
     </View>
   );
 });
+
+CommentItem.displayName = 'CommentItem';
+
 
 const DeleteConfirmationModal = ({ visible, onClose, onConfirm, loading }) => (
   <Modal

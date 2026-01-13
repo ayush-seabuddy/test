@@ -1,12 +1,11 @@
 import { getAllMoodTracker, getMoodTrackerAnalysis, moodTracker } from "@/src/apis/apiService";
 import CommonLoader from "@/src/components/CommonLoader";
-import CustomLottie from "@/src/components/CustomLottie";
 import GlobalHeader from "@/src/components/GlobalHeader";
 import { showToast } from "@/src/components/GlobalToast";
 import { MoodCheckInModal } from "@/src/components/Modals/MoodCheckInModal";
 import { RootState } from "@/src/redux/store";
 import Colors from "@/src/utils/Colors";
-import { height, width } from "@/src/utils/helperFunctions";
+import { height } from "@/src/utils/helperFunctions";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
@@ -26,14 +25,13 @@ import { useTranslation } from "react-i18next";
 import {
   FlatList,
   Keyboard,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { useSelector } from "react-redux";
 
@@ -106,6 +104,9 @@ const DateItemComponent = memo(({ item, moodData }: { item: DateItem; moodData: 
   );
 });
 
+DateItemComponent.displayName = "DateItemComponent";
+
+
 const MoodNoteCard = memo(({ item }: { item: MoodTrackerItem }) => {
   const { t } = useTranslation();
 
@@ -137,6 +138,8 @@ const MoodNoteCard = memo(({ item }: { item: MoodTrackerItem }) => {
     </View>
   );
 });
+
+MoodNoteCard.displayName = "MoodNoteCard";
 
 const MoodModalStep1 = memo(
   ({
@@ -195,6 +198,8 @@ const MoodModalStep1 = memo(
     );
   }
 );
+
+MoodModalStep1.displayName = "TrackerMoodModalStep1";
 
 const MoodModalStep2 = memo(
   ({
@@ -257,6 +262,9 @@ const MoodModalStep2 = memo(
     );
   }
 );
+
+MoodModalStep2.displayName = "TrackerMoodModalStep2";
+
 
 // ── Main Component ────────────────────────────────────────────────────────
 

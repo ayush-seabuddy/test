@@ -8,7 +8,6 @@ import { SquarePen, X } from 'lucide-react-native'
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-    ActivityIndicator,
     Modal,
     Platform,
     ScrollView,
@@ -47,25 +46,30 @@ const CreateCustomCategoryModal = ({
 
     const pickImage = async () => {
         try {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+                showToast.error(t('permissiondenied'), t('medialibrarypermission_description'));
+                return;
+            }
             const result = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
                 allowsEditing: true,
                 aspect: [1, 1],
                 quality: 0.8,
-            })
+            });
 
             if (!result.canceled && result.assets?.length) {
-                const asset = result.assets[0]
+                const asset = result.assets[0];
                 setSelectedImage({
                     uri: asset.uri,
                     fileName: asset.fileName,
                     fileSize: asset.fileSize,
                     type: asset.type || 'image',
-                })
+                });
             }
         } catch (error) {
-            console.error('Error picking image:', error)
-            showToast.error(t('error'), t('imagePickFailed'))
+            console.error('Error picking image:', error);
+            showToast.error(t('error'), t('imagePickFailed'));
         }
     }
 

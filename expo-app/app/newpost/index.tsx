@@ -150,17 +150,35 @@ const NewPostScreen = () => {
       let result;
 
       if (type === 'photo') {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+          showToast.error(t('permissiondenied'), t('camerapermission_description'));
+          setIsLoading(false);
+          return;
+        }
         result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          mediaTypes: ImagePicker.MediaTypeOptions.Images, 
           quality: 0.8,
           allowsEditing: true,
         });
       } else if (type === 'video') {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+          showToast.error(t('permissiondenied'), t('camerapermission_description'));
+          setIsLoading(false);
+          return;
+        }
         result = await ImagePicker.launchCameraAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.Videos,
           videoMaxDuration: 45,
         });
       } else {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          showToast.error(t('permissiondenied'), t('medialibrarypermission_description'));
+          setIsLoading(false);
+          return;
+        }
         result = await ImagePicker.launchImageLibraryAsync({
           mediaTypes: ImagePicker.MediaTypeOptions.All,
           allowsMultipleSelection: true,

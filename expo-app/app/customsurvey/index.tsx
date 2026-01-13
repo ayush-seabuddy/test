@@ -1,17 +1,16 @@
-import { StyleSheet, Text, View, ScrollView, TextInput, TouchableOpacity, Alert, Image, ActivityIndicator } from 'react-native'
-import React, { useEffect, useState, useMemo, useCallback } from 'react'
-import GlobalHeader from '@/src/components/GlobalHeader'
-import { useTranslation } from 'react-i18next'
 import { getsurveybyid, submitsurvey } from '@/src/apis/apiService'
-import { showToast } from '@/src/components/GlobalToast'
-import { useLocalSearchParams, router } from 'expo-router'
-import Colors from '@/src/utils/Colors'
-import DatePicker from 'react-native-date-picker'
-import * as ImagePicker from 'expo-image-picker'
-import * as ImageManipulator from 'expo-image-manipulator'
-import Slider from '@react-native-community/slider'
-import { getUserDetails } from '@/src/utils/helperFunctions'
 import CommonLoader from '@/src/components/CommonLoader'
+import GlobalHeader from '@/src/components/GlobalHeader'
+import { showToast } from '@/src/components/GlobalToast'
+import Colors from '@/src/utils/Colors'
+import Slider from '@react-native-community/slider'
+import * as ImageManipulator from 'expo-image-manipulator'
+import * as ImagePicker from 'expo-image-picker'
+import { router, useLocalSearchParams } from 'expo-router'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import DatePicker from 'react-native-date-picker'
 
 type SurveyQuestion = {
   id: string;
@@ -114,40 +113,44 @@ const SurveyScreen = () => {
       ? ImagePicker.requestMediaLibraryPermissionsAsync
       : ImagePicker.requestCameraPermissionsAsync
 
-    const { status } = await request()
+    const { status } = await request();
     if (status !== 'granted') {
-      Alert.alert(t('permissionDenied'), t('photoLibraryPermissionRequired'))
-      return false
+      showToast.error(t('permissionDenied'), t('photoLibraryPermissionRequired'));
+      return false;
     }
-    return true
+    return true;
   }
 
   const selectImageForQuestion = async (questionId: string) => {
-    const hasPermission = await requestPermissions('library')
-    if (!hasPermission) return
+    // Request gallery permission before picking image
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      showToast.error(t('permissionDenied'), t('photoLibraryPermissionRequired'));
+      return;
+    }
 
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.5,
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      })
+        mediaTypes: ImagePicker.MediaTypeOptions.Images, // deprecated usage preserved
+      });
 
-      if (result.canceled || !result.assets?.[0]?.uri) return
+      if (result.canceled || !result.assets?.[0]?.uri) return;
 
-      const uri = result.assets[0].uri
+      const uri = result.assets[0].uri;
 
       const compressed = await ImageManipulator.manipulateAsync(
         uri,
         [{ resize: { width: 800 } }],
         { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
-      )
+      );
 
-      updateAnswer(questionId, compressed.uri)
+      updateAnswer(questionId, compressed.uri);
     } catch (err) {
-      console.error('Error selecting image:', err)
-      Alert.alert(t('error'), t('imagePickFailed'))
+      console.error('Error selecting image:', err);
+      showToast.error(t('error'), t('imagePickFailed'));
     }
   }
 
