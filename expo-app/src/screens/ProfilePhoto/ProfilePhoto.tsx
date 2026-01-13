@@ -5,7 +5,6 @@ import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import { RootState } from '@/src/redux/store';
 import { updateUserField } from '@/src/redux/userDetailsSlice';
-import Colors from '@/src/utils/Colors';
 import { getUserDetails, width } from '@/src/utils/helperFunctions';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
 import {
@@ -17,17 +16,14 @@ import {
 import axios from 'axios';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
-import { router } from 'expo-router';
 import { t } from 'i18next';
-import { Camera, ChevronLeft, Image as GalleryIcon } from 'lucide-react-native';
+import { Camera, Image as GalleryIcon } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -58,10 +54,21 @@ const ProfilePhoto = () => {
   };
 
   const pickImage = async (source: 'camera' | 'library') => {
-    const hasPermission = await requestPermissions();
-    if (!hasPermission) {
-      showToast.error(t('permissiondenied'), t('camerapermission_description'));
-      return;
+    let permissionStatus;
+    if (source === 'camera') {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      permissionStatus = status;
+      if (permissionStatus !== 'granted') {
+        showToast.error(t('permissiondenied'), t('camerapermission_description'));
+        return;
+      }
+    } else {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      permissionStatus = status;
+      if (permissionStatus !== 'granted') {
+        showToast.error(t('permissiondenied'), t('medialibrarypermission_description'));
+        return;
+      }
     }
 
     bottomSheetRef.current?.dismiss();

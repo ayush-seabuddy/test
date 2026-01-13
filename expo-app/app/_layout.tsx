@@ -1,28 +1,27 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { useFonts } from "expo-font";
-import * as Notifications from "expo-notifications";
-import { Stack, router, usePathname, useSegments } from "expo-router"; // ← added usePathname + useSegments
-import * as SplashScreen from "expo-splash-screen";
-import { useCallback, useEffect, useRef } from "react";
-import { I18nextProvider, useTranslation } from "react-i18next";
-import { Linking, Platform, StatusBar, StyleSheet, useColorScheme } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { PaperProvider } from "react-native-paper";
-import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
-import { Provider } from "react-redux";
 import { NotificationProvider, useNotification } from "@/Context/NotificationContext";
 import { showToast } from "@/src/components/GlobalToast";
 import { initI18n } from "@/src/localization/i18n";
 import { store } from "@/src/redux/store";
 import Colors from "@/src/utils/Colors";
 import socketService from "@/src/utils/socketService";
+import * as Clarity from '@microsoft/react-native-clarity';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import * as Sentry from '@sentry/react-native';
+import { useFonts } from "expo-font";
+import * as Notifications from "expo-notifications";
+import { Stack, router, usePathname, useSegments } from "expo-router"; // ← added usePathname + useSegments
+import * as SplashScreen from "expo-splash-screen";
 import * as TaskManager from 'expo-task-manager';
 import i18n from "i18next";
-import { Appearance } from 'react-native';
-import * as Clarity from '@microsoft/react-native-clarity';
-import * as Sentry from '@sentry/react-native';
+import { useCallback, useEffect, useRef } from "react";
+import { I18nextProvider, useTranslation } from "react-i18next";
+import { Appearance, Linking, Platform, StatusBar, StyleSheet, useColorScheme } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { PaperProvider } from "react-native-paper";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
+import { Provider } from "react-redux";
 
 Sentry.init({
   dsn: 'https://6b5703e56775c084752511e95c27a728@o4510693087117312.ingest.us.sentry.io/4510693088428032',
@@ -153,6 +152,7 @@ const NotificationHandler = () => {
 };
 
 export default Sentry.wrap(function RootLayout() {
+
   const colorScheme = useColorScheme();
   const { t } = useTranslation();
 
@@ -168,6 +168,26 @@ export default Sentry.wrap(function RootLayout() {
 
   const pathname = usePathname();
   const segments = useSegments();
+
+  // Request camera and gallery permissions on app launch
+  useEffect(() => {
+    const requestPermissions = async () => {
+      try {
+        const ImagePicker = await import('expo-image-picker');
+        const camera = await ImagePicker.requestCameraPermissionsAsync();
+        const gallery = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (camera.status !== 'granted') {
+          showToast.error(t('permissiondenied'), t('camerapermission_description'));
+        }
+        if (gallery.status !== 'granted') {
+          showToast.error(t('permissiondenied'), t('medialibrarypermission_description'));
+        }
+      } catch (err) {
+        console.error('Permission request error:', err);
+      }
+    };
+    requestPermissions();
+  }, []);
 
   useEffect(() => {
     // Build a clean screen name (you can customize this format)

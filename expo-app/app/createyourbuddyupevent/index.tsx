@@ -484,38 +484,55 @@ const CreateYourBuddyUpEvent = () => {
 
     const pickMedia = async (type: 'camera' | 'gallery') => {
         try {
-            mediaSheetRef.current?.close()
-            let result
+            mediaSheetRef.current?.close();
+            let result;
 
+            let permissionStatus;
             if (type === 'camera') {
+                const { status } = await ImagePicker.requestCameraPermissionsAsync();
+                permissionStatus = status;
+                if (permissionStatus !== 'granted') {
+                    showToast.error(t('permissiondenied'), t('camerapermission_description'));
+                    return;
+                }
                 result = await ImagePicker.launchCameraAsync({
-                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                    mediaTypes: ImagePicker.MediaTypeOptions.Images, // deprecated usage preserved
                     allowsEditing: true,
                     quality: 0.8,
-                })
-            } else {
+                });
+            } else if (type === 'gallery') {
+                const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                permissionStatus = status;
+                if (permissionStatus !== 'granted') {
+                    showToast.error(t('permissiondenied'), t('medialibrarypermission_description'));
+                    return;
+                }
                 result = await ImagePicker.launchImageLibraryAsync({
-                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                    mediaTypes: ImagePicker.MediaTypeOptions.Images, // deprecated usage preserved
                     allowsEditing: true,
                     quality: 0.8,
-                })
+                });
+            } else {
+                showToast.error(t('error'), t('invalidmediatype'));
+                return;
             }
 
             if (!result.canceled && result.assets?.length) {
-                const asset = result.assets[0]
+                const asset = result.assets[0];
                 const mediaItem: MediaItem = {
                     uri: asset.uri,
                     type: asset.type,
                     id: `${asset.uri}-${Date.now()}-${Math.random()}`,
-                    fileName: asset.fileName, fileSize: asset.fileSize,
-                }
-                setSelectedMedia(mediaItem)
-                showToast.success(t('success'), t('mediaitemsadded', { count: 1 }))
+                    fileName: asset.fileName,
+                    fileSize: asset.fileSize,
+                };
+                setSelectedMedia(mediaItem);
+                showToast.success(t('success'), t('mediaitemsadded', { count: 1 }));
             }
         } catch (error: any) {
             if (!error.message?.includes('User cancelled')) {
-                console.error('Error picking media:', error)
-                showToast.error(t('error'), t('imagePickFailed'))
+                console.error('Error picking media:', error);
+                showToast.error(t('error'), t('imagePickFailed'));
             }
         }
     }

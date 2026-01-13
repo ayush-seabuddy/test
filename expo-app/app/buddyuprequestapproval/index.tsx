@@ -102,18 +102,40 @@ const BuddyUpRequestApprovalScreen = () => {
             setLoading(true);
             let result;
 
+            let permissionStatus;
             if (type === 'photo') {
+                const { status } = await ImagePicker.requestCameraPermissionsAsync();
+                permissionStatus = status;
+                if (permissionStatus !== 'granted') {
+                    showToast.error(t('permissiondenied'), t('camerapermission_description'));
+                    setLoading(false);
+                    return;
+                }
                 result = await ImagePicker.launchCameraAsync({
                     mediaTypes: ImagePicker.MediaTypeOptions.Images,
                     quality: 0.8,
                     allowsEditing: true,
                 });
             } else if (type === 'video') {
+                const { status } = await ImagePicker.requestCameraPermissionsAsync();
+                permissionStatus = status;
+                if (permissionStatus !== 'granted') {
+                    showToast.error(t('permissiondenied'), t('camerapermission_description'));
+                    setLoading(false);
+                    return;
+                }
                 result = await ImagePicker.launchCameraAsync({
                     mediaTypes: ImagePicker.MediaTypeOptions.Videos,
                     videoMaxDuration: 45
                 });
             } else {
+                const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                permissionStatus = status;
+                if (permissionStatus !== 'granted') {
+                    showToast.error(t('permissiondenied'), t('medialibrarypermission_description'));
+                    setLoading(false);
+                    return;
+                }
                 result = await ImagePicker.launchImageLibraryAsync({
                     mediaTypes: ImagePicker.MediaTypeOptions.All,
                     allowsMultipleSelection: true,
