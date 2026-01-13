@@ -123,11 +123,11 @@
     },
     "plugins": [
       "@react-native-community/datetimepicker",
-      "@sentry/react-native",
       "expo-asset",
       "expo-router",
       "expo-localization",
       "expo-font",
+      "@sentry/react-native",
       [
         "expo-video",
         {
