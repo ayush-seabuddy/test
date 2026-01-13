@@ -12,13 +12,6 @@ export interface ChatParticipant {
   lastReadAt: string | null
 }
 
-export interface MessageUser {
-  id: string
-  fullName: string
-  email: string
-  profileUrl: string | null
-}
-
 export interface LastMessage {
   id: string
   chatRoomId: string

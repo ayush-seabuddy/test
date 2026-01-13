@@ -15,6 +15,9 @@ import {
 const { height, width } = Dimensions.get("window");
 
 const ShowContentCard = ({ data, keyId }: { data: any, keyId: any }) => {
+    const [displayData, setDisplayData] = React.useState(
+        data.allContents || data
+    );
     const getContentTypeConfig = (contentType: 'ARTICLE' | 'VIDEO' | 'MUSIC') => {
         switch (contentType) {
             case "ARTICLE":
@@ -121,9 +124,7 @@ const ShowContentCard = ({ data, keyId }: { data: any, keyId: any }) => {
         );
     }
 
-    const [displayData, setDisplayData] = React.useState(
-        data.allContents || data
-    );
+
 
 
     return (

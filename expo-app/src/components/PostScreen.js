@@ -4,6 +4,8 @@ import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import { t } from 'i18next';
+import TimeAgo from 'javascript-time-ago';
+import en from 'javascript-time-ago/locale/en.json';
 import {
   AlertTriangle,
   Heart,
@@ -29,8 +31,13 @@ import {
   View,
 } from 'react-native';
 import ReactTimeAgo from 'react-time-ago';
-import TimeAgo from 'javascript-time-ago';
-import en from 'javascript-time-ago/locale/en.json';
+import { likecommentpost, updatepost } from '../apis/apiService';
+import Colors from '../utils/Colors';
+import { ImagesAssets } from '../utils/ImageAssets';
+import BottomSheet from './BottomSheet';
+import CommentsSection from './CommentsSection';
+import CommonLoader from './CommonLoader';
+import { showToast } from './GlobalToast';
 
 // Ensure locale data is available for ReactTimeAgo. Use addLocale which is
 // safe to call multiple times. Wrap in try/catch to avoid crashes if the
@@ -43,13 +50,6 @@ try {
   // eslint-disable-next-line no-console
   console.warn('Failed to ensure TimeAgo locale is registered:', e);
 }
-import { likecommentpost, updatepost } from '../apis/apiService';
-import Colors from '../utils/Colors';
-import { ImagesAssets } from '../utils/ImageAssets';
-import BottomSheet from './BottomSheet';
-import CommentsSection from './CommentsSection';
-import { showToast } from './GlobalToast';
-import CommonLoader from './CommonLoader';
 
 const { width } = Dimensions.get('window');
 
@@ -99,6 +99,8 @@ const UserItem = React.memo(({ user, onPress }) => {
     </TouchableOpacity>
   );
 });
+
+UserItem.displayName = 'UserItem';
 
 const TaggedUsersRow = ({ users, onPress }) => (
   <TouchableOpacity activeOpacity={0.8} onPress={onPress}>

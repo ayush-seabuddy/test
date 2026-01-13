@@ -80,6 +80,9 @@ const UserItem = React.memo(({ item, onPress }: { item: any; onPress: (user: any
   );
 });
 
+UserItem.displayName = "ChatRoomUserItem";
+
+
 type ChatRoomHeaderProps = {
   navigation: any;
   data: any;

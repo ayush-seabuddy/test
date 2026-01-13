@@ -1,17 +1,15 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BlurView } from "expo-blur";
-import { X } from "lucide-react-native";
-import moment from "moment-timezone";
-import { memo, useCallback, useState } from "react";
-import { Modal, Portal } from "react-native-paper";
-import { Pressable } from "react-native";
-import { useTranslation } from "react-i18next";
-import { Keyboard, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View, Dimensions } from "react-native";
 import { moodTracker } from "@/src/apis/apiService";
 import CommonLoader from "@/src/components/CommonLoader";
 import { showToast } from "@/src/components/GlobalToast";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Image } from "expo-image";
+import { X } from "lucide-react-native";
+import moment from "moment-timezone";
+import { memo, useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Keyboard, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Modal, Portal } from "react-native-paper";
 
 interface MoodCheckInModalProps {
   visible: boolean;
@@ -88,6 +86,9 @@ const MoodModalStep1 = memo(
   }
 );
 
+MoodModalStep1.displayName = "MoodModalStep1";
+
+
 const MoodModalStep2 = memo(
   ({
     reason,
@@ -142,6 +143,8 @@ const MoodModalStep2 = memo(
     );
   }
 );
+
+MoodModalStep2.displayName = "MoodModalStep2";
 
 export const MoodCheckInModal = ({
   visible,

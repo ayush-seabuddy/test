@@ -30,7 +30,7 @@ const ChatHeader = ({ }) => {
 
   const unReadNotification = async () => {
     try {
-      var response = await getUnreadNotificationCount();
+      let response = await getUnreadNotificationCount();
       setUnreadNotification(response.data.allNotifications);
     } catch (error) {
       console.log(error);

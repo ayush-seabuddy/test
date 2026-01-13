@@ -235,10 +235,6 @@ export interface GetAllContentsParams {
   subCategory?: string
 }
 
-export interface GetAllHelplinesParams {
-  helplineType?: string,
-}
-
 export interface ViewContentDetailsParams {
   contentId?: string
 }
