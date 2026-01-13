@@ -4,6 +4,7 @@ import contentReducer from "./ContentSlice";
 import notificationReducer from "./notificationSlice";
 import socialPostReducer from "./socialPostSlice";
 import UserDetails from "./userDetailsSlice";
+import CustomSurvey from './customSurvey'
 
 
 export const store = configureStore({
@@ -12,7 +13,8 @@ export const store = configureStore({
     chatList: chatListReducer,
     userDetails: UserDetails,
     content: contentReducer,
-    notification: notificationReducer
+    notification: notificationReducer,
+    CustomSurvey:CustomSurvey
   },
 });
 
