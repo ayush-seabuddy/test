@@ -17,11 +17,11 @@ import Colors from "@/src/utils/Colors";
 import { Video } from "expo-av";
 import { BlurView } from "expo-blur";
 import { router, useLocalSearchParams } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
-import { ActivityIndicator, Modal } from "react-native-paper";
+import { Modal } from "react-native-paper";
 import RelatedContentCard from "./RelatedContentCard";
 import { Content } from "./type";
 import CommonLoader from "@/src/components/CommonLoader";
+import { useTranslation } from "react-i18next";
 
 interface ContentDetails {
   id: string;
@@ -32,17 +32,12 @@ interface ContentDetails {
 }
 
 export default function VideosDetails({ data: fullDetails }: { data: Content }) {
-  const { dataItem, fromHome } = useLocalSearchParams<{
-    dataItem: string;
-    fromHome?: string;
-  }>();
-
   const [notificationDetailModalVisible, setNotificationDetailModalVisible] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState<any>(null);
   const [RecommendedData, setRecommendedData] = useState<any[]>([]);
   const [fullscreen, setFullscreen] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const { t } = useTranslation();
   const scrollViewRef = useRef<ScrollView>(null);
   const videoRef = useRef<Video>(null);
   const appState = useRef(AppState.currentState);
@@ -62,7 +57,6 @@ export default function VideosDetails({ data: fullDetails }: { data: Content }) 
     };
   }, []);
 
-  // ✅ Recommended Videos
   useEffect(() => {
     async function getRecommended() {
       if (!fullDetails?.id) return;
@@ -98,7 +92,6 @@ export default function VideosDetails({ data: fullDetails }: { data: Content }) 
 
   return (
     <View style={styles.container}>
-      {/* <VideoDetailsHeader navigation={router} data={fullDetails} fromHome={fromHome} /> */}
       <GlobalHeader
         title={fullDetails?.contentTitle}
       />
@@ -108,25 +101,9 @@ export default function VideosDetails({ data: fullDetails }: { data: Content }) 
       {/* Video Player */}
       <View style={{ flex: fullscreen ? 1 : 0 }}>
         {loading && (
-          <CommonLoader fullScreen containerStyle={{ position: "absolute", top: "40%", left: "40%", zIndex: 2 }}/>
+          <CommonLoader fullScreen containerStyle={{ position: "absolute", top: "40%", left: "40%", zIndex: 2 }} />
         )}
         <VideoPlayer uri={fullDetails?.contentUrl[0]} />
-        {/* <Video
-          ref={videoRef}
-          source={{ uri: fullDetails?.contentUrl?.[0] || "" }}
-          style={[
-            styles.video,
-            fullscreen && { width: "100%", height: "100%" },
-          ]}
-          useNativeControls
-          // resizeMode="contain"
-          onLoadStart={() => setLoading(true)}
-          onLoad={() => setLoading(false)}
-          onError={(e) => console.log("Video Error:", e)}
-          onFullscreenUpdate={(e) => {
-            setFullscreen(e.fullscreenUpdate === 1);
-          }}
-        /> */}
       </View>
 
       {/* Content Scroll */}
@@ -142,7 +119,7 @@ export default function VideosDetails({ data: fullDetails }: { data: Content }) 
               <View style={styles.frameContent}>
                 <Text style={styles.title}>{fullDetails?.contentTitle}</Text>
                 <Text style={styles.description}>{fullDetails?.description}</Text>
-                <Text style={styles.postedOn}>Posted on - {getRelativeTime(fullDetails?.createdAt)}</Text>
+                <Text style={styles.postedOn}>{t('postedon')} {getRelativeTime(fullDetails?.createdAt)}</Text>
               </View>
             </View>
           </View>
@@ -151,7 +128,7 @@ export default function VideosDetails({ data: fullDetails }: { data: Content }) 
         {/* Related Videos */}
         {RecommendedData.length > 0 && (
           <>
-            <Text style={styles.relatedTitle}>Related Videos</Text>
+            <Text style={styles.relatedTitle}>{t('relatedVideos')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.relatedContentContainer}>
               <RelatedContentCard
                 data={RecommendedData}
@@ -175,7 +152,7 @@ export default function VideosDetails({ data: fullDetails }: { data: Content }) 
             style={styles.closeButton}
             onPress={() => router.back()}
           >
-            <Text style={styles.closeText}>Close</Text>
+            <Text style={styles.closeText}>{t('close')}</Text>
           </TouchableOpacity>
         </View>
       </Modal>
@@ -183,9 +160,6 @@ export default function VideosDetails({ data: fullDetails }: { data: Content }) 
   );
 }
 
-// --------------------------
-// Styles
-// --------------------------
 const styles = StyleSheet.create({
   container: { flex: 1 },
   video: {

@@ -946,5 +946,7 @@
   "noFileChosen": "Add a photo",
   "surveysubmitted": "Survey submitted successfully!",
     "refresh":"Refresh",
-  "noaudiourl": "No Audio URL Available"
+  "noaudiourl": "No Audio URL Available",
+  "relatedVideos":"Related Videos",
+  "postedon":"Posted on -"
 }

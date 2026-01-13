@@ -11,11 +11,12 @@ import Colors from '@/src/utils/Colors'
 import { Image } from 'expo-image'
 import { ImagesAssets } from '@/src/utils/ImageAssets'
 import CommonLoader from '@/src/components/CommonLoader'
+import EmptyComponent from '@/src/components/EmptyComponent'
 
 interface Complaint {
     id: string,
     status: string,
-    adminResponse:string,
+    adminResponse: string,
     createdAt: string,
     helpline: {
         helplineName: string,
@@ -71,12 +72,12 @@ const ComplaintHistoryScreen = () => {
 
     const ListFooter = () =>
         loadingMore ? (
-            <CommonLoader/>
+            <CommonLoader />
         ) : null;
 
     if (loading) return (
         <View style={styles.loaderView}>
-            <CommonLoader fullScreen/>
+            <CommonLoader fullScreen />
         </View>
     );
 
@@ -99,7 +100,7 @@ const ComplaintHistoryScreen = () => {
                                     params: {
                                         complaintId: item.id,
                                         complaintStatus: item.status,
-                                        complaintResponse:item.adminResponse
+                                        complaintResponse: item.adminResponse
                                     },
                                 });
                             }}
@@ -124,9 +125,7 @@ const ComplaintHistoryScreen = () => {
                 />
             ) : (
                 <View style={styles.nodatafoundView}>
-                    <Image source={ImagesAssets.nodatafound} style={styles.nodatafoundImage} />
-                    <Text style={styles.noDataText}>{t('nocomplaintHistoryFound')}</Text>
-
+                    <EmptyComponent text={t('nocomplaintHistoryFound')} />
                 </View>
             )}
 
@@ -154,10 +153,9 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     nodatafoundView: {
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        gap: 30,
-        marginTop: "50%"
     },
     noDataText: {
         fontSize: 15,
