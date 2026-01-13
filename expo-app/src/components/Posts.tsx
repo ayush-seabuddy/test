@@ -167,7 +167,7 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
   if (initialLoading && posts.length === 0) {
     return (
       <View style={styles.centerLoader}>
-        <CommonLoader fullScreen/>
+        <CommonLoader fullScreen />
       </View>
     );
   }
@@ -179,7 +179,7 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       onEndReached={loadMore}
-      onEndReachedThreshold={0.5}
+      onEndReachedThreshold={0.3}
       ListFooterComponent={ListFooter}
       ListEmptyComponent={ListEmpty}
       refreshControl={
@@ -191,12 +191,17 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
         />
       }
       showsVerticalScrollIndicator={false}
-      removeClippedSubviews={true}
-      maxToRenderPerBatch={10}
-      windowSize={21}
-      initialNumToRender={10}
-      contentContainerStyle={posts.length === 0 ? styles.emptyContainer : undefined}
+      removeClippedSubviews
+      windowSize={3}
+      initialNumToRender={2}
+      maxToRenderPerBatch={2}
+      updateCellsBatchingPeriod={50}
+
+      contentContainerStyle={
+        posts.length === 0 ? styles.emptyContainer : undefined
+      }
     />
+
   );
 };
 

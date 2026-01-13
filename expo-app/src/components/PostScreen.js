@@ -182,6 +182,13 @@ const PostHeader = ({
 const VideoItem = ({ uri, isActive, ratioValue, muted, onPress }) => {
   const player = useVideoPlayer({ uri }, (p) => {
     p.loop = true;
+    p.bufferOptions = {
+      minBufferForPlayback: 0,
+      preferredForwardBufferDuration: 5,
+      maxBufferBytes: 0,
+      prioritizeTimeOverSizeThreshold: false,
+      waitsToMinimizeStalling: true
+    }
     p.muted = muted;
   });
 
@@ -256,6 +263,8 @@ const PostMedia = ({
         keyExtractor={(_, i) => i.toString()}
         renderItem={renderItem}
         estimatedItemSize={width}
+        windowSize={2}
+        removeClippedSubviews={true}
         viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
       />
       <View style={styles.mediaHashtagsOverlay}>{hashtagsDisplay}</View>
@@ -650,17 +659,41 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
     });
   };
 
-  const hashtagsDisplay = useMemo(() => (
-    <View style={styles.hashtagsContainer}>
-      {isBuddyUpEvent && <View style={[styles.tag, { backgroundColor: ColorsLight.tagBg }]}><Text style={[styles.tagText, { color: '#06361F' }]}>{t('buddyupevents')}</Text></View>}
-      {shipName && <View style={[styles.tag, { backgroundColor: Colors.lightGreen }]}><Text style={styles.tagText}>{shipName}</Text></View>}
-      {post.hashtags?.slice(0, 2).map((h, i) => (
-        <View key={i} style={[styles.tag, { backgroundColor: ColorsLight.tagBg }]}>
-          <Text style={[styles.tagText, { color: '#06361F' }]}>{h ? h.charAt(0).toUpperCase() + h.slice(1) : ''}</Text>
-        </View>
-      ))}
-    </View>
-  ), [isBuddyUpEvent, shipName, post.hashtags, t]);
+  const hashtagsDisplay = useMemo(() => {
+    const visibleHashtags = isBuddyUpEvent
+      ? post.hashtags?.slice(0, 1)
+      : post.hashtags?.slice(0, 2);
+
+    return (
+      <View style={styles.hashtagsContainer}>
+        {isBuddyUpEvent && (
+          <View style={[styles.tag, { backgroundColor: ColorsLight.tagBg }]}>
+            <Text style={[styles.tagText, { color: Colors.buttonWhiteText }]}>
+              {t('buddyupevents')}
+            </Text>
+          </View>
+        )}
+
+        {shipName && (
+          <View style={[styles.tag, { backgroundColor: Colors.lightGreen }]}>
+            <Text style={styles.tagText}>{shipName}</Text>
+          </View>
+        )}
+
+        {visibleHashtags?.map((h, i) => (
+          <View
+            key={`${h}-${i}`}
+            style={[styles.tag, { backgroundColor: ColorsLight.tagBg }]}
+          >
+            <Text style={[styles.tagText, { color: Colors.buttonWhiteText }]}>
+              {h ? h.charAt(0).toUpperCase() + h.slice(1) : ''}
+            </Text>
+          </View>
+        ))}
+      </View>
+    );
+  }, [isBuddyUpEvent, shipName, post.hashtags, t]);
+
 
   return (
     <>
