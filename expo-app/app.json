@@ -122,6 +122,9 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "@react-native-community/datetimepicker",
+      "@sentry/react-native",
+      "expo-asset",
       "expo-router",
       "expo-localization",
       "expo-font",
@@ -143,10 +146,7 @@
       [
         "expo-screen-orientation",
         {
-          "supportedOrientations": [
-            "portrait",
-            "landscape"
-          ]
+          "supportedOrientations": ["portrait", "landscape"]
         }
       ],
       [
