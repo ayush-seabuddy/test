@@ -79,19 +79,19 @@ const BuddyUpEventDescription = () => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
 
-        useEffect(() => {
-            const fetchProfileDetails = async () => {
-                let result = await viewProfile();
-                if (result?.data) {
-                    const object = result.data
-                    for (const property in object) {
-                        dispatch(updateUserField({ key: property, value: object[property] }))
-                    }
-    
+    useEffect(() => {
+        const fetchProfileDetails = async () => {
+            let result = await viewProfile();
+            if (result?.data) {
+                const object = result.data
+                for (const property in object) {
+                    dispatch(updateUserField({ key: property, value: object[property] }))
                 }
+
             }
-            fetchProfileDetails();
-        }, []);
+        }
+        fetchProfileDetails();
+    }, []);
 
     const [loading, setLoading] = useState(true);
     const [buddyUpDetails, setBuddyUpDetails] = useState<GroupActivityDetail | null>(null);
@@ -224,8 +224,8 @@ const BuddyUpEventDescription = () => {
         try {
             setLoading(true);
             const updatedJoined = [...buddyUpDetails.joinedPeople, userDetails.id];
-            console.log("sdflksdjflksdfklfklsfdlksd", updatedJoined );
-            
+            console.log("sdflksdjflksdfklfklsfdlksd", updatedJoined);
+
 
             const response = await addeditdeletebuddyupevent({
                 groupActivities: [{ eventId: buddyUpDetails.id, joinedPeople: updatedJoined }],
@@ -393,6 +393,8 @@ const BuddyUpEventDescription = () => {
                                         source={item}
                                         style={styles.completionImage}
                                         contentFit="cover"
+                                        placeholder={ImagesAssets.PlaceholderImage}
+                                        placeholderContentFit='cover'
                                     />
                                 </TouchableOpacity>
                             )}
@@ -536,7 +538,7 @@ const styles = StyleSheet.create({
     },
 
     descriptionText: {
-        fontSize: 13,
+        fontSize: 14,
         color: '#444',
         fontFamily: 'Poppins-Regular',
         lineHeight: 20,

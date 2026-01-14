@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -10,10 +10,9 @@ import {
   Alert,
   Platform,
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import * as ImageManipulator from "expo-image-manipulator";
+import ImagePicker from "react-native-image-crop-picker";
 import { useTranslation } from "react-i18next";
-import { Camera, ChevronLeft, ImageIcon } from "lucide-react-native";
+import { Camera, ImageIcon } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import GlobalHeader from "@/src/components/GlobalHeader";
 import { uploadfile } from "@/src/apis/apiService";
@@ -34,63 +33,42 @@ const UploadProfilePhoto = () => {
   })
   const [loading, setLoading] = useState(false);
 
-  const requestPermissions = async (type: "camera" | "library") => {
-    const request =
-      type === "camera"
-        ? ImagePicker.requestCameraPermissionsAsync
-        : ImagePicker.requestMediaLibraryPermissionsAsync;
-
-    const { status } = await request();
-
-    if (status !== "granted") {
-      Alert.alert(
-        t("permissionDenied"),
-        t(
-          type === "camera"
-            ? "cameraPermissionRequired"
-            : "photoLibraryPermissionRequired"
-        )
-      );
-      return false;
-    }
-    return true;
-  };
+  const imagePickerOptions = useMemo(
+    () => ({
+      cropping: true,
+      freeStyleCropEnabled: true,
+      cropperCircleOverlay: false,
+      compressImageQuality: 0.8,
+      mediaType: 'photo' as const,
+      includeBase64: false,
+      forceJpg: false,
+      width: 600,
+      height: 600,
+    }),
+    []
+  );
 
   const selectImage = async (type: "camera" | "library") => {
-    const hasPermission = await requestPermissions(type);
-    if (!hasPermission) return;
-
     try {
+      const options = imagePickerOptions as any;
       const result =
         type === "camera"
-          ? await ImagePicker.launchCameraAsync({
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.7,
-          })
-          : await ImagePicker.launchImageLibraryAsync({
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.7,
-          });
+          ? await ImagePicker.openCamera(options)
+          : await ImagePicker.openPicker(options);
 
-      if (result.canceled) return;
+      const uri = (result as any)?.path || (Array.isArray(result) && result[0]?.path);
+      const fileName = (result as any)?.filename || (uri ? uri.split('/').pop() : '');
+      const fileSize = (result as any)?.size || 0;
+      const filetype = (result as any)?.mime || '';
 
-      const uri = result.assets?.[0]?.uri;
-      const fileName = result.assets?.[0]?.fileName
-      const fileSize = result.assets?.[0]?.fileSize
-      const filetype = result.assets?.[0]?.type
       if (!uri) return;
 
-      const compressed = await ImageManipulator.manipulateAsync(
-        uri,
-        [{ resize: { width: 800 } }],
-        { compress: 0.5, format: ImageManipulator.SaveFormat.JPEG }
-      );
-
-      setPhoto(compressed.uri);
-      setFileData({ fileName, fileSize, type: filetype })
-    } catch (err) {
+      setPhoto(uri);
+      setFileData({ fileName, fileSize, type: filetype });
+    } catch (err: any) {
+      if (err && (err.message?.includes('cancel') || err.message?.includes('User cancelled'))) {
+        return;
+      }
       Alert.alert(t("error"), t("imagePickFailed"));
     }
   };

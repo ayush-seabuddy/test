@@ -1,5 +1,3 @@
-
-
 import { createpost, listallusersfortag, updatepostbyid, uploadfile } from '@/src/apis/apiService';
 import CommonLoader from '@/src/components/CommonLoader';
 import GlobalHeader from '@/src/components/GlobalHeader';
@@ -18,10 +16,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ResizeMode, Video } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import { Image } from 'expo-image';
-import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowRightCircle, Hash, Play, Tag, X } from 'lucide-react-native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   FlatList,
@@ -33,6 +30,7 @@ import {
   View
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import ImagePicker from 'react-native-image-crop-picker';
 
 type AllUsers = {
   id: string;
@@ -64,30 +62,11 @@ const renderBackdrop = (props: any) => (
 const NewPostScreen = () => {
   const { t } = useTranslation();
   const params = useLocalSearchParams();
-  const MAX_FILE_SIZE_BYTES = 200 * 1024 * 1024; // 200 MB
   const isEditMode = params.editMode === 'true';
   const editPostId = params.postId as string;
 
-  const [imageLimit ,setImageLimit] = useState(100)
-  const [videoLimit,setVideoLimit] = useState(200)
-  useEffect(() => {
-    (async () => {
-        
-      let apiImageLimit = await AsyncStorage.getItem("imageLimit");
-      let apiVideoLimit = await AsyncStorage.getItem("videoLimit");
-      if(apiImageLimit){
-        setImageLimit(parseInt(apiImageLimit))
-      
-      }
-      if(apiVideoLimit){
-        setVideoLimit(parseInt(apiVideoLimit))
-      }
-      
-      
-      
-    })();
-  }, []);
-
+  const [imageLimit, setImageLimit] = useState(100);
+  const [videoLimit, setVideoLimit] = useState(200);
   const [caption, setCaption] = useState((params.caption as string) || '');
   const [selectedMedia, setSelectedMedia] = useState<MediaItem[]>([]);
   const [hashtags, setHashtags] = useState<string[]>(
@@ -96,20 +75,47 @@ const NewPostScreen = () => {
   const [taggedUsers, setTaggedUsers] = useState<AllUsers[]>(
     params.taggedUsers ? JSON.parse(params.taggedUsers as string) : []
   );
-
   const [hashtagInput, setHashtagInput] = useState('');
   const [allUsers, setAllUsers] = useState<AllUsers[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const [loading, setLoading] = useState(false); // for create/update post
+  const [loading, setLoading] = useState(false);
 
   const mediaSheetRef = useRef<BottomSheetModal>(null);
   const tagSheetRef = useRef<BottomSheetModal>(null);
 
-  const snapPoints = ['40%'];
-  const tagSnapPoints = ['70%'];
+  const snapPoints = useMemo(() => ['40%'], []);
+  const tagSnapPoints = useMemo(() => ['70%'], []);
 
-  // Load existing media when in edit mode
+  const imagePickerOptions = useMemo(
+    () => ({
+      cropping: true,
+      freeStyleCropEnabled: true,
+      cropperCircleOverlay: false,
+      compressImageQuality: 0.7,
+      includeBase64: false,
+      multiple: false,
+      forceJpg: false,
+      width: 600,
+      height: 600,
+    }),
+    []
+  );
+
+  useEffect(() => {
+    const loadLimits = async () => {
+      const [apiImageLimit, apiVideoLimit] = await Promise.all([
+        AsyncStorage.getItem('imageLimit'),
+        AsyncStorage.getItem('videoLimit'),
+      ]);
+
+      if (apiImageLimit) setImageLimit(parseInt(apiImageLimit));
+      if (apiVideoLimit) setVideoLimit(parseInt(apiVideoLimit));
+    };
+
+    loadLimits();
+  }, []);
+
   useEffect(() => {
     if (isEditMode && params.imageUrls) {
       try {
@@ -133,131 +139,99 @@ const NewPostScreen = () => {
     setLoadingUsers(true);
     try {
       const userData = await getUserDetails();
-
-      const apiResponse = await listallusersfortag({
-        shipId: userData.shipId,
-      });
+      const apiResponse = await listallusersfortag({ shipId: userData.shipId });
 
       if (apiResponse.success && apiResponse.status === 200) {
         const usersList = apiResponse.data?.usersList || [];
-
-        const filteredUsers = usersList.filter(
-          (user: any) => user.id !== userData.id
-        );
+        const filteredUsers = usersList.filter((user: any) => user.id !== userData.id);
 
         setAllUsers(filteredUsers);
 
         if (filteredUsers.length === 0) {
-          showToast.error(t("oops"), t("nousersboarded"));
+          showToast.error(t('oops'), t('nousersboarded'));
         } else {
           tagSheetRef.current?.present();
         }
       } else {
-        showToast.error(t("oops"), apiResponse.message);
+        showToast.error(t('oops'), apiResponse.message);
       }
     } catch (error: any) {
-      console.log("Error fetching users:", error);
-      showToast.error(t("error"), "Failed to load users");
+      console.log('Error fetching users:', error);
+      showToast.error(t('error'), 'Failed to load users');
     } finally {
       setLoadingUsers(false);
     }
   }, [t]);
 
-
-  const pickMedia = async (type: 'photo' | 'video' | 'gallery') => {
+  const pickMedia = useCallback(async (type: 'photo' | 'video' | 'gallery') => {
     try {
       mediaSheetRef.current?.dismiss();
       setIsLoading(true);
-      let result;
+
+      let assets: any[] = [];
 
       if (type === 'photo') {
-        const { status } = await ImagePicker.requestCameraPermissionsAsync();
-        if (status !== 'granted') {
-          showToast.error(t('permissiondenied'), t('camerapermission_description'));
-          setIsLoading(false);
-          return;
-        }
-        result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images, 
-          quality: 0.8,
-          allowsEditing: true,
-        });
+        const image = await ImagePicker.openCamera(imagePickerOptions);
+        assets = [image as any];
       } else if (type === 'video') {
-        const { status } = await ImagePicker.requestCameraPermissionsAsync();
-        if (status !== 'granted') {
-          showToast.error(t('permissiondenied'), t('camerapermission_description'));
-          setIsLoading(false);
-          return;
-        }
-        result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-          videoMaxDuration: 45,
+        const video = await ImagePicker.openCamera({
+          mediaType: 'video',
+          cropping: false,
         });
+        assets = [video as any];
       } else {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-          showToast.error(t('permissiondenied'), t('medialibrarypermission_description'));
-          setIsLoading(false);
-          return;
-        }
-        result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.All,
-          allowsMultipleSelection: true,
-          quality: 0.8,
-          videoMaxDuration: 45,
+        const result = await ImagePicker.openPicker({
+          multiple: true,
+          mediaType: 'any',
+          cropping: false,
+          compressImageQuality: 0.8,
         });
+        assets = Array.isArray(result) ? (result as any[]) : [result as any];
       }
 
-      if (!result.canceled) {
-        const assets = result.assets || [];
+      const invalidVideos = assets.filter(
+        (asset) => asset.mime?.includes('video') && asset.duration && asset.duration > 45000
+      );
 
+      if (invalidVideos.length > 0) {
+        const longestSeconds = Math.round(Math.max(...invalidVideos.map((v) => v.duration || 0)) / 1000);
+        showToast.error(t('oops'), t('videotoolong', { seconds: longestSeconds, max: 45 }));
+        return;
+      }
 
-        // Check video duration
-        const invalidVideos = assets.filter(
-          (asset) => asset.type === 'video' && asset.duration && asset.duration > 45000
-        );
-
-        if (invalidVideos.length > 0) {
-          const longestSeconds = Math.round(Math.max(...invalidVideos.map((v) => v.duration || 0)) / 1000);
-          showToast.error(t('oops'), t('videotoolong', { seconds: longestSeconds, max: 45 }));
-          return;
-        }
-
-        // Check file sizes
-        const oversizedFilesInfo: { asset: ImagePicker.ImagePickerAsset; size: number }[] = [];
-        for (const asset of assets) {
-          if (asset.uri) {
-            try {
-              const info = await FileSystem.getInfoAsync(asset.uri);
-              const size = info.exists && info.size ? info.size : 0;
-              if (size > videoLimit * 1024 * 1024) {
-                oversizedFilesInfo.push({ asset, size });
-              }
-            } catch (err) {
-              console.warn('Could not get file size for:', asset.uri, err);
+      const oversizedFilesInfo: { asset: any; size: number }[] = [];
+      for (const asset of assets) {
+        if (asset.path) {
+          try {
+            const info = await FileSystem.getInfoAsync(asset.path);
+            const size = info.exists && info.size ? info.size : asset.size || 0;
+            if (size > videoLimit * 1024 * 1024) {
+              oversizedFilesInfo.push({ asset, size });
             }
+          } catch (err) {
+            console.warn('Could not get file size for:', asset.path, err);
           }
         }
-
-        if (oversizedFilesInfo.length > 0) {
-          const largestMB = Math.round(Math.max(...oversizedFilesInfo.map(i => i.size)) / (1024 * 1024));
-          showToast.error(t('oops'), t('filetoolarge', { mb: largestMB, max: 200 }));
-          return;
-        }
-
-        const newMedia: MediaItem[] = assets.map((asset) => ({
-          uri: asset.uri,
-          type: asset.type === 'video' ? 'video' : 'image',
-          id: `${asset.uri}-${Date.now()}-${Math.random()}`,
-          isExisting: false,
-          fileName: asset.fileName || `media_${Date.now()}.${asset.type === 'video' ? 'mp4' : 'jpg'}`,
-          fileSize: asset.fileSize,
-          mimeType: asset.type === 'video' ? 'video/mp4' : 'image/jpeg',
-        }));
-
-        setSelectedMedia((prev) => [...prev, ...newMedia]);
-        showToast.success(t('success'), t('mediaitemsadded', { count: newMedia.length }));
       }
+
+      if (oversizedFilesInfo.length > 0) {
+        const largestMB = Math.round(Math.max(...oversizedFilesInfo.map(i => i.size)) / (1024 * 1024));
+        showToast.error(t('oops'), t('filetoolarge', { mb: largestMB, max: videoLimit }));
+        return;
+      }
+
+      const newMedia: MediaItem[] = assets.map((asset) => ({
+        uri: asset.path,
+        type: asset.mime?.includes('video') ? 'video' : 'image',
+        id: `${asset.path}-${Date.now()}-${Math.random()}`,
+        isExisting: false,
+        fileName: asset.filename || `media_${Date.now()}.${asset.mime?.includes('video') ? 'mp4' : 'jpg'}`,
+        fileSize: asset.size,
+        mimeType: asset.mime || (asset.mime?.includes('video') ? 'video/mp4' : 'image/jpeg'),
+      }));
+
+      setSelectedMedia((prev) => [...prev, ...newMedia]);
+      showToast.success(t('success'), t('mediaitemsadded', { count: newMedia.length }));
     } catch (error: any) {
       if (!error.message?.includes('User cancelled')) {
         console.error('Error picking media:', error);
@@ -266,10 +240,9 @@ const NewPostScreen = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [imagePickerOptions, videoLimit, t]);
 
-  // Upload only new media using uploadfile (presigned S3)
-  const uploadNewMediaOnly = async (): Promise<string[]> => {
+  const uploadNewMediaOnly = useCallback(async (): Promise<string[]> => {
     const newMedia = selectedMedia.filter((m) => !m.isExisting);
     if (newMedia.length === 0) return [];
 
@@ -277,18 +250,9 @@ const NewPostScreen = () => {
       setIsLoading(true);
       const uploadedUrls: string[] = [];
 
-      for (let media of newMedia) {
-        let mediaFile = media;
-        // if(media.type === 'video' ) {
-        //   mediaFile.uri = await VideoCompressor.compress(media.uri,
-        //   {},
-        //   (progress) => {
-        //     console.log('Compression Progress: ', progress);
-        //   }
-        // );
-        // }
+      for (const media of newMedia) {
         const response = await uploadfile({
-          file: mediaFile.uri,
+          file: media.uri,
           fileName: media.fileName,
           fileSize: media.fileSize,
           type: media.mimeType || (media.type === 'video' ? 'video/mp4' : 'image/jpeg'),
@@ -310,14 +274,10 @@ const NewPostScreen = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedMedia, t]);
 
-  // Get final list of media URLs (existing + newly uploaded)
-  const getFinalMediaUrls = async (): Promise<string[]> => {
-    const existingUrls = selectedMedia
-      .filter((m) => m.isExisting)
-      .map((m) => m.uri);
-
+  const getFinalMediaUrls = useCallback(async (): Promise<string[]> => {
+    const existingUrls = selectedMedia.filter((m) => m.isExisting).map((m) => m.uri);
     const newUploadedUrls = await uploadNewMediaOnly();
 
     if (newUploadedUrls.length < selectedMedia.filter((m) => !m.isExisting).length) {
@@ -325,9 +285,9 @@ const NewPostScreen = () => {
     }
 
     return [...existingUrls, ...newUploadedUrls];
-  };
+  }, [selectedMedia, uploadNewMediaOnly]);
 
-  const createPost = async (imageUrls: string[]) => {
+  const createPost = useCallback(async (imageUrls: string[]) => {
     if (loading) return;
     try {
       setLoading(true);
@@ -338,7 +298,7 @@ const NewPostScreen = () => {
             caption: caption.trim(),
             tags: taggedUsers.map(u => String(u.id)),
             hashtags,
-            imageUrls, // assuming backend expects this field
+            imageUrls,
             createdAt: new Date().toISOString(),
           },
         ],
@@ -358,9 +318,9 @@ const NewPostScreen = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [loading, caption, taggedUsers, hashtags, t]);
 
-  const updatePost = async (imageUrls: string[]) => {
+  const updatePost = useCallback(async (imageUrls: string[]) => {
     if (loading || !editPostId) return;
     try {
       setLoading(true);
@@ -370,7 +330,7 @@ const NewPostScreen = () => {
         caption: caption.trim(),
         tags: taggedUsers.map(u => String(u.id)),
         hashtags,
-        imageUrls, // assuming backend expects this
+        imageUrls,
       };
 
       const apiResponse = await updatepostbyid(payload);
@@ -387,9 +347,9 @@ const NewPostScreen = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [loading, editPostId, caption, taggedUsers, hashtags, t]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     if (!caption.trim()) {
       showToast.error(t('oops'), 'Caption is required');
       return;
@@ -401,14 +361,12 @@ const NewPostScreen = () => {
 
     try {
       if (selectedMedia.length === 0) {
-        // No media → directly create/update
         if (isEditMode) {
           await updatePost([]);
         } else {
           await createPost([]);
         }
       } else {
-        // Upload new media first, then go to preview with final URLs
         const finalMediaUrls = await getFinalMediaUrls();
 
         const mediaForPreview = finalMediaUrls.map((uri) => ({
@@ -440,9 +398,9 @@ const NewPostScreen = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [caption, loading, isLoading, selectedMedia, isEditMode, editPostId, hashtags, taggedUsers, getFinalMediaUrls, updatePost, createPost, t]);
 
-  const addHashtag = () => {
+  const addHashtag = useCallback(() => {
     const tag = hashtagInput.trim();
     if (!tag) return;
     const formatted = tag.startsWith('#') ? tag : `#${tag}`;
@@ -453,7 +411,7 @@ const NewPostScreen = () => {
     setHashtags([...hashtags, formatted]);
     setHashtagInput('');
     Keyboard.dismiss();
-  };
+  }, [hashtagInput, hashtags, t]);
 
   const toggleTagUser = useCallback((user: AllUsers) => {
     setTaggedUsers((prev) =>
@@ -465,6 +423,10 @@ const NewPostScreen = () => {
 
   const removeMedia = useCallback((indexToRemove: number) => {
     setSelectedMedia((prev) => prev.filter((_, i) => i !== indexToRemove));
+  }, []);
+
+  const removeHashtag = useCallback((index: number) => {
+    setHashtags((prev) => prev.filter((_, idx) => idx !== index));
   }, []);
 
   const renderMediaHeader = useCallback(() => (
@@ -528,12 +490,12 @@ const NewPostScreen = () => {
     [taggedUsers, toggleTagUser]
   );
 
+  const isSubmitDisabled = useMemo(() => !caption.trim(), [caption]);
+
   return (
     <BottomSheetModalProvider>
       <View style={styles.main}>
-        <GlobalHeader
-          title={isEditMode ? t('editpost') : t('createnewpost')}
-        />
+        <GlobalHeader title={isEditMode ? t('editpost') : t('createnewpost')} />
 
         {(isLoading || loadingUsers || loading) && (
           <View style={styles.loadingOverlay}>
@@ -547,7 +509,6 @@ const NewPostScreen = () => {
           keyboardShouldPersistTaps="handled"
           extraScrollHeight={120}
         >
-          {/* Rest of your UI remains exactly the same */}
           <Text style={styles.headingText}>
             {t('keepitpositive')}{'\n'}
             {t('keepitpositive_description')}
@@ -563,7 +524,7 @@ const NewPostScreen = () => {
               style={styles.mediaList}
               contentContainerStyle={styles.mediaListContent}
               ListHeaderComponent={renderMediaHeader}
-              removeClippedSubviews={true}
+              removeClippedSubviews
             />
           ) : (
             <TouchableOpacity style={styles.emptyMediaContainer} onPress={openMediaSheet}>
@@ -650,7 +611,7 @@ const NewPostScreen = () => {
                 <TouchableOpacity
                   key={i}
                   style={styles.hashtagPill}
-                  onPress={() => setHashtags(hashtags.filter((_, idx) => idx !== i))}
+                  onPress={() => removeHashtag(i)}
                 >
                   <Text style={styles.hashtagText}>{tag}</Text>
                   <Text style={styles.hashtagRemove}>×</Text>
@@ -660,12 +621,9 @@ const NewPostScreen = () => {
           </View>
 
           <TouchableOpacity
-            style={[
-              styles.previewandsharebutton,
-              !caption.trim() && styles.disabledButton,
-            ]}
+            style={[styles.previewandsharebutton, isSubmitDisabled && styles.disabledButton]}
             onPress={handleSubmit}
-            disabled={!caption.trim()}
+            disabled={isSubmitDisabled}
           >
             <Text style={styles.previewandsharetext}>
               {selectedMedia.length === 0 ? t('share') : t('preview')}
@@ -673,7 +631,6 @@ const NewPostScreen = () => {
           </TouchableOpacity>
         </KeyboardAwareScrollView>
 
-        {/* Bottom Sheets remain unchanged */}
         <BottomSheetModal
           ref={mediaSheetRef}
           index={0}
@@ -712,10 +669,7 @@ const NewPostScreen = () => {
           <View style={styles.tagSheetHeader}>
             <Text style={styles.sheetTitle}>{t('tagpeople')}</Text>
             <TouchableOpacity
-              style={[
-                styles.doneBtn,
-                taggedUsers.length === 0 && styles.disabledDoneBtn,
-              ]}
+              style={[styles.doneBtn, taggedUsers.length === 0 && styles.disabledDoneBtn]}
               onPress={() => tagSheetRef.current?.dismiss()}
               disabled={taggedUsers.length === 0}
             >
@@ -729,7 +683,7 @@ const NewPostScreen = () => {
             renderItem={renderUserItem}
             contentContainerStyle={styles.flatListContent}
             showsVerticalScrollIndicator={false}
-            removeClippedSubviews={true}
+            removeClippedSubviews
           />
         </BottomSheetModal>
       </View>
@@ -739,7 +693,6 @@ const NewPostScreen = () => {
 
 export default NewPostScreen;
 
-// Styles unchanged (same as your original)
 const styles = StyleSheet.create({
   main: { flex: 1, backgroundColor: '#fff' },
   loadingOverlay: {

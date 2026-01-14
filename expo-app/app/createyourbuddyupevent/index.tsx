@@ -21,7 +21,7 @@ import BottomSheet, {
     BottomSheetView,
 } from '@gorhom/bottom-sheet'
 import { Image } from 'expo-image'
-import * as ImagePicker from 'expo-image-picker'
+import ImagePicker from 'react-native-image-crop-picker'
 import { router, useLocalSearchParams } from 'expo-router'
 import {
     CalendarDays,
@@ -115,7 +115,7 @@ const CreateYourBuddyUpEvent = () => {
     const participantsSheetRef = useRef<BottomSheetModal>(null)
     const hasFetchedEvents = useRef(false)
 
-    const LOCATION_LIST = [
+    const LOCATION_LIST = React.useMemo(() => [
         { label: t('officers_smoke_room'), value: "Officer's smoke room" },
         { label: t('crew_smoke_room'), value: "Crew smoke room" },
         { label: t('gymnasium'), value: "Gymnasium" },
@@ -124,18 +124,18 @@ const CreateYourBuddyUpEvent = () => {
         { label: t('crew_messroom'), value: "Crew Messroom" },
         { label: t('officer_messroom'), value: "Officer Messroom" },
         { label: t('activity_deck'), value: "Activity Deck" },
-    ]
+    ], [t])
 
-    const EVENT_LIST = [
+    const EVENT_LIST = React.useMemo(() => [
         { label: t('public_all_crew'), value: 'Public (All Crew)' },
         { label: t('invite_buddy'), value: 'Invite Buddy' },
-    ]
+    ], [t])
 
     const snapPoints = ['25%']
     const participantsSnapPoints = ['70%']
 
     // Static "Create Your Own" option
-    const CREATE_YOUR_OWN_OPTION = {
+    const CREATE_YOUR_OWN_OPTION = React.useMemo(() => ({
         id: 'create_your_own',
         categoryName: t('createyourown'),
         categoryImage: '',
@@ -146,7 +146,7 @@ const CreateYourBuddyUpEvent = () => {
         label: t('createyourown'),
         value: 'create_your_own',
         isCustomOption: true,
-    }
+    }), [t])
 
     // Initialize component - runs once on mount
     useEffect(() => {
@@ -482,62 +482,65 @@ const CreateYourBuddyUpEvent = () => {
         />
     )
 
-    const pickMedia = async (type: 'camera' | 'gallery') => {
+    const pickMedia = useCallback(async (type: 'camera' | 'gallery') => {
         try {
             mediaSheetRef.current?.close();
-            let result;
 
-            let permissionStatus;
+            const commonOptions: any = {
+                cropping: true,
+                freeStyleCropEnabled: true,
+                cropperCircleOverlay: false,
+                compressImageQuality: 0.7,
+                mediaType: "photo",
+                includeBase64: false,
+                maxFiles: 1,
+                forceJpg: false,
+                width: 600,
+                height: 600,
+            }
+
+            let result: any;
             if (type === 'camera') {
-                const { status } = await ImagePicker.requestCameraPermissionsAsync();
-                permissionStatus = status;
-                if (permissionStatus !== 'granted') {
-                    showToast.error(t('permissiondenied'), t('camerapermission_description'));
-                    return;
-                }
-                result = await ImagePicker.launchCameraAsync({
-                    mediaTypes: ImagePicker.MediaTypeOptions.Images, // deprecated usage preserved
-                    allowsEditing: true,
-                    quality: 0.8,
-                });
+                result = await ImagePicker.openCamera(commonOptions)
             } else if (type === 'gallery') {
-                const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-                permissionStatus = status;
-                if (permissionStatus !== 'granted') {
-                    showToast.error(t('permissiondenied'), t('medialibrarypermission_description'));
-                    return;
-                }
-                result = await ImagePicker.launchImageLibraryAsync({
-                    mediaTypes: ImagePicker.MediaTypeOptions.Images, // deprecated usage preserved
-                    allowsEditing: true,
-                    quality: 0.8,
-                });
+                result = await ImagePicker.openPicker({
+                    ...commonOptions,
+                    multiple: false,
+                })
             } else {
                 showToast.error(t('error'), t('invalidmediatype'));
                 return;
             }
 
-            if (!result.canceled && result.assets?.length) {
-                const asset = result.assets[0];
+            if (result && result.path) {
                 const mediaItem: MediaItem = {
-                    uri: asset.uri,
-                    type: asset.type,
-                    id: `${asset.uri}-${Date.now()}-${Math.random()}`,
-                    fileName: asset.fileName,
-                    fileSize: asset.fileSize,
-                };
-                setSelectedMedia(mediaItem);
-                showToast.success(t('success'), t('mediaitemsadded', { count: 1 }));
+                    uri: result.path,
+                    type: result.mime || 'image/jpeg',
+                    id: `${result.path}-${Date.now()}-${Math.random()}`,
+                    fileName: result.filename || result.path.split('/').pop(),
+                    fileSize: result.size,
+                }
+                // Reduce memory pressure by not storing image binary in state — only path/metadata
+                setSelectedMedia(mediaItem)
+                showToast.success(t('success'), t('mediaitemsadded', { count: 1 }))
             }
         } catch (error: any) {
-            if (!error.message?.includes('User cancelled')) {
-                console.error('Error picking media:', error);
-                showToast.error(t('error'), t('imagePickFailed'));
+            // image-crop-picker throws on cancel with message that may contain 'cancel' or 'User cancelled'
+            const msg = String(error?.message || '')
+            if (msg.toLowerCase().includes('cancel')) {
+                // user cancelled — nothing to do
+                return
             }
+            console.error('Error picking media:', error)
+            showToast.error(t('error'), t('imagePickFailed'))
         }
-    }
+    }, [t])
 
     const removeCustomImage = () => {
+        // try to cleanup temporary file from picker
+        if (selectedMedia?.uri && ImagePicker.cleanSingle) {
+            ImagePicker.cleanSingle(selectedMedia.uri).catch(() => { /* ignore */ })
+        }
         setSelectedMedia(null)
         const currentEvent = allEvents.find(e => e.id === selectedEventId)
         if (currentEvent) {
@@ -588,16 +591,16 @@ const CreateYourBuddyUpEvent = () => {
                 )
 
                 setAvailableUsers(filteredUsers)
-               if (isEditMode && preInvitedUserIds.length > 0 && selectedParticipants.length === 0) {
-                const preSelected = filteredUsers.filter((user: any) =>
-                    preInvitedUserIds.includes(user.id)
-                );
-                
-                if (preSelected.length > 0) {
-                    setSelectedParticipants(preSelected);
-                    console.log(`Pre-selected ${preSelected.length} invited users`);
+                if (isEditMode && preInvitedUserIds.length > 0 && selectedParticipants.length === 0) {
+                    const preSelected = filteredUsers.filter((user: any) =>
+                        preInvitedUserIds.includes(user.id)
+                    );
+
+                    if (preSelected.length > 0) {
+                        setSelectedParticipants(preSelected);
+                        console.log(`Pre-selected ${preSelected.length} invited users`);
+                    }
                 }
-            }
                 if (filteredUsers.length === 0) {
                     showToast.error(t('oops'), t('nousersboarded'))
                 } else {
@@ -616,10 +619,10 @@ const CreateYourBuddyUpEvent = () => {
             setIsFetchingUsers(false)
         }
     }, [t, eventType, isFetchingUsers, preInvitedUserIds])
-    
 
 
-    const addTagUser = useCallback( async () => {
+
+    const addTagUser = useCallback(async () => {
         try {
             const userData = await getUserDetails()
 
@@ -627,25 +630,25 @@ const CreateYourBuddyUpEvent = () => {
                 shipId: userData.shipId,
             })
 
-           
+
             if (apiResponse.success && apiResponse.status === 200) {
                 const usersList = apiResponse.data?.usersList || []
                 const filteredUsers = usersList.filter(
                     (user: any) => user.id !== userData.id
                 )
 
-               
-               if (isEditMode && preInvitedUserIds.length > 0 && selectedParticipants.length === 0) {
-                
-                const preSelected = filteredUsers.filter((user: any) =>
-                    preInvitedUserIds.includes(user.id)
-                );
-                
-                if (preSelected.length > 0) {
-                    setSelectedParticipants(preSelected);
+
+                if (isEditMode && preInvitedUserIds.length > 0 && selectedParticipants.length === 0) {
+
+                    const preSelected = filteredUsers.filter((user: any) =>
+                        preInvitedUserIds.includes(user.id)
+                    );
+
+                    if (preSelected.length > 0) {
+                        setSelectedParticipants(preSelected);
+                    }
                 }
             }
-        }
         } catch (error: any) {
             console.log('Error fetching users:', error)
             showToast.error(t('error'), 'Failed to load users')
@@ -655,7 +658,7 @@ const CreateYourBuddyUpEvent = () => {
 
     useEffect(() => {
         console.log('preInvitedUserIds changed:', preInvitedUserIds);
-        
+
         addTagUser()
     }, [preInvitedUserIds])
 
@@ -691,8 +694,8 @@ const CreateYourBuddyUpEvent = () => {
         [selectedParticipants, toggleTagUser]
     )
 
-    const getDisplayImage = () => {
-        console.log('DEBUG: getDisplayImage called - selectedMedia:', selectedMedia?.uri, 'defaultEventImage:', defaultEventImage);
+    const getDisplayImage = React.useCallback(() => {
+        console.log('DEBUG: getDisplayImage memo - selectedMedia:', selectedMedia?.uri, 'defaultEventImage:', defaultEventImage);
         if (selectedMedia?.uri) {
             return { uri: selectedMedia.uri }
         }
@@ -700,7 +703,7 @@ const CreateYourBuddyUpEvent = () => {
             return { uri: defaultEventImage }
         }
         return ImagesAssets.SeabuddyPlaceholder
-    }
+    }, [selectedMedia?.uri, defaultEventImage])
 
     const handleCreateEvent = async () => {
         if (!isFormValid()) return
@@ -788,7 +791,7 @@ const CreateYourBuddyUpEvent = () => {
         }
     }
 
-    const renderDropdownItem = (item: AllEvents) => {
+    const renderDropdownItem = React.useCallback((item: AllEvents) => {
         if (item.id === 'create_your_own') {
             return (
                 <View style={[styles.dropdownItem, styles.createYourOwnItem]}>
@@ -810,7 +813,7 @@ const CreateYourBuddyUpEvent = () => {
                 <Text style={styles.dropdownItemText}>{item.categoryName}</Text>
             </View>
         )
-    }
+    }, [])
 
     return (
         <KeyboardAvoidingView
@@ -1171,7 +1174,7 @@ const CreateYourBuddyUpEvent = () => {
     )
 }
 
-export default CreateYourBuddyUpEvent
+export default React.memo(CreateYourBuddyUpEvent)
 
 const styles = StyleSheet.create({
     removeImageBtn: {

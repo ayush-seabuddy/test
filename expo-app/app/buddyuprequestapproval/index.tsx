@@ -10,11 +10,11 @@ import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/botto
 import axios from 'axios'
 import { ResizeMode, Video } from 'expo-av'
 import { Image } from 'expo-image'
-import * as ImagePicker from 'expo-image-picker'
+import ImagePicker from 'react-native-image-crop-picker'
 import { router } from 'expo-router'
 import { useLocalSearchParams } from 'expo-router/build/hooks'
 import { Play, X } from 'lucide-react-native'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 
@@ -43,7 +43,7 @@ type MediaItem = {
 
 const BuddyUpRequestApprovalScreen = () => {
     const { t } = useTranslation();
-    const { eventId }:{eventId:string} = useLocalSearchParams();
+    const { eventId }: { eventId: string } = useLocalSearchParams();
 
     const [userDetails, setUserDetails] = useState<UserDetails>({});
     const [description, setDescription] = useState('');
@@ -59,7 +59,7 @@ const BuddyUpRequestApprovalScreen = () => {
     }
 
 
-    const editbuddyupevent = async (eventId: string , completionImages: string[], completionDescription: string) => {
+    const editbuddyupevent = async (eventId: string, completionImages: string[], completionDescription: string) => {
         try {
             setLoading(true)
             const apiResponse = await addeditdeletebuddyupevent({
@@ -70,11 +70,11 @@ const BuddyUpRequestApprovalScreen = () => {
                         completionDescription: completionDescription,
                         status: (userDetails.designation === "Captain" ||
                             userDetails.designation === "Chief engineer") ? "COMPLETED" : "REQUESTED",
-                        },
-                    ],
-                })
-                console.log("userDetails: sdfkjsdklfsjdflkd", (userDetails.designation === "Captain" ||
-                            userDetails.designation === "Chief engineer") );
+                    },
+                ],
+            })
+            console.log("userDetails: sdfkjsdklfsjdflkd", (userDetails.designation === "Captain" ||
+                userDetails.designation === "Chief engineer"));
             setLoading(false)
 
             if (apiResponse.success && apiResponse.status === 200) {
@@ -97,81 +97,59 @@ const BuddyUpRequestApprovalScreen = () => {
     }, [])
 
     const pickMedia = async (type: 'photo' | 'video' | 'gallery') => {
+        mediaBottomSheetRef.current?.close();
+        setLoading(true);
+
+        const cropOptions: any = {
+            cropping: true,
+            freeStyleCropEnabled: true,
+            cropperCircleOverlay: false,
+            compressImageQuality: 0.7,
+            includeBase64: false,
+            multiple: false,
+            forceJpg: false,
+            width: 600,
+            height: 600,
+        };
+
         try {
-            mediaBottomSheetRef.current?.close();
-            setLoading(true);
-            let result;
+            let result: any;
 
-            let permissionStatus;
             if (type === 'photo') {
-                const { status } = await ImagePicker.requestCameraPermissionsAsync();
-                permissionStatus = status;
-                if (permissionStatus !== 'granted') {
-                    showToast.error(t('permissiondenied'), t('camerapermission_description'));
-                    setLoading(false);
-                    return;
-                }
-                result = await ImagePicker.launchCameraAsync({
-                    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                    quality: 0.8,
-                    allowsEditing: true,
-                });
+                result = await ImagePicker.openCamera({ ...cropOptions, mediaType: 'photo' });
             } else if (type === 'video') {
-                const { status } = await ImagePicker.requestCameraPermissionsAsync();
-                permissionStatus = status;
-                if (permissionStatus !== 'granted') {
-                    showToast.error(t('permissiondenied'), t('camerapermission_description'));
-                    setLoading(false);
-                    return;
-                }
-                result = await ImagePicker.launchCameraAsync({
-                    mediaTypes: ImagePicker.MediaTypeOptions.Videos,
-                    videoMaxDuration: 45
-                });
+                result = await ImagePicker.openCamera({ mediaType: 'video', duration: 45 });
             } else {
-                const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-                permissionStatus = status;
-                if (permissionStatus !== 'granted') {
-                    showToast.error(t('permissiondenied'), t('medialibrarypermission_description'));
-                    setLoading(false);
-                    return;
-                }
-                result = await ImagePicker.launchImageLibraryAsync({
-                    mediaTypes: ImagePicker.MediaTypeOptions.All,
-                    allowsMultipleSelection: true,
-                    quality: 0.8,
-                    videoMaxDuration: 45,
-                });
+                result = await ImagePicker.openPicker({ mediaType: 'any' });
             }
 
-            if (!result.canceled) {
-                const assets = result.assets || [];
-                const invalidVideos = assets.filter(asset =>
-                    asset.type === 'video' && asset.duration && asset.duration > 45000
-                );
+            if (!result) return;
 
-                if (invalidVideos.length > 0) {
-                    showToast.error(t('oops'), t('videotoolong', { max: 45 }));
-                    return;
-                }
+            const assets = Array.isArray(result) ? result : [result];
 
-                const newMedia: MediaItem[] = assets.map((asset) => ({
-                    uri: asset.uri,
-                    type: asset.type === 'video' ? 'video' : 'image',
-                    id: `${asset.uri}-${Date.now()}-${Math.random()}`,
-                    uploading: true,
-                    error: false,
-                    retryCount: 0,
-                }));
-                setSelectedMedia((prev) => [...prev, ...newMedia]);
-                showToast.success(
-                    t('success'),
-                    t('mediaitemsadded', { count: newMedia.length })
-                );
-                uploadMediaFiles(newMedia);
+            const invalidVideos = assets.filter((asset: any) => asset.duration && asset.duration > 45);
+            if (invalidVideos.length > 0) {
+                showToast.error(t('oops'), t('videotoolong', { max: 45 }));
+                return;
             }
+
+            const newMedia: MediaItem[] = assets.map((asset: any) => ({
+                uri: asset.path || asset.uri || '',
+                type: (asset.mime && asset.mime.startsWith('video')) || asset.duration ? 'video' : 'image',
+                id: `${asset.path || asset.uri}-${Date.now()}-${Math.random()}`,
+                uploading: true,
+                error: false,
+                retryCount: 0,
+            }));
+
+            if (newMedia.length === 0) return;
+
+            setSelectedMedia(prev => [...prev, ...newMedia]);
+            showToast.success(t('success'), t('mediaitemsadded', { count: newMedia.length }));
+            uploadMediaFiles(newMedia);
         } catch (error: any) {
-            if (!error.message?.includes('User cancelled')) {
+            const msg = (error && (error.message || error)) || '';
+            if (!msg.toString().toLowerCase().includes('cancel')) {
                 console.error('Error picking media:', error);
                 showToast.error(t('error'), t('imagePickFailed'));
             }
@@ -194,7 +172,6 @@ const BuddyUpRequestApprovalScreen = () => {
             const uploadWithRetry = async (): Promise<void> => {
                 while (retryCount <= MAX_RETRIES) {
                     try {
-                        // Update UI: uploading (or retrying)
                         setSelectedMedia(prev => prev.map(m =>
                             m.id === item.id
                                 ? { ...m, uploading: true, error: false, retryCount }
@@ -223,7 +200,7 @@ const BuddyUpRequestApprovalScreen = () => {
                                     ? { ...m, uploadedUrl: response.data.result, uploading: false, error: false }
                                     : m
                             ));
-                            return; // Success
+                            return;
                         } else {
                             throw new Error(response.data?.message || 'Upload failed');
                         }
@@ -232,7 +209,6 @@ const BuddyUpRequestApprovalScreen = () => {
                         console.warn(`Upload attempt ${retryCount}/${MAX_RETRIES + 1} failed for ${item.id}:`, err.message || err);
 
                         if (retryCount > MAX_RETRIES) {
-                            // Final failure after all retries
                             setSelectedMedia(prev => prev.map(m =>
                                 m.id === item.id
                                     ? { ...m, uploading: false, error: true }
@@ -242,7 +218,6 @@ const BuddyUpRequestApprovalScreen = () => {
                             return;
                         }
 
-                        // Exponential backoff: wait longer each time (1s, 2s, 3s...)
                         await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
                     }
                 }
@@ -265,14 +240,10 @@ const BuddyUpRequestApprovalScreen = () => {
             showToast.error(t("invalid"), t("addmediaanddescription"));
             return;
         }
-
-        console.log("Description:", description);
-        console.log("Uploaded Media URLs:", uploadedUrls);
-        // TODO: Call your actual share/post API here
-        if(eventId){
-             editbuddyupevent(eventId, uploadedUrls, description)
+        if (eventId) {
+            editbuddyupevent(eventId, uploadedUrls, description)
         }
-       
+
     }
 
     const allUploadedSuccessfully = selectedMedia.length > 0 &&
@@ -322,7 +293,7 @@ const BuddyUpRequestApprovalScreen = () => {
                 )}
                 {item.uploading && (
                     <View style={styles.statusOverlay}>
-                        <CommonLoader/>
+                        <CommonLoader color='#fff'/>
                         <Text style={styles.overlayText}>
                             {(item.retryCount ?? 0) > 0
                                 ? `Retrying... (${item.retryCount ?? 0}/5)`
@@ -332,7 +303,7 @@ const BuddyUpRequestApprovalScreen = () => {
                 )}
                 {item.error && (
                     <View style={[styles.statusOverlay, { backgroundColor: 'rgba(255,0,0,0.7)' }]}>
-                        <Text style={styles.overlayText}>Upload Failed</Text>
+                        <Text style={styles.overlayText}>{t('failedtouploadimage')}</Text>
                     </View>
                 )}
                 <TouchableOpacity style={styles.removeMediaButton} onPress={() => removeMedia(item.id)}>
@@ -344,7 +315,7 @@ const BuddyUpRequestApprovalScreen = () => {
     );
 
     const buttonName = (userDetails.designation === "Captain" ||
-                            userDetails.designation === "Chief engineer") ? t("sharetofeed") : t("requestapprovalform")
+        userDetails.designation === "Chief engineer") ? t("sharetofeed") : t("requestapprovalform")
 
     return (
         <View style={styles.main}>
@@ -359,7 +330,7 @@ const BuddyUpRequestApprovalScreen = () => {
 
             {loading && (
                 <View style={styles.loadingOverlay}>
-                    <CommonLoader fullScreen/>
+                    <CommonLoader fullScreen />
                 </View>
             )}
 
@@ -450,7 +421,7 @@ const BuddyUpRequestApprovalScreen = () => {
     )
 }
 
-export default BuddyUpRequestApprovalScreen
+export default memo(BuddyUpRequestApprovalScreen)
 
 const styles = StyleSheet.create({
     main: { flex: 1, backgroundColor: '#fff' },

@@ -215,10 +215,10 @@ const BuddyUpEventCard = ({
 export default BuddyUpEventCard
 
 const styles = StyleSheet.create({
-    main: { flex: 1, backgroundColor: '#fff' },
+    main: { flex: 1 },
     card: {
         width: 220,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#fff',
         padding: 10,
         marginTop: 10,
         borderWidth: 0.5,
