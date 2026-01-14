@@ -34,24 +34,12 @@ const PDFModal:React.FC<PDFModalProps> = ({
   
 }) => {
   const navigation = useNavigation();
-  const [useWebView, setUseWebView] = useState(false);
-  const pdfModalStyle = {
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "flex-start",
-    height,
-    width,
-    margin: 0,
-  };
-
-
   const webViewSource = {
     uri: `https://docs.google.com/viewer?url=${encodeURIComponent(
       pdfUrl
     )}&embedded=true`,
   };
 
-  // Handle back button press
   const handleBackPress = () => {
     if (navigation.canGoBack()) {
       navigation.goBack();
@@ -65,7 +53,7 @@ const PDFModal:React.FC<PDFModalProps> = ({
   visible={visible}
   onDismiss={onClose}
   transparent={false}
-  animationType="slide" // optional: smoother entry
+  animationType="slide"
 >
       <SafeAreaView style={styles.pdfModalContainer}>
         {pdfUrl ? (

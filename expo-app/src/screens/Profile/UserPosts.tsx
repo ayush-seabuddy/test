@@ -151,7 +151,7 @@ const UserPost = () => {
                 ListFooterComponent={renderFooter}
                 ListEmptyComponent={
                     <View style={styles.center}>
-                        <EmptyComponent text={t('nopostfound')} />
+                        <EmptyComponent text={t('youarenotpostedanything')} />
                     </View>
                 }
                 showsVerticalScrollIndicator={false}

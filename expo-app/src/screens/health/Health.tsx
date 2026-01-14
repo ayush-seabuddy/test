@@ -39,7 +39,7 @@ const Health = ({ }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#ededed",
   },
   contentContainerStyle: {
     paddingBottom: 100,

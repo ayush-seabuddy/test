@@ -21,26 +21,26 @@ const ShipLifeScreenHeader = () => {
   const { t } = useTranslation();
   const [unreadNotification, setUnreadNotification] = useState(0);
 
-      const userDetails = useSelector((state: RootState) => state.userDetails)
-    const dispatch = useDispatch()
+  const userDetails = useSelector((state: RootState) => state.userDetails)
+  const dispatch = useDispatch()
 
-    useFocusEffect(  useCallback(() => {
-        const fetchProfileDetails = async () => {
-            let result = await viewProfile();
-            if (result?.data) {
-                const object = result.data
-                for (const property in object) {
-                    dispatch(updateUserField({ key: property, value: object[property] }))
-                }
-
-            }
+  useFocusEffect(useCallback(() => {
+    const fetchProfileDetails = async () => {
+      let result = await viewProfile();
+      if (result?.data) {
+        const object = result.data
+        for (const property in object) {
+          dispatch(updateUserField({ key: property, value: object[property] }))
         }
-        fetchProfileDetails();
-    }, []));
+
+      }
+    }
+    fetchProfileDetails();
+  }, []));
 
   const fetchInitialData = useCallback(async () => {
     try {
-      const notificationRes= await getUnreadNotificationCount()
+      const notificationRes = await getUnreadNotificationCount()
       setUnreadNotification(notificationRes.data.allNotifications ?? 0);
     } catch (error) {
       console.log("Error fetching initial header data:", error);
@@ -69,13 +69,13 @@ const ShipLifeScreenHeader = () => {
 
   // Determine the correct icon source with safe fallback
   const crewIconSource = userDetails
-    ?isCaptain && userDetails?.shipId
+    ? isCaptain && userDetails?.shipId
       ? ImagesAssets.crewListLogo
       : ImagesAssets.searchLogo
     : ImagesAssets.searchLogo;
 
   const handleCrewButtonPress = () => {
-    if (isCaptain) {
+    if (isCaptain && userDetails.shipId) {
       router.push("/crewlisting");
     }
     else {

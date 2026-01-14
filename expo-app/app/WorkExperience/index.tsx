@@ -17,11 +17,12 @@ import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import CustomDateTimePicker from '@/src/components/Modals/CustomDateTimePicker';
 import { RootState } from '@/src/redux/store';
-import { Edit, Trash2, Briefcase, Building, Calendar } from 'lucide-react-native';
+import { Edit, Trash2, Briefcase, Building, Calendar, Plus, X } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import CommonLoader from '@/src/components/CommonLoader';
 import { updateUserField } from '@/src/redux/userDetailsSlice';
+import EmptyComponent from '@/src/components/EmptyComponent';
 
 interface WorkExperience {
     id: string;
@@ -50,6 +51,17 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
     const dispatch = useDispatch();
     const [experiences, setExperiences] = useState<WorkExperience[]>(userDetails.workingExperience || []);
 
+    const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
+    const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [deleteId, setDeleteId] = useState<string>('');
+    const [editId, setEditId] = useState<string>('');
+    const [isUpdate, setIsUpdate] = useState<boolean>(false);
+    const [modalVisible, setModalVisible] = useState<boolean>(false);
+
+    // New state to control view toggle
+    const [showForm, setShowForm] = useState<boolean>(false);
+
     const fetchProfileDetails = async () => {
         const result = await viewProfile();
         if (result?.data) {
@@ -60,14 +72,6 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
     useEffect(() => {
         fetchProfileDetails();
     }, []);
-
-    const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
-    const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [deleteId, setDeleteId] = useState<string>('');
-    const [editId, setEditId] = useState<string>('');
-    const [isUpdate, setIsUpdate] = useState<boolean>(false);
-    const [modalVisible, setModalVisible] = useState<boolean>(false);
 
     // Format date for display
     const formatDateForDisplay = (date: Date | null): string => {
@@ -103,9 +107,8 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
         return isNaN(parsedDate.getTime()) ? null : parsedDate;
     };
 
-    // FIXED: Handle date picker event object
     const handleStartDateConfirm = (event: any) => {
-        console.log('Start date event:', event); // Debug log
+        console.log('Start date event:', event);
 
         try {
             if (event && event.nativeEvent && event.nativeEvent.timestamp) {
@@ -117,7 +120,6 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
                 if (!isNaN(selectedDate.getTime())) {
                     setStartDate(selectedDate);
 
-                    // Validate against end date
                     if (endDate && selectedDate > endDate) {
                         showToast.error(t('oops'), t('startAfterEnd'));
                     }
@@ -134,9 +136,8 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
         setShowStartDatePicker(false);
     };
 
-    // FIXED: Handle date picker event object
     const handleEndDateConfirm = (event: any) => {
-        console.log('End date event:', event); // Debug log
+        console.log('End date event:', event);
 
         try {
             if (event && event.nativeEvent && event.nativeEvent.timestamp) {
@@ -148,7 +149,6 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
                 if (!isNaN(selectedDate.getTime())) {
                     setEndDate(selectedDate);
 
-                    // Validate against start date
                     if (startDate && startDate > selectedDate) {
                         showToast.error(t('oops'), t('endBeforeStart'));
                     }
@@ -165,7 +165,6 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
         setShowEndDatePicker(false);
     };
 
-    // Handle date picker close
     const handleStartDateClose = () => {
         setShowStartDatePicker(false);
     };
@@ -198,6 +197,16 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
         return true;
     };
 
+    const resetForm = () => {
+        setJobTitle('');
+        setCompany('');
+        setStartDate(null);
+        setEndDate(null);
+        setIsUpdate(false);
+        setEditId('');
+        setShowForm(false);
+    };
+
     const addExperience = async () => {
         if (!validateInputs()) return;
 
@@ -213,14 +222,7 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
         }
 
         await updateWorkExperience(payload);
-
-        // Reset form
-        setJobTitle('');
-        setCompany('');
-        setStartDate(null);
-        setEndDate(null);
-        setIsUpdate(false);
-        setEditId('');
+        resetForm();
     };
 
     const updateWorkExperience = async (experience: Partial<WorkExperience>) => {
@@ -246,17 +248,16 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
             const response = await updateprofile(body);
 
             if (response.status === 200) {
-                const fetchProfileDetails = async () => {
-                    let result = await viewProfile();
-                    if (result?.data) {
-                        const object = result.data
-                        for (const property in object) {
-                            dispatch(updateUserField({ key: property, value: object[property] }))
-                        }
+                const result = await viewProfile();
+                if (result?.data) {
+                    const object = result.data;
+                    for (const property in object) {
+                        dispatch(updateUserField({ key: property, value: object[property] }));
                     }
+                    // Update local experiences state
+                    setExperiences(result.data.workingExperience || []);
                 }
-                await fetchProfileDetails();
-                showToast.success(t('success'), t('workingexperienceaddedsuccessfully'))
+                showToast.success(t('success'), t('workingexperienceaddedsuccessfully'));
             }
         } catch (error: any) {
             console.error('Update error:', error.response?.data || error.message);
@@ -294,9 +295,31 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
         }
     };
 
+    const handlePlusIconClick = () => {
+        setShowForm(true);
+    };
+
+    const handleCloseForm = () => {
+        resetForm();
+    };
+
+    const handleEditExperience = (item: WorkExperience) => {
+        setEditId(item.id);
+        setCompany(item.companyName);
+        setJobTitle(item.role);
+        setStartDate(parseDDMMYYYY(item.from));
+        setEndDate(parseDDMMYYYY(item.to));
+        setIsUpdate(true);
+        setShowForm(true);
+    };
+
     return (
         <View style={styles.main}>
-            <GlobalHeader title={t('shipboard_experience')} />
+            <GlobalHeader
+                title={t('shipboard_experience')}
+                rightIcon={showForm ? <X /> : <Plus />}
+                onRightPress={showForm ? handleCloseForm : handlePlusIconClick}
+            />
             <KeyboardAwareScrollView
                 contentContainerStyle={styles.container}
                 keyboardShouldPersistTaps="handled"
@@ -304,142 +327,145 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
                 extraScrollHeight={Platform.OS === 'ios' ? 20 : 80}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Job Title Input */}
-                <View style={styles.inputContainer}>
-                    <Briefcase size={20} color="#666" style={styles.icon} />
-                    <TextInput
-                        style={styles.textInput}
-                        placeholder={t('jobtitle')}
-                        placeholderTextColor="#B7B7B7"
-                        value={jobTitle}
-                        onChangeText={setJobTitle}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                    />
-                </View>
-
-                {/* Company Input */}
-                <View style={styles.inputContainer}>
-                    <Building size={20} color="#666" style={styles.icon} />
-                    <TextInput
-                        style={styles.textInput}
-                        placeholder={t('companyname')}
-                        placeholderTextColor="#B7B7B7"
-                        value={company}
-                        onChangeText={setCompany}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                    />
-                </View>
-
-                {/* Start Date */}
-                <TouchableOpacity
-                    style={styles.inputContainer}
-                    onPress={() => setShowStartDatePicker(true)}
-                >
-                    <Calendar size={20} color="#666" style={styles.icon} />
-                    {startDate ? (
-                        <Text style={styles.dateText}>{formatDateForDisplay(startDate)}</Text>
-                    ) : (
-                        <Text style={styles.datePlaceholder}>{t('startdate')}</Text>
-                    )}
-                </TouchableOpacity>
-
-                {/* Start Date Picker */}
-                <CustomDateTimePicker
-                    value={startDate || new Date()}
-                    mode="date"
-                    onChange={handleStartDateConfirm}
-                    onClose={handleStartDateClose}
-                    isVisible={showStartDatePicker}
-                    cancelText={t('cancel') || "Cancel"}
-                    confirmText={t('done') || "Done"}
-                    containerStyle={{ backgroundColor: "#fff" }}
-                    buttonTextStyle={{ fontSize: 18, color: "#84A402" }}
-                    maximumDate={new Date()}
-                />
-
-                {/* End Date */}
-                <TouchableOpacity
-                    style={styles.inputContainer}
-                    onPress={() => setShowEndDatePicker(true)}
-                >
-                    <Calendar size={20} color="#666" style={styles.icon} />
-                    {endDate ? (
-                        <Text style={styles.dateText}>{formatDateForDisplay(endDate)}</Text>
-                    ) : (
-                        <Text style={styles.datePlaceholder}>{t('enddate')}</Text>
-                    )}
-                </TouchableOpacity>
-
-                {/* End Date Picker */}
-                <CustomDateTimePicker
-                    value={endDate || new Date()}
-                    mode="date"
-                    onChange={handleEndDateConfirm}
-                    onClose={handleEndDateClose}
-                    isVisible={showEndDatePicker}
-                    cancelText={t('cancel') || "Cancel"}
-                    confirmText={t('done') || "Done"}
-                    containerStyle={{ backgroundColor: "#fff" }}
-                    buttonTextStyle={{ fontSize: 18, color: "#84A402" }}
-                    maximumDate={new Date()}
-                />
-
-                {/* Add/Update Button */}
-                <TouchableOpacity
-                    onPress={addExperience}
-                    style={styles.updateButton}
-                    disabled={loading}
-                >
-                    {loading ? (
-                        <CommonLoader color="#fff" />
-                    ) : (
-                        <Text style={styles.updateButtonText}>
-                            {isUpdate ? t('editexperience') : t('addexperience')}
-                        </Text>
-                    )}
-                </TouchableOpacity>
-
-                {/* Experiences List */}
-                <FlatList
-                    data={experiences}
-                    keyExtractor={(item) => item.id}
-                    scrollEnabled={false}
-                    renderItem={({ item }) => (
-                        <View style={styles.experienceCard}>
-                            <View style={styles.experienceContent}>
-                                <Text style={styles.companyName}>{item.role}</Text>
-                                <Text style={styles.role}>{item.companyName}</Text>
-                                <Text style={styles.duration}>{item.from} - {item.to}</Text>
-                            </View>
-                            <View style={styles.actions}>
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        setEditId(item.id);
-                                        setCompany(item.companyName);
-                                        setJobTitle(item.role);
-                                        setStartDate(parseDDMMYYYY(item.from));
-                                        setEndDate(parseDDMMYYYY(item.to));
-                                        setIsUpdate(true);
-                                    }}
-                                    style={styles.actionButton}
-                                >
-                                    <Edit size={20} color="#000" />
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        setDeleteId(item.id);
-                                        setModalVisible(true);
-                                    }}
-                                    style={styles.actionButton}
-                                >
-                                    <Trash2 size={20} color="red" />
-                                </TouchableOpacity>
-                            </View>
+                {showForm ? (
+                    // FORM VIEW
+                    <>
+                        {/* Job Title Input */}
+                        <View style={styles.inputContainer}>
+                            <Briefcase size={20} color="#666" style={styles.icon} />
+                            <TextInput
+                                style={styles.textInput}
+                                placeholder={t('jobtitle')}
+                                placeholderTextColor="#B7B7B7"
+                                value={jobTitle}
+                                onChangeText={setJobTitle}
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                            />
                         </View>
-                    )}
-                />
+
+                        {/* Company Input */}
+                        <View style={styles.inputContainer}>
+                            <Building size={20} color="#666" style={styles.icon} />
+                            <TextInput
+                                style={styles.textInput}
+                                placeholder={t('companyname')}
+                                placeholderTextColor="#B7B7B7"
+                                value={company}
+                                onChangeText={setCompany}
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                            />
+                        </View>
+
+                        {/* Start Date */}
+                        <TouchableOpacity
+                            style={styles.inputContainer}
+                            onPress={() => setShowStartDatePicker(true)}
+                        >
+                            <Calendar size={20} color="#666" style={styles.icon} />
+                            {startDate ? (
+                                <Text style={styles.dateText}>{formatDateForDisplay(startDate)}</Text>
+                            ) : (
+                                <Text style={styles.datePlaceholder}>{t('startdate')}</Text>
+                            )}
+                        </TouchableOpacity>
+
+                        {/* Start Date Picker */}
+                        <CustomDateTimePicker
+                            value={startDate || new Date()}
+                            mode="date"
+                            onChange={handleStartDateConfirm}
+                            onClose={handleStartDateClose}
+                            isVisible={showStartDatePicker}
+                            cancelText={t('cancel') || "Cancel"}
+                            confirmText={t('done') || "Done"}
+                            containerStyle={{ backgroundColor: "#fff" }}
+                            buttonTextStyle={{ fontSize: 18, color: "#84A402" }}
+                            maximumDate={new Date()}
+                        />
+
+                        {/* End Date */}
+                        <TouchableOpacity
+                            style={styles.inputContainer}
+                            onPress={() => setShowEndDatePicker(true)}
+                        >
+                            <Calendar size={20} color="#666" style={styles.icon} />
+                            {endDate ? (
+                                <Text style={styles.dateText}>{formatDateForDisplay(endDate)}</Text>
+                            ) : (
+                                <Text style={styles.datePlaceholder}>{t('enddate')}</Text>
+                            )}
+                        </TouchableOpacity>
+
+                        {/* End Date Picker */}
+                        <CustomDateTimePicker
+                            value={endDate || new Date()}
+                            mode="date"
+                            onChange={handleEndDateConfirm}
+                            onClose={handleEndDateClose}
+                            isVisible={showEndDatePicker}
+                            cancelText={t('cancel') || "Cancel"}
+                            confirmText={t('done') || "Done"}
+                            containerStyle={{ backgroundColor: "#fff" }}
+                            buttonTextStyle={{ fontSize: 18, color: "#84A402" }}
+                            maximumDate={new Date()}
+                        />
+
+                        {/* Add/Update Button */}
+                        <TouchableOpacity
+                            onPress={addExperience}
+                            style={styles.updateButton}
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <CommonLoader color="#fff" />
+                            ) : (
+                                <Text style={styles.updateButtonText}>
+                                    {isUpdate ? t('editexperience') : t('addexperience')}
+                                </Text>
+                            )}
+                        </TouchableOpacity>
+                    </>
+                ) : (
+                    // LISTING VIEW
+                    <FlatList
+                        data={experiences}
+                        keyExtractor={(item) => item.id}
+                        scrollEnabled={false}
+                        ListEmptyComponent={
+                            <View style={styles.emptyContainer}>
+                                <EmptyComponent text={t('noexperienceadded')} />
+                            </View>
+                        }
+                        renderItem={({ item }) => (
+                            <View style={styles.experienceCard}>
+                                <View style={styles.experienceContent}>
+                                    <Text style={styles.companyName}>{item.role}</Text>
+                                    <Text style={styles.role}>{item.companyName}</Text>
+                                    <Text style={styles.duration}>{item.from} - {item.to}</Text>
+                                </View>
+                                <View style={styles.actions}>
+                                    <TouchableOpacity
+                                        onPress={() => handleEditExperience(item)}
+                                        style={styles.actionButton}
+                                    >
+                                        <Edit size={20} color="#000" />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            setDeleteId(item.id);
+                                            setModalVisible(true);
+                                        }}
+                                        style={styles.actionButton}
+                                    >
+                                        <Trash2 size={20} color="red" />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
+                    />
+                )}
             </KeyboardAwareScrollView>
 
             {/* Delete Confirmation Modal */}
@@ -575,6 +601,23 @@ const styles = StyleSheet.create({
     },
     actionButton: {
         padding: 8,
+    },
+    emptyContainer: {
+        flex: 1,
+        paddingTop: '50%',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    emptyText: {
+        fontFamily: 'Poppins-SemiBold',
+        fontSize: 16,
+        color: '#666',
+        marginBottom: 8,
+    },
+    emptySubText: {
+        fontFamily: 'Poppins-Regular',
+        fontSize: 14,
+        color: '#999',
     },
     modalContainer: {
         flex: 1,

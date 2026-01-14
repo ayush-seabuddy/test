@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-// import { ImagesAssets } from "../../assets/ImagesAssets";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import { router } from "expo-router";
 import { ChevronLeft, Search } from "lucide-react-native";
@@ -20,8 +19,6 @@ import ChatSearchComponent from "./ChatSearchComponent";
 
 const { height } = Dimensions.get("screen");
 
-// ──────────────────────────────────────────────────────────────
-// Memoized User Item – using Expo Image only
 const UserItem = React.memo(({ item, onPress }: { item: any; onPress: (user: any) => void }) => {
   const isBoarded = item?.ship?.crewMembers?.find(
     (member: any) => member.userId === item?.id
@@ -30,12 +27,12 @@ const UserItem = React.memo(({ item, onPress }: { item: any; onPress: (user: any
   return (
     <TouchableOpacity onPress={() => onPress(item)} style={styles.userItemWrapper}>
       <View style={styles.userItemContainer}>
-       
+
 
         <Image
           style={styles.userImage}
           resizeMode="contain"
-          defaultSource={ImagesAssets.userIcon} 
+          defaultSource={ImagesAssets.userIcon}
           source={
             item.profileUrl
               ? { uri: item.profileUrl }
@@ -44,11 +41,10 @@ const UserItem = React.memo(({ item, onPress }: { item: any; onPress: (user: any
         />
         <View style={{ marginLeft: 10 }}>
           <Text style={styles.userItem}>
-            {item.fullName} 
-            {/* ({item?.designation}) */}
+            {item.fullName}
           </Text>
 
-         {item?.department !== "Shore_Staff" && (
+          {item?.department !== "Shore_Staff" && (
             <View style={styles.statusContainer}>
               <View
                 style={[
@@ -73,7 +69,7 @@ const UserItem = React.memo(({ item, onPress }: { item: any; onPress: (user: any
               </Text>
             </View>
           )}
-              
+
         </View>
       </View>
     </TouchableOpacity>
@@ -100,8 +96,6 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
   setSearchValue,
   participantIds,
 }) => {
-  // const typingStatus = useSelector((state: any) => state.chat?.typingStatus);
-
   type RBSheetRef = {
     open: () => void;
     close: () => void;
@@ -118,7 +112,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
   const openSheet = () => {
 
     bottomSheetRef.current?.open();
-    setTimeout(() => setRenderList(true), 100); // small delay for smooth opening
+    setTimeout(() => setRenderList(true), 100);
   };
 
   const closeSheet = () => {
@@ -188,10 +182,9 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
         </View>
       )}
 
-     
+
       <RBSheet
         ref={bottomSheetRef}
-        // closeOnDragDown
         closeOnPressMask
         height={height * 0.7}
         onClose={() => setRenderList(false)}
@@ -223,7 +216,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
           )}
         </View>
       </RBSheet>
-      
+
     </>
   );
 }
@@ -236,17 +229,17 @@ const styles = StyleSheet.create({
     height: 60,
     paddingHorizontal: 10,
     backgroundColor: "#FFFFFF",
-     ...Platform.select({
-          ios: {
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.25,
-            shadowRadius: 3.5,
-          },
-          android: {
-            elevation: 5,
-          },
-        }),
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.5,
+      },
+      android: {
+        elevation: 5,
+      },
+    }),
 
   },
   shadow: {

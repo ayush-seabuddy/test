@@ -20,10 +20,11 @@ import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import CustomDateTimePicker from '@/src/components/Modals/CustomDateTimePicker';
 import { RootState } from '@/src/redux/store';
-import { Edit, Trash2, Award, Building, Calendar } from 'lucide-react-native';
+import { Edit, Trash2, Award, Building, Calendar, Plus, X } from 'lucide-react-native';
 import CustomLottie from '@/src/components/CustomLottie';
 import CommonLoader from '@/src/components/CommonLoader';
 import { updateUserField } from '@/src/redux/userDetailsSlice';
+import EmptyComponent from '@/src/components/EmptyComponent';
 
 const { height, width } = Dimensions.get('screen');
 
@@ -52,6 +53,17 @@ const CertificationsScreen = () => {
     const userDetails = useSelector((state: RootState) => state.userDetails);
     const [certifications, setCertifications] = useState<Certification[]>(userDetails.certifications || []);
 
+    const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
+    const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [deleteId, setDeleteId] = useState<string>('');
+    const [editId, setEditId] = useState<string>('');
+    const [isUpdate, setIsUpdate] = useState<boolean>(false);
+    const [modalVisible, setModalVisible] = useState<boolean>(false);
+    
+    // New state to control view toggle
+    const [showForm, setShowForm] = useState<boolean>(false);
+
     const fetchProfileDetails = async () => {
         const result = await viewProfile();
         if (result?.data) {
@@ -63,14 +75,6 @@ const CertificationsScreen = () => {
     useEffect(() => {
         fetchProfileDetails();
     }, []);
-
-    const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
-    const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [deleteId, setDeleteId] = useState<string>('');
-    const [editId, setEditId] = useState<string>('');
-    const [isUpdate, setIsUpdate] = useState<boolean>(false);
-    const [modalVisible, setModalVisible] = useState<boolean>(false);
 
     // Format date for display
     const formatDateForDisplay = (date: Date | null): string => {
@@ -108,7 +112,7 @@ const CertificationsScreen = () => {
 
     // Handle date picker event object
     const handleStartDateConfirm = (event: any) => {
-        console.log('Start date event:', event); // Debug log
+        console.log('Start date event:', event);
 
         try {
             if (event && event.nativeEvent && event.nativeEvent.timestamp) {
@@ -120,7 +124,6 @@ const CertificationsScreen = () => {
                 if (!isNaN(selectedDate.getTime())) {
                     setStartDate(selectedDate);
 
-                    // Validate against end date
                     if (endDate && selectedDate > endDate) {
                         showToast.error(t('oops'), t('startAfterEnd'));
                     }
@@ -139,7 +142,7 @@ const CertificationsScreen = () => {
 
     // Handle date picker event object
     const handleEndDateConfirm = (event: any) => {
-        console.log('End date event:', event); // Debug log
+        console.log('End date event:', event);
 
         try {
             if (event && event.nativeEvent && event.nativeEvent.timestamp) {
@@ -151,7 +154,6 @@ const CertificationsScreen = () => {
                 if (!isNaN(selectedDate.getTime())) {
                     setEndDate(selectedDate);
 
-                    // Validate against start date
                     if (startDate && startDate > selectedDate) {
                         showToast.error(t('oops'), t('endBeforeStart'));
                     }
@@ -168,7 +170,6 @@ const CertificationsScreen = () => {
         setShowEndDatePicker(false);
     };
 
-    // Handle date picker close
     const handleStartDateClose = () => {
         setShowStartDatePicker(false);
     };
@@ -201,6 +202,16 @@ const CertificationsScreen = () => {
         return true;
     };
 
+    const resetForm = () => {
+        setCertificateName('');
+        setOrganization('');
+        setStartDate(null);
+        setEndDate(null);
+        setIsUpdate(false);
+        setEditId('');
+        setShowForm(false);
+    };
+
     const addCertification = async () => {
         if (!validateInputs()) return;
 
@@ -216,14 +227,7 @@ const CertificationsScreen = () => {
         }
 
         await updateCertification(payload);
-
-        // Reset form
-        setCertificateName('');
-        setOrganization('');
-        setStartDate(null);
-        setEndDate(null);
-        setIsUpdate(false);
-        setEditId('');
+        resetForm();
     };
 
     const updateCertification = async (certification: Partial<Certification>) => {
@@ -249,16 +253,15 @@ const CertificationsScreen = () => {
             const response = await updateprofile(body);
 
             if (response.status === 200) {
-                const fetchProfileDetails = async () => {
-                    let result = await viewProfile();
-                    if (result?.data) {
-                        const object = result.data
-                        for (const property in object) {
-                            dispatch(updateUserField({ key: property, value: object[property] }))
-                        }
+                const result = await viewProfile();
+                if (result?.data) {
+                    const object = result.data;
+                    for (const property in object) {
+                        dispatch(updateUserField({ key: property, value: object[property] }));
                     }
+                    // Update local certifications state
+                    setCertifications(result.data.certifications || []);
                 }
-                await fetchProfileDetails();
                 showToast.success(
                     t('success'),
                     isUpdate ? t('certificateupdated') : t('certificateaddedsuccessfully')
@@ -300,9 +303,31 @@ const CertificationsScreen = () => {
         }
     };
 
+    const handlePlusIconClick = () => {
+        setShowForm(true);
+    };
+
+    const handleCloseForm = () => {
+        resetForm();
+    };
+
+    const handleEditCertification = (item: Certification) => {
+        setEditId(item.id);
+        setOrganization(item.companyName);
+        setCertificateName(item.role);
+        setStartDate(parseDDMMYYYY(item.from));
+        setEndDate(parseDDMMYYYY(item.to));
+        setIsUpdate(true);
+        setShowForm(true);
+    };
+
     return (
         <View style={styles.main}>
-            <GlobalHeader title={t('certifications')} />
+            <GlobalHeader 
+                title={t('certifications')} 
+                rightIcon={showForm ? <X/> : <Plus/>}
+                onRightPress={showForm ? handleCloseForm : handlePlusIconClick}
+            />
             <KeyboardAwareScrollView
                 contentContainerStyle={styles.container}
                 keyboardShouldPersistTaps="handled"
@@ -310,142 +335,145 @@ const CertificationsScreen = () => {
                 extraScrollHeight={Platform.OS === 'ios' ? 20 : 80}
                 showsVerticalScrollIndicator={false}
             >
-                {/* Certificate Name Input */}
-                <View style={styles.inputContainer}>
-                    <Award size={20} color="#666" style={styles.icon} />
-                    <TextInput
-                        style={styles.textInput}
-                        placeholder={t('certificateName')}
-                        placeholderTextColor="#B7B7B7"
-                        value={certificateName}
-                        onChangeText={setCertificateName}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                    />
-                </View>
-
-                {/* Organization Input */}
-                <View style={styles.inputContainer}>
-                    <Building size={20} color="#666" style={styles.icon} />
-                    <TextInput
-                        style={styles.textInput}
-                        placeholder={t('organizationName')}
-                        placeholderTextColor="#B7B7B7"
-                        value={organization}
-                        onChangeText={setOrganization}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                    />
-                </View>
-
-                {/* Start Date */}
-                <TouchableOpacity
-                    style={styles.inputContainer}
-                    onPress={() => setShowStartDatePicker(true)}
-                >
-                    <Calendar size={20} color="#666" style={styles.icon} />
-                    {startDate ? (
-                        <Text style={styles.dateText}>{formatDateForDisplay(startDate)}</Text>
-                    ) : (
-                        <Text style={styles.datePlaceholder}>{t('startdate')}</Text>
-                    )}
-                </TouchableOpacity>
-
-                {/* Start Date Picker */}
-                <CustomDateTimePicker
-                    value={startDate || new Date()}
-                    mode="date"
-                    onChange={handleStartDateConfirm}
-                    onClose={handleStartDateClose}
-                    isVisible={showStartDatePicker}
-                    cancelText={t('cancel') || "Cancel"}
-                    confirmText={t('done') || "Done"}
-                    containerStyle={{ backgroundColor: "#fff" }}
-                    buttonTextStyle={{ fontSize: 18, color: "#84A402" }}
-                    maximumDate={new Date()}
-                />
-
-                {/* End Date */}
-                <TouchableOpacity
-                    style={styles.inputContainer}
-                    onPress={() => setShowEndDatePicker(true)}
-                >
-                    <Calendar size={20} color="#666" style={styles.icon} />
-                    {endDate ? (
-                        <Text style={styles.dateText}>{formatDateForDisplay(endDate)}</Text>
-                    ) : (
-                        <Text style={styles.datePlaceholder}>{t('enddate')}</Text>
-                    )}
-                </TouchableOpacity>
-
-                {/* End Date Picker */}
-                <CustomDateTimePicker
-                    value={endDate || new Date()}
-                    mode="date"
-                    onChange={handleEndDateConfirm}
-                    onClose={handleEndDateClose}
-                    isVisible={showEndDatePicker}
-                    cancelText={t('cancel') || "Cancel"}
-                    confirmText={t('done') || "Done"}
-                    containerStyle={{ backgroundColor: "#fff" }}
-                    buttonTextStyle={{ fontSize: 18, color: "#84A402" }}
-                    maximumDate={new Date()}
-                />
-
-                {/* Add/Update Button */}
-                <TouchableOpacity
-                    onPress={addCertification}
-                    style={styles.updateButton}
-                    disabled={loading}
-                >
-                    {loading ? (
-                        <CommonLoader color='#fff' />
-                    ) : (
-                        <Text style={styles.updateButtonText}>
-                            {isUpdate ? t('editCertificate') : t('addCertificate')}
-                        </Text>
-                    )}
-                </TouchableOpacity>
-
-                {/* Certifications List */}
-                <FlatList
-                    data={certifications}
-                    keyExtractor={(item) => item.id}
-                    scrollEnabled={false}
-                    renderItem={({ item }) => (
-                        <View style={styles.experienceCard}>
-                            <View style={styles.experienceContent}>
-                                <Text style={styles.companyName}>{item.role}</Text>
-                                <Text style={styles.role}>{item.companyName}</Text>
-                                <Text style={styles.duration}>{item.from} - {item.to}</Text>
-                            </View>
-                            <View style={styles.actions}>
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        setEditId(item.id);
-                                        setOrganization(item.companyName);
-                                        setCertificateName(item.role);
-                                        setStartDate(parseDDMMYYYY(item.from));
-                                        setEndDate(parseDDMMYYYY(item.to));
-                                        setIsUpdate(true);
-                                    }}
-                                    style={styles.actionButton}
-                                >
-                                    <Edit size={20} color="#000" />
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        setDeleteId(item.id);
-                                        setModalVisible(true);
-                                    }}
-                                    style={styles.actionButton}
-                                >
-                                    <Trash2 size={20} color="red" />
-                                </TouchableOpacity>
-                            </View>
+                {showForm ? (
+                    // FORM VIEW
+                    <>
+                        {/* Certificate Name Input */}
+                        <View style={styles.inputContainer}>
+                            <Award size={20} color="#666" style={styles.icon} />
+                            <TextInput
+                                style={styles.textInput}
+                                placeholder={t('certificateName')}
+                                placeholderTextColor="#B7B7B7"
+                                value={certificateName}
+                                onChangeText={setCertificateName}
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                            />
                         </View>
-                    )}
-                />
+
+                        {/* Organization Input */}
+                        <View style={styles.inputContainer}>
+                            <Building size={20} color="#666" style={styles.icon} />
+                            <TextInput
+                                style={styles.textInput}
+                                placeholder={t('organizationName')}
+                                placeholderTextColor="#B7B7B7"
+                                value={organization}
+                                onChangeText={setOrganization}
+                                autoCapitalize="none"
+                                autoCorrect={false}
+                            />
+                        </View>
+
+                        {/* Start Date */}
+                        <TouchableOpacity
+                            style={styles.inputContainer}
+                            onPress={() => setShowStartDatePicker(true)}
+                        >
+                            <Calendar size={20} color="#666" style={styles.icon} />
+                            {startDate ? (
+                                <Text style={styles.dateText}>{formatDateForDisplay(startDate)}</Text>
+                            ) : (
+                                <Text style={styles.datePlaceholder}>{t('startdate')}</Text>
+                            )}
+                        </TouchableOpacity>
+
+                        {/* Start Date Picker */}
+                        <CustomDateTimePicker
+                            value={startDate || new Date()}
+                            mode="date"
+                            onChange={handleStartDateConfirm}
+                            onClose={handleStartDateClose}
+                            isVisible={showStartDatePicker}
+                            cancelText={t('cancel') || "Cancel"}
+                            confirmText={t('done') || "Done"}
+                            containerStyle={{ backgroundColor: "#fff" }}
+                            buttonTextStyle={{ fontSize: 18, color: "#84A402" }}
+                            maximumDate={new Date()}
+                        />
+
+                        {/* End Date */}
+                        <TouchableOpacity
+                            style={styles.inputContainer}
+                            onPress={() => setShowEndDatePicker(true)}
+                        >
+                            <Calendar size={20} color="#666" style={styles.icon} />
+                            {endDate ? (
+                                <Text style={styles.dateText}>{formatDateForDisplay(endDate)}</Text>
+                            ) : (
+                                <Text style={styles.datePlaceholder}>{t('enddate')}</Text>
+                            )}
+                        </TouchableOpacity>
+
+                        {/* End Date Picker */}
+                        <CustomDateTimePicker
+                            value={endDate || new Date()}
+                            mode="date"
+                            onChange={handleEndDateConfirm}
+                            onClose={handleEndDateClose}
+                            isVisible={showEndDatePicker}
+                            cancelText={t('cancel') || "Cancel"}
+                            confirmText={t('done') || "Done"}
+                            containerStyle={{ backgroundColor: "#fff" }}
+                            buttonTextStyle={{ fontSize: 18, color: "#84A402" }}
+                            maximumDate={new Date()}
+                        />
+
+                        {/* Add/Update Button */}
+                        <TouchableOpacity
+                            onPress={addCertification}
+                            style={styles.updateButton}
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <CommonLoader color='#fff' />
+                            ) : (
+                                <Text style={styles.updateButtonText}>
+                                    {isUpdate ? t('editCertificate') : t('addCertificate')}
+                                </Text>
+                            )}
+                        </TouchableOpacity>
+                    </>
+                ) : (
+                    // LISTING VIEW
+                    <FlatList
+                        data={certifications}
+                        keyExtractor={(item) => item.id}
+                        scrollEnabled={false}
+                        ListEmptyComponent={
+                            <View style={styles.emptyContainer}>
+                                <EmptyComponent text='No certifications added yet'/>
+                            </View>
+                        }
+                        renderItem={({ item }) => (
+                            <View style={styles.experienceCard}>
+                                <View style={styles.experienceContent}>
+                                    <Text style={styles.companyName}>{item.role}</Text>
+                                    <Text style={styles.role}>{item.companyName}</Text>
+                                    <Text style={styles.duration}>{item.from} - {item.to}</Text>
+                                </View>
+                                <View style={styles.actions}>
+                                    <TouchableOpacity
+                                        onPress={() => handleEditCertification(item)}
+                                        style={styles.actionButton}
+                                    >
+                                        <Edit size={20} color="#000" />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            setDeleteId(item.id);
+                                            setModalVisible(true);
+                                        }}
+                                        style={styles.actionButton}
+                                    >
+                                        <Trash2 size={20} color="red" />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
+                    />
+                )}
             </KeyboardAwareScrollView>
 
             {/* Delete Confirmation Modal */}
@@ -585,6 +613,23 @@ const styles = StyleSheet.create({
     },
     actionButton: {
         padding: 8,
+    },
+    emptyContainer: {
+        flex:1,
+        marginTop:'50%',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    emptyText: {
+        fontFamily: 'Poppins-SemiBold',
+        fontSize: 16,
+        color: '#666',
+        marginBottom: 8,
+    },
+    emptySubText: {
+        fontFamily: 'Poppins-Regular',
+        fontSize: 14,
+        color: '#999',
     },
     modalContainer: {
         flex: 1,

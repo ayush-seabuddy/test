@@ -159,7 +159,7 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
     return (
       <View style={styles.emptyState}>
         <Image source={ImagesAssets.nodatafound} style={styles.nodatafoundImage} />
-        <Text style={styles.emptyText}>{t('nopostfound') || 'No posts yet'}</Text>
+        <Text style={styles.emptyText}>{t('youarenotpostedanything') || 'No posts yet'}</Text>
       </View>
     );
   };

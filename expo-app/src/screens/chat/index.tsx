@@ -217,8 +217,8 @@ const ChatLoungeList = () => {
         {
         shipChatList.length == 0 && fleetChatList.length == 0 && 
         (loading ? (
-          <View style={{ alignItems: 'center', marginTop: 50 }}>
-            <CommonLoader/>
+          <View style={{ alignItems: 'center',flex:1,justifyContent:'center' }}>
+            <CommonLoader fullScreen/>
           </View>
         ) : (
           <View style={{ alignItems: 'center', marginTop: 50 }}>
@@ -258,7 +258,7 @@ const ChatLoungeList = () => {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF", },
+  container: { flex: 1, backgroundColor: "#ededed" },
   contentContainer: {
     paddingBottom: 150,
     gap: 25,
@@ -267,10 +267,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     backgroundColor: "rgba(232, 232, 232, 1)",
     borderRadius: 15,
+    borderWidth:1,
+    borderColor:'#fff',
     overflow: 'hidden',
   },
   chatListContainer: {
-    marginTop: 60
+    marginTop: 50,
 
   },
   sectionHeader: {
@@ -294,7 +296,6 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  // Chat Row
   chatRowContainer: {
     flex: 1,
     backgroundColor: "#fff",
@@ -303,7 +304,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderBottomWidth: 0.5,
     borderColor: '#e0e0e0',
   },
   chatMiddle: { flex: 1, },

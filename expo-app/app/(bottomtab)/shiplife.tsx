@@ -13,6 +13,7 @@ import { getUserDetails } from '@/src/utils/helperFunctions'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useNavigation } from '@react-navigation/native'
 import { router, useFocusEffect } from 'expo-router'
+import LottieView from 'lottie-react-native'
 import { InfoIcon } from 'lucide-react-native'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -392,7 +393,7 @@ const ShipLifeScreen = () => {
               justifyContent: "center",
               alignItems: "center",
             }}>
-            <EmptyComponent text={t('nobuddyupfound')}/>
+              <EmptyComponent text={t('nobuddyupfound')} />
             </View>
           );
         }
@@ -409,16 +410,21 @@ const ShipLifeScreen = () => {
       <ShipLifeScreenHeader />
       {isLoading ? (
         <View style={styles.fullScreenLoader}>
-          <CommonLoader fullScreen/>
+          <CommonLoader fullScreen />
         </View>
       ) : !shipId ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: '40%', gap: 20 }}>
+          <LottieView
+            source={require('../../assets/Ship.json')}
+            autoPlay
+            loop
+            style={styles.animation}
+          />
           <Text style={{
-            fontSize: 16,
-            color: "gray",
-            fontFamily: "Poppins-SemiBold",
+            fontSize: 14,
+            fontFamily: 'Poppins-Regular',
+            color: '#8A8A8A',
             textAlign: 'center',
-            paddingHorizontal: 20,
           }}>
             {t('youarenotonanyship')}
           </Text>
@@ -455,7 +461,7 @@ const ShipLifeScreen = () => {
 export default ShipLifeScreen;
 
 const styles = StyleSheet.create({
-  main: { flex: 1, backgroundColor: '#fff' },
+  main: { flex: 1, backgroundColor: '#f5f5f5' },
   flatListContent: { paddingHorizontal: 20, paddingVertical: 10, paddingBottom: 30 },
 
   titleView: {
@@ -488,6 +494,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: 'black',
     fontFamily: 'Poppins-Regular',
+  },
+  animation: {
+    width: 200,
+    height: 200,
   },
   buddyuptext: {
     fontSize: 25,

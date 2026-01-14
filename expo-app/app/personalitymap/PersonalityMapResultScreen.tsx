@@ -368,16 +368,27 @@ const PersonalityMapResultScreen = () => {
           )}
         </View>
       </ScrollView>}
-      {!loading &&
-        <View style={styles.buttonContainer}>
-         {data !== null ? <GlobalButton
-            title={t("goback")} onPress={() => newuser === "true" ? router.replace("/home") : router.replace("/(bottomtab)/health")}
+      <View style={styles.buttonContainer}>
+        {/* Show Go Back only when NOT loading and data exists */}
+        {!loading && data !== null && (
+          <GlobalButton
+            title={t("goback")}
+            onPress={() =>
+              newuser === "true"
+                ? router.replace("/home")
+                : router.replace("/(bottomtab)/health")
+            }
           />
-          : <GlobalButton
-            title={t("refresh")} onPress={getAssessmentResult}
-          />}
-      
-        </View>}
+        )}
+        {/* Show Refresh when data is null (both loading or not loading) */}
+        {data === null && (
+          <GlobalButton
+            title={t("refresh")}
+            onPress={getAssessmentResult}
+            disabled={loading} // optional: prevent spam clicks
+          />
+        )}
+      </View>
     </View>
   );
 };
@@ -388,7 +399,7 @@ const styles = StyleSheet.create({
   main: { flex: 1 },
 
   backgroundContainer: { ...StyleSheet.absoluteFillObject, zIndex: -1 },
-  backgroundImage: { width: "100%", height: "100%" },
+  backgroundImage: { width: "100%", height: "100%", backgroundColor: '#ededed' },
 
   header: {
     marginVertical: 10,
@@ -423,6 +434,8 @@ const styles = StyleSheet.create({
   famousPeopleCard: {
     padding: 16,
     borderRadius: 20,
+    borderWidth: 0.5,
+    borderColor: '#fff',
     backgroundColor: "#f1f1f1",
   },
 
@@ -476,6 +489,8 @@ const styles = StyleSheet.create({
     marginTop: 12,
     padding: 16,
     borderRadius: 20,
+    borderWidth: 0.5,
+    borderColor: '#fff',
     backgroundColor: "#f1f1f1",
     overflow: "hidden",
   },

@@ -217,9 +217,6 @@ const Analytics = () => {
             </View>
           </ScrollView>
         </View>
-        <View style={styles.bottomCard}>
-          <CustomLottie customSyle={styles.lottieStyle} />
-        </View>
       </ScrollView>
     </View>
   );
@@ -228,7 +225,7 @@ const Analytics = () => {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: Colors.white },
   wholePage: { flex: 1, padding: 10, marginTop: 4 },
-  container: { backgroundColor: '#fff', borderRadius: 20, padding: 16, marginVertical: 10 },
+  container: { backgroundColor: '#ededed', borderRadius: 20, padding: 16, marginVertical: 10 },
   chartContainer: { marginVertical: 5, backgroundColor: "#FFFFFF33", minHeight: height * 0.45, justifyContent: "center", alignItems: "center", borderRadius: 10 },
   chartTitle: { fontSize: 16, fontWeight: "bold", color: "#262626", marginBottom: 8, lineHeight: 30 },
   sleepStyle: { width: width * 0.45, height: width * 0.09, paddingLeft: 10 },
@@ -237,7 +234,7 @@ const styles = StyleSheet.create({
   sleepTitle: { marginTop: 20, fontSize: 16, fontWeight: "bold", color: "#262626", marginBottom: 8, lineHeight: 30 },
   headerIcon: { width: 18, height: 18, resizeMode: "contain" },
   container1: { width: "100%", padding: 20, borderRadius: 32, overflow: "hidden" },
-  container1Blurred: { backgroundColor: "#FFFFFFCC", width: "100%", padding: 20, borderRadius: 32, overflow: "hidden" },
+  container1Blurred: { backgroundColor: "#ededed", width: "100%", padding: 20, borderRadius: 20, overflow: "hidden" },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 20 },
   headerRow: { flexDirection: "row", width: "100%" },
   monthNavigation: { width: "100%", flexDirection: "column", alignItems: "center" },
@@ -246,7 +243,6 @@ const styles = StyleSheet.create({
   monthRow: { flexDirection: "row", alignItems: "center" },
   arrow: { width: 18, height: 18, resizeMode: "contain" },
   progressButton: { position: "absolute", backgroundColor: "white", width: width * 0.09, height: width * 0.09, justifyContent: "center", alignItems: "center", borderRadius: 10, top: 20, right: 10 },
-  bottomCard: { position: "absolute", width: "100%", height: "95%", bottom: 0, alignItems: "center", justifyContent: "center", overflow: "hidden", zIndex: -1, borderTopLeftRadius: 35, borderTopRightRadius: 35, backgroundColor: "rgba(0, 0, 0, 0.05)" },
   lottieStyle: { width: width, height: height, position: "absolute" },
   flexColumnBetween: { flexDirection: "column", justifyContent: "space-between" },
   stressTitle: { marginLeft: 20, fontSize: 20, width: "100%", textAlign: "left", fontFamily: "WhyteInktrap-Bold", lineHeight: 30 },

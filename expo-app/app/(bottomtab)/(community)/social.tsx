@@ -82,7 +82,7 @@ export default HomeTab;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white,
+    backgroundColor: '#ededed',
   },
   fab: {
     position: 'absolute',

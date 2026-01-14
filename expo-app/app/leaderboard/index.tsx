@@ -424,6 +424,7 @@ const styles = StyleSheet.create({
     titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
     title: { 
         fontSize: 18, 
+        lineHeight:20,
         color: 'rgba(42, 43, 42, 0.8)', 
         fontFamily: 'WhyteInktrap-Bold' 
     },
