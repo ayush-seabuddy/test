@@ -17,15 +17,6 @@ interface MoodCheckInModalProps {
   onSuccess?: () => void;
   userName?: string;
 }
-
-const MOOD_CONFIG = {
-  HAPPY: { color: "#B0DB0266", emoji: ImagesAssets.Emoji_1 },
-  SAD: { color: "#DB8F0266", emoji: ImagesAssets.Emoji_3 },
-  CALM: { color: "#B0DB0266", emoji: ImagesAssets.Emoji_2 },
-  ANGRY: { color: "#E5424566", emoji: ImagesAssets.Emoji_4 },
-  ANXIOUS: { color: "#69BEDC66", emoji: ImagesAssets.Emoji_5 },
-} as const;
-
 const MOOD_OPTIONS = [
   { emoji: ImagesAssets.Emoji_1, label: "Happy" },
   { emoji: ImagesAssets.Emoji_5, label: "Anxious" },

@@ -1,14 +1,11 @@
-// components/ExitAppModal.tsx
 import React from 'react';
 import {
   Modal,
-  View,
+  StatusBar,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  StatusBar,
-  Platform,
-  BackHandler,
+  View
 } from 'react-native';
 
 type ExitAppModalProps = {

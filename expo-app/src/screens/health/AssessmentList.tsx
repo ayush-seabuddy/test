@@ -1,6 +1,5 @@
 import { getallassessmentsResult, viewProfile, viewUserTest } from '@/src/apis/apiService';
 import { showToast } from '@/src/components/GlobalToast';
-import { AppDispatch } from '@/src/redux/store';
 import { UserDetails } from '@/src/types/userTypes';
 import Colors from '@/src/utils/Colors';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
@@ -11,7 +10,6 @@ import { t } from 'i18next';
 import { ArrowUpRight, ChevronDown, ChevronUp, TriangleAlert } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useDispatch } from 'react-redux';
 import PersonalityTestCard from './PersonalityTestCard';
 
 const { height } = Dimensions.get('window');
@@ -25,8 +23,6 @@ type TestItem = {
 };
 
 const AssessmentList = ({ isProfileScreen = false }: { isProfileScreen?: boolean }) => {
-  const dispatch = useDispatch<AppDispatch>();
-
   const [listOpen, setListOpen] = useState(true);
   const [profileDetails, setProfileDetails] = useState<UserDetails | null>(null);
   const [testArray, setTestArray] = useState<TestItem[]>([]);

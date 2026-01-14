@@ -27,22 +27,6 @@
     contentUser: ContentUser;
   }
 
-
-
-  interface User {
-  id: string;
-  fullName: string;
-  email: string;
-  profileUrl: string | null;
-  designation?: string; // from userDetails
-  associatedShip?: {
-    shipName: string;
-  };
-  ship?: {
-    shipName: string;
-  };
-}
-
 interface Ship {
   shipName: string;
 }

@@ -1,21 +1,21 @@
+import CustomLottie from "@/src/components/CustomLottie";
+import Colors from "@/src/utils/Colors";
+import { ImagesAssets } from "@/src/utils/ImageAssets";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useRouter } from "expo-router";
+import { ChevronRight } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-    Text,
-    View,
-    StyleSheet,
     Dimensions,
     Image,
-    TouchableOpacity,
-    ScrollView,
     Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import CustomLottie from "@/src/components/CustomLottie";
-import { ImagesAssets } from "@/src/utils/ImageAssets";
-import Colors from "@/src/utils/Colors";
-import { ChevronRight } from "lucide-react-native";
-import { useRouter } from "expo-router";
-import { useTranslation } from "react-i18next";
 
 const { width, height } = Dimensions.get("window");
 
@@ -160,9 +160,9 @@ const OnboardingScreens = () => {
                 </TouchableOpacity>
             </View>
 
-            <View style={[styles.header, { marginTop: currentIndex == 0 ? 0 : "10%" }]}>
+            <View style={[styles.header, { marginTop: currentIndex === 0 ? 0 : "10%" }]}>
                 <Text style={styles.titleText}>{title}</Text>
-                {currentIndex == 0 ? (
+                {currentIndex === 0 ? (
                     <View style={{ flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
                         <Image
                             style={{ width: 200, height: 200, borderRadius: 30 }}
@@ -180,10 +180,10 @@ const OnboardingScreens = () => {
                     contentContainerStyle={styles.scrollContent}
                     showsVerticalScrollIndicator={false}
                 >
-                    <Text style={[styles.cardTitle, { marginTop: currentIndex == 0 ? 0 : 10 }]}>{cardTitle}</Text>
-                    {currentIndex == 0 ? (
+                    <Text style={[styles.cardTitle, { marginTop: currentIndex === 0 ? 0 : 10 }]}>{cardTitle}</Text>
+                    {currentIndex === 0 ? (
                         <>
-                            <Text style={[styles.titleText, { color: "white", marginTop: currentIndex == 0 ? 0 : 50 }]}>
+                            <Text style={[styles.titleText, { color: "white", marginTop: currentIndex === 0 ? 0 : 50 }]}>
                                 {t("onboarding.welcome", { companyName })}
                             </Text>
                             <Text style={[styles.cardDescription, { color: "white", fontSize: 18, lineHeight: 25 }]}>
@@ -201,7 +201,7 @@ const OnboardingScreens = () => {
                 </View>
 
                 <View style={styles.fixedButtonsContainer}>
-                    <TouchableOpacity onPress={handleNext} style={[styles.nextButton, { marginBottom: currentIndex == 0 ? 25 : 0 }]}>
+                    <TouchableOpacity onPress={handleNext} style={[styles.nextButton, { marginBottom: currentIndex === 0 ? 25 : 0 }]}>
                         <Text style={styles.nextButtonText}>
                             {currentIndex === screensData(t).length - 1 ? t("common.getStarted") : t("common.next")}
                         </Text>

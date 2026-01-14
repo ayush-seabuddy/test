@@ -1,12 +1,12 @@
-import { StyleSheet, Text, View, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native'
-import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Image } from 'expo-image'
-import { ImagesAssets } from '@/src/utils/ImageAssets'
 import Colors from '@/src/utils/Colors'
+import { ImagesAssets } from '@/src/utils/ImageAssets'
+import { Image } from 'expo-image'
 import { router } from 'expo-router'
-import EmptyComponent from '../EmptyComponent'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import CommonLoader from '../CommonLoader'
+import EmptyComponent from '../EmptyComponent'
 
 interface CrewMember {
     id: string
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: '40%',
+        marginTop: '20%',
         paddingHorizontal: 20,
     },
     emptyText: {

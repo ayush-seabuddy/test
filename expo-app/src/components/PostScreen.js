@@ -47,7 +47,7 @@ try {
     TimeAgo.addLocale(en);
   }
 } catch (e) {
-  // eslint-disable-next-line no-console
+   
   console.warn('Failed to ensure TimeAgo locale is registered:', e);
 }
 
@@ -575,6 +575,7 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
     try {
       await likecommentpost({ likeComments: [{ hangoutId: post.id, isLiked: newLikeState }] });
     } catch (err) {
+      console.log('Error', err)
       setPostState(prev => {
         let updatedLikedUsers = [...prev.likedUsers];
         if (newLikeState) {

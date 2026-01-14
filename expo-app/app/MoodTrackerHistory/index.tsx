@@ -1,27 +1,19 @@
 import { getAllMoodTracker } from "@/src/apis/apiService";
-import CustomLottie from "@/src/components/CustomLottie";
-import GlobalHeader from "@/src/components/GlobalHeader";
+import CommonLoader from "@/src/components/CommonLoader";
 import EmptyComponent from "@/src/components/EmptyComponent";
+import GlobalHeader from "@/src/components/GlobalHeader";
+import { showToast } from "@/src/components/GlobalToast";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import moment from "moment";
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  ActivityIndicator,
-  Dimensions,
   FlatList,
   Image,
-  Platform,
   StyleSheet,
   Text,
-  View,
+  View
 } from "react-native";
-import Toast from "react-native-toast-message";
-import Colors from "@/src/utils/Colors";
-import CommonLoader from "@/src/components/CommonLoader";
-import { showToast } from "@/src/components/GlobalToast";
-
-const { height } = Dimensions.get("screen");
 
 interface MoodEntry {
   id: string;

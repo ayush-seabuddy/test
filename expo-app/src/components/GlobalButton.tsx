@@ -1,13 +1,12 @@
 import React from "react";
 import {
-  TouchableOpacity,
-  Text,
+  StyleProp,
   StyleSheet,
-  ActivityIndicator,
+  Text,
+  TextStyle,
+  TouchableOpacity,
   TouchableOpacityProps,
   ViewStyle,
-  TextStyle,
-  StyleProp,
 } from "react-native";
 import Colors from "../utils/Colors";
 import CommonLoader from "./CommonLoader";

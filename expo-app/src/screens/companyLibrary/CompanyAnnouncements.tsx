@@ -30,11 +30,8 @@ type Announcement = {
 };
 
 const CompanyAnnouncements: React.FC<CompanyAnnouncementsProps> = ({
-    onlyAnnouncement = false,
     page = 1,
     limit = 10,
-    contentCategory,
-    contentType,
 }) => {
     const [loading, setloading] = useState(false);
     const [announcement, setannouncement] = useState<Announcement[]>([]);
@@ -51,7 +48,6 @@ const CompanyAnnouncements: React.FC<CompanyAnnouncementsProps> = ({
                 limit: limit,
                 contentCategory: "COMPANY_LIBRARY",
                 contentType: "ANNOUNCEMENT"
-                // onlyAnnouncement: onlyAnnouncement,
             });
 
             setloading(false);
@@ -62,6 +58,7 @@ const CompanyAnnouncements: React.FC<CompanyAnnouncementsProps> = ({
                 showToast.error(t('oops'), apiResponse.message);
             }
         } catch (error) {
+            console.log('Error', error)
             setloading(false);
             showToast.error(t('oops'), t('somethingwentwrong'));
         }

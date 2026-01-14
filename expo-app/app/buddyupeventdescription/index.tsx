@@ -129,6 +129,7 @@ const BuddyUpEventDescription = () => {
                 showToast.error(t('oops'), apiResponse.message);
             }
         } catch (error) {
+            console.log('Error', error)
             showToast.error(t('oops'), t('somethingwentwrong'));
         } finally {
             setLoading(false);
@@ -163,7 +164,7 @@ const BuddyUpEventDescription = () => {
     const getButtonText = (): string => {
         if (!buddyUpDetails) return t('join');
 
-        const { status, isEnded, joinedPeople = [], isJoined } = buddyUpDetails;
+        const { isEnded, joinedPeople = [], isJoined } = buddyUpDetails;
         const hasParticipants = joinedPeople.length > 0;
 
         if (status === 'COMPLETED') return t('completed');

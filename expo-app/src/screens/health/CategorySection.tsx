@@ -4,11 +4,9 @@ import CommonLoader from "@/src/components/CommonLoader";
 import ShowContentCard from "@/src/components/ShowContentCard";
 import { listAllCategory, setContentsLoading, updateContentList } from "@/src/redux/ContentSlice";
 import { AppDispatch, RootState } from "@/src/redux/store";
-import Colors from "@/src/utils/Colors";
 import { ChevronRight } from "lucide-react-native";
 import React, { useEffect } from "react";
 import {
-  ActivityIndicator,
   Dimensions,
   StyleSheet,
   Text,
@@ -19,11 +17,6 @@ import { useDispatch, useSelector } from "react-redux";
 
 const { height } = Dimensions.get("window");
 const isProMax = height >= 926;
-
-interface ContentItem {
-  allContents?: any[];
-  [key: string]: any;
-}
 
 interface Category {
   id: string;

@@ -1,19 +1,18 @@
-import React from "react";
-import {
-    View,
-    Image,
-    Text,
-    StyleSheet,
-    Dimensions,
-    TouchableOpacity,
-} from "react-native";
+import GlobalButton from "@/src/components/GlobalButton";
+import GlobalPopOver from "@/src/components/GlobalPopover";
 import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useTranslation } from "react-i18next";
-import GlobalButton from "@/src/components/GlobalButton";
 import { Info } from "lucide-react-native";
-import GlobalPopOver from "@/src/components/GlobalPopover";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import {
+    Dimensions,
+    Image,
+    StyleSheet,
+    Text,
+    View,
+} from "react-native";
 
 const { width, height } = Dimensions.get("window");
 

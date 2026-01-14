@@ -74,11 +74,11 @@ export interface ViewProfileParams {
 export interface SaveAssessmentRequest {
   questionType: string;
   month: string;
-  answers: Array<{
+  answers: {
     questionId: string;
     answer: number;
     createdAt: string;
-  }>;
+  }[];
 }
 
 export type BuddyUpStatus =
@@ -182,7 +182,7 @@ export interface UpdateProfileRequest {
   bio?: string;
   dob?: string;
 
-  workingExperience?: Array<{
+  workingExperience?: {
     id?: string;
     companyName?: string;
     role?: string;
@@ -190,14 +190,14 @@ export interface UpdateProfileRequest {
     to?: string;
     status?: string;
     createdAt?: string;
-  }>;
+  }[];
 
-  SocialMediaLinks?: Array<{
+  SocialMediaLinks?: {
     platform: string;
     link: string;
-  }>;
+  }[];
 
-  certifications?: Array<{
+  certifications?: {
     id: string;
     certificateName?: string;
     from?: string;
@@ -205,7 +205,7 @@ export interface UpdateProfileRequest {
     organization?: string;
     status?: "DELETE";
     createdAt?: string;
-  }>;
+  }[];
 
   status?: string;
   isProfileCompleted?: true;
@@ -327,10 +327,10 @@ export interface signoutPayload {
 
 export interface SubmitSurveyPayload {
   surveyId: string;
-  responseJson: Array<{
+  responseJson: {
     questionId: string;
     answer: any;  // string | number | string[] | { fileName: string; url: string } | null
-  }>;
+  }[];
 }
 
 export interface ReadSingleNotificationRequest {

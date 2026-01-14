@@ -11,7 +11,6 @@ import ShipLifeScreenHeader from '@/src/components/ShipLifeScreenHeader'
 import Colors from '@/src/utils/Colors'
 import { getUserDetails } from '@/src/utils/helperFunctions'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { useNavigation } from '@react-navigation/native'
 import { router, useFocusEffect } from 'expo-router'
 import LottieView from 'lottie-react-native'
 import { InfoIcon } from 'lucide-react-native'
@@ -78,7 +77,6 @@ type ListItem =
 
 const ShipLifeScreen = () => {
   const { t } = useTranslation();
-  const navigation = useNavigation();
   const [selectedStatus, setSelectedStatus] = useState<'ON_GOING' | 'PAST' | 'REQUESTED'>('ON_GOING');
 
   const [buddyupCategory, setbuddyupCategory] = useState<AdminBuddyUpCategoryType[]>([]);
@@ -156,7 +154,7 @@ const ShipLifeScreen = () => {
           filter: 'REQUESTED',
         });
 
-        if (requestedRes.success && requestedRes.status == 200) {
+        if (requestedRes.success && requestedRes.status === 200) {
           setRequestedEvents(requestedRes.data.groupActivityList ?? []);
         }
       }
@@ -496,8 +494,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
   },
   animation: {
-    width: 200,
-    height: 200,
+    width: 250,
+    height: 250,
   },
   buddyuptext: {
     fontSize: 25,

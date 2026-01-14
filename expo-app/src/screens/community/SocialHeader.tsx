@@ -1,8 +1,7 @@
 import { getUnreadNotificationCount } from "@/src/apis/apiService";
 import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
-import { useFocusEffect } from "expo-router";
-import { router } from "expo-router";
+import { useFocusEffect , router } from "expo-router";
 import { House } from "lucide-react-native";
 import React, { useCallback, useState } from "react";
 import {

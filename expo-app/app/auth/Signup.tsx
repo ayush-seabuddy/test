@@ -3,31 +3,30 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import {
+  Animated,
   Dimensions,
+  Keyboard,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
-  View,
-  Animated,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableWithoutFeedback,
-  Keyboard,
-  ScrollView,
   TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 
-import { User, Mail, Lock, Eye, EyeOff, CheckSquare, Square } from "lucide-react-native";
-import PhoneInput, { ICountry } from "react-native-international-phone-number";
 import CustomLottie from "@/src/components/CustomLottie";
-import { BlurView } from "expo-blur";
 import GlobalButton from "@/src/components/GlobalButton";
 import GlobalTextInput from "@/src/components/GlobalTextInput";
-import { ImagesAssets } from "@/src/utils/ImageAssets";
 import Colors from "@/src/utils/Colors";
-import { useTranslation } from "react-i18next";
+import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { BlurView } from "expo-blur";
 import { router } from "expo-router";
+import { CheckSquare, Eye, EyeOff, Lock, Mail, Square, User } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
+import PhoneInput, { ICountry } from "react-native-international-phone-number";
 
-const { width, height } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 
 const Signup = () => {
   const { t } = useTranslation();

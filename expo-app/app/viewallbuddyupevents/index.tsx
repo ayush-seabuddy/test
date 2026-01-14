@@ -1,7 +1,6 @@
-import BuddyUpEventList from '@/src/components/BuddyUpEventList'
+import BuddyUpEventList from '@/src/components/BuddyUpEventList';
 import { useLocalSearchParams } from 'expo-router';
-import React from 'react'
-import { StyleSheet } from 'react-native'
+import React from 'react';
 
 const AllBuddyUpEvents = () => {
     const { eventType } = useLocalSearchParams<{ eventType: 'ON_GOING' | 'PAST' | 'REQUESTED' }>();
@@ -11,5 +10,3 @@ const AllBuddyUpEvents = () => {
 }
 
 export default AllBuddyUpEvents
-
-const styles = StyleSheet.create({})

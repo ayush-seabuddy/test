@@ -114,6 +114,7 @@ const BuddyUpEventList = ({ userId, type, from, ActivitiesData }: Props) => {
         showToast.error(t('oops'), apiResponse.message);
       }
     } catch (error) {
+      console.log('Error', error)
       showToast.error(t('oops'), t('somethingwentwrong'));
     } finally {
       setDeleteModalVisible(false);

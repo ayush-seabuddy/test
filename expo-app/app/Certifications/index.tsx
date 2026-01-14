@@ -1,30 +1,28 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     Dimensions,
     FlatList,
     Modal,
+    Platform,
     StyleSheet,
+    Text,
     TouchableOpacity,
     View,
-    Text,
-    TextInput,
-    Platform,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 import { updateprofile, viewProfile } from '@/src/apis/apiService';
+import CommonLoader from '@/src/components/CommonLoader';
+import CustomLottie from '@/src/components/CustomLottie';
+import EmptyComponent from '@/src/components/EmptyComponent';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
-import CustomDateTimePicker from '@/src/components/Modals/CustomDateTimePicker';
 import { RootState } from '@/src/redux/store';
-import { Edit, Trash2, Award, Building, Calendar, Plus, X } from 'lucide-react-native';
-import CustomLottie from '@/src/components/CustomLottie';
-import CommonLoader from '@/src/components/CommonLoader';
 import { updateUserField } from '@/src/redux/userDetailsSlice';
-import EmptyComponent from '@/src/components/EmptyComponent';
+import { Edit, Plus, Trash2 } from 'lucide-react-native';
 
 const { height, width } = Dimensions.get('screen');
 
@@ -45,235 +43,30 @@ const CertificationsScreen = () => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
 
-    const [certificateName, setCertificateName] = useState<string>('');
-    const [organization, setOrganization] = useState<string>('');
-    const [startDate, setStartDate] = useState<Date | null>(null);
-    const [endDate, setEndDate] = useState<Date | null>(null);
-
     const userDetails = useSelector((state: RootState) => state.userDetails);
     const [certifications, setCertifications] = useState<Certification[]>(userDetails.certifications || []);
-
-    const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
-    const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [deleteId, setDeleteId] = useState<string>('');
-    const [editId, setEditId] = useState<string>('');
-    const [isUpdate, setIsUpdate] = useState<boolean>(false);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
-    
-    // New state to control view toggle
-    const [showForm, setShowForm] = useState<boolean>(false);
 
-    const fetchProfileDetails = async () => {
-        const result = await viewProfile();
-        if (result?.data) {
-            setCertifications(result.data.certifications || []);
-            console.log("result.data.certifications: ", result.data.certifications);
+    const fetchProfileDetails = useCallback(async () => {
+        try {
+            const result = await viewProfile();
+            if (result?.data) {
+                const certs = result.data.certifications || [];
+                setCertifications(certs);
+                console.log("Certifications fetched: ", certs);
+            }
+        } catch (error) {
+            console.error('Error fetching profile details:', error);
         }
-    };
-
-    useEffect(() => {
-        fetchProfileDetails();
     }, []);
 
-    // Format date for display
-    const formatDateForDisplay = (date: Date | null): string => {
-        if (!date) return '';
-        try {
-            return date.toLocaleDateString('en-GB', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric'
-            });
-        } catch (error) {
-            console.error('Error formatting date:', error);
-            return '';
-        }
-    };
-
-    // Format date for API (DD/MM/YYYY)
-    const formatDateForAPI = (date: Date | null): string => {
-        if (!date) return '';
-        try {
-            return date.toLocaleDateString('en-GB');
-        } catch (error) {
-            console.error('Error formatting date for API:', error);
-            return '';
-        }
-    };
-
-    const parseDDMMYYYY = (dateStr: string): Date | null => {
-        if (!dateStr) return null;
-        const [day, month, year] = dateStr.split('/').map(Number);
-        if (!day || !month || !year) return null;
-        const parsedDate = new Date(year, month - 1, day);
-        return isNaN(parsedDate.getTime()) ? null : parsedDate;
-    };
-
-    // Handle date picker event object
-    const handleStartDateConfirm = (event: any) => {
-        console.log('Start date event:', event);
-
-        try {
-            if (event && event.nativeEvent && event.nativeEvent.timestamp) {
-                const timestamp = event.nativeEvent.timestamp;
-                const selectedDate = new Date(timestamp);
-
-                console.log('Parsed start date:', selectedDate);
-
-                if (!isNaN(selectedDate.getTime())) {
-                    setStartDate(selectedDate);
-
-                    if (endDate && selectedDate > endDate) {
-                        showToast.error(t('oops'), t('startAfterEnd'));
-                    }
-                } else {
-                    console.error('Invalid start date timestamp:', timestamp);
-                }
-            } else {
-                console.error('Invalid start date event structure:', event);
-            }
-        } catch (error) {
-            console.error('Error handling start date:', error);
-        }
-
-        setShowStartDatePicker(false);
-    };
-
-    // Handle date picker event object
-    const handleEndDateConfirm = (event: any) => {
-        console.log('End date event:', event);
-
-        try {
-            if (event && event.nativeEvent && event.nativeEvent.timestamp) {
-                const timestamp = event.nativeEvent.timestamp;
-                const selectedDate = new Date(timestamp);
-
-                console.log('Parsed end date:', selectedDate);
-
-                if (!isNaN(selectedDate.getTime())) {
-                    setEndDate(selectedDate);
-
-                    if (startDate && startDate > selectedDate) {
-                        showToast.error(t('oops'), t('endBeforeStart'));
-                    }
-                } else {
-                    console.error('Invalid end date timestamp:', timestamp);
-                }
-            } else {
-                console.error('Invalid end date event structure:', event);
-            }
-        } catch (error) {
-            console.error('Error handling end date:', error);
-        }
-
-        setShowEndDatePicker(false);
-    };
-
-    const handleStartDateClose = () => {
-        setShowStartDatePicker(false);
-    };
-
-    const handleEndDateClose = () => {
-        setShowEndDatePicker(false);
-    };
-
-    const validateInputs = (): boolean => {
-        if (!certificateName.trim()) {
-            showToast.error(t('oops'), t('certificate_required'));
-            return false;
-        }
-        if (!organization.trim()) {
-            showToast.error(t('oops'), t('organization_required'));
-            return false;
-        }
-        if (!startDate) {
-            showToast.error(t('oops'), t('start_date_required'));
-            return false;
-        }
-        if (!endDate) {
-            showToast.error(t('oops'), t('end_date_required'));
-            return false;
-        }
-        if (startDate && endDate && startDate > endDate) {
-            showToast.error(t('oops'), t('start_date_invalid'));
-            return false;
-        }
-        return true;
-    };
-
-    const resetForm = () => {
-        setCertificateName('');
-        setOrganization('');
-        setStartDate(null);
-        setEndDate(null);
-        setIsUpdate(false);
-        setEditId('');
-        setShowForm(false);
-    };
-
-    const addCertification = async () => {
-        if (!validateInputs()) return;
-
-        const payload: Partial<Certification> = {
-            companyName: organization,
-            role: certificateName,
-            from: formatDateForAPI(startDate),
-            to: formatDateForAPI(endDate),
-        };
-
-        if (isUpdate && editId) {
-            payload.id = editId;
-        }
-
-        await updateCertification(payload);
-        resetForm();
-    };
-
-    const updateCertification = async (certification: Partial<Certification>) => {
-        try {
-            setLoading(true);
-
-            const dbResult = await AsyncStorage.getItem('userDetails');
-            if (!dbResult) throw new Error('No user details found');
-
-            const user: UserDetails = JSON.parse(dbResult);
-
-            const updatedCertifications = isUpdate
-                ? certifications.map((cert) =>
-                    cert.id === editId ? { ...cert, ...certification } : cert
-                )
-                : [...certifications, { ...certification, id: Date.now().toString() } as Certification];
-
-            const body = {
-                userId: user.id,
-                certifications: updatedCertifications,
-            };
-
-            const response = await updateprofile(body);
-
-            if (response.status === 200) {
-                const result = await viewProfile();
-                if (result?.data) {
-                    const object = result.data;
-                    for (const property in object) {
-                        dispatch(updateUserField({ key: property, value: object[property] }));
-                    }
-                    // Update local certifications state
-                    setCertifications(result.data.certifications || []);
-                }
-                showToast.success(
-                    t('success'),
-                    isUpdate ? t('certificateupdated') : t('certificateaddedsuccessfully')
-                );
-            }
-        } catch (error: any) {
-            console.error('Update error:', error.response?.data || error.message);
-            showToast.error(t('error'), t('somethingwentwrong'));
-        } finally {
-            setLoading(false);
-        }
-    };
+    useFocusEffect(
+        useCallback(() => {
+            fetchProfileDetails();
+        }, [fetchProfileDetails])
+    );
 
     const handleDelete = async () => {
         try {
@@ -290,6 +83,14 @@ const CertificationsScreen = () => {
             });
 
             if (response.status === 200) {
+                // Update Redux store with fresh data
+                const result = await viewProfile();
+                if (result?.data) {
+                    const object = result.data;
+                    for (const property in object) {
+                        dispatch(updateUserField({ key: property, value: object[property] }));
+                    }
+                }
                 await fetchProfileDetails();
                 showToast.success(t('success'), t('certificatedeletedsuccessfully'));
             }
@@ -303,178 +104,75 @@ const CertificationsScreen = () => {
         }
     };
 
-    const handlePlusIconClick = () => {
-        setShowForm(true);
-    };
-
-    const handleCloseForm = () => {
-        resetForm();
-    };
-
     const handleEditCertification = (item: Certification) => {
-        setEditId(item.id);
-        setOrganization(item.companyName);
-        setCertificateName(item.role);
-        setStartDate(parseDDMMYYYY(item.from));
-        setEndDate(parseDDMMYYYY(item.to));
-        setIsUpdate(true);
-        setShowForm(true);
+        router.push({
+            pathname: '/Certifications/addCertificate',
+            params: {
+                id: item.id,
+                companyName: item.companyName,
+                role: item.role,
+                from: item.from,
+                to: item.to,
+                isEdit: 'true'
+            }
+        });
+    };
+
+    const handleAddCertification = () => {
+        router.push({
+            pathname: '/Certifications/addCertificate',
+            params: {
+                isEdit: 'false'
+            }
+        });
     };
 
     return (
         <View style={styles.main}>
-            <GlobalHeader 
-                title={t('certifications')} 
-                rightIcon={showForm ? <X/> : <Plus/>}
-                onRightPress={showForm ? handleCloseForm : handlePlusIconClick}
+            <GlobalHeader
+                title={t('certifications')}
+                rightIcon={<Plus />}
+                onRightPress={handleAddCertification}
             />
-            <KeyboardAwareScrollView
-                contentContainerStyle={styles.container}
-                keyboardShouldPersistTaps="handled"
-                enableOnAndroid
-                extraScrollHeight={Platform.OS === 'ios' ? 20 : 80}
-                showsVerticalScrollIndicator={false}
-            >
-                {showForm ? (
-                    // FORM VIEW
-                    <>
-                        {/* Certificate Name Input */}
-                        <View style={styles.inputContainer}>
-                            <Award size={20} color="#666" style={styles.icon} />
-                            <TextInput
-                                style={styles.textInput}
-                                placeholder={t('certificateName')}
-                                placeholderTextColor="#B7B7B7"
-                                value={certificateName}
-                                onChangeText={setCertificateName}
-                                autoCapitalize="none"
-                                autoCorrect={false}
-                            />
+
+            <View style={styles.container}>
+                <FlatList
+                    data={certifications}
+                    keyExtractor={(item) => item.id}
+                    contentContainerStyle={styles.listContent}
+                    ListEmptyComponent={
+                        <View style={styles.emptyContainer}>
+                            <EmptyComponent text='No certifications added yet' />
                         </View>
-
-                        {/* Organization Input */}
-                        <View style={styles.inputContainer}>
-                            <Building size={20} color="#666" style={styles.icon} />
-                            <TextInput
-                                style={styles.textInput}
-                                placeholder={t('organizationName')}
-                                placeholderTextColor="#B7B7B7"
-                                value={organization}
-                                onChangeText={setOrganization}
-                                autoCapitalize="none"
-                                autoCorrect={false}
-                            />
+                    }
+                    renderItem={({ item }) => (
+                        <View style={styles.experienceCard}>
+                            <View style={styles.experienceContent}>
+                                <Text style={styles.companyName}>{item.role}</Text>
+                                <Text style={styles.role}>{item.companyName}</Text>
+                                <Text style={styles.duration}>{item.from} - {item.to}</Text>
+                            </View>
+                            <View style={styles.actions}>
+                                <TouchableOpacity
+                                    onPress={() => handleEditCertification(item)}
+                                    style={styles.actionButton}
+                                >
+                                    <Edit size={20} color="#000" />
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setDeleteId(item.id);
+                                        setModalVisible(true);
+                                    }}
+                                    style={styles.actionButton}
+                                >
+                                    <Trash2 size={20} color="red" />
+                                </TouchableOpacity>
+                            </View>
                         </View>
-
-                        {/* Start Date */}
-                        <TouchableOpacity
-                            style={styles.inputContainer}
-                            onPress={() => setShowStartDatePicker(true)}
-                        >
-                            <Calendar size={20} color="#666" style={styles.icon} />
-                            {startDate ? (
-                                <Text style={styles.dateText}>{formatDateForDisplay(startDate)}</Text>
-                            ) : (
-                                <Text style={styles.datePlaceholder}>{t('startdate')}</Text>
-                            )}
-                        </TouchableOpacity>
-
-                        {/* Start Date Picker */}
-                        <CustomDateTimePicker
-                            value={startDate || new Date()}
-                            mode="date"
-                            onChange={handleStartDateConfirm}
-                            onClose={handleStartDateClose}
-                            isVisible={showStartDatePicker}
-                            cancelText={t('cancel') || "Cancel"}
-                            confirmText={t('done') || "Done"}
-                            containerStyle={{ backgroundColor: "#fff" }}
-                            buttonTextStyle={{ fontSize: 18, color: "#84A402" }}
-                            maximumDate={new Date()}
-                        />
-
-                        {/* End Date */}
-                        <TouchableOpacity
-                            style={styles.inputContainer}
-                            onPress={() => setShowEndDatePicker(true)}
-                        >
-                            <Calendar size={20} color="#666" style={styles.icon} />
-                            {endDate ? (
-                                <Text style={styles.dateText}>{formatDateForDisplay(endDate)}</Text>
-                            ) : (
-                                <Text style={styles.datePlaceholder}>{t('enddate')}</Text>
-                            )}
-                        </TouchableOpacity>
-
-                        {/* End Date Picker */}
-                        <CustomDateTimePicker
-                            value={endDate || new Date()}
-                            mode="date"
-                            onChange={handleEndDateConfirm}
-                            onClose={handleEndDateClose}
-                            isVisible={showEndDatePicker}
-                            cancelText={t('cancel') || "Cancel"}
-                            confirmText={t('done') || "Done"}
-                            containerStyle={{ backgroundColor: "#fff" }}
-                            buttonTextStyle={{ fontSize: 18, color: "#84A402" }}
-                            maximumDate={new Date()}
-                        />
-
-                        {/* Add/Update Button */}
-                        <TouchableOpacity
-                            onPress={addCertification}
-                            style={styles.updateButton}
-                            disabled={loading}
-                        >
-                            {loading ? (
-                                <CommonLoader color='#fff' />
-                            ) : (
-                                <Text style={styles.updateButtonText}>
-                                    {isUpdate ? t('editCertificate') : t('addCertificate')}
-                                </Text>
-                            )}
-                        </TouchableOpacity>
-                    </>
-                ) : (
-                    // LISTING VIEW
-                    <FlatList
-                        data={certifications}
-                        keyExtractor={(item) => item.id}
-                        scrollEnabled={false}
-                        ListEmptyComponent={
-                            <View style={styles.emptyContainer}>
-                                <EmptyComponent text='No certifications added yet'/>
-                            </View>
-                        }
-                        renderItem={({ item }) => (
-                            <View style={styles.experienceCard}>
-                                <View style={styles.experienceContent}>
-                                    <Text style={styles.companyName}>{item.role}</Text>
-                                    <Text style={styles.role}>{item.companyName}</Text>
-                                    <Text style={styles.duration}>{item.from} - {item.to}</Text>
-                                </View>
-                                <View style={styles.actions}>
-                                    <TouchableOpacity
-                                        onPress={() => handleEditCertification(item)}
-                                        style={styles.actionButton}
-                                    >
-                                        <Edit size={20} color="#000" />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            setDeleteId(item.id);
-                                            setModalVisible(true);
-                                        }}
-                                        style={styles.actionButton}
-                                    >
-                                        <Trash2 size={20} color="red" />
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        )}
-                    />
-                )}
-            </KeyboardAwareScrollView>
+                    )}
+                />
+            </View>
 
             {/* Delete Confirmation Modal */}
             <Modal
@@ -526,7 +224,11 @@ const styles = StyleSheet.create({
         backgroundColor: '#ededed',
     },
     container: {
-        padding: 20,
+        flex: 1,
+        paddingHorizontal: 20,
+        paddingTop: 20,
+    },
+    listContent: {
         paddingBottom: 20,
     },
     inputContainer: {
@@ -615,8 +317,8 @@ const styles = StyleSheet.create({
         padding: 8,
     },
     emptyContainer: {
-        flex:1,
-        marginTop:'50%',
+        flex: 1,
+        paddingTop: '50%',
         alignItems: 'center',
         justifyContent: 'center',
     },

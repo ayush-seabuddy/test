@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
 import {
-  View,
-  StyleSheet,
-  Pressable,
   Dimensions,
-  Modal,
-  KeyboardAvoidingView,
-  Platform,
   Keyboard,
-  Animated,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  View,
 } from "react-native";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");

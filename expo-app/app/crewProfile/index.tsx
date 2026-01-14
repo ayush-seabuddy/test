@@ -78,7 +78,7 @@ interface CrewProfile {
   experience?: string;
   workingExperience?: WorkingExperience[];
   SocialMediaLinks?: SocialMediaLink[];
-  crewMembers?: Array<{ userId: string; isBoarded: boolean }>;
+  crewMembers?: { userId: string; isBoarded: boolean }[];
 }
 
 const Profile: React.FC = () => {

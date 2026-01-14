@@ -1,21 +1,15 @@
-import React from "react";
+import { Check, ChevronDown, ChevronUp } from "lucide-react-native";
 import type { ReactElement } from "react";
+import React from "react";
 import {
   StyleSheet,
+  Text,
+  TextStyle,
   View,
   ViewStyle,
-  TextStyle,
-  Text,
 } from "react-native";
 import { Dropdown, MultiSelect } from "react-native-element-dropdown";
-import { Check, ChevronDown, ChevronUp } from "lucide-react-native";
 import Colors from "../utils/Colors";
-
-type DropdownItem = {
-  label: string;
-  value: string;
-};
-
 type GlobalDropdownProps<T> = {
   data: T[];
   value: any;

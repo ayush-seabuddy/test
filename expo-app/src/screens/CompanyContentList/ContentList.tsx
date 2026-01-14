@@ -5,11 +5,9 @@ import GlobalHeader from '@/src/components/GlobalHeader';
 import Colors from '@/src/utils/Colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ChevronLeft } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
   Dimensions,
   FlatList,
   Image,
@@ -20,10 +18,9 @@ import {
 } from 'react-native';
 
 
-const { width, height } = Dimensions.get('window')
+const { width } = Dimensions.get('window')
 const CompanyContentList = ({headerTitle, contentType}:{headerTitle:string , contentType:string}) => {
   const { item } = useLocalSearchParams();
-  const data2 = typeof item === "string" ? JSON.parse(item) : null;
   const [data, setData] = useState<any[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);

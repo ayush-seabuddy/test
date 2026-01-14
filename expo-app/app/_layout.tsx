@@ -10,7 +10,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native
 import * as Sentry from '@sentry/react-native';
 import { useFonts } from "expo-font";
 import * as Notifications from "expo-notifications";
-import { Stack, router, usePathname, useSegments } from "expo-router"; // ← added usePathname + useSegments
+import { Stack, router, usePathname, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as TaskManager from 'expo-task-manager';
 import i18n from "i18next";
@@ -68,7 +68,7 @@ TaskManager.defineTask(BACKGROUND_NOTIFICATION_TASK, async ({ data, error }) => 
 Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK).catch(() => { });
 
 const NotificationHandler = () => {
-  const { notification, expoPushToken, error } = useNotification();
+  const { expoPushToken } = useNotification();
   const { t } = useTranslation();
   const lastHandledId = useRef<string | null>(null);
 

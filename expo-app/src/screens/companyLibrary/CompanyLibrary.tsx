@@ -1,15 +1,15 @@
 
 import { getallcontents } from '@/src/apis/apiService'
 import GlobalHeader from '@/src/components/GlobalHeader'
+import { showToast } from '@/src/components/GlobalToast'
 import { router } from 'expo-router'
 import { t } from 'i18next'
-import { ChevronLeft, ChevronRight } from 'lucide-react-native'
+import { ChevronRight } from 'lucide-react-native'
 import React, { useEffect } from 'react'
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import RelatedContentCard from '../ContentDetails/RelatedContentCard'
 import CompanyAnnouncements from './CompanyAnnouncements'
 import MusicCard from './MusicCard'
-import { showToast } from '@/src/components/GlobalToast'
 
 const CompanyLibrary = () => {
     const contentList = ["MUSIC", "READ", "VIDEO"];
@@ -29,7 +29,6 @@ const CompanyLibrary = () => {
                 limit: 10,
                 contentCategory: "COMPANY_LIBRARY",
                 contentType: item
-                // onlyAnnouncement: onlyAnnouncement,
             });
             if (apiResponse.success && apiResponse.status === 200) {
                 console.log("apiResponse.data.allContents: ", apiResponse.data.allContents);
@@ -41,6 +40,7 @@ const CompanyLibrary = () => {
                 showToast.error(t('oops'), apiResponse.message);
             }
         } catch (error) {
+            console.log('Error', error)
             showToast.error(t('oops'), t('somethingwentwrong'));
         }
     };
@@ -53,6 +53,7 @@ const CompanyLibrary = () => {
             });
 
         } catch (error) {
+            console.log('Error', error)
 
         } finally {
             setLoading(false);

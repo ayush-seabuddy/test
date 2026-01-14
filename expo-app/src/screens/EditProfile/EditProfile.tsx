@@ -1,48 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  TextInput,
-  TouchableOpacity,
-  Text,
-  Platform,
-  ActivityIndicator,
-} from 'react-native';
+import { updateprofile, viewProfile } from '@/src/apis/apiService';
+import CommonLoader from '@/src/components/CommonLoader';
 import GlobalHeader from '@/src/components/GlobalHeader';
+import { showToast } from '@/src/components/GlobalToast';
+import { RootState } from '@/src/redux/store';
+import { updateUserField } from '@/src/redux/userDetailsSlice';
+import Colors from '@/src/utils/Colors';
+import { router } from 'expo-router';
+import {
+  Activity,
+  Blend,
+  Calendar,
+  HandHelpingIcon,
+  Heart,
+  HeartPulseIcon,
+  Mail,
+  Mars,
+  Phone,
+  User,
+  Volleyball,
+  X,
+} from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  User,
-  Mail,
-  Phone,
-  Calendar,
-  Heart,
-  Activity,
-  X,
-  Mars,
-  HandHelpingIcon,
-  HeartPulseIcon,
-  Volleyball,
-  Blend,
-} from 'lucide-react-native';
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import { Dropdown } from 'react-native-element-dropdown';
-import { showToast } from '@/src/components/GlobalToast';
-import { viewProfile, updateprofile } from '@/src/apis/apiService';
-import { useDispatch, useSelector } from 'react-redux';
-import { updateUserField } from '@/src/redux/userDetailsSlice';
-import { RootState } from '@/src/redux/store';
-import * as Yup from "yup";
-import Colors from '@/src/utils/Colors';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { router } from 'expo-router';
-import CommonLoader from '@/src/components/CommonLoader';
-
-// NOTE: validation schemas use translations and are created inside the component
+import { useDispatch, useSelector } from 'react-redux';
+import * as Yup from "yup";
 
 const EditProfile = () => {
   const { t } = useTranslation();
 
-  // Validation schemas
   const validationSchema = Yup.object().shape({
     name: Yup.string().required(t('validation.name_required', 'Name is required')),
     email: Yup.string().email(t('validation.invalid_email', 'Invalid email')).required(t('validation.email_required', 'Email is required')),
@@ -133,8 +129,6 @@ const EditProfile = () => {
     }
     return null;
   };
-
-  // Fixed dropdown data: value is stable key (e.g., 'male'), label is translated
   const GENDER = [
     { label: t('genderOptions.male'), value: 'Male' },
     { label: t('genderOptions.female'), value: 'Female' },
@@ -228,7 +222,6 @@ const EditProfile = () => {
             }
           }
 
-          // These now use stable keys (e.g., 'male', '0_1', 'asian') from backend
           setGender(object.gender || null);
           setYearsOfExperience(object.experience || null);
           setRace(object.ethnicity || null);
@@ -447,7 +440,6 @@ const EditProfile = () => {
         extraScrollHeight={Platform.OS === 'ios' ? 20 : 80}
         showsVerticalScrollIndicator={false}
       >
-        {/* Name */}
         <View style={styles.inputContainer}>
           <User size={20} color="#666" style={styles.icon} />
           <TextInput
@@ -458,8 +450,6 @@ const EditProfile = () => {
             autoFocus={false}
           />
         </View>
-
-        {/* Email */}
         <View style={styles.inputContainer} pointerEvents="none">
           <Mail size={20} color="#666" style={styles.icon} />
           <TextInput
@@ -472,8 +462,6 @@ const EditProfile = () => {
             autoFocus={false}
           />
         </View>
-
-        {/* Phone (Read-only) */}
         <View style={styles.inputContainer} pointerEvents="none">
           <Phone size={20} color="#666" style={styles.icon} />
           <TextInput
@@ -484,8 +472,6 @@ const EditProfile = () => {
             autoFocus={false}
           />
         </View>
-
-        {/* Date of Birth */}
         <TouchableOpacity style={styles.inputContainer} onPress={() => setOpenDatePicker(true)}>
           <Calendar size={20} color="#666" style={styles.icon} />
           {date ? (
@@ -510,8 +496,6 @@ const EditProfile = () => {
           confirmText="Done"
           cancelText="Cancel"
         />
-
-        {/* Gender */}
         {renderSingleDropdown(
           GENDER,
           gender,
@@ -519,8 +503,6 @@ const EditProfile = () => {
           t('gender'),
           <Mars size={20} color="#666" />
         )}
-
-        {/* Years of Experience */}
         {renderSingleDropdown(
           EXPERIENCE,
           yearsOfExperience,
@@ -528,8 +510,6 @@ const EditProfile = () => {
           t('years_of_experience'),
           <HandHelpingIcon size={20} color="#666" />
         )}
-
-        {/* Ethnicity */}
         {renderSingleDropdown(
           ETHNICITY,
           race,
@@ -537,8 +517,6 @@ const EditProfile = () => {
           t('selectethnicity'),
           <Heart size={20} color="#666" />
         )}
-
-        {/* Marital Status */}
         {renderSingleDropdown(
           RELATIONSHIP,
           maritalStatus,
@@ -546,8 +524,6 @@ const EditProfile = () => {
           t('selectrelationshipstatus'),
           <HeartPulseIcon size={20} color="#666" />
         )}
-
-        {/* Religion */}
         {renderSingleDropdown(
           RELIGION,
           religion,
@@ -555,8 +531,6 @@ const EditProfile = () => {
           t('religion'),
           <Blend size={20} color="#666" />
         )}
-
-        {/* Hobbies */}
         {renderMultiDropdown(
           HOBBIES_OPTIONS,
           selectedHobbies,
@@ -565,8 +539,6 @@ const EditProfile = () => {
           <Volleyball size={20} color="#666" />,
           3
         )}
-
-        {/* Favorite Activity */}
         {renderMultiDropdown(
           FAV_ACTIVITY_OPTIONS,
           selectedFavActivities,
@@ -575,8 +547,6 @@ const EditProfile = () => {
           <Activity size={20} color="#666" />,
           3
         )}
-
-        {/* About Yourself */}
         <TextInput
           style={styles.multilineInput}
           placeholder={t('about_yourself')}
@@ -592,8 +562,6 @@ const EditProfile = () => {
         />
 
         <Text style={styles.charCount}>{about.length}/600</Text>
-
-        {/* Update Button */}
         <TouchableOpacity
           style={styles.updateButton}
           onPress={handleUpdate}

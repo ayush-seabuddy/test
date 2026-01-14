@@ -1,40 +1,36 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BlurView } from "@react-native-community/blur";
+import NetInfo from "@react-native-community/netinfo";
+import firestore from "@react-native-firebase/firestore";
+import { Picker } from "@react-native-picker/picker";
+import moment from "moment";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-  FlatList,
-  TextInput,
   ActivityIndicator,
-  Platform,
-  KeyboardAvoidingView,
+  Dimensions,
+  FlatList,
+  Image,
   Keyboard,
-  Modal as RNModal,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
-import ProfleSettingHeader from "../component/headers/ProfileHeader/ProfleSettingHeader";
-import { BlurView } from "@react-native-community/blur";
-import AntDesign from "react-native-vector-icons/AntDesign";
-import FocusAwareStatusBar from "../statusbar/FocusAwareStatusBar";
-import moment from "moment";
-import { FontFamily } from "../GlobalStyle";
-import Colors from "../colors/Colors";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { apiCallWithToken, apiCallWithTokenPost, apiServerUrl } from "../Api";
-import firestore from "@react-native-firebase/firestore";
-import NetInfo from "@react-native-community/netinfo";
-import { Modal } from "react-native-paper";
-import { Picker } from "@react-native-picker/picker";
-import { ImagesAssets } from "../assets/ImagesAssets";
-import Toast from "react-native-toast-message";
-import Spinner from "react-native-loading-spinner-overlay";
-import CustomLottie from "../component/CustomLottie";
 import MonthPicker from 'react-native-month-year-picker';
-import axios from "axios";
-import Loader from "../component/Loader";
+import { Modal } from "react-native-paper";
+import Toast from "react-native-toast-message";
+import AntDesign from "react-native-vector-icons/AntDesign";
+import { apiCallWithToken, apiCallWithTokenPost, apiServerUrl } from "../Api";
+import { FontFamily } from "../GlobalStyle";
+import { ImagesAssets } from "../assets/ImagesAssets";
+import Colors from "../colors/Colors";
+import CustomLottie from "../component/CustomLottie";
+import ProfleSettingHeader from "../component/headers/ProfileHeader/ProfleSettingHeader";
+import FocusAwareStatusBar from "../statusbar/FocusAwareStatusBar";
 
 const { height, width } = Dimensions.get("screen");
 

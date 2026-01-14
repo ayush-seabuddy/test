@@ -1,17 +1,16 @@
-// components/NotificationPermissionModal.tsx
-import React, { useEffect, useState, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import * as Notifications from "expo-notifications";
+import React, { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
-  Text,
+  Linking,
   Modal,
-  TouchableOpacity,
   StatusBar,
   StyleSheet,
-  Linking,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import * as Notifications from "expo-notifications";
-import { useFocusEffect } from "@react-navigation/native";
-import { useTranslation } from "react-i18next";
 import Colors from "../../utils/Colors";
 
 const NotificationPermissionModal: React.FC = () => {
@@ -31,7 +30,6 @@ const NotificationPermissionModal: React.FC = () => {
       } else if (settings.status === "denied") {
         setIsVisible(true);
       } else {
-        // granted or provisional
         setIsVisible(false);
       }
     } catch (error) {

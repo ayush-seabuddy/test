@@ -7,7 +7,7 @@ import { router } from 'expo-router'
 import moment from 'moment-timezone'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Dimensions, FlatList, Modal, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { FlatList, Modal, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { showToast } from '../GlobalToast'
 
 export interface BuddyUpEvent {
@@ -32,9 +32,6 @@ export interface BuddyUpEvent {
         userType: string
     }
 }
-
-const { height } = Dimensions.get('window')
-
 const BuddyUpEventCard = ({
     buddyupevents,
     onEventDeleted
@@ -44,7 +41,7 @@ const BuddyUpEventCard = ({
 }) => {
 
     const { t } = useTranslation()
-    const [loading, setloading] = useState(false)
+    const [_loading, setloading] = useState(false)
     const [eventList, setEventList] = useState<BuddyUpEvent[]>(buddyupevents)
     const [loggeduserData, setloggeduserData] = useState<{ id: string } | null>(null)
 

@@ -17,10 +17,9 @@ import {
 import { viewProfile, viewUserTest } from '@/src/apis/apiService';
 import AppContainer from '@/src/components/AppContainer';
 import { showToast } from '@/src/components/GlobalToast';
-import { RootState } from '@/src/redux/store';
 import { updateUserField } from '@/src/redux/userDetailsSlice';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 const { height } = Dimensions.get('window');
 
@@ -42,10 +41,6 @@ type AppRoute =
 const Splash = () => {
   const { t } = useTranslation();
   const router = useRouter();
-  const notificationDetails = useSelector(
-    (state: RootState) => state.notification
-  );
-
   /** 🔑 Used to cancel async flows */
   const flowIdRef = useRef(0);
 

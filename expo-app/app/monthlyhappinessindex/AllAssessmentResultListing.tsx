@@ -1,26 +1,21 @@
 import { getassessmentresponseList } from '@/src/apis/apiService';
-import CustomLottie from '@/src/components/CustomLottie';
+import CommonLoader from '@/src/components/CommonLoader';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
+import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ChevronLeft, ArrowUpRight } from 'lucide-react-native';
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { ArrowUpRight } from 'lucide-react-native';
+import moment from 'moment';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-    View,
-    Text,
-    StyleSheet,
     FlatList,
+    StyleSheet,
+    Text,
     TouchableOpacity,
-    Dimensions,
-    ActivityIndicator,
+    View
 } from 'react-native';
-import moment from 'moment';
-import { Image } from 'expo-image';
-import CommonLoader from '@/src/components/CommonLoader';
-
-const { width, height } = Dimensions.get('window');
 
 const getScoreStyle = (score: number, assessmentType: 'HAPPINESS' | 'POMS') => {
     if (assessmentType === 'HAPPINESS') {
@@ -145,7 +140,7 @@ const AllAssessmentResultListing = () => {
             >
                 <View style={styles.cardContent}>
                     <View style={styles.leftSection}>
-                        <View style={{ justifyContent: 'space-between', flexDirection: 'row' }}>
+                        <View style={{ justifyContent: 'space-between', flexDirection: 'row', alignItems: 'center' }}>
                             <Text style={styles.dateText}>{formattedDate}</Text>
                             <View style={[styles.scoreBadge, { backgroundColor: bg }]}>
                                 <Text style={[styles.scoreText, { color: text }]}>
@@ -153,14 +148,8 @@ const AllAssessmentResultListing = () => {
                                 </Text>
                             </View>
                         </View>
-
-
-
-
                         {infoContent}
                     </View>
-
-
                 </View>
             </TouchableOpacity>
         );
@@ -245,7 +234,7 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-start',
         paddingHorizontal: 12,
         paddingVertical: 6,
-        borderRadius: 8,
+        borderRadius: 5,
         marginVertical: 4,
     },
     scoreText: {
@@ -276,7 +265,7 @@ const styles = StyleSheet.create({
     rightIcon: {
         backgroundColor: '#fff',
         padding: 10,
-        borderRadius: 12,
+        borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
     },

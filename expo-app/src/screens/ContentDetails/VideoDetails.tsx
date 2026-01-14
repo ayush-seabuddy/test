@@ -11,25 +11,17 @@ import {
 } from "react-native";
 
 import { getRecommendedContents } from "@/src/apis/apiService";
+import CommonLoader from "@/src/components/CommonLoader";
 import GlobalHeader from "@/src/components/GlobalHeader";
 import VideoPlayer from "@/src/components/VideoPlayer";
 import Colors from "@/src/utils/Colors";
 import { Video } from "expo-av";
 import { BlurView } from "expo-blur";
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { Modal } from "react-native-paper";
 import RelatedContentCard from "./RelatedContentCard";
 import { Content } from "./type";
-import CommonLoader from "@/src/components/CommonLoader";
-import { useTranslation } from "react-i18next";
-
-interface ContentDetails {
-  id: string;
-  contentTitle?: string;
-  description?: string;
-  contentUrl?: string[];
-  createdAt?: string;
-}
 
 export default function VideosDetails({ data: fullDetails }: { data: Content }) {
   const [notificationDetailModalVisible, setNotificationDetailModalVisible] = useState(false);

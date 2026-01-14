@@ -21,7 +21,6 @@ import BottomSheet, {
     BottomSheetView,
 } from '@gorhom/bottom-sheet'
 import { Image } from 'expo-image'
-import ImagePicker from 'react-native-image-crop-picker'
 import { router, useLocalSearchParams } from 'expo-router'
 import {
     CalendarDays,
@@ -47,6 +46,7 @@ import {
     View
 } from 'react-native'
 import { Dropdown } from 'react-native-element-dropdown'
+import ImagePicker from 'react-native-image-crop-picker'
 
 type AllParticipants = {
     id: string
@@ -1240,6 +1240,7 @@ const styles = StyleSheet.create({
     },
     inputView: {
         flex: 1,
+        marginTop: 10
     },
     dropdown: {
         flex: 1,

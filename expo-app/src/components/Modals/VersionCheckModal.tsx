@@ -1,17 +1,16 @@
+import Colors from "@/src/utils/Colors";
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
+  Dimensions,
+  Linking,
   Modal,
-  View,
+  StatusBar,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  StatusBar,
-  Platform,
-  Linking,
+  View,
 } from "react-native";
-import { useTranslation } from "react-i18next";
-import Colors from "@/src/utils/Colors";
 
 const { width } = Dimensions.get("window");
 

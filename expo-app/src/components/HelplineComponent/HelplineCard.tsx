@@ -1,30 +1,28 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import { getallhelplines } from '@/src/apis/apiService';
+import { getUserDetails } from '@/src/utils/helperFunctions';
+import { ImagesAssets } from '@/src/utils/ImageAssets';
+import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     FlatList,
     StyleSheet,
     Text,
-    View,
-    ActivityIndicator,
     TouchableOpacity,
+    View,
 } from 'react-native';
-import { getallhelplines } from '@/src/apis/apiService';
-import { showToast } from '../GlobalToast';
-import { useTranslation } from 'react-i18next';
-import { Image } from 'expo-image';
-import { ImagesAssets } from '@/src/utils/ImageAssets';
-import Colors from '@/src/utils/Colors';
-import AIJollieCard from './AIJollieCard';
-import * as Haptics from 'expo-haptics';
-import EmergencyModal from '../Modals/EmergencyModal';
 import {
+    ConversationOptions,
     Freshchat,
     FreshchatConfig,
     FreshchatUser,
-    ConversationOptions,
 } from 'react-native-freshchat-sdk';
-import { getUserDetails } from '@/src/utils/helperFunctions';
-import { useRouter } from 'expo-router';
 import CommonLoader from '../CommonLoader';
+import { showToast } from '../GlobalToast';
+import EmergencyModal from '../Modals/EmergencyModal';
+import AIJollieCard from './AIJollieCard';
 
 interface Helpline {
     id: string;
@@ -124,6 +122,7 @@ const HelplineAndAICards = () => {
                 setDynamicHelplines([]);
             }
         } catch (e) {
+            console.log('Error', e)
             showToast.error(t('oops'), t('somethingwentwrong'));
             setDynamicHelplines([]);
         } finally {

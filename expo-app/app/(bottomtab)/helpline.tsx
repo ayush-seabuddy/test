@@ -1,25 +1,23 @@
 import React from "react";
 import {
-  Text,
-  View,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
   Dimensions,
+  Image,
   Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-import { useTranslation } from "react-i18next";
 import CustomLottie from "@/src/components/CustomLottie";
-import { ImagesAssets } from "@/src/utils/ImageAssets";
-import Colors from "@/src/utils/Colors";
-import { History, Home } from "lucide-react-native";
 import HelplineAndAICards from "@/src/components/HelplineComponent/HelplineCard";
-import AIJollieCard from "@/src/components/HelplineComponent/AIJollieCard";
+import Colors from "@/src/utils/Colors";
+import { ImagesAssets } from "@/src/utils/ImageAssets";
 import { router } from "expo-router";
+import { History, Home } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
 
-const { width, height } = Dimensions.get("window");
-
+const { height } = Dimensions.get("window");
 const HelplineScreen = () => {
   const { t } = useTranslation();
 

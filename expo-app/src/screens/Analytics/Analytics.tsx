@@ -1,20 +1,18 @@
-import CustomLottie from '@/src/components/CustomLottie'
+import { getAnalytics } from '@/src/apis/apiService'
 import GlobalHeader from '@/src/components/GlobalHeader'
+import { showToast } from '@/src/components/GlobalToast'
 import Colors from '@/src/utils/Colors'
 import { height, width } from '@/src/utils/helperFunctions'
 import { BlurView } from 'expo-blur'
-import { router } from 'expo-router'
 import { t } from 'i18next'
 import { ChevronLeft, ChevronRight, Settings } from 'lucide-react-native'
 import moment from 'moment-timezone'
-import React, { use, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Linking, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { PieChart } from "react-native-chart-kit"
 import { ScrollView } from 'react-native-gesture-handler'
 import Bargraph from './Bargraph'
 import GraphScreen from './GraphScreen'
-import { getAnalytics } from '@/src/apis/apiService'
-import { showToast } from '@/src/components/GlobalToast'
 
 const Analytics = () => {
   interface GroupActivity {
@@ -23,27 +21,21 @@ const Analytics = () => {
   }
 
   interface StressLevel {
-    month: string; // format like "08-2025"
+    month: string; 
     TMD: number;
   }
 
-  interface AnalyticsResponse {
-    groupActivities: GroupActivity[];
-    stressLevelGraph: StressLevel[];
-  }
-
-  const [loading, setLoading] = useState(false);
   const [groupActivities, setGroupActivities] = useState<GroupActivity[]>([]);
   const [stressLevelGraph, setStressLevelGraph] = useState<StressLevel[]>([]);
   const [data, setData] = useState<GroupActivity[]>([]);
   const [selectedDate, setSelectedDate] = useState(moment().subtract(6, "months"));
   const [selectedDateTo, setSelectedDateTo] = useState(moment());
-  const [sleepData, setSleepData] = useState([]);
-  const [graphData, setGraphData] = useState([]);
-  const [moodType, setMoodType] = useState({
+  const moodType = {
     mood: "",
-    message: "Calculated from your latest Wellbeing Pulse survey results to help you spot patterns and manage stress better",
-  });
+    message:
+      "Calculated from your latest Wellbeing Pulse survey results to help you spot patterns and manage stress better",
+  };
+
 
   const handleMonthChange = (increment: number) =>
     setSelectedDate((prev) => moment(prev).add(increment, "months"));
@@ -126,7 +118,6 @@ const Analytics = () => {
       ...(typeof activity === 'object' && activity !== null ? activity : {}),
       color: colors[index] || '#000',
     }));
-    // setData(updatedActivities);
   }, [groupActivities]);
 
 

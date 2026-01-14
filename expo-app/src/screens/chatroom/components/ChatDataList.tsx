@@ -1,13 +1,11 @@
+import CommonLoader from "@/src/components/CommonLoader";
 import SwipeBox from "@/src/components/SwipeBox";
 import { UserDetails } from "@/src/types/userTypes";
-import Colors from "@/src/utils/Colors";
 import { formatChatTime, formatDateSeparator } from "@/src/utils/helperFunctions";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import { Text, TouchableOpacity, View } from "react-native";
-import { ActivityIndicator } from "react-native-paper";
 import { ChatMessage } from "../../chat/types/chatRoom";
-import CommonLoader from "@/src/components/CommonLoader";
 
 
 type ChatsProps = {
@@ -32,7 +30,6 @@ type ChatsProps = {
 };
 const Chats = ({
   item,
-  index,
   senderId,
   styles,
   searchResults,

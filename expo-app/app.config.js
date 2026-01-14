@@ -1,61 +1,113 @@
-import { config } from 'dotenv';
-import { resolve } from 'path';
-
-export default ({ config: appConfig }) => {
+export default ({ config }) => {
   const env = process.env.APP_ENV ?? 'local';
   const isProduction = env === 'production';
   const isStaging = env === 'staging';
 
-  // Load environment-specific .env file BEFORE accessing any variables
-  if (isProduction) {
-    config({ path: resolve(__dirname, '.env.prod'), override: true });
-  } else if (isStaging) {
-    config({ path: resolve(__dirname, '.env.staging'), override: true });
-  } else {
-    config({ path: resolve(__dirname, '.env'), override: true });
-  }
-
-  // Read env variables after loading specific file
-  const API_URL = process.env.API_URL;
-  const SOCKET_URL = process.env.SOCKET_URL;
-
   return {
-    ...appConfig,
-    extra: {
-      ...appConfig.extra,
-      env,
-      API_URL,
-      SOCKET_URL,
-      eas: appConfig.extra?.eas,
-    },
-    // Override splash screen based on environment
+    ...config,
+
     splash: {
-      ...appConfig.splash,
-      backgroundColor: isProduction ? '#ffffff' : isStaging ? '#FFF3E0' : '#E3F2FD',
+      ...config.splash,
+      backgroundColor: isProduction
+        ? '#ffffff'
+        : isStaging
+          ? '#FFF3E0'
+          : '#E3F2FD',
     },
-    // Optimize updates based on environment
+
     updates: {
-      ...appConfig.updates,
+      ...config.updates,
       enabled: isProduction || isStaging,
       checkAutomatically: isProduction ? 'ON_LOAD' : 'ON_ERROR_RECOVERY',
     },
-    // Environment-specific iOS configuration
+
     ios: {
-      ...appConfig.ios,
-      // Only increment build number in production/staging
-      ...(isProduction || isStaging ? { buildNumber: String(Date.now()) } : {}),
+      ...config.ios,
       infoPlist: {
-        ...appConfig.ios?.infoPlist,
-        NSCameraUsageDescription: 'This app uses the camera to let you take photos.',
-        NSPhotoLibraryUsageDescription: 'This app needs access to your photo library to select images.',
-        NSPhotoLibraryAddUsageDescription: 'This app saves photos to your library.'
-      },
+        ...config.ios?.infoPlist,
+        NSCameraUsageDescription:
+          'SeaBuddy needs access to your camera to upload photos and videos.',
+        NSPhotoLibraryUsageDescription:
+          'SeaBuddy needs access to your photo library to share photos.',
+        NSMicrophoneUsageDescription:
+          'SeaBuddy needs access to your microphone to record audio and videos.',
+        NSLocationWhenInUseUsageDescription:
+          'SeaBuddy uses your location to enhance your experience.'
+      }
     },
-    // Environment-specific Android configuration
-    android: {
-      ...appConfig.android,
-      // Only increment version code in production/staging
-      ...(isProduction || isStaging ? { versionCode: parseInt(Date.now().toString().slice(-8)) } : {}),
-    },
+
+    plugins: [
+      '@react-native-community/datetimepicker',
+      'expo-asset',
+      'expo-router',
+      'expo-localization',
+      'expo-font',
+
+      [
+        'expo-video',
+        {
+          supportsBackgroundPlayback: true,
+          supportsPictureInPicture: true
+        }
+      ],
+
+      [
+        'expo-notifications',
+        {
+          icon: './assets/images/icon.png',
+          defaultChannel: 'default',
+          enableBackgroundRemoteNotifications: false
+        }
+      ],
+
+      [
+        'expo-screen-orientation',
+        {
+          supportedOrientations: ['portrait', 'landscape']
+        }
+      ],
+
+      [
+        'expo-build-properties',
+        {
+          android: {
+            minSdkVersion: 26,
+            compileSdkVersion: 35,
+            targetSdkVersion: 35,
+            enableProguardInReleaseBuilds: true,
+            enableShrinkResourcesInReleaseBuilds: true,
+            enableMinifyInReleaseBuilds: true
+          },
+          ios: {
+            deploymentTarget: '15.1',
+            useFrameworks: 'static',
+            flipper: false
+          }
+        }
+      ],
+
+      [
+        'expo-sqlite',
+        {
+          enableFTS: true,
+          useSQLCipher: true
+        }
+      ],
+
+      [
+        '@sentry/react-native/expo',
+        {
+          organization: process.env.SENTRY_ORG,
+          project: process.env.SENTRY_PROJECT
+        }
+      ]
+    ],
+
+    extra: {
+      ...config.extra,
+      env,
+      API_URL: process.env.EXPO_PUBLIC_API_URL,
+      SOCKET_URL: process.env.EXPO_PUBLIC_SOCKET_URL
+    }
   };
 };

@@ -1,32 +1,30 @@
 import {
-    StyleSheet,
-    Text,
-    View,
-    FlatList,
-    ActivityIndicator,
-    TouchableOpacity,
-    Modal,
-    Alert,
-    Platform,
-    Linking,
-    Dimensions,
-} from 'react-native';
-import React, { useEffect, useState, useCallback } from 'react';
-import { ChevronLeft, CircleCheckBig, CircleX, Trash2 } from 'lucide-react-native';
-import { useTranslation } from 'react-i18next';
-import Colors from '@/src/utils/Colors';
-import { showToast } from '@/src/components/GlobalToast';
-import {
+    deleteandclearallnotification,
     getallnotifications,
     readallnotifications,
-    readsinglenotification,
-    deleteandclearallnotification
+    readsinglenotification
 } from '@/src/apis/apiService';
-import { router } from 'expo-router';
-import { Image } from 'expo-image';
-import { ImagesAssets } from '@/src/utils/ImageAssets';
 import CommonLoader from '@/src/components/CommonLoader';
-const { height, width } = Dimensions.get("screen");
+import { showToast } from '@/src/components/GlobalToast';
+import Colors from '@/src/utils/Colors';
+import { ImagesAssets } from '@/src/utils/ImageAssets';
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import { ChevronLeft, CircleCheckBig, CircleX, Trash2 } from 'lucide-react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+    Dimensions,
+    FlatList,
+    Linking,
+    Modal,
+    Platform,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
+const { height } = Dimensions.get("screen");
 interface Notification {
     id: string;
     title: string;

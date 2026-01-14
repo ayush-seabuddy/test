@@ -1,5 +1,6 @@
 import { globalSearch } from '@/src/apis/apiService';
 import BuddyUpEventList from '@/src/components/BuddyUpEventList';
+import CommonLoader from '@/src/components/CommonLoader';
 import ContentListing from '@/src/components/ContentListing';
 import PostScreen from '@/src/components/PostScreen';
 import { UserDetails } from '@/src/redux/userDetailsSlice';
@@ -24,19 +25,24 @@ import MusicCard from '../companyLibrary/MusicCard';
 const GlobalSearch = () => {
   const [searchText, setSearchText] = useState('');
   const [results, setResults] = useState<any>({});
+  const [loading, setLoading] = useState(false);
   const [activeSection, setActiveSection] = useState<'users' | 'posts' | 'bulletin' | 'read' | 'buddyup' | 'listen' | 'watch'>("users");
-  const [post, setPost] = useState<PostInterface[]>([]);
-  const sections: { id: 'users' | 'posts' | 'bulletin' | 'read' | 'buddyup' | 'listen' | 'watch', title: string, dataKey: string }[] = [
-    { id: "users", title: "Users", dataKey: "users.usersList" },
-    { id: "posts", title: "Posts", dataKey: "posts.hangoutsList" },
-    { id: "bulletin", title: "Bulletin", dataKey: "announcements.allAnnouncements" },
-    { id: "read", title: "Read", dataKey: "articles.allContents" },
-    { id: "buddyup", title: "BuddyUp Events", dataKey: "groupActivities.groupActivityList" },
-    { id: "listen", title: "Listen", dataKey: "musics.allContents" },
-    { id: "watch", title: "Watch", dataKey: "videos.allContents" },
-  ];
 
-  const hasData = (key: string, section: { id: 'users' | 'posts' | 'bulletin' | 'read' | 'buddyup' | 'listen' | 'watch', title: string, dataKey: string }): { visible: boolean, section: { id: string, title: string, dataKey: string }, data: any[] } => {
+  const sections = useMemo(() => [
+    { id: "users" as const, title: "Users", dataKey: "users.usersList" },
+    { id: "posts" as const, title: "Posts", dataKey: "posts.hangoutsList" },
+    { id: "bulletin" as const, title: "Bulletin", dataKey: "announcements.allAnnouncements" },
+    { id: "read" as const, title: "Read", dataKey: "articles.allContents" },
+    { id: "buddyup" as const, title: "BuddyUp Events", dataKey: "groupActivities.groupActivityList" },
+    { id: "listen" as const, title: "Listen", dataKey: "musics.allContents" },
+    { id: "watch" as const, title: "Watch", dataKey: "videos.allContents" },
+  ], []);
+
+  const hasData = useCallback((key: string, section: typeof sections[0]): {
+    visible: boolean,
+    section: typeof sections[0],
+    data: any[]
+  } => {
     try {
       const keys = key.split(".");
       let data = results;
@@ -45,16 +51,15 @@ const GlobalSearch = () => {
         if (!data) return { visible: false, section, data: [] };
       }
       const visible = Array.isArray(data) ? data.length > 0 : !!data;
-      return { visible, section, data };
-
+      return { visible, section, data: Array.isArray(data) ? data : [] };
     } catch {
       return { visible: false, section, data: [] };
     }
-  };
+  }, [results]);
 
   const visibleSections = useMemo(
     () => sections.map((section) => hasData(section.dataKey, section)),
-    [results]
+    [results, sections, hasData]
   );
 
   useEffect(() => {
@@ -65,40 +70,45 @@ const GlobalSearch = () => {
     if (!isCurrentSectionVisible) {
       const firstVisibleSection = visibleSections.find((s) => s.visible);
       if (firstVisibleSection) {
-        setActiveSection(firstVisibleSection.section.id as any);
+        setActiveSection(firstVisibleSection.section.id);
       }
     }
   }, [visibleSections, activeSection]);
 
-  const debounceTimeout = useRef<any>(null);
+  const debounceTimeout = useRef<NodeJS.Timeout | number | null>(null);
 
   const searchQuery = async (query: string) => {
-    try {
+    if (!query.trim()) {
+      setResults({});
+      return;
+    }
 
+    try {
+      setLoading(true);
       const response = await globalSearch(query);
       if (response.status === 200 && response.data) {
         setResults(response.data);
       } else {
-        setResults([]);
+        setResults({});
       }
-
     } catch (error) {
-
+      console.error('Search error:', error);
+      setResults({});
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   const handlePostReported = useCallback((reportedId: string | number) => {
-  
-  setResults((prev: any) => ({
-    ...prev,
-    posts: {
-      ...prev.posts,
-      hangoutsList: prev.posts.hangoutsList.filter(
-        (p: PostInterface) => p.id !== reportedId
-      ),
-    },
-  }));
-
+    setResults((prev: any) => ({
+      ...prev,
+      posts: {
+        ...prev.posts,
+        hangoutsList: prev.posts?.hangoutsList?.filter(
+          (p: PostInterface) => p.id !== reportedId
+        ) || [],
+      },
+    }));
   }, []);
 
   useEffect(() => {
@@ -106,50 +116,64 @@ const GlobalSearch = () => {
       clearTimeout(debounceTimeout.current);
     }
 
-    debounceTimeout.current = setTimeout(() => {
-      const query = searchText.trim();
+    const query = searchText.trim();
 
+    if (!query) {
+      setResults({});
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    debounceTimeout.current = setTimeout(() => {
       searchQuery(query);
-      // -----------------------------------------
-    }, 2000); // 2 seconds
+    }, 500); // Reduced to 500ms for better UX
 
     return () => {
       if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     };
   }, [searchText]);
 
-  const renderPosts = (postData: PostInterface[]) => {
-    return <FlatList
-      data={postData}
-      renderItem={({ item }) => (
-        <PostScreen
-          index={item.id}
-          post={item}
-          key={item.id}
-          onPostDeleted={() => {
-            setPost((prev) => prev.filter((p) => p.id !== item.id));
-          }}
-          i18nIsDynamicList={false}
-          onPostReported={handlePostReported}
+  const renderPosts = useCallback((postData: PostInterface[]) => {
+    return (
+      <FlatList
+        data={postData}
+        renderItem={({ item }) => (
+          <PostScreen
+            index={item.id}
+            post={item}
+            key={item.id}
+            onPostDeleted={() => {
+              setResults((prev: any) => ({
+                ...prev,
+                posts: {
+                  ...prev.posts,
+                  hangoutsList: prev.posts?.hangoutsList?.filter((p: PostInterface) => p.id !== item.id) || [],
+                },
+              }));
+            }}
+            i18nIsDynamicList={false}
+            onPostReported={handlePostReported}
+          />
+        )}
+        keyExtractor={(item) => item.id.toString()}
+        showsVerticalScrollIndicator={false}
+      />
+    );
+  }, [handlePostReported]);
 
-        />
-      )}
-      keyExtractor={(item) => item.id.toString()}
-      showsVerticalScrollIndicator={false}
-    />
-  }
+  const renderUsers = useCallback((userData: UserDetails[]) => {
+    return (
+      <FlatList
+        data={userData}
+        renderItem={({ item }) => <RenderUsers item={item} />}
+        keyExtractor={(item) => item.id.toString()}
+        showsVerticalScrollIndicator={false}
+      />
+    );
+  }, []);
 
-  const renderUsers = (userData: UserDetails[]) => {
-    return <FlatList
-      data={userData}
-      renderItem={({ item }) => (
-        <RenderUsers item={item} />
-      )}
-      keyExtractor={(item) => item.id.toString()}
-      showsVerticalScrollIndicator={false}
-    />
-  }
-  const RenderUsers = ({ item }: { item: UserDetails }) => (
+  const RenderUsers = useCallback(({ item }: { item: UserDetails }) => (
     <TouchableOpacity
       style={styles.userContainer}
       onPress={() =>
@@ -158,7 +182,8 @@ const GlobalSearch = () => {
           params: {
             crewId: item?.id,
           },
-        })}
+        })
+      }
     >
       <Image
         source={{
@@ -177,62 +202,52 @@ const GlobalSearch = () => {
         <Text style={styles.designation}>{item.designation}</Text>
       </View>
     </TouchableOpacity>
-  );
+  ), []);
 
-  const renderSection = () => {
-    if (activeSection === 'posts') {
-      const postData =
-        visibleSections.find(s => s.section.id === 'posts')?.data || [];
-      return renderPosts(postData);
-    }
-
-    if (activeSection === 'users') {
-      const userData =
-        visibleSections.find(s => s.section.id === 'users')?.data || [];
-      return renderUsers(userData);
-    }
-
-    if (activeSection === 'bulletin') {
-      const data =
-        visibleSections.find(s => s.section.id === 'bulletin')?.data || [];
-      return <ContentListing data={data} />;
-    }
-
-    if (activeSection === 'read') {
-      const data =
-        visibleSections.find(s => s.section.id === 'read')?.data || [];
-      return <ContentListing data={data} />;
-    }
-
-    if (activeSection === 'listen') {
-      const data =
-        visibleSections.find(s => s.section.id === 'listen')?.data || [];
+  const renderSection = useMemo(() => {
+    if (loading) {
       return (
-        <View style={styles.sectionContainer}>
-          <MusicCard data={data} />
+        <View style={styles.loadingContainer}>
+          <CommonLoader fullScreen />
+          <Text style={styles.loadingText}>{t('searching')}</Text>
         </View>
       );
     }
 
-    if (activeSection === 'watch') {
-      const data =
-        visibleSections.find(s => s.section.id === 'watch')?.data || [];
-      return <ContentListing data={data} />;
+    const section = visibleSections.find(s => s.section.id === activeSection);
+    const data = section?.data || [];
+
+    switch (activeSection) {
+      case 'posts':
+        return renderPosts(data);
+      case 'users':
+        return renderUsers(data);
+      case 'bulletin':
+      case 'read':
+      case 'watch':
+        return <ContentListing data={data} />;
+      case 'listen':
+        return (
+          <View style={styles.sectionContainer}>
+            <MusicCard data={data} />
+          </View>
+        );
+      case 'buddyup':
+        // Ensure BuddyUpEventList properly wraps text content
+        return <BuddyUpEventList ActivitiesData={data} />;
+      default:
+        return null;
     }
+  }, [activeSection, visibleSections, loading, renderPosts, renderUsers]);
 
-    if (activeSection === 'buddyup') {
-      const data =
-        visibleSections.find(s => s.section.id === 'buddyup')?.data || [];
-      return <BuddyUpEventList ActivitiesData={data} />;
-    }
-
-    return null; // ✅ IMPORTANT
-  };
-
+  const hasVisibleSections = useMemo(() =>
+    visibleSections.some((section) => section.visible),
+    [visibleSections]
+  );
 
   return (
     <View style={styles.container}>
-      {/* ---------- Header (always visible) ---------- */}
+      {/* ---------- Header with Loading Indicator ---------- */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <ChevronLeft size={24} color="#000" />
@@ -248,20 +263,16 @@ const GlobalSearch = () => {
             onChangeText={setSearchText}
             autoFocus
           />
+          {loading && (
+            <CommonLoader />
+          )}
         </View>
 
-        <View style={{ width: 24 }} /> {/* spacer for balance */}
+        <View style={{ width: 24 }} />
       </View>
 
-      {visibleSections.filter((section) => section.visible).length === 0 ? (
-        <>
-          <View style={[styles.emptyContainer, { flex: 1, justifyContent: "center" }]}>
-            <Text style={styles.emptyText}>
-              {t('norecordsfound')}
-            </Text>
-          </View>
-        </>
-      ) : (
+      {/* ---------- Tabs Section ---------- */}
+      {!loading && hasVisibleSections && (
         <View>
           <ScrollView
             horizontal
@@ -269,28 +280,43 @@ const GlobalSearch = () => {
             style={styles.tabsContainer}
             contentContainerStyle={styles.tabsContentContainer}
           >
-            {visibleSections?.filter((section) => section.visible)?.map(({ section }) => (
-              <TouchableOpacity
-                key={section.id}
-                style={[styles.tab, activeSection === section.id && styles.activeTab]}
-                onPress={() => setActiveSection(section.id as typeof activeSection)}
-              >
-                <Text
-                  style={[styles.tabText, activeSection === section.id && styles.activeTabText]}
+            {visibleSections
+              .filter((section) => section.visible)
+              .map(({ section }) => (
+                <TouchableOpacity
+                  key={section.id}
+                  style={[
+                    styles.tab,
+                    activeSection === section.id && styles.activeTab
+                  ]}
+                  onPress={() => setActiveSection(section.id)}
                 >
-                  {section.title}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={[
+                      styles.tabText,
+                      activeSection === section.id && styles.activeTabText
+                    ]}
+                  >
+                    {section.title}
+                  </Text>
+                </TouchableOpacity>
+              ))}
           </ScrollView>
-        </View>)
+        </View>
+      )}
 
-      }
-
-      {renderSection()}
-
-
-
+      {/* ---------- Content Section ---------- */}
+      <View style={styles.contentContainer}>
+        {!loading && !hasVisibleSections && searchText.trim() !== '' ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>
+              {t('norecordsfound')}
+            </Text>
+          </View>
+        ) : (
+          renderSection
+        )}
+      </View>
     </View>
   );
 };
@@ -311,11 +337,11 @@ const styles = StyleSheet.create({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.5,
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
       },
       android: {
-        elevation: 5,
+        elevation: 3,
       },
     }),
   },
@@ -336,45 +362,20 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 10,
   },
-  content: {
+  headerLoader: {
+    marginLeft: 8,
+  },
+  contentContainer: {
     flex: 1,
-    padding: 16,
   },
-  placeholder: {
-    textAlign: 'center',
-    color: '#888',
-    fontSize: 16,
-    marginTop: 50,
+  tabsContainer: {
+    marginVertical: 10,
   },
-  noResults: {
-    textAlign: 'center',
-    color: '#888',
-    fontSize: 16,
-    marginTop: 50,
+  tabsContentContainer: {
+    flexDirection: "row",
+    marginHorizontal: 20,
+    paddingRight: 20,
   },
-  resultItem: {
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-  },
-  resultText: {
-    fontSize: 16,
-    color: '#000',
-  },
-  emptyContainer: { justifyContent: "center", alignItems: "center", paddingVertical: 10 },
-  emptyText: {
-    fontSize: 16,
-    fontFamily: "Poppins-Regular",
-    color: "#666",
-    textAlign: "center",
-    paddingHorizontal: 20,
-  },
-  rootContainer: { backgroundColor: "white", flex: 1 },
-  scrollViewContent: { paddingBottom: 100 },
-  contentContainer: { paddingHorizontal: 16, paddingTop: 8 },
-  contentContainerNoPadding: { paddingHorizontal: 0 },
-  tabsContainer: { marginVertical: 10 },
-  tabsContentContainer: { flexDirection: "row", marginHorizontal: 20, paddingRight: 20 },
   tab: {
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -382,57 +383,42 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "#f0f0f0",
   },
-  activeTab: { backgroundColor: Colors.lightGreen },
-  tabText: { fontSize: 14, fontFamily: "Poppins-Regular", color: "#666" },
-  activeTabText: { color: "white", fontFamily: "Poppins-Medium" },
-  HeaderTitle: { fontSize: 16, fontFamily: "Poppins-Medium", color: "#06361F" },
-  columnWrapper: { flexDirection: "row", justifyContent: "space-between" },
-
-  // Announcement
-  scrollView: { marginTop: 15, marginHorizontal: 4, marginBottom: 5 },
-  frameParent: { flex: 1 },
-  parentFlexBox: { alignItems: "center", flexDirection: "row", borderRadius: 16 },
-  wrapperLayout: { height: 144, width: 355, borderRadius: 16, overflow: "hidden" },
-  icon: { justifyContent: "space-between", padding: 16, height: "100%", width: "100%" },
-  iconLayout: { height: 144, width: 355, borderRadius: 16, overflow: "hidden" },
-  pointForCompletingTypo: { textAlign: "left", color: "#fff", lineHeight: 17, fontSize: 14 },
-  layer1Icon: { width: 38, height: 38, position: "absolute", right: 20, top: 10 },
-  weeklyMeeting: { fontFamily: "Poppins-Regular", color: "#fff" },
-  deck: { fontFamily: "Poppins-SemiBold", fontWeight: "600" },
-  weeklyMeetingDeckContainer: { alignSelf: "stretch" },
-
-  // Cards
-  cardContainer: {
-    backgroundColor: "rgba(180, 180, 180, 0.4)",
-    borderRadius: 10,
-    padding: 8,
-    marginVertical: 6,
-    marginRight: 4,
-    marginLeft: 4,
+  activeTab: {
+    backgroundColor: Colors.lightGreen,
   },
-  cardContent: { overflow: "hidden", borderRadius: 10 },
-  imageBackground: { height: 80, borderRadius: 10, justifyContent: "flex-end", padding: 8 },
-  textContainer: { paddingVertical: 5 },
-  titleText: { fontSize: 12, fontFamily: "Poppins-SemiBold", color: "#161616" },
-  textColor: { color: "#161616" },
-
-  // Music
-  cardContainerMusic: {
-    backgroundColor: "rgba(180, 180, 180, 0.4)",
-    borderRadius: 10,
-    padding: 10,
-    marginVertical: 5,
+  tabText: {
+    fontSize: 14,
+    fontFamily: "Poppins-Regular",
+    color: "#666",
   },
-  cardContentMusic: { flexDirection: "row" },
-  imageBackgroundMusic: { borderRadius: 10, width: 65 },
-  textContainerMusic: { flexDirection: "row", padding: 12, justifyContent: "space-between", flex: 1 },
-  titleTextMusic: { marginTop: 4, width: "70%", fontSize: 12, fontFamily: "Poppins-SemiBold", color: "#161616" },
-  playButton: { justifyContent: "center", alignItems: "center", backgroundColor: "white", borderRadius: 8, height: 28, width: 28 },
-  frameItemMusic: { width: 14, height: 14 },
-
-  image: { height: 50, width: 50, borderRadius: 10 },
-  name: { color: "#636363", fontFamily: "Poppins-SemiBold", fontSize: 14 },
-  designation: { color: "#636363", fontFamily: "Poppins-Regular", fontSize: 12 },
+  activeTabText: {
+    color: "white",
+    fontFamily: "Poppins-Medium",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 10,
+  },
+  emptyText: {
+    fontSize: 16,
+    fontFamily: "Poppins-Regular",
+    color: "#666",
+    textAlign: "center",
+    paddingHorizontal: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    fontFamily: "Poppins-Regular",
+    color: Colors.darkGreen,
+  },
   userContainer: {
     flexDirection: "row",
     borderBottomWidth: 0.5,
@@ -444,6 +430,21 @@ const styles = StyleSheet.create({
     gap: 10,
     alignItems: "center",
     marginHorizontal: 16,
+  },
+  image: {
+    height: 50,
+    width: 50,
+    borderRadius: 10,
+  },
+  name: {
+    color: "#636363",
+    fontFamily: "Poppins-SemiBold",
+    fontSize: 14,
+  },
+  designation: {
+    color: "#636363",
+    fontFamily: "Poppins-Regular",
+    fontSize: 12,
   },
   sectionContainer: {
     paddingHorizontal: 16,

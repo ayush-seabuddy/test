@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    marginTop:3,
+    marginTop: Platform.OS === 'ios' ? 0 : 3,
     fontSize: 15,
     fontFamily: "Poppins-SemiBold",
     color: Colors.textPrimary || "#000",

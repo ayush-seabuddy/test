@@ -4,9 +4,9 @@ import Colors from '@/src/utils/Colors';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { View, StyleSheet, FlatList, Dimensions, Text, NativeScrollEvent, NativeSyntheticEvent, TouchableOpacity } from 'react-native';
+import { Dimensions, FlatList, NativeScrollEvent, NativeSyntheticEvent, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomSurveyCard from './CustomSurveyCard';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -43,7 +43,7 @@ const Announcements: React.FC<AnnouncementsProps> = ({
     page = 1,
     limit = 10,
 }) => {
-    const [loading, setloading] = useState(false);
+    const [_, setloading] = useState(false);
     const [surveyData, setsurveyData] = useState<Survey | null>(null);
     const [announcement, setannouncement] = useState<Announcement[]>([]);
     const { t } = useTranslation();
@@ -68,6 +68,7 @@ const Announcements: React.FC<AnnouncementsProps> = ({
                 showToast.error(t('oops'), apiResponse.message);
             }
         } catch (error) {
+            console.log('Error', error)
             setloading(false);
             showToast.error(t('oops'), t('somethingwentwrong'));
         }
@@ -90,6 +91,7 @@ const Announcements: React.FC<AnnouncementsProps> = ({
                 showToast.error(t('oops'), apiResponse.message);
             }
         } catch (error) {
+            console.log('Error', error)
             setloading(false);
             showToast.error(t('oops'), t('somethingwentwrong'));
         }

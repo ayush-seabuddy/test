@@ -13,6 +13,7 @@ import {
   Dimensions,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -60,156 +61,165 @@ const LoginScreen = () => {
 
     try {
       const ExpoPushToken = await AsyncStorage.getItem("ExpoPushToken");
+
       const payload: {
         email: string;
         password: string;
         deviceToken?: string;
-      } = {
-        email,
-        password,
-      };
-      if (ExpoPushToken) {
-        payload.deviceToken = ExpoPushToken;
-      }
-      const apiResponse = await login(payload);
+      } = { email, password };
 
+      if (ExpoPushToken) payload.deviceToken = ExpoPushToken;
+
+      const apiResponse = await login(payload);
       setLoading(false);
 
       if (apiResponse.success && apiResponse.status === 200) {
-        showToast.success(
-          t("loginsuccessful"),
-          t("welcomeback")
+        showToast.success(t("loginsuccessful"), t("welcomeback"));
+
+        await AsyncStorage.setItem(
+          "userDetails",
+          JSON.stringify(apiResponse.data)
         );
-        await AsyncStorage.setItem('userDetails', JSON.stringify(apiResponse.data));
-        apiResponse?.data.authToken && await AsyncStorage.setItem("authToken", apiResponse?.data.authToken);
-        apiResponse?.data.id && await AsyncStorage.setItem("userId", apiResponse?.data.id);
-        apiResponse?.data.shipId && await AsyncStorage.setItem("shipId", apiResponse?.data.shipId);
-        apiResponse?.data.employerId && await AsyncStorage.setItem("employerId", apiResponse?.data.employerId);
-        const storedData = await AsyncStorage.getItem('userDetails');
-        const user = JSON.parse(storedData ?? "");
 
-        console.log("Stored user data:", storedData);
+        apiResponse?.data.authToken &&
+          (await AsyncStorage.setItem("authToken", apiResponse.data.authToken));
+        apiResponse?.data.id &&
+          (await AsyncStorage.setItem("userId", apiResponse.data.id));
+        apiResponse?.data.shipId &&
+          (await AsyncStorage.setItem("shipId", apiResponse.data.shipId));
+        apiResponse?.data.employerId &&
+          (await AsyncStorage.setItem(
+            "employerId",
+            apiResponse.data.employerId
+          ));
 
-        if (user.isProfileCompleted === true && user?.department === "Shore_Staff") {
-          router.replace('/home');
-        } else if (
-          user.isPersonalityTestCompleted === true &&
-          user.isProfileCompleted === true
+        const storedData = await AsyncStorage.getItem("userDetails");
+        const user = JSON.parse(storedData ?? "{}");
+
+        if (
+          user.isProfileCompleted &&
+          (user.department === "Shore_Staff" ||
+            user.isPersonalityTestCompleted)
         ) {
-          router.replace('/home');
-        } else if (user.isProfileCompleted === true) {
-          router.replace('/personalitymap')
+          router.replace("/home");
+        } else if (user.isProfileCompleted) {
+          router.replace("/personalitymap");
         } else {
           router.replace("/onboarding");
         }
+      } else {
+        showToast.error(t("oops"), apiResponse.message);
       }
-
-      else {
-        showToast.error(
-          t('oops'),
-          apiResponse.message
-        );
-      }
-    } catch (error) {
+    } catch {
       setLoading(false);
-      showToast.error(
-        t('error'),
-        t('somethingwentwrong')
-      );
+      showToast.error(t("error"), t("somethingwentwrong"));
     }
   };
 
   return (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <View style={{ flex: 1, backgroundColor: Colors.background }}>
+        <View style={styles.wrapper}>
+          <View style={styles.backgroundOverlay} />
+          <View style={styles.topSection} />
 
-    <View style={{ flex: 1, backgroundColor: Colors.background }}>
-      <View style={styles.wrapper}>
-        <View style={styles.backgroundOverlay} />
-        <View style={styles.topSection} />
+          <Animated.Image
+            source={ImagesAssets.splashCaptainImage}
+            style={[
+              styles.logo,
+              { transform: [{ translateY: logoTranslateY }] },
+            ]}
+          />
 
-        <Animated.Image
-          source={ImagesAssets.splashCaptainImage}
-          style={[styles.logo, { transform: [{ translateY: logoTranslateY }] }]}
-        />
-
-        <KeyboardAvoidingView style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : "height"}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}>
           <View style={styles.formCard}>
-            <View style={styles.formContent}>
-              <View style={styles.header}>
-                <Text style={styles.title}>{t("welcome")}</Text>
-                <Text style={styles.subtitle}>{t("logintoyouraccount")}</Text>
-              </View>
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 40 }}
+            >
+              <View style={styles.formContent}>
+                <View style={styles.header}>
+                  <Text style={styles.title}>{t("welcome")}</Text>
+                  <Text style={styles.subtitle}>
+                    {t("logintoyouraccount")}
+                  </Text>
+                </View>
 
-              <GlobalTextInput
-                placeholder={t("enteryouremail")}
-                value={email}
-                onChangeText={handleEmailChange}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                leftIcon={<Mail size={20} color={Colors.iconMuted} />}
-                error={email && emailError}
-              />
+                <GlobalTextInput
+                  placeholder={t("enteryouremail")}
+                  value={email}
+                  onChangeText={handleEmailChange}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  leftIcon={<Mail size={20} color={Colors.iconMuted} />}
+                  error={email && emailError}
+                />
 
-              <GlobalTextInput
-                placeholder={t("enterpassword")}
-                value={password}
-                onChangeText={setPassword}
-                secure
-                leftIcon={<Lock size={20} color={Colors.iconMuted} />}
-                error={
-                  password && password.length < 8
-                    ? t("passwordshould8charlong")
-                    : ""
-                }
-              />
+                <GlobalTextInput
+                  placeholder={t("enterpassword")}
+                  value={password}
+                  onChangeText={setPassword}
+                  secure
+                  leftIcon={<Lock size={20} color={Colors.iconMuted} />}
+                  error={
+                    password && password.length < 8
+                      ? t("passwordshould8charlong")
+                      : ""
+                  }
+                />
 
-              <View style={styles.termsRow}>
+                <View style={styles.termsRow}>
+                  <TouchableOpacity
+                    onPress={() => setTermsAccepted(!termsAccepted)}
+                  >
+                    <View
+                      style={[
+                        styles.checkbox,
+                        termsAccepted && styles.checkboxChecked,
+                      ]}
+                    >
+                      {termsAccepted && (
+                        <Check size={16} color={Colors.white} />
+                      )}
+                    </View>
+                  </TouchableOpacity>
+
+                  <Text style={styles.termsText}>{t("iacceptthe")}</Text>
+
+                  <TouchableOpacity
+                    onPress={() => router.push("../termsandcondition")}
+                  >
+                    <Text style={styles.termsLink}>
+                      {t("termsandconditions")}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                <GlobalButton
+                  title={t("login")}
+                  onPress={handleLogin}
+                  buttonStyle={styles.loginButton}
+                  loading={loading}
+                  disabled={!isFormValid}
+                />
+
                 <TouchableOpacity
-                  onPress={() => setTermsAccepted(!termsAccepted)}
+                  style={styles.forgotPassword}
+                  onPress={() => router.push("/auth/ForgotPassword")}
                 >
-
-                  <View style={[styles.checkbox, termsAccepted && styles.checkboxChecked]}>
-                    {termsAccepted && <Check size={16} color={Colors.white} />}
-                  </View>
-
-                </TouchableOpacity>
-
-                <Text style={styles.termsText}>{t("iacceptthe")}</Text>
-                <TouchableOpacity
-                  onPress={() => router.push("../termsandcondition")}
-                >
-                  <Text style={styles.termsLink}>
-                    {t("termsandconditions")}
+                  <Text style={styles.forgotPasswordText}>
+                    {t("forgotPassword")}
                   </Text>
                 </TouchableOpacity>
               </View>
-
-              <GlobalButton
-                title={t("login")}
-                onPress={handleLogin}
-                buttonStyle={styles.loginButton}
-                loading={loading}
-                disabled={!isFormValid}
-              />
-
-              <TouchableOpacity
-                style={styles.forgotPassword}
-                onPress={() => router.push("/auth/ForgotPassword")}
-              >
-                <Text style={styles.forgotPasswordText}>
-                  {t("forgotPassword")}
-                </Text>
-              </TouchableOpacity>
-            </View>
+            </ScrollView>
           </View>
-
-        </KeyboardAvoidingView>
-
+        </View>
       </View>
-    </View>
-
-
+    </KeyboardAvoidingView>
   );
 };
 

@@ -438,6 +438,7 @@
   "startAfterEnd": "Start Date cannot be later than End Date",
   "endBeforeStart": "End Date cannot be earlier than Start Date",
   "workingexperienceaddedsuccessfully": "Working experience added successfully.",
+  "workingexperienceupdatedsuccessfully": "Working experience updated successfully.",
   "deleteexperiencetitle": "Are you sure you want to delete this working experience?",
   "workingexperiencedeleted": "Working Experience deleted.",
   "editexperience": "Edit Experience",
@@ -957,5 +958,7 @@
   "invalid_x_url": "Please enter a valid X (Twitter) profile URL",
   "nocertificationsadded": "No certifications added yet",
   "noexperienceadded": "No experience added yet",
-  "youarenotpostedanything": "You haven’t posted anything yet"
+  "youarenotpostedanything": "You haven’t posted anything yet",
+  "searching": "Searching...",
+  "edit_experience": "Edit Experience"
 }

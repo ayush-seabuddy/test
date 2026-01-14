@@ -1,27 +1,26 @@
-import React, { useCallback, useState } from "react";
-import {
-    Modal,
-    Text,
-    StyleSheet,
-    View,
-    Pressable,
-    Image,
-    TouchableOpacity,
-    FlatList,
-    Linking,
-    Alert,
-    ActivityIndicator,
-    Dimensions
-} from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getallhelplines } from "@/src/apis/apiService";
-import { showToast } from "../GlobalToast";
-import { useTranslation } from "react-i18next";
-import { PhoneCall, X } from "lucide-react-native";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from 'expo-haptics';
+import { PhoneCall, X } from "lucide-react-native";
+import React, { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+    Alert,
+    Dimensions,
+    FlatList,
+    Image,
+    Linking,
+    Modal,
+    Pressable,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from "react-native";
 import CommonLoader from "../CommonLoader";
+import { showToast } from "../GlobalToast";
 
 const { width, height } = Dimensions.get("window");
 

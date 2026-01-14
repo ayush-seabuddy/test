@@ -18,7 +18,7 @@ import { Camera, Check, Edit, Paperclip, RefreshCw, Reply, SendHorizonal, Trash2
 import moment from 'moment-timezone';
 import { useCallback, useRef, useState } from 'react';
 import type { TextInput as RNTextInput } from 'react-native';
-import { Dimensions, Linking, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Linking, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import { useDispatch, useSelector } from 'react-redux';
@@ -80,7 +80,7 @@ const ChatRoomScreen = () => {
   const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
   const [searchQuery, setSearchQuery] = useState("");
 
- const onSearch = (searchValue: string) => {
+  const onSearch = (searchValue: string) => {
     setSearchQuery(searchValue);
     if (!searchValue || !chatListState || chatListState.length === 0) {
       setSearchResults([]);
@@ -104,7 +104,7 @@ const ChatRoomScreen = () => {
     data: chatRoomDetails,
     participant: chatRoomDetails?.participants?.length,
     GroupName: chatRoomDetails?.groupName,
-    setSearchValue:onSearch,
+    setSearchValue: onSearch,
     participantIds: participant
   });
 
@@ -434,17 +434,17 @@ const ChatRoomScreen = () => {
       socketService.emit("joinChatRoom", payload);
 
       socketService.on("userPreviousMessages", (data) => {
-       
-          setHeaderDetails((prev) => {
-            return {
-              ...prev,
-              GroupName: data?.groupName,
-              participantIds: data?.participantIds,
-              setSearchValue: onSearch,
-              participant: data?.participantIds?.length,
-            }
-          })
-       
+
+        setHeaderDetails((prev) => {
+          return {
+            ...prev,
+            GroupName: data?.groupName,
+            participantIds: data?.participantIds,
+            setSearchValue: onSearch,
+            participant: data?.participantIds?.length,
+          }
+        })
+
         setParticipant(data.participantIds);
         const newChatList = [...chatListState, ...data.previousMessages];
         setChatList(newChatList);
@@ -587,7 +587,7 @@ const ChatRoomScreen = () => {
   const getGroupedChatList = () => {
     const groupedMessages: (ChatMessage | { type: string; date: Date; id: string })[] = [];
     let currentDateKey: string | null = null;
-    let buffer: Array<ChatMessage & { type: string }> = [];
+    let buffer: (ChatMessage & { type: string })[] = [];
 
     chatListState.forEach((message, index) => {
       const messageDate = moment(message.createdAt).local().startOf("day");
@@ -670,14 +670,14 @@ const ChatRoomScreen = () => {
           <CommonLoader fullScreen />
         ) : (
           <>
-          
-          <Text style={{ color: Colors.lightGreen }}>No messages yet</Text>
-          <TouchableOpacity
-            onPress={retryFetch}
-            style={{display:"flex" , flexDirection:"row" , marginTop:5 , justifyContent:"center",alignItems:"center" , gap:5}}
+
+              <Text style={{ color: Colors.lightGreen }}>No messages yet</Text>
+              <TouchableOpacity
+                onPress={retryFetch}
+                style={{ display: "flex", flexDirection: "row", marginTop: 5, justifyContent: "center", alignItems: "center", gap: 5 }}
             >
-           <Text style={{ color: Colors.lightGreen }}>Refresh</Text> <RefreshCw size={25} color={Colors.lightGreen} />
-          </TouchableOpacity>
+                <Text style={{ color: Colors.lightGreen }}>Refresh</Text> <RefreshCw size={25} color={Colors.lightGreen} />
+              </TouchableOpacity>
           </>
         )}
       </View>
@@ -688,11 +688,12 @@ const ChatRoomScreen = () => {
   return (
     <KeyboardAvoidingWrapper
       style={{ flex: 1 }}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
     >
 
 
       <View style={styles.container}>
-        <ChatRoomHeader  {...hederDetails}  />
+        <ChatRoomHeader  {...hederDetails} />
         <FlatList
           ref={flatListRef}
           data={getGroupedChatList()}
@@ -756,10 +757,9 @@ const ChatRoomScreen = () => {
               <TextInput
                 style={{
                   flex: 1,
-                  paddingHorizontal: 10,
                   color: "black",
                   backgroundColor: "rgba(0, 0, 0, 0)",
-                  minHeight: 55,
+                  minHeight: Platform.OS == 'ios' ? 27 : 55,
                 }}
                 placeholder={editingMessageId ? "Edit your message..." : "Type something..."}
                 placeholderTextColor="gray"
@@ -1035,10 +1035,11 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     backgroundColor: "rgba(230, 230, 230, 0.5)",
     flex: 1,
+    paddingVertical: 10
   },
   iconContainer: {
     marginVertical: 2,
-    marginHorizontal: 8
+    marginHorizontal: 8,
   },
   icon: {
     width: 23,

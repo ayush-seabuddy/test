@@ -1,15 +1,14 @@
-import React from "react";
+import { BlurView } from "expo-blur";
 import LottieView from "lottie-react-native";
+import React from "react";
 import {
   Dimensions,
-  Platform,
-  StyleSheet,
-  ViewStyle,
   StyleProp,
+  StyleSheet,
   View,
+  ViewStyle,
 } from "react-native";
 import Colors from "../utils/Colors";
-import { BlurView } from "expo-blur";
 
 const { width, height } = Dimensions.get("window");
 

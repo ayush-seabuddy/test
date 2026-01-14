@@ -1,22 +1,17 @@
-// components/PdfImagePreviewModal.tsx
 import { ImageBackground } from "expo-image";
 import { FileText, Image as ImageIcon, X } from "lucide-react-native";
 import React from "react";
 import {
-    ActivityIndicator,
-    Dimensions,
-    Modal,
-    Platform,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Modal,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 import { WebView } from "react-native-webview";
 import CommonLoader from "../CommonLoader";
-
-const { width, height } = Dimensions.get("window");
 
 interface PdfImagePreviewModalProps {
   visible: boolean;
@@ -34,7 +29,6 @@ const PdfImagePreviewModal: React.FC<PdfImagePreviewModalProps> = ({
   const isPdf = url.toLowerCase().endsWith(".pdf");
   const isImage = /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(url);
 
-  // Use Google Docs for better PDF rendering (recommended)
   const pdfUrl = isPdf
     ? `https://docs.googleusercontent.com/viewer?embedded=true&url=${encodeURIComponent(url)}`
     : url;
@@ -48,7 +42,6 @@ const PdfImagePreviewModal: React.FC<PdfImagePreviewModalProps> = ({
       statusBarTranslucent
     >
       <SafeAreaView style={styles.container}>
-        {/* Header */}
         <View style={styles.header}>
           <View style={styles.titleContainer}>
             {isPdf ? (
@@ -65,8 +58,6 @@ const PdfImagePreviewModal: React.FC<PdfImagePreviewModalProps> = ({
             <X color="#fff" size={28} />
           </TouchableOpacity>
         </View>
-
-        {/* Content */}
         {isPdf ? (
           <WebView
             source={{ uri: pdfUrl }}
@@ -90,8 +81,7 @@ const PdfImagePreviewModal: React.FC<PdfImagePreviewModalProps> = ({
             source={{ uri: url }}
             style={styles.image}
             resizeMode="contain"
-          >
-            {/* Optional: Add zoom hint */}
+            >
             <View style={styles.imageOverlay}>
               <Text style={styles.zoomHint}>Pinch to zoom</Text>
             </View>

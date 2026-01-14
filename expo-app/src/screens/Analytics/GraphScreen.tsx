@@ -2,7 +2,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -10,10 +9,9 @@ import {
 } from 'react-native';
 
 import { getDataUsage } from '@/src/apis/apiService';
-import { ChevronLeft, ChevronRight } from 'lucide-react-native';
-import Colors from '@/src/utils/Colors';
-import { useTranslation } from 'react-i18next';
 import CommonLoader from '@/src/components/CommonLoader';
+import { ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 const GraphScreen: React.FC = () => {
   const [dataUsed, setDataUsed] = useState<string>('0');
@@ -27,7 +25,6 @@ const GraphScreen: React.FC = () => {
       const dbResult = await AsyncStorage.getItem('userDetails');
       if (!dbResult) return;
 
-      const userDetails = JSON.parse(dbResult);
       const monthParam = selectedDate.format('YYYY-MM');
 
       const response = await getDataUsage({ month: monthParam });

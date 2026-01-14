@@ -20,20 +20,17 @@ import { BlurView } from "expo-blur";
 import { ImageBackground } from "expo-image";
 import { router } from "expo-router";
 import { t } from "i18next";
-import { ChevronLeft } from "lucide-react-native";
 import { Modal } from "react-native-paper";
 import RelatedVideosCard from "./RelatedContentCard";
 import { Content } from "./type";
 
 
-const { width, height } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 
 export default function ArticleDetails({ data: fullDetails }: { data: Content }) {
   const [notificationDetailModalVisible, setNotificationDetailModalVisible] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState<any>(null);
   const [RecommendedData, setRecommendedData] = useState<any[]>([]);
-  const [fullscreen, setFullscreen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const videoRef = useRef<Video>(null);
   const appState = useRef(AppState.currentState);
@@ -116,22 +113,14 @@ export default function ArticleDetails({ data: fullDetails }: { data: Content })
 
   return (
     <View style={styles.container}>
-      {/* <VideoDetailsHeader navigation={router} data={fullDetails} fromHome={fromHome} /> */}
       <GlobalHeader
         title={fullDetails?.contentTitle}
       />
-
-
       <ImageBackground
         source={{ uri: fullDetails?.thumbnail }}
         style={styles.headerImage}
         resizeMode="cover"
       />
-
-
-
-
-      {/* Content Scroll */}
       <ScrollView
         contentContainerStyle={styles.scrollViewContent}
         ref={scrollViewRef}
@@ -169,8 +158,6 @@ export default function ArticleDetails({ data: fullDetails }: { data: Content })
 
           </View>
         </View>
-
-        {/* Related Videos */}
         <View style={{ paddingHorizontal: 16 }}>
           {RecommendedData.length > 0 && (
             <>
@@ -184,8 +171,6 @@ export default function ArticleDetails({ data: fullDetails }: { data: Content })
           )}
         </View>
       </ScrollView>
-
-      {/* Fallback Modal */}
       <Modal
         visible={notificationDetailModalVisible}
         onDismiss={() => setNotificationDetailModalVisible(false)}
@@ -221,9 +206,6 @@ export default function ArticleDetails({ data: fullDetails }: { data: Content })
   );
 }
 
-// --------------------------
-// Styles
-// --------------------------
 const styles = StyleSheet.create({
   container: { flex: 1 },
   video: {

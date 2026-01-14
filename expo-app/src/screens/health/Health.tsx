@@ -1,10 +1,9 @@
+import { router } from "expo-router";
 import React from "react";
 import {
   StyleSheet,
   View
 } from "react-native";
-import { router } from "expo-router";
-import { useTranslation } from "react-i18next";
 import { ScrollView } from "react-native-gesture-handler";
 import AssessmentList from "./AssessmentList";
 import CategorySection from "./CategorySection";

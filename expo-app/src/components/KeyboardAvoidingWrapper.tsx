@@ -1,4 +1,3 @@
-// KeyboardAvoidingWrapper.tsx
 import React, { useEffect, useState } from "react";
 import { Keyboard, KeyboardAvoidingView, Platform, View } from "react-native";
 
@@ -38,10 +37,8 @@ const KeyboardAvoidingWrapper: React.FC<KeyboardAvoidingWrapperProps> = ({
       <View style={[{ flex: 1 }, style]}>
         {children}
       </View>
-
-      {/* This invisible view ensures the content is pushed up properly on Android */}
       {Platform.OS === "android" && keyboardHeight > 0 && (
-        <View style={{ height: keyboardHeight , display: keyboardHeight == 0 ? "none" : "flex" }} />
+        <View style={{ height: keyboardHeight, display: keyboardHeight === 0 ? "none" : "flex" }} />
       )}
     </KeyboardAvoidingView>
   );

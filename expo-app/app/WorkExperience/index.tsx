@@ -1,28 +1,25 @@
+import { updateprofile, viewProfile } from '@/src/apis/apiService';
+import CommonLoader from '@/src/components/CommonLoader';
+import EmptyComponent from '@/src/components/EmptyComponent';
+import GlobalHeader from '@/src/components/GlobalHeader';
+import { showToast } from '@/src/components/GlobalToast';
+import { RootState } from '@/src/redux/store';
+import { updateUserField } from '@/src/redux/userDetailsSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { Edit, Plus, Trash2 } from 'lucide-react-native';
+import React, { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     Dimensions,
     FlatList,
     Modal,
     StyleSheet,
-    TouchableOpacity,
-    View,
     Text,
-    TextInput,
-    Platform,
+    TouchableOpacity,
+    View
 } from 'react-native';
-import { updateprofile, viewProfile } from '@/src/apis/apiService';
-import GlobalHeader from '@/src/components/GlobalHeader';
-import { showToast } from '@/src/components/GlobalToast';
-import CustomDateTimePicker from '@/src/components/Modals/CustomDateTimePicker';
-import { RootState } from '@/src/redux/store';
-import { Edit, Trash2, Briefcase, Building, Calendar, Plus, X } from 'lucide-react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import CommonLoader from '@/src/components/CommonLoader';
-import { updateUserField } from '@/src/redux/userDetailsSlice';
-import EmptyComponent from '@/src/components/EmptyComponent';
 
 interface WorkExperience {
     id: string;
@@ -37,235 +34,37 @@ interface UserDetails {
     authToken: string;
 }
 
-const { height, width } = Dimensions.get('screen');
+const { width } = Dimensions.get('screen');
 
-const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
+const WorkExperienceScreen = () => {
     const { t } = useTranslation();
-
-    const [jobTitle, setJobTitle] = useState<string>('');
-    const [company, setCompany] = useState<string>('');
-    const [startDate, setStartDate] = useState<Date | null>(null);
-    const [endDate, setEndDate] = useState<Date | null>(null);
-
     const userDetails = useSelector((state: RootState) => state.userDetails);
     const dispatch = useDispatch();
     const [experiences, setExperiences] = useState<WorkExperience[]>(userDetails.workingExperience || []);
-
-    const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
-    const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [deleteId, setDeleteId] = useState<string>('');
-    const [editId, setEditId] = useState<string>('');
-    const [isUpdate, setIsUpdate] = useState<boolean>(false);
     const [modalVisible, setModalVisible] = useState<boolean>(false);
 
-    // New state to control view toggle
-    const [showForm, setShowForm] = useState<boolean>(false);
+    const fetchProfileDetails = useCallback(async () => {
+        try {
+            const result = await viewProfile();
+            if (result?.data) {
+                const workingExp = result.data.workingExperience || [];
+                setExperiences(workingExp);
+                const object = result.data
+                for (const property in object) {
+                    dispatch(updateUserField({ key: property, value: object[property] }))
+                }
+            }
 
-    const fetchProfileDetails = async () => {
-        const result = await viewProfile();
-        if (result?.data) {
-            setExperiences(result.data.workingExperience || []);
+        } catch (error) {
+            console.error('Error fetching profile details:', error);
         }
-    };
-
-    useEffect(() => {
-        fetchProfileDetails();
     }, []);
 
-    // Format date for display
-    const formatDateForDisplay = (date: Date | null): string => {
-        if (!date) return '';
-        try {
-            return date.toLocaleDateString('en-GB', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric'
-            });
-        } catch (error) {
-            console.error('Error formatting date:', error);
-            return '';
-        }
-    };
-
-    // Format date for API (DD/MM/YYYY)
-    const formatDateForAPI = (date: Date | null): string => {
-        if (!date) return '';
-        try {
-            return date.toLocaleDateString('en-GB');
-        } catch (error) {
-            console.error('Error formatting date for API:', error);
-            return '';
-        }
-    };
-
-    const parseDDMMYYYY = (dateStr: string): Date | null => {
-        if (!dateStr) return null;
-        const [day, month, year] = dateStr.split('/').map(Number);
-        if (!day || !month || !year) return null;
-        const parsedDate = new Date(year, month - 1, day);
-        return isNaN(parsedDate.getTime()) ? null : parsedDate;
-    };
-
-    const handleStartDateConfirm = (event: any) => {
-        console.log('Start date event:', event);
-
-        try {
-            if (event && event.nativeEvent && event.nativeEvent.timestamp) {
-                const timestamp = event.nativeEvent.timestamp;
-                const selectedDate = new Date(timestamp);
-
-                console.log('Parsed start date:', selectedDate);
-
-                if (!isNaN(selectedDate.getTime())) {
-                    setStartDate(selectedDate);
-
-                    if (endDate && selectedDate > endDate) {
-                        showToast.error(t('oops'), t('startAfterEnd'));
-                    }
-                } else {
-                    console.error('Invalid start date timestamp:', timestamp);
-                }
-            } else {
-                console.error('Invalid start date event structure:', event);
-            }
-        } catch (error) {
-            console.error('Error handling start date:', error);
-        }
-
-        setShowStartDatePicker(false);
-    };
-
-    const handleEndDateConfirm = (event: any) => {
-        console.log('End date event:', event);
-
-        try {
-            if (event && event.nativeEvent && event.nativeEvent.timestamp) {
-                const timestamp = event.nativeEvent.timestamp;
-                const selectedDate = new Date(timestamp);
-
-                console.log('Parsed end date:', selectedDate);
-
-                if (!isNaN(selectedDate.getTime())) {
-                    setEndDate(selectedDate);
-
-                    if (startDate && startDate > selectedDate) {
-                        showToast.error(t('oops'), t('endBeforeStart'));
-                    }
-                } else {
-                    console.error('Invalid end date timestamp:', timestamp);
-                }
-            } else {
-                console.error('Invalid end date event structure:', event);
-            }
-        } catch (error) {
-            console.error('Error handling end date:', error);
-        }
-
-        setShowEndDatePicker(false);
-    };
-
-    const handleStartDateClose = () => {
-        setShowStartDatePicker(false);
-    };
-
-    const handleEndDateClose = () => {
-        setShowEndDatePicker(false);
-    };
-
-    const validateInputs = (): boolean => {
-        if (!jobTitle.trim()) {
-            showToast.error(t('oops'), t('jobTitleRequired'));
-            return false;
-        }
-        if (!company.trim()) {
-            showToast.error(t('oops'), t('companyRequired'));
-            return false;
-        }
-        if (!startDate) {
-            showToast.error(t('oops'), t('startDateRequired'));
-            return false;
-        }
-        if (!endDate) {
-            showToast.error(t('oops'), t('endDateRequired'));
-            return false;
-        }
-        if (startDate && endDate && startDate > endDate) {
-            showToast.error(t('oops'), t('startAfterEnd'));
-            return false;
-        }
-        return true;
-    };
-
-    const resetForm = () => {
-        setJobTitle('');
-        setCompany('');
-        setStartDate(null);
-        setEndDate(null);
-        setIsUpdate(false);
-        setEditId('');
-        setShowForm(false);
-    };
-
-    const addExperience = async () => {
-        if (!validateInputs()) return;
-
-        const payload: Partial<WorkExperience> = {
-            companyName: company,
-            role: jobTitle,
-            from: formatDateForAPI(startDate),
-            to: formatDateForAPI(endDate),
-        };
-
-        if (isUpdate && editId) {
-            payload.id = editId;
-        }
-
-        await updateWorkExperience(payload);
-        resetForm();
-    };
-
-    const updateWorkExperience = async (experience: Partial<WorkExperience>) => {
-        try {
-            setLoading(true);
-
-            const dbResult = await AsyncStorage.getItem('userDetails');
-            if (!dbResult) throw new Error('No user details found');
-
-            const user: UserDetails = JSON.parse(dbResult);
-
-            const updatedExperiences = isUpdate
-                ? experiences.map((exp) =>
-                    exp.id === editId ? { ...exp, ...experience } : exp
-                )
-                : [...experiences, { ...experience, id: Date.now().toString() } as WorkExperience];
-
-            const body = {
-                userId: user.id,
-                workingExperience: updatedExperiences,
-            };
-
-            const response = await updateprofile(body);
-
-            if (response.status === 200) {
-                const result = await viewProfile();
-                if (result?.data) {
-                    const object = result.data;
-                    for (const property in object) {
-                        dispatch(updateUserField({ key: property, value: object[property] }));
-                    }
-                    // Update local experiences state
-                    setExperiences(result.data.workingExperience || []);
-                }
-                showToast.success(t('success'), t('workingexperienceaddedsuccessfully'));
-            }
-        } catch (error: any) {
-            console.error('Update error:', error.response?.data || error.message);
-            showToast.error(t('error'), t('somethingwentwrong'));
-        } finally {
-            setLoading(false);
-        }
-    };
+    useFocusEffect(useCallback(() => {
+        fetchProfileDetails();
+    }, []));
 
     const handleDelete = async () => {
         try {
@@ -279,7 +78,7 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
             const response = await updateprofile({
                 userId: user.id,
                 workingExperience: [{ id: deleteId, status: 'DELETE' }],
-            })
+            });
 
             if (response.status === 200) {
                 await fetchProfileDetails();
@@ -295,178 +94,75 @@ const WorkExperienceScreen = ({ navigation }: { navigation: any }) => {
         }
     };
 
-    const handlePlusIconClick = () => {
-        setShowForm(true);
-    };
-
-    const handleCloseForm = () => {
-        resetForm();
-    };
-
     const handleEditExperience = (item: WorkExperience) => {
-        setEditId(item.id);
-        setCompany(item.companyName);
-        setJobTitle(item.role);
-        setStartDate(parseDDMMYYYY(item.from));
-        setEndDate(parseDDMMYYYY(item.to));
-        setIsUpdate(true);
-        setShowForm(true);
+        router.push({
+            pathname: '/WorkExperience/addExperience',
+            params: {
+                id: item.id,
+                companyName: item.companyName,
+                role: item.role,
+                from: item.from,
+                to: item.to,
+                isEdit: 'true'
+            }
+        });
+    };
+
+    const handleAddExperience = () => {
+        router.push({
+            pathname: '/WorkExperience/addExperience',
+            params: {
+                isEdit: 'false'
+            }
+        });
     };
 
     return (
         <View style={styles.main}>
             <GlobalHeader
                 title={t('shipboard_experience')}
-                rightIcon={showForm ? <X /> : <Plus />}
-                onRightPress={showForm ? handleCloseForm : handlePlusIconClick}
+                rightIcon={<Plus />}
+                onRightPress={handleAddExperience}
             />
-            <KeyboardAwareScrollView
-                contentContainerStyle={styles.container}
-                keyboardShouldPersistTaps="handled"
-                enableOnAndroid
-                extraScrollHeight={Platform.OS === 'ios' ? 20 : 80}
-                showsVerticalScrollIndicator={false}
-            >
-                {showForm ? (
-                    // FORM VIEW
-                    <>
-                        {/* Job Title Input */}
-                        <View style={styles.inputContainer}>
-                            <Briefcase size={20} color="#666" style={styles.icon} />
-                            <TextInput
-                                style={styles.textInput}
-                                placeholder={t('jobtitle')}
-                                placeholderTextColor="#B7B7B7"
-                                value={jobTitle}
-                                onChangeText={setJobTitle}
-                                autoCapitalize="none"
-                                autoCorrect={false}
-                            />
+
+            <View style={styles.container}>
+                <FlatList
+                    data={experiences}
+                    keyExtractor={(item) => item.id}
+                    contentContainerStyle={styles.listContent}
+                    ListEmptyComponent={
+                        <View style={styles.emptyContainer}>
+                            <EmptyComponent text={t('noexperienceadded')} />
                         </View>
-
-                        {/* Company Input */}
-                        <View style={styles.inputContainer}>
-                            <Building size={20} color="#666" style={styles.icon} />
-                            <TextInput
-                                style={styles.textInput}
-                                placeholder={t('companyname')}
-                                placeholderTextColor="#B7B7B7"
-                                value={company}
-                                onChangeText={setCompany}
-                                autoCapitalize="none"
-                                autoCorrect={false}
-                            />
+                    }
+                    renderItem={({ item }) => (
+                        <View style={styles.experienceCard}>
+                            <View style={styles.experienceContent}>
+                                <Text style={styles.companyName}>{item.role}</Text>
+                                <Text style={styles.role}>{item.companyName}</Text>
+                                <Text style={styles.duration}>{item.from} - {item.to}</Text>
+                            </View>
+                            <View style={styles.actions}>
+                                <TouchableOpacity
+                                    onPress={() => handleEditExperience(item)}
+                                    style={styles.actionButton}
+                                >
+                                    <Edit size={20} color="#000" />
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setDeleteId(item.id);
+                                        setModalVisible(true);
+                                    }}
+                                    style={styles.actionButton}
+                                >
+                                    <Trash2 size={20} color="red" />
+                                </TouchableOpacity>
+                            </View>
                         </View>
-
-                        {/* Start Date */}
-                        <TouchableOpacity
-                            style={styles.inputContainer}
-                            onPress={() => setShowStartDatePicker(true)}
-                        >
-                            <Calendar size={20} color="#666" style={styles.icon} />
-                            {startDate ? (
-                                <Text style={styles.dateText}>{formatDateForDisplay(startDate)}</Text>
-                            ) : (
-                                <Text style={styles.datePlaceholder}>{t('startdate')}</Text>
-                            )}
-                        </TouchableOpacity>
-
-                        {/* Start Date Picker */}
-                        <CustomDateTimePicker
-                            value={startDate || new Date()}
-                            mode="date"
-                            onChange={handleStartDateConfirm}
-                            onClose={handleStartDateClose}
-                            isVisible={showStartDatePicker}
-                            cancelText={t('cancel') || "Cancel"}
-                            confirmText={t('done') || "Done"}
-                            containerStyle={{ backgroundColor: "#fff" }}
-                            buttonTextStyle={{ fontSize: 18, color: "#84A402" }}
-                            maximumDate={new Date()}
-                        />
-
-                        {/* End Date */}
-                        <TouchableOpacity
-                            style={styles.inputContainer}
-                            onPress={() => setShowEndDatePicker(true)}
-                        >
-                            <Calendar size={20} color="#666" style={styles.icon} />
-                            {endDate ? (
-                                <Text style={styles.dateText}>{formatDateForDisplay(endDate)}</Text>
-                            ) : (
-                                <Text style={styles.datePlaceholder}>{t('enddate')}</Text>
-                            )}
-                        </TouchableOpacity>
-
-                        {/* End Date Picker */}
-                        <CustomDateTimePicker
-                            value={endDate || new Date()}
-                            mode="date"
-                            onChange={handleEndDateConfirm}
-                            onClose={handleEndDateClose}
-                            isVisible={showEndDatePicker}
-                            cancelText={t('cancel') || "Cancel"}
-                            confirmText={t('done') || "Done"}
-                            containerStyle={{ backgroundColor: "#fff" }}
-                            buttonTextStyle={{ fontSize: 18, color: "#84A402" }}
-                            maximumDate={new Date()}
-                        />
-
-                        {/* Add/Update Button */}
-                        <TouchableOpacity
-                            onPress={addExperience}
-                            style={styles.updateButton}
-                            disabled={loading}
-                        >
-                            {loading ? (
-                                <CommonLoader color="#fff" />
-                            ) : (
-                                <Text style={styles.updateButtonText}>
-                                    {isUpdate ? t('editexperience') : t('addexperience')}
-                                </Text>
-                            )}
-                        </TouchableOpacity>
-                    </>
-                ) : (
-                    // LISTING VIEW
-                    <FlatList
-                        data={experiences}
-                        keyExtractor={(item) => item.id}
-                        scrollEnabled={false}
-                        ListEmptyComponent={
-                            <View style={styles.emptyContainer}>
-                                <EmptyComponent text={t('noexperienceadded')} />
-                            </View>
-                        }
-                        renderItem={({ item }) => (
-                            <View style={styles.experienceCard}>
-                                <View style={styles.experienceContent}>
-                                    <Text style={styles.companyName}>{item.role}</Text>
-                                    <Text style={styles.role}>{item.companyName}</Text>
-                                    <Text style={styles.duration}>{item.from} - {item.to}</Text>
-                                </View>
-                                <View style={styles.actions}>
-                                    <TouchableOpacity
-                                        onPress={() => handleEditExperience(item)}
-                                        style={styles.actionButton}
-                                    >
-                                        <Edit size={20} color="#000" />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            setDeleteId(item.id);
-                                            setModalVisible(true);
-                                        }}
-                                        style={styles.actionButton}
-                                    >
-                                        <Trash2 size={20} color="red" />
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        )}
-                    />
-                )}
-            </KeyboardAwareScrollView>
+                    )}
+                />
+            </View>
 
             {/* Delete Confirmation Modal */}
             <Modal
@@ -514,55 +210,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#ededed',
     },
     container: {
-        padding: 20,
+        flex: 1,
+        paddingHorizontal: 20,
+        paddingTop: 20,
+    },
+    listContent: {
         paddingBottom: 20,
-    },
-    inputContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 10,
-        paddingHorizontal: 15,
-        marginBottom: 15,
-        height: 50,
-        backgroundColor: '#fff',
-    },
-    icon: {
-        marginRight: 8,
-    },
-    textInput: {
-        flex: 1,
-        fontSize: 16,
-        color: '#454545',
-    },
-    dateText: {
-        flex: 1,
-        fontSize: 16,
-        color: '#454545',
-        paddingLeft: 5,
-        paddingVertical: Platform.OS === 'ios' ? 0 : 2,
-    },
-    datePlaceholder: {
-        flex: 1,
-        fontSize: 16,
-        color: '#B7B7B7',
-        paddingLeft: 5,
-        paddingVertical: Platform.OS === 'ios' ? 0 : 2,
-    },
-    updateButton: {
-        backgroundColor: '#000',
-        borderRadius: 10,
-        height: 50,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginBottom: 20,
-    },
-    updateButtonText: {
-        color: '#fff',
-        fontSize: 14,
-        fontFamily: 'Poppins-SemiBold',
-        lineHeight: 22,
     },
     experienceCard: {
         flexDirection: 'row',
@@ -607,17 +260,6 @@ const styles = StyleSheet.create({
         paddingTop: '50%',
         alignItems: 'center',
         justifyContent: 'center',
-    },
-    emptyText: {
-        fontFamily: 'Poppins-SemiBold',
-        fontSize: 16,
-        color: '#666',
-        marginBottom: 8,
-    },
-    emptySubText: {
-        fontFamily: 'Poppins-Regular',
-        fontSize: 14,
-        color: '#999',
     },
     modalContainer: {
         flex: 1,
@@ -674,13 +316,6 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontFamily: 'Poppins-Medium',
         fontSize: 13,
-    },
-    loadingOverlay: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(255,255,255,0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 999,
     },
 });
 

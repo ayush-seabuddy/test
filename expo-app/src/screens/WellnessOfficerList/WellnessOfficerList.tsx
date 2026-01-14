@@ -1,20 +1,17 @@
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Dimensions,
-  Image,
   ScrollView,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
 
 import { getAllDoctors } from "@/src/apis/apiService";
-import WellnessOfficerCard from "@/src/screens/WellnessOfficerList/WellnessOfficerCard";
-import { ImagesAssets } from "@/src/utils/ImageAssets";
-import Header from "./Header";
 import CommonLoader from "@/src/components/CommonLoader";
 import EmptyComponent from "@/src/components/EmptyComponent";
+import WellnessOfficerCard from "@/src/screens/WellnessOfficerList/WellnessOfficerCard";
 import { useTranslation } from "react-i18next";
+import Header from "./Header";
 
 const { width } = Dimensions.get("window");
 

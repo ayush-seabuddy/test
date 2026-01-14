@@ -2,21 +2,20 @@ import CommonLoader from '@/src/components/CommonLoader';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Dimensions,
-    Platform,
-    StyleSheet,
-    Text,
-    View,
+  Alert,
+  Dimensions,
+  Platform,
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import {
-    getSdkStatus,
-    initialize,
-    readRecords,
-    requestPermission,
-    SdkAvailabilityStatus,
+  getSdkStatus,
+  initialize,
+  readRecords,
+  requestPermission,
+  SdkAvailabilityStatus,
 } from 'react-native-health-connect';
 
 interface SleepSessionRecord {
@@ -48,11 +47,7 @@ const HealthDataScreen: React.FC = () => {
   const initializeHealthConnect = async () => {
     try {
       setIsLoading(true);
-
-      // Initialize the SDK
       await initialize();
-
-      // Check if Health Connect is available
       const status = await getSdkStatus();
       if (status !== SdkAvailabilityStatus.SDK_AVAILABLE) {
         Alert.alert(

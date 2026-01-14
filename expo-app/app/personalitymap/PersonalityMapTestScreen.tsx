@@ -1,26 +1,25 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { getallassessments, saveassessmentresponse } from '@/src/apis/apiService';
+import CommonLoader from '@/src/components/CommonLoader';
+import GlobalButton from '@/src/components/GlobalButton';
+import { showToast } from '@/src/components/GlobalToast';
+import PersonalityMapResultModal from '@/src/components/PersonalityMapResultModal';
+import Colors from '@/src/utils/Colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { ChevronRight } from 'lucide-react-native';
+import moment from 'moment-timezone';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
+  BackHandler,
+  FlatList,
+  Pressable,
   StyleSheet,
   Text,
-  View,
-  Pressable,
-  FlatList,
-  ActivityIndicator,
   TouchableOpacity,
+  View,
 } from 'react-native';
-import Colors from '@/src/utils/Colors';
 import * as Progress from 'react-native-progress';
-import { useTranslation } from 'react-i18next';
-import { ChevronRight } from 'lucide-react-native';
-import { getallassessments, saveassessmentresponse } from '@/src/apis/apiService';
-import { showToast } from '@/src/components/GlobalToast';
-import GlobalButton from '@/src/components/GlobalButton';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import PersonalityMapResultModal from '@/src/components/PersonalityMapResultModal';
-import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
-import { BackHandler } from 'react-native';
-import moment from 'moment-timezone';
-import CommonLoader from '@/src/components/CommonLoader';
 
 type AnswerOption = { option: string; score: number };
 type Question = {

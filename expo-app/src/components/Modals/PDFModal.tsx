@@ -1,11 +1,8 @@
 import { useNavigation } from "@react-navigation/native";
 import { ChevronLeft } from 'lucide-react-native';
-import React, { useState } from "react";
+import React from "react";
 import {
-  ActivityIndicator,
-  Dimensions,
   Modal,
-  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -15,8 +12,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 import CommonLoader from "../CommonLoader";
 
-const { height, width } = Dimensions.get("window");
-
 type PDFModalProps = {
   visible: boolean;
   onClose: () => void;
@@ -25,13 +20,13 @@ type PDFModalProps = {
   title?: string;
 };
 
-const PDFModal:React.FC<PDFModalProps> = ({
+const PDFModal: React.FC<PDFModalProps> = ({
   visible,
   onClose,
   pdfUrl,
   useLocal = false,
   title = "App Guide",
-  
+
 }) => {
   const navigation = useNavigation();
   const webViewSource = {
@@ -50,44 +45,44 @@ const PDFModal:React.FC<PDFModalProps> = ({
 
   return (
     <Modal
-  visible={visible}
-  onDismiss={onClose}
-  transparent={false}
-  animationType="slide"
->
+      visible={visible}
+      onDismiss={onClose}
+      transparent={false}
+      animationType="slide"
+    >
       <SafeAreaView style={styles.pdfModalContainer}>
         {pdfUrl ? (
           <>
             <View style={styles.headerContainer}>
-              <TouchableOpacity onPress={onClose||handleBackPress} style={styles.headerButton}>
-                <ChevronLeft  size={20} />
+              <TouchableOpacity onPress={onClose || handleBackPress} style={styles.headerButton}>
+                <ChevronLeft size={24} />
               </TouchableOpacity>
               <Text style={styles.headerText}>{title}</Text>
               <View style={styles.headerButton} />
             </View>
 
-              <WebView
-                source={webViewSource}
-                style={styles.webView}
-                javaScriptEnabled={true}
-                domStorageEnabled={true}
-                startInLoadingState={true}
-                originWhitelist={["*"]}
-                renderLoading={() => (
-                  <View style={styles.loadingContainer}>
-                    <CommonLoader fullScreen/>
-                    <Text>Loading PDF...</Text>
-                  </View>
-                )}
-                renderError={() => (
-                  <View style={styles.loadingContainer}>
-                    <Text>Error loading PDF. Please try again.</Text>
-                    <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                      <Text style={styles.closeButtonText}>Close</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              />
+            <WebView
+              source={webViewSource}
+              style={styles.webView}
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
+              startInLoadingState={true}
+              originWhitelist={["*"]}
+              renderLoading={() => (
+                <View style={styles.loadingContainer}>
+                  <CommonLoader fullScreen />
+                  <Text>Loading PDF...</Text>
+                </View>
+              )}
+              renderError={() => (
+                <View style={styles.loadingContainer}>
+                  <Text>Error loading PDF. Please try again.</Text>
+                  <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                    <Text style={styles.closeButtonText}>Close</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            />
           </>
         ) : (
           <View style={styles.loadingContainer}>
@@ -120,7 +115,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingVertical: Platform.OS === "ios" ? 30 : 10,
+    marginTop: 50,
     backgroundColor: "white",
   },
   headerButton: {

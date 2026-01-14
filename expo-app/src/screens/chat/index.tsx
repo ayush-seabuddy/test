@@ -11,6 +11,7 @@ import {
 } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
+import CommonLoader from '@/src/components/CommonLoader'
 import { saveChatRooms } from '@/src/database/chatRoomService'
 import { updateOneFleetChat, updateOneShipChat } from '@/src/redux/chatListSlice'
 import { RootState } from '@/src/redux/store'
@@ -21,9 +22,7 @@ import { ImagesAssets } from '@/src/utils/ImageAssets'
 import socketService from '@/src/utils/socketService'
 import { router, useFocusEffect } from 'expo-router'
 import { t } from 'i18next'
-import { ActivityIndicator } from 'react-native-paper'
 import ChatHeader from './chatListHeader'
-import CommonLoader from '@/src/components/CommonLoader'
 
 const ChatLoungeList = () => {
   const dispatch = useDispatch()
@@ -215,7 +214,7 @@ const ChatLoungeList = () => {
         <ChatHeader />
 
         {
-        shipChatList.length == 0 && fleetChatList.length == 0 && 
+          shipChatList.length === 0 && fleetChatList.length === 0 && 
         (loading ? (
           <View style={{ alignItems: 'center',flex:1,justifyContent:'center' }}>
             <CommonLoader fullScreen/>
@@ -265,6 +264,7 @@ const styles = StyleSheet.create({
   },
   sectionContainer: {
     marginHorizontal: 10,
+    marginBottom: 20,
     backgroundColor: "rgba(232, 232, 232, 1)",
     borderRadius: 15,
     borderWidth:1,
@@ -273,7 +273,6 @@ const styles = StyleSheet.create({
   },
   chatListContainer: {
     marginTop: 50,
-
   },
   sectionHeader: {
     flexDirection: 'row',

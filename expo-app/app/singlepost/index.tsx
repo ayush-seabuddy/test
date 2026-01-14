@@ -1,17 +1,14 @@
-import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
-import React, { useState, useEffect, useCallback } from 'react';
-import GlobalHeader from '@/src/components/GlobalHeader';
-import { useTranslation } from 'react-i18next';
-import { ChevronLeft } from 'lucide-react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import PostScreen from '@/src/components/PostScreen';
 import { getallposts } from '@/src/apis/apiService';
-import { showToast } from '@/src/components/GlobalToast';
-import { ScrollView } from 'react-native-gesture-handler';
-import { Image } from 'expo-image';
-import { ImagesAssets } from '@/src/utils/ImageAssets';
 import CommonLoader from '@/src/components/CommonLoader';
 import EmptyComponent from '@/src/components/EmptyComponent';
+import GlobalHeader from '@/src/components/GlobalHeader';
+import { showToast } from '@/src/components/GlobalToast';
+import PostScreen from '@/src/components/PostScreen';
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const SinglePostScreen = () => {
     const { t } = useTranslation();

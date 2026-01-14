@@ -43,7 +43,7 @@ const WellnessOfficerCard: React.FC<Props> = ({ data, onPress }) => {
           <Image
             style={styles.profileImage}
             source={{ uri: data?.profileUrl || ImagesAssets.userIcon }}
-            contentFit="cover"
+            contentFit="contain"
             placeholder={ImagesAssets.userIcon}
             transition={300}
           />

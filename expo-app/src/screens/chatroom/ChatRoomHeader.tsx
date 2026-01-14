@@ -1,4 +1,7 @@
 // ChatRoomHeader.tsx
+import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { router } from "expo-router";
+import { ChevronLeft, Search } from "lucide-react-native";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   BackHandler,
@@ -11,9 +14,6 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { ImagesAssets } from "@/src/utils/ImageAssets";
-import { router } from "expo-router";
-import { ChevronLeft, Search } from "lucide-react-native";
 import RBSheet from "react-native-raw-bottom-sheet";
 import ChatSearchComponent from "./ChatSearchComponent";
 
@@ -240,6 +240,7 @@ const styles = StyleSheet.create({
         elevation: 5,
       },
     }),
+    marginBottom: 5
 
   },
   shadow: {

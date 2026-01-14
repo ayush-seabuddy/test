@@ -222,6 +222,7 @@ const CommentsSection = ({
         setComments(formatted);
       }
     } catch (err) {
+      console.log('Error', err)
       showToast.error(t("error"), t("somethingwentwrong"));
     } finally {
       setCommentLoading(false);
@@ -285,6 +286,7 @@ const CommentsSection = ({
         setReplyingTo(null);
         Keyboard.dismiss();
       } catch (err) {
+        console.log('Error', err)
         setComments(previousComments);
         showToast.error(t('error'), t('somethingwentwrong'));
       } finally {
@@ -362,6 +364,7 @@ const CommentsSection = ({
       setReplyingTo(null);
       setTimeout(() => listRef.current?.scrollToOffset({ offset: 0, animated: true }), 400);
     } catch (err) {
+      console.log('Error', err)
       setComments(previousComments);
       if (!isReply) onCommentCountChange?.(-1);
       showToast.error(t('error'), t('somethingwentwrong'));
@@ -438,6 +441,7 @@ const CommentsSection = ({
 
       await likecommentpost(payload);
     } catch (err) {
+      console.log('Error', err)
       setComments(previousComments);
       if (!isReply) onCommentCountChange?.(1);
       showToast.error(t('error'), t('somethingwentwrong'));

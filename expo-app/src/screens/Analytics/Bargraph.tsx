@@ -1,21 +1,20 @@
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    View
+  ScrollView,
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
 
-// Define types
 interface StressLevelItem {
-  month: string; // Format: "MM-YYYY"
+  month: string;
   TMD: number;
 }
 
 interface BargraphProps {
   stressLevelGraph?: StressLevelItem[];
-  selectedDateTo: string | Date; // ISO string or Date object
+  selectedDateTo: string | Date;
 }
 
 const classifyTMD = (tmd?: number) => {
@@ -108,7 +107,6 @@ const Bargraph: React.FC<BargraphProps> = ({ stressLevelGraph = [], selectedDate
       <View style={styles.tableContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={styles.table}>
-            {/* Header Row */}
             <View style={[styles.tableRow, styles.headerRow]}>
               <View style={[styles.cell, styles.headerCell, styles.monthCell]}>
                 <Text style={styles.headerCellText}>Month</Text>
@@ -118,7 +116,6 @@ const Bargraph: React.FC<BargraphProps> = ({ stressLevelGraph = [], selectedDate
               </View>
             </View>
 
-            {/* Data Rows */}
             {monthYearLabels.map((label, index) => {
               const tmd = stressLevel[index];
               const { mood } = classifyTMD(tmd);

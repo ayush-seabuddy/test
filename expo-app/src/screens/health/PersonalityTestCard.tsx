@@ -5,7 +5,7 @@ import * as React from "react";
 import { useTranslation } from "react-i18next";
 import { Dimensions, Image, Pressable, StyleSheet, Text, View } from "react-native";
 
-const { width, height } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 const isProMax = height >= 926;
 const PersonalityTestCard = ({  data, ApiData , testArray ,screenName }:{data: any; ApiData: any; testArray: any; screenName:string}) => {
  

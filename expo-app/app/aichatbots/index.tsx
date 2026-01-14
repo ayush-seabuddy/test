@@ -1,29 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
+import CommonLoader from '@/src/components/CommonLoader';
+import GlobalHeader from '@/src/components/GlobalHeader';
+import Colors from '@/src/utils/Colors';
+import socketService from '@/src/utils/socketService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useLocalSearchParams } from 'expo-router';
+import { t } from 'i18next';
+import LottieView from 'lottie-react-native';
+import { InfoIcon, Lightbulb, MessageSquare, SendHorizonal } from 'lucide-react-native';
+import moment from 'moment';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+    Animated,
+    FlatList,
+    Keyboard,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
     StyleSheet,
     Text,
-    View,
-    TouchableOpacity,
     TextInput,
-    FlatList,
-    Modal,
-    Keyboard,
-    Animated,
+    TouchableOpacity,
     TouchableWithoutFeedback,
-    KeyboardAvoidingView,
-    Platform,
+    View,
 } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import GlobalHeader from '@/src/components/GlobalHeader';
-import { ChevronLeft, InfoIcon, Lightbulb, MessageSquare, SendHorizonal, X } from 'lucide-react-native';
-import { t } from 'i18next';
-import Colors from '@/src/utils/Colors';
-import moment from 'moment';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import LottieView from 'lottie-react-native';
-import socketService from '@/src/utils/socketService';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import CommonLoader from '@/src/components/CommonLoader';
 
 const AIChatbotScreen = () => {
     const { chatbotType, chatbotName } = useLocalSearchParams();
@@ -255,7 +254,7 @@ const AIChatbotScreen = () => {
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === 'ios' ? 'padding' : "height"}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}
+                keyboardVerticalOffset={20}
             >
 
                 <FlatList

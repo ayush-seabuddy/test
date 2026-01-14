@@ -1,28 +1,28 @@
-import React, { useState, useRef, useEffect } from "react";
+import { forgotpassword, verifyotp } from "@/src/apis/apiService";
+import CustomLottie from "@/src/components/CustomLottie";
+import GlobalButton from "@/src/components/GlobalButton";
+import { showToast } from "@/src/components/GlobalToast";
+import Colors from "@/src/utils/Colors";
+import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Mail } from "lucide-react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
   Animated,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
+  Dimensions,
   Keyboard,
+  KeyboardAvoidingView,
   Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import { OtpInput } from "react-native-otp-entry";
-import { Mail } from "lucide-react-native";
-import CustomLottie from "@/src/components/CustomLottie";
-import Colors from "@/src/utils/Colors";
-import { useTranslation } from "react-i18next";
-import { ImagesAssets } from "@/src/utils/ImageAssets";
-import GlobalButton from "@/src/components/GlobalButton";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { showToast } from "@/src/components/GlobalToast";
-import { forgotpassword, verifyotp } from "@/src/apis/apiService";
 
-const { width, height } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 
 const OTPVerification = () => {
   const { email } = useLocalSearchParams();
@@ -57,6 +57,7 @@ const OTPVerification = () => {
       }
     } catch (error) {
       setloading(false);
+      console.log('Error', error)
       showToast.error(
         t('error'),
         t('somethingwentwrong')
@@ -81,6 +82,7 @@ const OTPVerification = () => {
         );
       }
     } catch (error) {
+      console.log('Error', error)
       setloading(false);
       showToast.error(
         t('error'),

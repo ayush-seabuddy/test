@@ -1,7 +1,5 @@
-// components/CustomStatusBar.tsx
 import React from 'react';
-import { StatusBar, StatusBarStyle, Platform } from 'react-native';
-import { useColorScheme } from 'react-native';
+import { Platform, StatusBar, StatusBarStyle } from 'react-native';
 
 interface CustomStatusBarProps {
   backgroundColor?: string;
@@ -12,8 +10,6 @@ const CustomStatusBar: React.FC<CustomStatusBarProps> = ({
   backgroundColor = 'transparent',
   translucent = true,
 }) => {
-  const colorScheme = useColorScheme(); // 'light' | 'dark' | null
-
   // Determine barStyle based on platform
   const barStyle: StatusBarStyle = Platform.select({
     ios: 'light-content', // Always white icons on iOS

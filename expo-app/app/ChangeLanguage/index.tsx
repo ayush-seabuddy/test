@@ -1,22 +1,17 @@
-import CustomLottie from '@/src/components/CustomLottie';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
-import { CheckCircle2, ChevronLeft } from 'lucide-react-native';
+import { CheckCircle2 } from 'lucide-react-native';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Dimensions,
   FlatList,
-  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
-
-const { width } = Dimensions.get('screen');
 
 const languages = [
   { id: '1', code: 'en', nameKey: 'English', flag: '🇺🇸' },

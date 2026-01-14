@@ -438,6 +438,7 @@
   "startAfterEnd": "开始日期不能晚于结束日期",
   "endBeforeStart": "结束日期不能早于开始日期",
   "workingexperienceaddedsuccessfully": "工作经历已成功添加。",
+  "workingexperienceupdatedsuccessfully": "工作经历已成功更新。",
   "deleteexperiencetitle": "您确定要删除此工作经历吗？",
   "workingexperiencedeleted": "工作经验已删除。",
   "editexperience": "编辑经历",
@@ -945,5 +946,7 @@
   "invalid_x_url": "请输入有效的 X（Twitter）个人主页链接",
   "nocertificationsadded": "尚未添加任何认证",
   "noexperienceadded": "尚未添加经验",
-  "youarenotpostedanything": "你还没有发布任何内容"
+  "youarenotpostedanything": "你还没有发布任何内容",
+  "searching": "正在寻找...",
+  "edit_experience": "编辑经验"
 }

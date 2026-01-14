@@ -1,7 +1,7 @@
 import { useFocusEffect } from "expo-router";
 import { PlayerError, VideoPlayerStatus, VideoView, useVideoPlayer } from "expo-video";
 import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import CommonLoader from "./CommonLoader";
 
 interface Props {
@@ -33,7 +33,7 @@ const VideoPlayer: React.FC<Props> = ({ uri }) => {
     useCallback(() => {
       return () => {
         try {
-          player.pause()  // This usually works even if native object is detaching
+          player.pause()
         } catch (e) {
           console.warn("Mute failed (likely already released):", e);
         }

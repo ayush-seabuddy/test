@@ -1,25 +1,22 @@
-import React from "react";
-import {
-  Text,
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  Image,
-  Pressable,
-  Platform,
-  Dimensions,
-} from "react-native";
-import { ImagesAssets } from "../utils/ImageAssets";
 import { useRouter } from "expo-router";
+import React from "react";
 import { useTranslation } from "react-i18next";
+import {
+  Image,
+  Platform,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 import { Modal, Portal } from "react-native-paper";
+import { ImagesAssets } from "../utils/ImageAssets";
 
 interface PersonalityMapResultModalProps {
   visible: boolean;
   setModalVisible: (visible: boolean) => void;
 }
-
-const { height } = Dimensions.get("window");
 
 const PersonalityMapResultModal: React.FC<PersonalityMapResultModalProps> = ({
   visible,

@@ -3,7 +3,6 @@ import { MoodCheckInModal } from '@/src/components/Modals/MoodCheckInModal';
 import Posts from '@/src/components/Posts';
 import { RootState } from '@/src/redux/store';
 import SocialHeader from '@/src/screens/community/SocialHeader';
-import Colors from '@/src/utils/Colors';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
@@ -14,7 +13,7 @@ import { useSelector } from 'react-redux';
 
 const HomeTab = () => {
   const [modalVisible, setModalVisible] = useState(false);
-  const [isTodayChecked, setIsTodayChecked] = useState(false);
+  const [_, setIsTodayChecked] = useState(false);
   const userDetails = useSelector((state: RootState) => state.userDetails);
 
   useFocusEffect(

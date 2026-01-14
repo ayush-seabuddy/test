@@ -3,7 +3,6 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { Send, Volume2, VolumeX, X } from "lucide-react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Dimensions,
   Modal,
   Platform,
@@ -14,7 +13,7 @@ import {
   View,
 } from "react-native";
 import ImageViewer from "react-native-image-zoom-viewer";
-import Video from "react-native-video"; // ← Only this
+import Video from "react-native-video";
 import CommonLoader from "../CommonLoader";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
@@ -118,7 +117,7 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
 
 
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [_isLoading, setIsLoading] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [videoAspectRatio, setVideoAspectRatio] = useState(1);
   const [dimensions, setDimensions] = useState({ width: screenWidth, height: screenHeight });
@@ -127,7 +126,7 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
   const isPlaceholder = mediaUri === PLACEHOLDER_IMAGE;
 
   const viewerRef = useRef<any>(null);
-  const [imageStatus, setImageStatus] = useState<'loading' | 'success' | 'fail'>('loading');
+  const [_imageStatus, setImageStatus] = useState<'loading' | 'success' | 'fail'>('loading');
 
   useEffect(() => {
     const interval = setInterval(() => {

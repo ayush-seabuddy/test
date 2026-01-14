@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    ScrollView,
-    TouchableOpacity,
-    Modal,
-} from 'react-native';
 import GlobalHeader from '@/src/components/GlobalHeader';
-import { ChevronLeft, Clock, X } from 'lucide-react-native';
+import Colors from '@/src/utils/Colors';
+import { Clock } from 'lucide-react-native';
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+    Modal,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import DatePicker from 'react-native-date-picker';
-import moment from 'moment';
-import Colors from '@/src/utils/Colors';
 
 interface BuddyCalendarModalProps {
     visible: boolean;

@@ -1,15 +1,11 @@
-// ChatSearchComponent.tsx
 import { ArrowLeft, Search } from "lucide-react-native";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  View,
+  StyleSheet,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  Platform,
-  Image,
+  View
 } from "react-native";
-// import { ImagesAssets } from "../../assets/ImagesAssets";
 
 type ChatSearchComponentProps = {
   setSearchValue: (value: string) => void;
@@ -20,7 +16,6 @@ const ChatSearchComponent: React.FC<ChatSearchComponentProps> = ({ setSearchValu
   const [searchText, setSearchText] = useState("");
   const inputRef = useRef<TextInput>(null);
 
-  // Auto-focus when component mounts
   useEffect(() => {
     const timer = setTimeout(() => inputRef.current?.focus(), 300);
     return () => clearTimeout(timer);
@@ -28,24 +23,16 @@ const ChatSearchComponent: React.FC<ChatSearchComponentProps> = ({ setSearchValu
 
   const handleTextChange = (text: string) => {
     setSearchText(text);
-    setSearchValue(text); // Real-time search update
-  };
-
-  const handleClear = () => {
-    setSearchText("");
-    setSearchValue("");
-    inputRef.current?.focus();
+    setSearchValue(text);
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.shadow} />
-      {/* Back Button */}
       <TouchableOpacity onPress={close} style={styles.backButton}>
         <ArrowLeft color="black" size={25} />
       </TouchableOpacity>
 
-      {/* Search Input */}
       <View style={styles.searchContainer}>
         <View style={{ marginRight: 10 }}>
           <Search color="black" size={24} />
@@ -59,25 +46,11 @@ const ChatSearchComponent: React.FC<ChatSearchComponentProps> = ({ setSearchValu
           placeholderTextColor="#B7B7B7"
           value={searchText}
           onChangeText={handleTextChange}
-          autoFocus={false} // We control focus manually for smoother animation
+          autoFocus={false}
           returnKeyType="search"
           clearButtonMode="never"
         />
-
-        {/* Clear Button (appears only when there's text) */}
-        {/* {searchText.length > 0 && (
-          <TouchableOpacity onPress={handleClear} style={styles.clearButton}>
-            <Image
-              source={ImagesAssets.close} // Make sure you have a close/X icon
-              style={styles.clearIcon}
-              tintColor="#999"
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-        )} */}
       </View>
-
-      {/* Optional Right Action (currently empty) */}
       <View style={{ width: 40 }} />
     </View>
   );
@@ -129,7 +102,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#000",
     paddingVertical: 10,
-    fontFamily: "Poppins-Regular", // Optional: match your app font
+    fontFamily: "Poppins-Regular",
   },
   clearButton: {
     padding: 6,

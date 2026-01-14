@@ -1,13 +1,14 @@
 import { bookAppointmentWithDoctor } from '@/src/apis/apiService';
+import CommonLoader from '@/src/components/CommonLoader';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import { router } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router/build/hooks';
+import { t } from 'i18next';
 import { CalendarRange, ChevronLeft, Clock, X } from 'lucide-react-native';
 import moment from 'moment';
 import React, { useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Modal,
   StyleSheet,
   Text,
@@ -19,8 +20,6 @@ import { Calendar } from 'react-native-calendars';
 import DatePicker from 'react-native-date-picker';
 import { ScrollView } from 'react-native-gesture-handler';
 import DoctorProfileDetailsCard from './DoctorProfileDetailsCard';
-import { t } from 'i18next';
-import CommonLoader from '@/src/components/CommonLoader';
 
 const AppointmentForm = () => {
   const params = useLocalSearchParams<{ data: string }>();
@@ -33,11 +32,9 @@ const AppointmentForm = () => {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Derive formatted values only when selections exist
   const formattedDate = selectedDate ? moment(selectedDate).format('dddd, MMMM D, YYYY') : t('select_date');
   const formattedTime = selectedTime ? moment(selectedTime).format('h:mm A') : t('select_time');
 
-  // Proper form validation using memo with correct dependencies
   const isFormValid = useMemo(() => {
     if (!appointmentReason.trim() || appointmentReason.trim().length < 10) return false;
     if (!selectedDate || !selectedTime) return false;
@@ -70,7 +67,7 @@ const AppointmentForm = () => {
 
       if (response?.status === 200 || response?.status === 201) {
         showToast.success(t('success'), t('appointment_booked_success'));
-        router.back(); // Immediate navigation after success
+        router.back();
       } else {
         showToast.error(t('failed'), t('appointment_book_failed'));
       }
@@ -96,8 +93,6 @@ const AppointmentForm = () => {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.formContainer}>
           <DoctorProfileDetailsCard data={data} />
-
-          {/* Reason */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('reason_for_appointment')}</Text>
             <View style={styles.inputCard}>
@@ -111,8 +106,6 @@ const AppointmentForm = () => {
               />
             </View>
           </View>
-
-          {/* Date & Time */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('requested_date_time')}</Text>
             <View style={styles.inputCard}>
@@ -137,8 +130,6 @@ const AppointmentForm = () => {
           </View>
         </View>
       </ScrollView>
-
-      {/* Calendar Modal */}
       <Modal visible={showCalendar} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.calendarModal}>
@@ -154,7 +145,7 @@ const AppointmentForm = () => {
               markedDates={markedDates}
               onDayPress={(day) => {
                 setSelectedDate(new Date(day.timestamp));
-                setSelectedTime(null); // Reset time when date changes
+                setSelectedTime(null);
               }}
               theme={{
                 selectedDayBackgroundColor: '#84A402',
@@ -170,8 +161,6 @@ const AppointmentForm = () => {
           </View>
         </View>
       </Modal>
-
-      {/* Time Picker Modal */}
       <DatePicker
         modal
         open={showTimePicker}
@@ -183,8 +172,6 @@ const AppointmentForm = () => {
         }}
         onCancel={() => setShowTimePicker(false)}
       />
-
-      {/* Submit Button */}
       <View style={styles.bottomButtonContainer}>
         <TouchableOpacity
           style={[styles.submitButton, (!isFormValid || loading) && styles.submitButtonDisabled]}

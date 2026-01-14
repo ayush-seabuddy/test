@@ -34,11 +34,11 @@ interface PersonalityInsight {
   personality_traits: Record<string, string> | Record<string, string>[];
   career_path: Record<string, string>;
   red_flags: string[];
-  corrective_actions: Array<{
+  corrective_actions: {
     challenge: string;
     recommendation: string;
     expected_outcome: string;
-  }>;
+  }[];
 }
 
 const PersonalityMapResultScreen = () => {
@@ -112,6 +112,7 @@ const PersonalityMapResultScreen = () => {
         const fullName = userDetails.fullName || "User";
         setUserName(fullName);
       } catch (e) {
+        console.log('Error', e)
         setUserName("User");
       }
     })();
@@ -145,6 +146,7 @@ const PersonalityMapResultScreen = () => {
         showToast.error(t("oops"), apiResponse.message);
       }
     } catch (error) {
+      console.log('Error', error)
       setloading(false);
       showToast.error(t("oops"), t("somethingwentwrong"));
     }

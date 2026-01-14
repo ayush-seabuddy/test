@@ -1,21 +1,18 @@
 import { getAllBookedAppointments } from "@/src/apis/apiService";
 import CommonLoader from "@/src/components/CommonLoader";
 import EmptyComponent from "@/src/components/EmptyComponent";
+import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  Dimensions,
   FlatList,
   StyleSheet,
-  View,
+  View
 } from "react-native";
-import Header from "./Header";
-import { useTranslation } from "react-i18next";
-import { router } from "expo-router";
 import WellnessOfficerCard, {
   type WellnessOfficer,
 } from "../WellnessOfficerList/WellnessOfficerCard";
-
-const { width } = Dimensions.get("window");
+import Header from "./Header";
 
 const AppointmentHistory = () => {
   const [data, setData] = useState<any[]>([]);

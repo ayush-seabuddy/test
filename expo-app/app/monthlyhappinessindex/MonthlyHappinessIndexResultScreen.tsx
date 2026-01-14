@@ -1,12 +1,11 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import GlobalHeader from '@/src/components/GlobalHeader';
-import { ChevronLeft } from 'lucide-react-native';
+import { ChevronLeft , Check } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import Colors from '@/src/utils/Colors';
 import Slider from '@react-native-community/slider';
-import { Check } from 'lucide-react-native';
 
 const MonthlyHappinessIndexResultScreen = () => {
   const { t } = useTranslation();
