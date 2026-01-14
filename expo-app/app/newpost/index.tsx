@@ -14,6 +14,7 @@ import {
   BottomSheetModalProvider,
   BottomSheetView,
 } from '@gorhom/bottom-sheet';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ResizeMode, Video } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import { Image } from 'expo-image';
@@ -66,6 +67,26 @@ const NewPostScreen = () => {
   const MAX_FILE_SIZE_BYTES = 200 * 1024 * 1024; // 200 MB
   const isEditMode = params.editMode === 'true';
   const editPostId = params.postId as string;
+
+  const [imageLimit ,setImageLimit] = useState(100)
+  const [videoLimit,setVideoLimit] = useState(200)
+  useEffect(() => {
+    (async () => {
+        
+      let apiImageLimit = await AsyncStorage.getItem("imageLimit");
+      let apiVideoLimit = await AsyncStorage.getItem("videoLimit");
+      if(apiImageLimit){
+        setImageLimit(parseInt(apiImageLimit))
+      
+      }
+      if(apiVideoLimit){
+        setVideoLimit(parseInt(apiVideoLimit))
+      }
+      
+      
+      
+    })();
+  }, []);
 
   const [caption, setCaption] = useState((params.caption as string) || '');
   const [selectedMedia, setSelectedMedia] = useState<MediaItem[]>([]);
@@ -172,6 +193,7 @@ const NewPostScreen = () => {
       if (!result.canceled) {
         const assets = result.assets || [];
 
+
         // Check video duration
         const invalidVideos = assets.filter(
           (asset) => asset.type === 'video' && asset.duration && asset.duration > 45000
@@ -190,7 +212,7 @@ const NewPostScreen = () => {
             try {
               const info = await FileSystem.getInfoAsync(asset.uri);
               const size = info.exists && info.size ? info.size : 0;
-              if (size > MAX_FILE_SIZE_BYTES) {
+              if (size > videoLimit * 1024 * 1024) {
                 oversizedFilesInfo.push({ asset, size });
               }
             } catch (err) {
