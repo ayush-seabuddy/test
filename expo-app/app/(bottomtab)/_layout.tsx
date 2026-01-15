@@ -36,6 +36,8 @@ const BottomTabbarLayout = () => {
   );
 
   const insets = useSafeAreaInsets();
+  console.log(insets);
+
 
   /**
    * Bottom spacing logic:
@@ -44,7 +46,7 @@ const BottomTabbarLayout = () => {
    */
   const bottomSpacing =
     Platform.OS === 'android'
-      ? Math.max(insets.bottom, 20)
+      ? Math.max(insets.bottom, 30)
       : insets.bottom;
 
   return (

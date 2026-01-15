@@ -4,6 +4,7 @@ import { initI18n } from "@/src/localization/i18n";
 import { store } from "@/src/redux/store";
 import Colors from "@/src/utils/Colors";
 import socketService from "@/src/utils/socketService";
+import * as NavigationBar from 'expo-navigation-bar';
 import * as Clarity from '@microsoft/react-native-clarity';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
@@ -152,7 +153,7 @@ const NotificationHandler = () => {
 };
 
 export default Sentry.wrap(function RootLayout() {
-
+  const visibility = NavigationBar.useVisibility();
   const colorScheme = useColorScheme();
   const { t } = useTranslation();
 
@@ -188,6 +189,27 @@ export default Sentry.wrap(function RootLayout() {
     };
     requestPermissions();
   }, []);
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+
+    (async () => {
+      try {
+        // Transparent navigation bar (best-effort)
+        await NavigationBar.setBackgroundColorAsync('#00000000');
+
+        // Button/icon color
+        await NavigationBar.setButtonStyleAsync('light');
+
+        // Ensure bar is not programmatically hidden
+        await NavigationBar.setVisibilityAsync('visible');
+      } catch (e) {
+        console.warn('[NavigationBar] setup failed', e);
+      }
+    })();
+  }, [visibility]);
+
+
 
   useEffect(() => {
     // Build a clean screen name (you can customize this format)
