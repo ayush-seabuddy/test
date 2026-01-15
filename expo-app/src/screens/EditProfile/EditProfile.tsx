@@ -592,7 +592,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ededed',
   },
   container: {
-    padding: 20,
+    padding: 10,
     paddingBottom: Platform.OS === 'ios' ? 200 : 150,
   },
   inputContainer: {

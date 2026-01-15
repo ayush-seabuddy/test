@@ -460,7 +460,7 @@ export default ShipLifeScreen;
 
 const styles = StyleSheet.create({
   main: { flex: 1, backgroundColor: '#f5f5f5' },
-  flatListContent: { paddingHorizontal: 20, paddingVertical: 10, paddingBottom: 30 },
+  flatListContent: { paddingHorizontal: 16, paddingVertical: 10, paddingBottom: 30 },
 
   titleView: {
     flexDirection: 'row',

@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
   },
   listContainer: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 10,
   },
   cardMargin: {
     marginBottom: 10,

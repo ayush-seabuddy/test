@@ -105,7 +105,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
 const styles = StyleSheet.create({
   sectionContainer: {
     marginBottom: 20,
-    paddingHorizontal: 15,
+    paddingHorizontal: 12,
   },
   header: {
     flex: 1,

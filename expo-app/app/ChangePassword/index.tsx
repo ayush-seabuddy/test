@@ -155,7 +155,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#ededed',
   },
   container: {
-    padding: 20,
+    marginTop:10,
+    padding: 10,
   },
   inputContainer: {
     flexDirection: 'row',

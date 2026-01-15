@@ -49,9 +49,9 @@ const WellnessOfficerList = () => {
           {loading && <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><CommonLoader fullScreen /></View>}
 
           {data.length > 0 ? (
-            <View style={styles.cardsContainer}>
+            <View>
               {data.map((item, index) => (
-                <View key={index} style={styles.cardWrapper}>
+                <View key={index}>
                   <WellnessOfficerCard data={item} />
                 </View>
               ))}
@@ -79,20 +79,12 @@ const styles = StyleSheet.create({
 
   scrollViewContent: {
     flexGrow: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: 10,
   },
 
   contentContainer: {
     flex: 1,
-  },
-
-  cardsContainer: {
-    marginTop: "1%",
-  },
-
-  cardWrapper: {
-    marginTop: 7,
+    marginTop: 10,
   },
 
   emptyState: {

@@ -316,7 +316,7 @@ export default SocialMediaLinks;
 
 const styles = StyleSheet.create({
   main: { flex: 1, backgroundColor: '#ededed' },
-  container: { padding: 20 },
+  container: { padding: 10, },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',

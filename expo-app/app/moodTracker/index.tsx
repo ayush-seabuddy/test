@@ -607,7 +607,7 @@ const styles = StyleSheet.create({
 
   calendarCard: {
     backgroundColor: "rgba(180, 180, 180, 0.6)",
-    marginHorizontal: 14,
+    marginHorizontal: 10,
     marginTop: 15,
     borderRadius: 20,
     padding: 10,
@@ -667,7 +667,7 @@ const styles = StyleSheet.create({
 
   chartCard: {
     backgroundColor: "rgba(180, 180, 180, 0.9)",
-    marginHorizontal: 14,
+    marginHorizontal: 10,
     marginVertical: 15,
     borderRadius: 20,
     padding: 20,
@@ -713,7 +713,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginHorizontal: 20,
+    marginHorizontal: 12,
     marginVertical: 10,
   },
   notesTitle: {

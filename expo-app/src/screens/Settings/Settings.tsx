@@ -1,6 +1,5 @@
 import { logout, signoutPayload } from '@/src/apis/apiService'
 import GlobalHeader from '@/src/components/GlobalHeader'
-import DeleteModal from '@/src/components/Modals/DeleteModal'
 import SignOutModal from '@/src/components/Modals/SignOutModal'
 import { clearAllChatLists } from '@/src/redux/chatListSlice'
 import { height, width } from '@/src/utils/helperFunctions'
@@ -15,16 +14,7 @@ import { useDispatch } from 'react-redux'
 const Settings = () => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
-
-
     const [modalVisible, setModalVisible] = useState(false);
-    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-
-    const handleAccountDelete = async () => {
-        setDeleteModalVisible(false);
-
-    };
-
     const handleLogout = async () => {
         try {
             const ExpoPushToken = await AsyncStorage.getItem("ExpoPushToken");
@@ -49,27 +39,16 @@ const Settings = () => {
         }
     };
 
-    const renderSettingItem = (labelKey: string, onPress: () => void, value = null, isVerified = false) => (
+    const renderSettingItem = (labelKey: string, onPress: () => void) => (
         <TouchableOpacity style={styles.itemContainer} onPress={onPress}>
             <Text style={styles.itemText}>{t(labelKey)}</Text>
-            {value ? (
-                <>
-                    <Text style={styles.itemValue}>{value}</Text>
-                    {/* <Image source={ImagesAssets.CircleRightArrow} style={styles.headerIcon} /> */}
-                    <CircleArrowRight size={24} color="#c1c1c1" />
-                </>
-            ) : (
-                <View style={styles.iconContainer}>
-                    {isVerified && <Text style={styles.verifiedText}>{t("verified")}</Text>}
-                    {/* <Image source={ImagesAssets.CircleRightArrow} style={styles.headerIcon} /> */}
-                    <CircleArrowRight size={24} color="#a1a1a1" />
-                </View>
-            )}
+            <View style={styles.iconContainer}>
+                <CircleArrowRight size={22} color="#a1a1a1" strokeWidth={1.5} />
+            </View>
         </TouchableOpacity>
     );
     return (
         <View style={{ flex: 1 }}>
-
             <GlobalHeader
                 title={t('settings')}
             />
@@ -96,13 +75,6 @@ const Settings = () => {
 
                 </ScrollView>
             </View>
-
-            <DeleteModal
-                visible={deleteModalVisible}
-                onClose={() => setDeleteModalVisible(false)}
-                onDelete={handleAccountDelete}
-                title={t("delete_account_confirm")}
-            />
             <SignOutModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
@@ -116,7 +88,7 @@ export default Settings
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 14,
+        padding: 10,
         width: width,
     },
     sectionTitle: {
