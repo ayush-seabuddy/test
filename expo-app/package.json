@@ -120,7 +120,6 @@
   "devDependencies": {
     "@react-native-community/cli": "^13.6.9",
     "@types/react": "~19.1.0",
-    "@types/react-native": "^0.73.0",
     "dotenv": "^17.2.3",
     "eslint": "^9.25.0",
     "eslint-config-expo": "^10.0.0",
