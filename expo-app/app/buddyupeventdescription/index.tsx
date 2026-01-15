@@ -79,19 +79,19 @@ const BuddyUpEventDescription = () => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
 
-    useEffect(() => {
-        const fetchProfileDetails = async () => {
-            let result = await viewProfile();
-            if (result?.data) {
-                const object = result.data
-                for (const property in object) {
-                    dispatch(updateUserField({ key: property, value: object[property] }))
+        useEffect(() => {
+            const fetchProfileDetails = async () => {
+                let result = await viewProfile();
+                if (result?.data) {
+                    const object = result.data
+                    for (const property in object) {
+                        dispatch(updateUserField({ key: property, value: object[property] }))
+                    }
+    
                 }
-
             }
-        }
-        fetchProfileDetails();
-    }, []);
+            fetchProfileDetails();
+        }, []);
 
     const [loading, setLoading] = useState(true);
     const [buddyUpDetails, setBuddyUpDetails] = useState<GroupActivityDetail | null>(null);
@@ -129,7 +129,6 @@ const BuddyUpEventDescription = () => {
                 showToast.error(t('oops'), apiResponse.message);
             }
         } catch (error) {
-            console.log('Error', error)
             showToast.error(t('oops'), t('somethingwentwrong'));
         } finally {
             setLoading(false);
@@ -164,7 +163,7 @@ const BuddyUpEventDescription = () => {
     const getButtonText = (): string => {
         if (!buddyUpDetails) return t('join');
 
-        const { isEnded, joinedPeople = [], isJoined } = buddyUpDetails;
+        const { status, isEnded, joinedPeople = [], isJoined } = buddyUpDetails;
         const hasParticipants = joinedPeople.length > 0;
 
         if (status === 'COMPLETED') return t('completed');
@@ -225,8 +224,8 @@ const BuddyUpEventDescription = () => {
         try {
             setLoading(true);
             const updatedJoined = [...buddyUpDetails.joinedPeople, userDetails.id];
-            console.log("sdflksdjflksdfklfklsfdlksd", updatedJoined);
-
+            console.log("sdflksdjflksdfklfklsfdlksd", updatedJoined );
+            
 
             const response = await addeditdeletebuddyupevent({
                 groupActivities: [{ eventId: buddyUpDetails.id, joinedPeople: updatedJoined }],
@@ -306,6 +305,7 @@ const BuddyUpEventDescription = () => {
                         placeholderContentFit='cover'
                         contentFit="cover"
                         transition={300}
+                        cachePolicy={"memory-disk"}
                     />
                 </View>
 
@@ -359,6 +359,7 @@ const BuddyUpEventDescription = () => {
                                             source={person.profileUrl || ImagesAssets.userIcon}
                                             placeholder={ImagesAssets.userIcon}
                                             contentFit="cover"
+                                            cachePolicy={"memory-disk"}
                                         />
                                     </TouchableOpacity>
                                 ))}
@@ -394,8 +395,7 @@ const BuddyUpEventDescription = () => {
                                         source={item}
                                         style={styles.completionImage}
                                         contentFit="cover"
-                                        placeholder={ImagesAssets.PlaceholderImage}
-                                        placeholderContentFit='cover'
+                                        cachePolicy={"memory-disk"}
                                     />
                                 </TouchableOpacity>
                             )}
@@ -539,7 +539,7 @@ const styles = StyleSheet.create({
     },
 
     descriptionText: {
-        fontSize: 14,
+        fontSize: 13,
         color: '#444',
         fontFamily: 'Poppins-Regular',
         lineHeight: 20,

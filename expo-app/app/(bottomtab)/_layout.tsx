@@ -61,6 +61,7 @@ const BottomTabbarLayout = () => {
             >
               <Image
                 source={iconSource}
+                cachePolicy="memory-disk"
                 style={[
                   styles.tabIcon,
                   {

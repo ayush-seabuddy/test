@@ -7,7 +7,6 @@ import {
   BackHandler,
   Dimensions,
   FlatList,
-  Image,
   Platform,
   StyleSheet,
   Text,
@@ -16,6 +15,7 @@ import {
 } from "react-native";
 import RBSheet from "react-native-raw-bottom-sheet";
 import ChatSearchComponent from "./ChatSearchComponent";
+import { Image } from "expo-image";
 
 const { height } = Dimensions.get("screen");
 
@@ -31,13 +31,15 @@ const UserItem = React.memo(({ item, onPress }: { item: any; onPress: (user: any
 
         <Image
           style={styles.userImage}
-          resizeMode="contain"
-          defaultSource={ImagesAssets.userIcon}
+          contentFit="cover"
+          placeholder={ImagesAssets.userIcon}
+          placeholderContentFit="cover"
           source={
             item.profileUrl
               ? { uri: item.profileUrl }
               : ImagesAssets.userIcon
           }
+          cachePolicy={"memory-disk"}
         />
         <View style={{ marginLeft: 10 }}>
           <Text style={styles.userItem}>

@@ -46,6 +46,7 @@ const WellnessOfficerCard: React.FC<Props> = ({ data, onPress }) => {
             contentFit="contain"
             placeholder={ImagesAssets.userIcon}
             transition={300}
+            cachePolicy={"memory-disk"}
           />
         </View>
 

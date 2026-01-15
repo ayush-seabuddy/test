@@ -845,10 +845,9 @@ const ChatRoomScreen = () => {
                         <Image
                           style={styles.userImage}
                           source={user?.reactUsers?.profileUrl ? { uri: user?.reactUsers?.profileUrl } : null}
-                          resizeMode="cover"
+                          contentFit="cover"
                           onTouchEnd={() => {
                             if (user?.userId !== senderId) {
-                              // closeSheet();
                               router.push({
                                 pathname: "/crewProfile",
                                 params: {
@@ -857,6 +856,7 @@ const ChatRoomScreen = () => {
                               })
                             }
                           }}
+                          cachePolicy={"memory-disk"}
                         />
                       </View>
                       <View

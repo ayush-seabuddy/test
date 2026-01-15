@@ -61,7 +61,7 @@ const HomeTab = () => {
           router.push('/newpost');
         }}
       >
-        <Image source={ImagesAssets.PlusImage} style={{ height: 20, width: 20 }} />
+        <Image source={ImagesAssets.PlusImage} style={{ height: 20, width: 20 }}/>
       </TouchableOpacity>
 
       <MoodCheckInModal
