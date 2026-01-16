@@ -1,5 +1,3 @@
-// types/chatRoom.ts  (or put it wherever you keep your types)
-
 export interface ChatParticipant {
   userId: string
   socketId?: string

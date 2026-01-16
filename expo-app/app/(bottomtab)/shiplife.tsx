@@ -8,6 +8,7 @@ import BuddyUpEventCard from '@/src/components/ShipLifeComponent/BuddyUpEventCar
 import HowMilesWorkPopup from '@/src/components/ShipLifeComponent/HowMilesWorkPopup'
 import TopThreeEmployees from '@/src/components/ShipLifeComponent/TopThreeEmployees'
 import ShipLifeScreenHeader from '@/src/components/ShipLifeScreenHeader'
+import { useNetwork } from '@/src/hooks/useNetworkStatusHook'
 import Colors from '@/src/utils/Colors'
 import { getUserDetails } from '@/src/utils/helperFunctions'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -78,7 +79,7 @@ type ListItem =
 const ShipLifeScreen = () => {
   const { t } = useTranslation();
   const [selectedStatus, setSelectedStatus] = useState<'ON_GOING' | 'PAST' | 'REQUESTED'>('ON_GOING');
-
+  const isOnline = useNetwork();
   const [buddyupCategory, setbuddyupCategory] = useState<AdminBuddyUpCategoryType[]>([]);
   const [ongoingEvents, setOngoingEvents] = useState<BuddyUpEvent[]>([]);
   const [pastEvents, setPastEvents] = useState<BuddyUpEvent[]>([]);
@@ -132,8 +133,8 @@ const ShipLifeScreen = () => {
     loadUser();
   }, []);
 
-
   const fetchEventsOnFocus = async () => {
+    if (!isOnline) return;
     try {
       const [ongoingRes, pastRes] = await Promise.all([
         GETALLBUDDYUPEVENTS({ page: 1, limit: 10, eventType: 'ON_GOING' }),
@@ -165,23 +166,33 @@ const ShipLifeScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
-      if (loggeduserData?.id) {
+      if (loggeduserData?.id && isOnline) {
         fetchEventsOnFocus();
       }
-    }, [loggeduserData?.id])
+    }, [loggeduserData?.id, isOnline])
   );
 
-  // Load all initial data when user is available
+  // Reset data when going offline
   useEffect(() => {
-    if (loggeduserData?.id) {
-      loadInitialData();
+    if (!isOnline) {
+      // Optional: clear data when offline to force fresh fetch when back online
+      setbuddyupCategory([]);
+      setOngoingEvents([]);
+      setPastEvents([]);
+      setRequestedEvents([]);
+      settopEmployee([]);
+      setIsLoading(false);
     }
-  }, [loggeduserData]);
+  }, [isOnline]);
 
-  const loadInitialData = async () => {
+  const fetchAllData = useCallback(async () => {
+    if (!isOnline) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-
       const [adminbuddyRes, topemployeeRes, ongoingRes, pastRes, viewprofileRes] = await Promise.all([
         getalladminbuddyupcategories({ isAdmin: true }),
         getleaderboard({ isZero: false }),
@@ -247,11 +258,20 @@ const ShipLifeScreen = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isOnline, loggeduserData?.id, t, loggeduserData]);
+
+  // Only fetch when we have user & online
+  useEffect(() => {
+    if (loggeduserData?.id && isOnline) {
+      fetchAllData();
+    } else if (!isOnline) {
+      setIsLoading(false);
+    }
+  }, [loggeduserData?.id, isOnline, fetchAllData]);
 
   // Fetch requested events only when Captain selects the tab (lazy load)
   const fetchRequestedEvents = async () => {
-    if (requestedEvents.length > 0) return; // Already loaded
+    if (!isOnline || requestedEvents.length > 0 || designation !== 'Captain') return;
 
     try {
       const res = await GETALLBUDDYUPEVENTS({ page: 1, limit: 10, filter: 'REQUESTED' });
@@ -306,6 +326,7 @@ const ShipLifeScreen = () => {
 
   const renderItem: ListRenderItem<ListItem> = ({ item }) => {
     switch (item.type) {
+
       case 'header':
         return (
           <View style={styles.titleView}>
@@ -403,55 +424,74 @@ const ShipLifeScreen = () => {
 
   const keyExtractor = (item: ListItem, index: number) => `${item.type}-${index}`;
 
-  return (
-    <View style={styles.main}>
-      <ShipLifeScreenHeader />
-      {isLoading ? (
+  if (!isOnline) {
+    return (
+      <View style={styles.main}>
+        <ShipLifeScreenHeader />
+        <View style={styles.centerContainer}>
+          <EmptyComponent text={t('nointernetconnection')} />
+        </View>
+      </View>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <View style={styles.main}>
+        <ShipLifeScreenHeader />
         <View style={styles.fullScreenLoader}>
           <CommonLoader fullScreen />
         </View>
-      ) : !shipId ? (
-        <View style={{ justifyContent: 'center', alignItems: 'center', marginTop: '40%', gap: 20 }}>
+      </View>
+    );
+  }
+
+  if (!shipId) {
+    return (
+      <View style={styles.main}>
+        <ShipLifeScreenHeader />
+        <View style={styles.centerContainer}>
           <LottieView
             source={require('../../assets/Ship.json')}
             autoPlay
             loop
             style={styles.animation}
           />
-          <Text style={{
-            fontSize: 14,
-            fontFamily: 'Poppins-Regular',
-            color: '#8A8A8A',
-            textAlign: 'center',
-          }}>
+          <Text style={styles.notOnShipText}>
             {t('youarenotonanyship')}
           </Text>
         </View>
-      ) : department === 'Shore_Staff' ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{
-            fontSize: 16,
-            color: "gray",
-            fontFamily: "Poppins-SemiBold",
-            textAlign: 'center',
-            paddingHorizontal: 20,
-          }}>
+      </View>
+    );
+  }
+
+  if (department === 'Shore_Staff') {
+    return (
+      <View style={styles.main}>
+        <ShipLifeScreenHeader />
+        <View style={styles.centerContainer}>
+          <Text style={styles.shoreStaffText}>
             {t('thissectionapplicableforshipstaff')}
           </Text>
         </View>
-      ) : (
-        <FlatList
-          data={computeData()}
-          renderItem={renderItem}
-          keyExtractor={keyExtractor}
-          contentContainerStyle={styles.flatListContent}
-          showsVerticalScrollIndicator={false}
-          removeClippedSubviews={true}
-          initialNumToRender={10}
-          maxToRenderPerBatch={10}
-          windowSize={15}
-        />
-      )}
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.main}>
+      <ShipLifeScreenHeader />
+      <FlatList
+        data={computeData()}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        contentContainerStyle={styles.flatListContent}
+        showsVerticalScrollIndicator={false}
+        removeClippedSubviews={true}
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={15}
+      />
     </View>
   );
 };
@@ -537,5 +577,25 @@ const styles = StyleSheet.create({
     color: "#949494",
     fontSize: 12,
     fontFamily: 'Poppins-Regular'
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent:'center',
+    alignItems: 'center',
+    paddingHorizontal: 30,
+  },
+  notOnShipText: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Regular',
+    color: '#8A8A8A',
+    textAlign: 'center',
+    marginTop: 20,
+  },
+  shoreStaffText: {
+    fontSize: 16,
+    color: "gray",
+    fontFamily: "Poppins-SemiBold",
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
 });

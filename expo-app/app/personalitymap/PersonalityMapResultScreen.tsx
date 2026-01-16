@@ -12,15 +12,19 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Alert,
-  Animated, BackHandler, Dimensions,
+  Animated,
+  BackHandler,
+  Dimensions,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View
 } from "react-native";
+import NetInfo from "@react-native-community/netinfo";
 
 import CommonLoader from "@/src/components/CommonLoader";
+import EmptyComponent from "@/src/components/EmptyComponent";
 import { generateAndSharePersonalityPDF } from "@/src/components/PersonalityPDFReport";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -53,6 +57,7 @@ const PersonalityMapResultScreen = () => {
   const [traitsExpanded, setTraitsExpanded] = useState(false);
   const [careerExpanded, setCareerExpanded] = useState(false);
   const { screenName } = useLocalSearchParams();
+  const [isConnected, setIsConnected] = useState(true);
   const rotateDescAnim = React.useRef(new Animated.Value(0)).current;
   const rotateTraitsAnim = React.useRef(new Animated.Value(0)).current;
   const rotateCareerAnim = React.useRef(new Animated.Value(0)).current;
@@ -69,6 +74,15 @@ const PersonalityMapResultScreen = () => {
       useNativeDriver: true,
     }).start();
   };
+
+  // Check network connectivity
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      setIsConnected(state.isConnected ?? false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Handle hardware back button
   useFocusEffect(
@@ -134,6 +148,13 @@ const PersonalityMapResultScreen = () => {
   };
 
   const getAssessmentResult = async () => {
+    // Check internet connection before making API call
+    const netState = await NetInfo.fetch();
+    if (!netState.isConnected) {
+      setIsConnected(false);
+      return;
+    }
+
     try {
       setloading(true);
       const apiResponse = await getallassessmentsResult({ questionType: "PERSONALITY" });
@@ -203,194 +224,208 @@ const PersonalityMapResultScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {loading ? <View style={styles.loader}><CommonLoader fullScreen /></View> : <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContainer}
-      >
-        {/* Famous People Card */}
-        <View style={styles.famousPeopleCard}>
-          <View style={styles.headermaritime_title}>
-            <Text style={styles.maritime_title}>
-              {data?.maritime_title ?? "--"}
+      {!isConnected ? (
+        <View style={styles.emptyContainer}>
+          <EmptyComponent text={t('nointernetconnection')} />
+        </View>
+      ) : loading ? (
+        <View style={styles.loader}>
+          <CommonLoader fullScreen />
+        </View>
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContainer}
+        >
+          {/* Famous People Card */}
+          <View style={styles.famousPeopleCard}>
+            <View style={styles.headermaritime_title}>
+              <Text style={styles.maritime_title}>
+                {data?.maritime_title ?? "--"}
+              </Text>
+              <TouchableOpacity
+                onPress={() =>
+                  Alert.alert(
+                    data?.big_five_type_code ?? "",
+                    data?.big_five_type_full ?? ""
+                  )
+                }
+              >
+                <InfoIcon size={20} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.personality_type}>
+              {data?.big_five_type_code ?? "--"}
             </Text>
-            <TouchableOpacity
-              onPress={() =>
-                Alert.alert(
-                  data?.big_five_type_code ?? "",
-                  data?.big_five_type_full ?? ""
-                )
-              }
-            >
-              <InfoIcon size={20} color="#666" />
-            </TouchableOpacity>
+
+            <Text style={styles.famouspeopledesc}>
+              {data?.big_five_type_full ?? ""}
+            </Text>
+
+            <View style={styles.famousChipContainer}>
+              {data?.famous_individuals?.map((name: string, idx: number) => (
+                <View key={idx} style={styles.famousPeopleChip}>
+                  <Text style={styles.famouspeoplename}>{name}</Text>
+                </View>
+              ))}
+            </View>
           </View>
 
-          <Text style={styles.personality_type}>
-            {data?.big_five_type_code ?? "--"}
-          </Text>
+          {/* Personality Description */}
+          <View style={styles.personalityDescCard}>
+            <BlurView style={StyleSheet.absoluteFill} tint="light" intensity={50} />
+            <View style={styles.personalityDescHeader}>
+              <Text style={styles.personalityDescText}>
+                {t("personalityDescText") || "Personality Description"}
+              </Text>
+              <TouchableOpacity
+                onPress={() => toggleAnim(descExpanded, rotateDescAnim, setDescExpanded)}
+                style={styles.iconButton}
+              >
+                <Animated.View
+                  style={{
+                    transform: [
+                      {
+                        rotate: rotateDescAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ["0deg", "180deg"],
+                        }),
+                      },
+                    ],
+                  }}
+                >
+                  <ChevronDown size={22} color={Colors.lightGreen} />
+                </Animated.View>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.desc} numberOfLines={descExpanded ? undefined : 4}>
+              {data?.description ?? ""}
+            </Text>
+          </View>
 
-          <Text style={styles.famouspeopledesc}>
-            {data?.big_five_type_full ?? ""}
-          </Text>
+          {/* Personality Traits */}
+          <View style={styles.personalityDescCard}>
+            <BlurView style={StyleSheet.absoluteFill} tint="light" intensity={50} />
+            <View style={styles.personalityDescHeader}>
+              <Text style={styles.personalityDescText}>
+                {t("personalitytraits") || "Personality Traits"}
+              </Text>
+              <TouchableOpacity
+                onPress={() => toggleAnim(traitsExpanded, rotateTraitsAnim, setTraitsExpanded)}
+                style={styles.iconButton}
+              >
+                <Animated.View
+                  style={{
+                    transform: [
+                      {
+                        rotate: rotateTraitsAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ["0deg", "180deg"],
+                        }),
+                      },
+                    ],
+                  }}
+                >
+                  <ChevronDown size={22} color={Colors.lightGreen} />
+                </Animated.View>
+              </TouchableOpacity>
+            </View>
 
-          <View style={styles.famousChipContainer}>
-            {data?.famous_individuals?.map((name: string, idx: number) => (
-              <View key={idx} style={styles.famousPeopleChip}>
-                <Text style={styles.famouspeoplename}>{name}</Text>
+            {!traitsExpanded && normalizedTraits.length > 0 && (
+              <Text style={styles.desc} numberOfLines={2}>
+                {normalizedTraits[0].title}: {normalizedTraits[0].value}
+              </Text>
+            )}
+
+            {traitsExpanded && (
+              <View style={{ marginTop: 10, gap: 12 }}>
+                {normalizedTraits.map((item, index) => (
+                  <View key={index}>
+                    <Text style={styles.traitTitle}>{item.title}</Text>
+                    <Text style={styles.desc}>{item.value}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
-        </View>
+            )}
 
-        {/* Personality Description */}
-        <View style={styles.personalityDescCard}>
-          <BlurView style={StyleSheet.absoluteFill} tint="light" intensity={50} />
-          <View style={styles.personalityDescHeader}>
-            <Text style={styles.personalityDescText}>
-              {t("personalityDescText") || "Personality Description"}
-            </Text>
-            <TouchableOpacity
-              onPress={() => toggleAnim(descExpanded, rotateDescAnim, setDescExpanded)}
-              style={styles.iconButton}
-            >
-              <Animated.View
-                style={{
-                  transform: [
-                    {
-                      rotate: rotateDescAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ["0deg", "180deg"],
-                      }),
-                    },
-                  ],
-                }}
+          </View>
+
+          {/* Career Path */}
+          <View style={styles.personalityDescCard}>
+            <BlurView style={StyleSheet.absoluteFill} tint="light" intensity={50} />
+            <View style={styles.personalityDescHeader}>
+              <Text style={styles.personalityDescText}>
+                {t("careerpath") || "Career Path"}
+              </Text>
+              <TouchableOpacity
+                onPress={() => toggleAnim(careerExpanded, rotateCareerAnim, setCareerExpanded)}
+                style={styles.iconButton}
               >
-                <ChevronDown size={22} color={Colors.lightGreen} />
-              </Animated.View>
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.desc} numberOfLines={descExpanded ? undefined : 4}>
-            {data?.description ?? ""}
-          </Text>
-        </View>
-
-        {/* Personality Traits */}
-        <View style={styles.personalityDescCard}>
-          <BlurView style={StyleSheet.absoluteFill} tint="light" intensity={50} />
-          <View style={styles.personalityDescHeader}>
-            <Text style={styles.personalityDescText}>
-              {t("personalitytraits") || "Personality Traits"}
-            </Text>
-            <TouchableOpacity
-              onPress={() => toggleAnim(traitsExpanded, rotateTraitsAnim, setTraitsExpanded)}
-              style={styles.iconButton}
-            >
-              <Animated.View
-                style={{
-                  transform: [
-                    {
-                      rotate: rotateTraitsAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ["0deg", "180deg"],
-                      }),
-                    },
-                  ],
-                }}
-              >
-                <ChevronDown size={22} color={Colors.lightGreen} />
-              </Animated.View>
-            </TouchableOpacity>
-          </View>
-
-          {!traitsExpanded && normalizedTraits.length > 0 && (
-            <Text style={styles.desc} numberOfLines={2}>
-              {normalizedTraits[0].title}: {normalizedTraits[0].value}
-            </Text>
-          )}
-
-          {traitsExpanded && (
-            <View style={{ marginTop: 10, gap: 12 }}>
-              {normalizedTraits.map((item, index) => (
-                <View key={index}>
-                  <Text style={styles.traitTitle}>{item.title}</Text>
-                  <Text style={styles.desc}>{item.value}</Text>
-                </View>
-              ))}
+                <Animated.View
+                  style={{
+                    transform: [
+                      {
+                        rotate: rotateCareerAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ["0deg", "180deg"],
+                        }),
+                      },
+                    ],
+                  }}
+                >
+                  <ChevronDown size={22} color={Colors.lightGreen} />
+                </Animated.View>
+              </TouchableOpacity>
             </View>
-          )}
 
-        </View>
+            {!careerExpanded && Object.keys(careerObj).length > 0 && (
+              <Text style={styles.desc} numberOfLines={2}>
+                {Object.entries(careerObj)
+                  .slice(0, 1)
+                  .map(([key, val]) => `${key}: ${val}`)
+                  .join("")}
+              </Text>
+            )}
 
-        {/* Career Path */}
-        <View style={styles.personalityDescCard}>
-          <BlurView style={StyleSheet.absoluteFill} tint="light" intensity={50} />
-          <View style={styles.personalityDescHeader}>
-            <Text style={styles.personalityDescText}>
-              {t("careerpath") || "Career Path"}
-            </Text>
-            <TouchableOpacity
-              onPress={() => toggleAnim(careerExpanded, rotateCareerAnim, setCareerExpanded)}
-              style={styles.iconButton}
-            >
-              <Animated.View
-                style={{
-                  transform: [
-                    {
-                      rotate: rotateCareerAnim.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ["0deg", "180deg"],
-                      }),
-                    },
-                  ],
-                }}
-              >
-                <ChevronDown size={22} color={Colors.lightGreen} />
-              </Animated.View>
-            </TouchableOpacity>
+            {careerExpanded && (
+              <View style={{ marginTop: 10, gap: 12 }}>
+                {Object.entries(careerObj).map(([title, text]) => (
+                  <View key={title}>
+                    <Text style={styles.traitTitle}>{title}</Text>
+                    <Text style={styles.desc}>{text}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
           </View>
+        </ScrollView>
+      )}
 
-          {!careerExpanded && Object.keys(careerObj).length > 0 && (
-            <Text style={styles.desc} numberOfLines={2}>
-              {Object.entries(careerObj)
-                .slice(0, 1)
-                .map(([key, val]) => `${key}: ${val}`)
-                .join("")}
-            </Text>
+      {/* Hide buttons when no internet connection */}
+      {isConnected && (
+        <View style={styles.buttonContainer}>
+          {/* Show Go Back only when NOT loading and data exists */}
+          {!loading && data !== null && (
+            <GlobalButton
+              title={t("goback")}
+              onPress={() =>
+                newuser === "true"
+                  ? router.replace("/home")
+                  : router.replace("/(bottomtab)/health")
+              }
+            />
           )}
-
-          {careerExpanded && (
-            <View style={{ marginTop: 10, gap: 12 }}>
-              {Object.entries(careerObj).map(([title, text]) => (
-                <View key={title}>
-                  <Text style={styles.traitTitle}>{title}</Text>
-                  <Text style={styles.desc}>{text}</Text>
-                </View>
-              ))}
-            </View>
+          {/* Show Refresh when data is null (both loading or not loading) */}
+          {data === null && (
+            <GlobalButton
+              title={t("refresh")}
+              onPress={getAssessmentResult}
+              disabled={loading}
+            />
           )}
         </View>
-      </ScrollView>}
-      <View style={styles.buttonContainer}>
-        {/* Show Go Back only when NOT loading and data exists */}
-        {!loading && data !== null && (
-          <GlobalButton
-            title={t("goback")}
-            onPress={() =>
-              newuser === "true"
-                ? router.replace("/home")
-                : router.replace("/(bottomtab)/health")
-            }
-          />
-        )}
-        {/* Show Refresh when data is null (both loading or not loading) */}
-        {data === null && (
-          <GlobalButton
-            title={t("refresh")}
-            onPress={getAssessmentResult}
-            disabled={loading} // optional: prevent spam clicks
-          />
-        )}
-      </View>
+      )}
     </View>
   );
 };
@@ -407,7 +442,7 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     alignItems: "center",
   },
 
@@ -429,7 +464,7 @@ const styles = StyleSheet.create({
 
   scrollContainer: {
     paddingTop: SCREEN_HEIGHT * 0.5,
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
     paddingBottom: 120,
   },
 
@@ -538,7 +573,14 @@ const styles = StyleSheet.create({
     left: 10,
     right: 10,
   },
+
   loader: {
     paddingTop: '80%',
-  }
+  },
+
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });

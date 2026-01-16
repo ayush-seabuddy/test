@@ -1,4 +1,3 @@
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Application from 'expo-application';
 import { useRouter } from 'expo-router';
@@ -41,6 +40,8 @@ type AppRoute =
 const Splash = () => {
   const { t } = useTranslation();
   const router = useRouter();
+  const dispatch = useDispatch();
+
   /** 🔑 Used to cancel async flows */
   const flowIdRef = useRef(0);
 
@@ -49,8 +50,6 @@ const Splash = () => {
   const translateAnim = useRef(new Animated.Value(-height)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
   const headingSlideAnim = useRef(new Animated.Value(0)).current;
-  const dispatch = useDispatch();
-
 
   /** ---------------- API HELPERS ---------------- */
 
@@ -70,21 +69,33 @@ const Splash = () => {
       });
 
       if (apiResponse?.data) {
-        const object = apiResponse.data
-        for (const property in object) {
-          dispatch(updateUserField({ key: property, value: object[property] }))
+        // ✅ Cache profile for offline usage
+        await AsyncStorage.setItem(
+          'cachedUserProfile',
+          JSON.stringify(apiResponse.data)
+        );
+
+        for (const property in apiResponse.data) {
+          dispatch(
+            updateUserField({
+              key: property,
+              value: apiResponse.data[property],
+            })
+          );
         }
       }
 
       if (apiResponse?.success && apiResponse?.status === 200) {
         return apiResponse.data;
-      } else {
-        showToast.error(t('oops'), apiResponse?.message);
-        return null;
       }
-    } catch {
-      showToast.error(t('oops'), t('somethingwentwrong'));
+
       return null;
+    } catch {
+      // ✅ OFFLINE FALLBACK
+      const cachedProfile = await AsyncStorage.getItem(
+        'cachedUserProfile'
+      );
+      return cachedProfile ? JSON.parse(cachedProfile) : null;
     }
   };
 
@@ -93,13 +104,13 @@ const Splash = () => {
   const initializeAndNavigate = useCallback(
     async (flowId: number) => {
       try {
-        /** Stop immediately if notification active */
-        const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+        const wait = (ms: number) =>
+          new Promise(resolve => setTimeout(resolve, ms));
         await wait(4000);
 
-        const userDetailsStr = await AsyncStorage.getItem('userDetails');
         if (flowId !== flowIdRef.current) return;
 
+        const userDetailsStr = await AsyncStorage.getItem('userDetails');
         if (!userDetailsStr) {
           router.replace('/auth/Login' as any);
           return;
@@ -116,7 +127,8 @@ const Splash = () => {
         const userData = await viewUserProfile(userId);
         if (flowId !== flowIdRef.current) return;
 
-        if (!userData || userData.isProfileCompleted !== true) {
+        /** 🔑 FIX: Only go to onboarding when profile is DEFINITELY incomplete */
+        if (userData && userData.isProfileCompleted !== true) {
           router.replace('/onboarding' as any);
           return;
         }
@@ -157,29 +169,24 @@ const Splash = () => {
             router.replace('/home' as any);
           }
         } else {
-          showToast.error(t('oops'), response?.message);
           router.replace('/home' as any);
         }
       } catch (error) {
         console.error('Splash Initialization Error:', error);
-        showToast.error(t('oops'), t('somethingwentwrong'));
         router.replace('/auth/Login' as any);
       }
     },
-    [router, t]
+    [router]
   );
 
   /** ---------------- EFFECT: RESTART ON CHANGE ---------------- */
 
   useEffect(() => {
-    // Cancel previous flow
-
     flowIdRef.current += 1;
     const currentFlowId = flowIdRef.current;
 
     initializeAndNavigate(currentFlowId);
 
-    // Cleanup cancels async work
     return () => {
       flowIdRef.current += 1;
     };

@@ -1,7 +1,9 @@
 import { getassessmentresponseList } from '@/src/apis/apiService';
 import CommonLoader from '@/src/components/CommonLoader';
+import EmptyComponent from '@/src/components/EmptyComponent';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
+import { useNetwork } from '@/src/hooks/useNetworkStatusHook';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -35,6 +37,7 @@ const AllAssessmentResultListing = () => {
     const [loading, setLoading] = useState(true);
     const [assessmentData, setAssessmentData] = useState<any[]>([]);
     const router = useRouter();
+    const isOnline = useNetwork();
     const { t } = useTranslation();
 
     const getScoreMeaning = (score: number) => {
@@ -158,7 +161,7 @@ const AllAssessmentResultListing = () => {
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
-                <CommonLoader fullScreen/>
+                <CommonLoader fullScreen />
             </View>
         );
     }
@@ -178,9 +181,10 @@ const AllAssessmentResultListing = () => {
                     showsVerticalScrollIndicator={false}
                 />
             ) : (
-                <View style={styles.emptyContainer}>
-                    <Image source={ImagesAssets.nodatafound} style={styles.nodatafoundImage} />
-                    <Text style={styles.emptyText}>{noDataMessage}</Text>
+                isOnline ? <View style={styles.emptyContainer}>
+                    <EmptyComponent text={noDataMessage} />
+                </View> : <View style={styles.emptyContainer}>
+                    <EmptyComponent text={t('nointernetconnection')} />
                 </View>
             )}
         </View>

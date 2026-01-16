@@ -71,3 +71,5 @@ yarn-error.*
 app-example
 ios.json
 android.json
+
+.env.local

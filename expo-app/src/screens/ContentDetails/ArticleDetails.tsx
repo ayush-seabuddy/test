@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   AppState,
   Dimensions,
@@ -10,7 +10,7 @@ import {
   View
 } from "react-native";
 
-import { getRecommendedContents } from "@/src/apis/apiService";
+import { getRecommendedContents, acknowledgeContent } from "@/src/apis/apiService";
 import GlobalHeader from "@/src/components/GlobalHeader";
 import MediaPreviewModal from "@/src/components/Modals/MediaPreviewModal";
 import PDFModal from "@/src/components/Modals/PDFModal";
@@ -23,6 +23,7 @@ import { t } from "i18next";
 import { Modal } from "react-native-paper";
 import RelatedVideosCard from "./RelatedContentCard";
 import { Content } from "./type";
+import CommonLoader from "@/src/components/CommonLoader";
 
 
 const { height } = Dimensions.get("window");
@@ -39,6 +40,8 @@ export default function ArticleDetails({ data: fullDetails }: { data: Content })
   const [pdfTitle, setPdfTitle] = useState("App Guide");
   const [mediaPreviewVisible, setMediaPreviewVisible] = useState<boolean>(false);
   const [mediaUri, setMediaUri] = useState<string>("");
+  const [isAcknowledged, setIsAcknowledged] = useState<boolean>(fullDetails?.contentAcknowledge?.length > 0);
+  const [isAcknowledging, setIsAcknowledging] = useState<boolean>(false);
 
   const handleOpenPDF: (url: string, title: string) => void = (url, title) => {
     setPdfUrl(url);
@@ -111,6 +114,21 @@ export default function ArticleDetails({ data: fullDetails }: { data: Content })
     });
   };
 
+  const handleAcknowledge = useCallback(async () => {
+    try {
+      setIsAcknowledging(true);
+      const payload = { contentId: fullDetails?.id };
+      const response = await acknowledgeContent(payload)
+      if (response.status === 200) {
+        setIsAcknowledged(true);
+      }
+    } catch (error) {
+      console.error("❌ Error acknowledging content:", error);
+    } finally {
+      setIsAcknowledging(false);
+    }
+  }, [fullDetails?.id]);
+
   return (
     <View style={styles.container}>
       <GlobalHeader
@@ -158,6 +176,28 @@ export default function ArticleDetails({ data: fullDetails }: { data: Content })
 
           </View>
         </View>
+        {!isAcknowledged && (
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={
+              [{ backgroundColor: isAcknowledging ? '#999' : '#000' }, styles.acknowledgeButton]
+            }
+            disabled={isAcknowledging}
+            onPress={handleAcknowledge}
+          >
+            {isAcknowledging ? (
+              <CommonLoader color="#FFF" />
+            ) : (
+              <Text
+                style={
+                  styles.acknowledgeButtonText
+                }
+              >
+                {t('I_Acknowledge')}
+              </Text>
+            )}
+          </TouchableOpacity>
+        )}
         <View style={{ paddingHorizontal: 16 }}>
           {RecommendedData.length > 0 && (
             <>
@@ -236,7 +276,7 @@ const styles = StyleSheet.create({
   },
   postedOn: { fontSize: 12, color: "#06361f" },
   relatedTitle: {
-    marginVertical:10,
+    marginVertical: 10,
     fontSize: 18,
     fontWeight: "600",
   },
@@ -297,6 +337,27 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins-SemiBold",
     textAlign: "center",
   },
+  acknowledgeButton: {
+    marginHorizontal: 16,
+
+    height: 48,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 4,
+    marginTop: 12,
+  },
+  acknowledgeButtonText:
+  {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: 'Poppins-Regular',
+    fontWeight: '600',
+  }
 });
 
 

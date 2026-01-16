@@ -3,6 +3,7 @@ import CommonLoader from '@/src/components/CommonLoader';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import CustomDateTimePicker from '@/src/components/Modals/CustomDateTimePicker';
+import { useNetwork } from '@/src/hooks/useNetworkStatusHook';
 import { RootState } from '@/src/redux/store';
 import { updateUserField } from '@/src/redux/userDetailsSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -37,7 +38,7 @@ interface UserDetails {
 const AddExperienceScreen = () => {
     const { t } = useTranslation();
     const params = useLocalSearchParams();
-
+    const isOnline = useNetwork();
     const isEdit = params.isEdit === 'true';
     const experienceId = params.id as string;
     const initialCompanyName = params.companyName as string;
@@ -171,6 +172,10 @@ const AddExperienceScreen = () => {
 
     const saveExperience = async () => {
         if (!validateInputs()) return;
+        if (!isOnline) {
+            showToast.error(t('oops'), t('nointernetconnection'));
+            return;
+        }
 
         try {
             setLoading(true);

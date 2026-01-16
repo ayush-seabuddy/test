@@ -1,16 +1,18 @@
+import { checkTodayMoodTracker } from '@/src/apis/apiService';
 import Announcements from '@/src/components/Announcements';
 import { MoodCheckInModal } from '@/src/components/Modals/MoodCheckInModal';
 import Posts from '@/src/components/Posts';
+import { updateMoodTrackerLoading, updateMoodTrackerTodayFillData } from '@/src/redux/moodtracker';
 import { RootState } from '@/src/redux/store';
 import SocialHeader from '@/src/screens/community/SocialHeader';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const HomeTab = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -26,7 +28,7 @@ const HomeTab = () => {
    */
   const fabBottom =
     Platform.OS === 'android'
-      ? 80 + insets.bottom
+      ? 90 + insets.bottom
       : 80 + insets.bottom;
 
   useFocusEffect(
@@ -58,6 +60,40 @@ const HomeTab = () => {
     }, [])
   );
 
+
+  const dispatch = useDispatch()
+  const moodTrackerData = useSelector(
+    (state: RootState) => state.moodTrackerData
+  );
+  useEffect(() => {
+    const checkTodayFill = async () => {
+      try {
+
+        dispatch(updateMoodTrackerLoading(true))
+        const today = new Date()
+        const day = String(today.getDate()).padStart(2, "0")
+        const month = String(today.getMonth() + 1).padStart(2, "0")
+        const year = today.getFullYear()
+        const date = `${day}-${month}-${year}`
+
+
+        const moodData = await checkTodayMoodTracker({ date })
+        if (moodData.status == 200) {
+          dispatch(updateMoodTrackerLoading(false))
+          dispatch(updateMoodTrackerTodayFillData(moodData.data.isTodayFill))
+        }
+
+      } catch (error) {
+        dispatch(updateMoodTrackerLoading(false))
+      } finally {
+        dispatch(updateMoodTrackerLoading(false))
+      }
+
+
+    }
+    checkTodayFill()
+  }, [])
+
   return (
     <View style={styles.container}>
       <SocialHeader />
@@ -80,7 +116,7 @@ const HomeTab = () => {
       </TouchableOpacity>
 
       <MoodCheckInModal
-        visible={modalVisible}
+        visible={modalVisible && !moodTrackerData.isTodayFill && !moodTrackerData.loading}
         onClose={() => setModalVisible(false)}
         onSuccess={() => setIsTodayChecked(true)}
         userName={userDetails?.fullName?.split(' ')?.[0]}

@@ -43,7 +43,6 @@ try {
     TimeAgo.addLocale(en);
   }
 } catch (e) {
-   
   console.warn('Failed to ensure TimeAgo locale is registered:', e);
 }
 
@@ -351,7 +350,7 @@ const PostFooter = ({ post, isLiked, likesCount, handleLikeToggle, isLikeLoading
 // Menu as BottomSheet
 const MenuBottomSheet = ({ visible, onClose, isOwner, onEdit, onDeleteTrigger, onReportTrigger }) => {
   return (
-    <BottomSheet visible={visible} onClose={onClose} snapPoints={['20%']}>
+    <BottomSheet visible={visible} onClose={onClose} snapPoints={['23%']}>
       <View style={styles.menuSheetContent}>
         {isOwner ? (
           <>
@@ -464,7 +463,6 @@ const ReportModal = ({ visible, onClose, onSubmit, loading }) => {
 const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
   const { t } = useTranslation();
   const router = useRouter();
-
   const navigateToProfile = useCallback((userId) => {
     if (!userId) return;
     setCommentSheetVisible(false);
@@ -798,7 +796,7 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
             <UserItem user={item} onPress={() => { setTaggedSheetVisible(false); navigateToProfile(item.id); }} />
           )}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 10, paddingVertical: 5 }}
+          contentContainerStyle={{ paddingHorizontal: 10, paddingVertical: 5,paddingBottom:50 }}
         />
       </BottomSheet>
 
@@ -824,7 +822,7 @@ const styles = StyleSheet.create({
   userInfo: { flex: 1, marginLeft: 10 },
   username: { fontSize: 14, fontWeight: '600', color: '#1F2937', fontFamily: 'Poppins-SemiBold' },
   timestamp: { fontSize: 12, color: '#6B7280', fontFamily: 'Poppins-Regular' },
-  imageContainer: { overflow: 'hidden', borderRadius: 8, width: width - 65, borderWidth: 1, borderColor: '#E5E7EB' },
+  imageContainer: { overflow: 'hidden', borderRadius: 8, width: width - 54, borderWidth: 1, borderColor: '#E5E7EB' },
   playIconOverlay: { position: 'absolute', top: '50%', left: '50%', transform: [{ translateX: -30 }, { translateY: -30 }], zIndex: 10 },
   playIconCircle: { width: 60, height: 60, borderRadius: 30, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
   contentContainer: { marginBottom: 2 },

@@ -5,6 +5,7 @@ import notificationReducer from "./notificationSlice";
 import socialPostReducer from "./socialPostSlice";
 import UserDetails from "./userDetailsSlice";
 import CustomSurvey from './customSurvey'
+import moodTracker from './moodtracker'
 
 
 export const store = configureStore({
@@ -14,7 +15,8 @@ export const store = configureStore({
     userDetails: UserDetails,
     content: contentReducer,
     notification: notificationReducer,
-    CustomSurvey:CustomSurvey
+    CustomSurvey:CustomSurvey,
+    moodTrackerData: moodTracker
   },
 });
 

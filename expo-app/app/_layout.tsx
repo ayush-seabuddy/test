@@ -15,7 +15,7 @@ import { Stack, router, usePathname, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as TaskManager from 'expo-task-manager';
 import i18n from "i18next";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { I18nextProvider, useTranslation } from "react-i18next";
 import { Appearance, Linking, Platform, StatusBar, StyleSheet, useColorScheme } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -23,24 +23,15 @@ import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { Provider } from "react-redux";
+import { requestAllPermissions } from "@/Permission/Permissions";
 
 Sentry.init({
   dsn: 'https://6b5703e56775c084752511e95c27a728@o4510693087117312.ingest.us.sentry.io/4510693088428032',
-
-  // Adds more context data to events (IP address, cookies, user, etc.)
-  // For more information, visit: https://docs.sentry.io/platforms/react-native/data-management/data-collected/
   sendDefaultPii: true,
-
-  // Enable Logs
   enableLogs: true,
-
-  // Configure Session Replay
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1,
   integrations: [Sentry.mobileReplayIntegration(), Sentry.feedbackIntegration()],
-
-  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
-  // spotlight: __DEV__,
 });
 
 Appearance.setColorScheme('light');
@@ -156,7 +147,8 @@ export default Sentry.wrap(function RootLayout() {
   const visibility = NavigationBar.useVisibility();
   const colorScheme = useColorScheme();
   const { t } = useTranslation();
-
+  const [appReady, setAppReady] = useState(false);
+  const [localizationReady, setLocalizationReady] = useState(false);
   const [fontsLoaded] = useFonts({
     "Poppins-Regular": require("../assets/fonts/Poppins-Regular.ttf"),
     "Poppins-Medium": require("../assets/fonts/Poppins-Medium.ttf"),
@@ -170,38 +162,28 @@ export default Sentry.wrap(function RootLayout() {
   const pathname = usePathname();
   const segments = useSegments();
 
-  // Request camera and gallery permissions on app launch
+  // Request permissions only after localization is ready
   useEffect(() => {
+    if (!localizationReady) return;
+
     const requestPermissions = async () => {
       try {
-        const ImagePicker = await import('expo-image-picker');
-        const camera = await ImagePicker.requestCameraPermissionsAsync();
-        const gallery = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (camera.status !== 'granted') {
-          showToast.error(t('permissiondenied'), t('camerapermission_description'));
-        }
-        if (gallery.status !== 'granted') {
-          showToast.error(t('permissiondenied'), t('medialibrarypermission_description'));
-        }
+        await requestAllPermissions(t);
       } catch (err) {
         console.error('Permission request error:', err);
       }
     };
+
     requestPermissions();
-  }, []);
+  }, [localizationReady, t]);
 
   useEffect(() => {
     if (Platform.OS !== 'android') return;
 
     (async () => {
       try {
-        // Transparent navigation bar (best-effort)
         await NavigationBar.setBackgroundColorAsync('#00000000');
-
-        // Button/icon color
         await NavigationBar.setButtonStyleAsync('light');
-
-        // Ensure bar is not programmatically hidden
         await NavigationBar.setVisibilityAsync('visible');
       } catch (e) {
         console.warn('[NavigationBar] setup failed', e);
@@ -209,17 +191,13 @@ export default Sentry.wrap(function RootLayout() {
     })();
   }, [visibility]);
 
-
-
   useEffect(() => {
-    // Build a clean screen name (you can customize this format)
     let screenName = '/';
 
     if (segments.length > 0) {
-      // For tab + nested routes → e.g. "(bottomtab)/profile/settings" → "Profile/Settings"
       screenName = segments
-        .filter(s => !s.startsWith('('))           // remove group names
-        .map(s => s.charAt(0).toUpperCase() + s.slice(1)) // capitalize
+        .filter(s => !s.startsWith('('))
+        .map(s => s.charAt(0).toUpperCase() + s.slice(1))
         .join(' / ') || 'Home';
     }
 
@@ -240,14 +218,22 @@ export default Sentry.wrap(function RootLayout() {
 
     const initApp = async () => {
       try {
+        // Initialize i18n first
         await initI18n();
+        setLocalizationReady(true);
+        
+        // Initialize other services
         socketService.initializeSocket();
         Clarity.initialize('t9oq6u2hhw', {
           logLevel: __DEV__ ? Clarity.LogLevel.Verbose : Clarity.LogLevel.None,
         });
+        
         if (__DEV__) {
           console.log('[Clarity] Initialized successfully');
+          console.log('[i18n] Localization ready');
         }
+        
+        setAppReady(true);
       } catch (e) {
         console.warn("Init error:", e);
       } finally {

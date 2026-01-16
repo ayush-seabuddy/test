@@ -21,6 +21,7 @@ import CustomDateTimePicker from '@/src/components/Modals/CustomDateTimePicker';
 import { RootState } from '@/src/redux/store';
 import { updateUserField } from '@/src/redux/userDetailsSlice';
 import { Award, Building, Calendar } from 'lucide-react-native';
+import { useNetwork } from '@/src/hooks/useNetworkStatusHook';
 
 interface Certification {
     id: string;
@@ -45,7 +46,7 @@ const AddCertificateScreen = () => {
     const initialRole = params.role as string;
     const initialFrom = params.from as string;
     const initialTo = params.to as string;
-
+    const isOnline = useNetwork();
     const [certificateName, setCertificateName] = useState<string>('');
     const [organization, setOrganization] = useState<string>('');
     const [startDate, setStartDate] = useState<Date | null>(null);
@@ -174,6 +175,10 @@ const AddCertificateScreen = () => {
 
     const saveCertification = async () => {
         if (!validateInputs()) return;
+        if (!isOnline) {
+              showToast.error(t('oops'), t('nointernetconnection'));
+              return;
+            }
 
         try {
             setLoading(true);

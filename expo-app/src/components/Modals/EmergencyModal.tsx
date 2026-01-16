@@ -21,6 +21,8 @@ import {
 } from "react-native";
 import CommonLoader from "../CommonLoader";
 import { showToast } from "../GlobalToast";
+import EmptyComponent from "../EmptyComponent";
+import { useNetwork } from "@/src/hooks/useNetworkStatusHook";
 
 const { width, height } = Dimensions.get("window");
 
@@ -46,7 +48,7 @@ const EmergencyModal: React.FC<EmergencyModalProps> = ({ visible, onClose }) => 
     const [list, setList] = useState<EmergencyItem[]>([]);
     const [user, setUser] = useState<UserDetails | null>(null);
     const { t } = useTranslation();
-
+    const isOnline = useNetwork();
     const loadUser = async () => {
         try {
             const userJson = await AsyncStorage.getItem('userDetails');
@@ -60,6 +62,10 @@ const EmergencyModal: React.FC<EmergencyModalProps> = ({ visible, onClose }) => 
     };
 
     const getEmergencyData = async () => {
+        if (!isOnline) {
+            showToast.error(t('oops'), t('nointernetconnection'));
+            return;
+        }
         try {
             setLoading(true);
             const res = await getallhelplines({ helplineType: 'EMERGENCY_NUMBER' });
@@ -84,13 +90,13 @@ const EmergencyModal: React.FC<EmergencyModalProps> = ({ visible, onClose }) => 
     const callNow = (num?: string) => {
         if (!num) return;
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        Linking.openURL(`tel:${num}`).catch(() => Alert.alert(t('error'), t('cannot_make_call')));
+        Linking.openURL(`tel:${num}`).catch(() => showToast.error(t('oops'), t('cannot_make_call')));
     };
 
     const chatWhatsApp = (url?: string) => {
         if (!url) return;
         Haptics.selectionAsync();
-        Linking.openURL(url).catch(() => Alert.alert("WhatsApp", t('whatsapp_not_installed')));
+        Linking.openURL(url).catch(() => Alert.alert(t('oops'), t('whatsapp_not_installed')));
     };
 
     return (
@@ -117,7 +123,7 @@ const EmergencyModal: React.FC<EmergencyModalProps> = ({ visible, onClose }) => 
                             <CommonLoader fullScreen color="#D32F2F" />
                         </View>
                     ) : list.length === 0 ? (
-                        <Text style={styles.noData}>{t('no_emergency_numbers')}</Text>
+                        <EmptyComponent text={t('nodataavailable')} />
                     ) : (
                         <FlatList
                             data={list}

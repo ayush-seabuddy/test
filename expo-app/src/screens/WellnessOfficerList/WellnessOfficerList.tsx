@@ -59,7 +59,7 @@ const WellnessOfficerList = () => {
           ) : (
             !loading && (
               <View style={styles.emptyState}>
-                <EmptyComponent text={t('nodatafound')} />
+                <EmptyComponent text={t('nodataavailable')} />
               </View>
             )
           )}
@@ -74,7 +74,7 @@ export default WellnessOfficerList;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#ededed",
   },
 
   scrollViewContent: {

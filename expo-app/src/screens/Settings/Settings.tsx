@@ -17,20 +17,32 @@ const Settings = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const handleLogout = async () => {
         try {
-            const ExpoPushToken = await AsyncStorage.getItem("ExpoPushToken");
-            console.log("ExpoPushToken:", ExpoPushToken);
+            // 1️⃣ Extract token FIRST
+            const expoPushToken = await AsyncStorage.getItem("ExpoPushToken");
+            console.log("ExpoPushToken:", expoPushToken);
 
-            if (typeof ExpoPushToken === "string") {
+            // 2️⃣ Call logout API if token exists
+            if (expoPushToken) {
                 const payload: signoutPayload = {
-                    deviceTokens: [ExpoPushToken],
+                    deviceTokens: [expoPushToken],
                 };
 
                 console.log("payload:", payload);
                 await logout(payload);
             }
 
+            // 3️⃣ Clear ALL AsyncStorage
             await AsyncStorage.clear();
+
+            // 4️⃣ Set token again (important)
+            if (expoPushToken) {
+                await AsyncStorage.setItem("ExpoPushToken", expoPushToken);
+            }
+
+            // 5️⃣ Clear redux data
             dispatch(clearAllChatLists());
+
+            // 6️⃣ Navigate to login
             router.replace("/auth/Login");
         } catch (error) {
             console.error("Error during logout:", error);

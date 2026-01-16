@@ -5,15 +5,15 @@ import {
   FlatList,
   RefreshControl,
   StyleSheet,
-  Text,
-  View
+  View,
 } from 'react-native';
 import { getallposts } from '../apis/apiService';
 import Colors from '../utils/Colors';
-import { ImagesAssets } from '../utils/ImageAssets';
 import CommonLoader from './CommonLoader';
 import { showToast } from './GlobalToast';
 import PostScreen from './PostScreen';
+import EmptyComponent from './EmptyComponent';
+import { useNetwork } from '../hooks/useNetworkStatusHook';
 
 export interface Post {
   id: string | number;
@@ -48,14 +48,16 @@ interface PostsProps {
 
 const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
   const { t } = useTranslation();
+  const isOnline = useNetwork();
+
   const [posts, setPosts] = useState<Post[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const isFetchingMore = useRef(false);
 
+  const isFetchingMore = useRef(false);
   const limit = 10;
 
   const handlePostDeleted = useCallback((deletedId: string | number) => {
@@ -66,63 +68,78 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
     setPosts(prev => prev.filter(p => p.id !== deletedId));
   }, []);
 
-  const fetchPosts = useCallback(async (pageNum = 1, isRefresh = false) => {
-    if (isFetchingMore.current && !isRefresh) return;
-    if (!hasMore && !isRefresh) return;
-
-    isFetchingMore.current = true;
-
-    if (isRefresh) {
-      setRefreshing(true);
-    } else if (pageNum === 1) {
-      setInitialLoading(true);
-    } else {
-      setLoadingMore(true);
-    }
-
-    try {
-      const response = await getallposts({ page: pageNum, limit });
-      if (response.success) {
-        const newPosts: Post[] = response.data.hangoutsList || [];
-
-        setPosts(prev => {
-          if (isRefresh || pageNum === 1) return newPosts;
-
-          const existingIds = new Set(prev.map(p => p.id));
-          const filtered = newPosts.filter(p => !existingIds.has(p.id));
-          return [...prev, ...filtered];
-        });
-
-        setHasMore(newPosts.length === limit);
-        setPage(pageNum);
-      } else {
-        showToast.error(t('oops'), response.message || t('somethingwentwrong'));
+  const fetchPosts = useCallback(
+    async (pageNum = 1, isRefresh = false) => {
+      // 🚫 DO NOT CALL API WHEN OFFLINE
+      if (!isOnline) {
+        setInitialLoading(false);
+        setRefreshing(false);
+        setLoadingMore(false);
+        return;
       }
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-      showToast.error(t('oops'), t('somethingwentwrong'));
-    } finally {
-      setInitialLoading(false);
-      setLoadingMore(false);
-      setRefreshing(false);
-      isFetchingMore.current = false;
-    }
-  }, [hasMore, limit, t]);
+
+      if (isFetchingMore.current && !isRefresh) return;
+      if (!hasMore && !isRefresh) return;
+
+      isFetchingMore.current = true;
+
+      if (isRefresh) {
+        setRefreshing(true);
+      } else if (pageNum === 1) {
+        setInitialLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+
+      try {
+        const response = await getallposts({ page: pageNum, limit });
+
+        if (response.success) {
+          const newPosts: Post[] = response.data.hangoutsList || [];
+
+          setPosts(prev => {
+            if (isRefresh || pageNum === 1) return newPosts;
+
+            const existingIds = new Set(prev.map(p => p.id));
+            const filtered = newPosts.filter(p => !existingIds.has(p.id));
+            return [...prev, ...filtered];
+          });
+
+          setHasMore(newPosts.length === limit);
+          setPage(pageNum);
+        } else {
+          showToast.error(t('oops'), response.message || t('somethingwentwrong'));
+        }
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+        showToast.error(t('oops'), t('somethingwentwrong'));
+      } finally {
+        setInitialLoading(false);
+        setLoadingMore(false);
+        setRefreshing(false);
+        isFetchingMore.current = false;
+      }
+    },
+    [hasMore, isOnline, limit, t]
+  );
 
   useEffect(() => {
     fetchPosts(1);
-  }, []);
+  }, [isOnline]);
 
   const onRefresh = useCallback(() => {
+    if (!isOnline) return;
     setHasMore(true);
     setPage(1);
     fetchPosts(1, true);
-  }, [fetchPosts]);
+  }, [fetchPosts, isOnline]);
 
   const loadMore = useCallback(() => {
-    if (loadingMore || initialLoading || !hasMore || isFetchingMore.current) return;
+    if (!isOnline) return;
+    if (loadingMore || initialLoading || !hasMore || isFetchingMore.current)
+      return;
     fetchPosts(page + 1);
-  }, [loadingMore, initialLoading, hasMore, page, fetchPosts]);
+  }, [loadingMore, initialLoading, hasMore, page, fetchPosts, isOnline]);
 
   const renderItem = useCallback(
     ({ item, index }: { item: Post; index: number }) => {
@@ -130,6 +147,7 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
         ...item,
         imageUrls: item.imageUrls || item.images || [],
       };
+
       return (
         <PostScreen
           post={normalizedPost}
@@ -141,8 +159,6 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
     },
     [handlePostDeleted, handlePostReported]
   );
-
-  const keyExtractor = useCallback((item: Post) => item.id.toString(), []);
 
   const ListFooter = () => {
     if (!loadingMore) return <View style={{ marginBottom: 120 }} />;
@@ -156,15 +172,21 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
 
   const ListEmpty = () => {
     if (initialLoading) return null;
+
     return (
       <View style={styles.emptyState}>
-        <Image source={ImagesAssets.nodatafound} style={styles.nodatafoundImage} />
-        <Text style={styles.emptyText}>{t('youarenotpostedanything') || 'No posts yet'}</Text>
+        <EmptyComponent
+          text={
+            !isOnline
+              ? t('nointernetconnection')
+              : t('youarenotpostedanything')
+          }
+        />
       </View>
     );
   };
 
-  if (initialLoading && posts.length === 0) {
+  if (initialLoading && posts.length === 0 && isOnline) {
     return (
       <View style={styles.centerLoader}>
         <CommonLoader fullScreen />
@@ -177,7 +199,7 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
       ListHeaderComponent={ListHeaderComponent}
       data={posts}
       renderItem={renderItem}
-      keyExtractor={keyExtractor}
+      keyExtractor={item => item.id.toString()}
       onEndReached={loadMore}
       onEndReachedThreshold={0.3}
       ListFooterComponent={ListFooter}
@@ -186,6 +208,7 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
+          enabled={isOnline}
           colors={[Colors.darkGreen]}
           tintColor={Colors.darkGreen}
         />
@@ -196,12 +219,10 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
       initialNumToRender={2}
       maxToRenderPerBatch={2}
       updateCellsBatchingPeriod={50}
-
       contentContainerStyle={
         posts.length === 0 ? styles.emptyContainer : undefined
       }
     />
-
   );
 };
 
@@ -225,15 +246,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 100,
     gap: 20,
-  },
-  nodatafoundImage: {
-    width: 150,
-    height: 150,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#666',
-    fontFamily: 'Poppins-Regular',
   },
 });
 

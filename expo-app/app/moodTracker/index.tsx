@@ -1,8 +1,11 @@
-import { getAllMoodTracker, getMoodTrackerAnalysis, moodTracker } from "@/src/apis/apiService";
+import { checkTodayMoodTracker, getAllMoodTracker, getMoodTrackerAnalysis, moodTracker } from "@/src/apis/apiService";
 import CommonLoader from "@/src/components/CommonLoader";
+import EmptyComponent from "@/src/components/EmptyComponent";
 import GlobalHeader from "@/src/components/GlobalHeader";
 import { showToast } from "@/src/components/GlobalToast";
 import { MoodCheckInModal } from "@/src/components/Modals/MoodCheckInModal";
+import { useNetwork } from "@/src/hooks/useNetworkStatusHook";
+import { updateMoodTrackerLoading, updateMoodTrackerTodayFillData } from "@/src/redux/moodtracker";
 import { RootState } from "@/src/redux/store";
 import Colors from "@/src/utils/Colors";
 import { height } from "@/src/utils/helperFunctions";
@@ -33,7 +36,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 interface MoodTrackerItem {
   id: string;
@@ -73,8 +76,6 @@ const MOOD_OPTIONS = [
   { emoji: ImagesAssets.Emoji_4, label: "Angry" },
   { emoji: ImagesAssets.Emoji_2, label: "Calm" },
 ] as const;
-
-// ── Memoized Components (unchanged) ───────────────────────────────────────
 
 const DateItemComponent = memo(({ item, moodData }: { item: DateItem; moodData: MoodTrackerItem[] | null }) => {
   const matchingMood = useMemo(() => {
@@ -130,7 +131,7 @@ const MoodNoteCard = memo(({ item }: { item: MoodTrackerItem }) => {
       {item.details && (
         <View style={styles.moodNoteDetails}>
           <Text style={styles.moodNoteDetailsText}>
-            {t("note:")}
+            Note:
             {item.details}
           </Text>
         </View>
@@ -265,13 +266,10 @@ const MoodModalStep2 = memo(
 
 MoodModalStep2.displayName = "TrackerMoodModalStep2";
 
-
-// ── Main Component ────────────────────────────────────────────────────────
-
 const MoodTracker: React.FC = () => {
   const { t } = useTranslation();
   const userDetails = useSelector((state: RootState) => state.userDetails);
-
+  const isOnline = useNetwork();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [moodData, setMoodData] = useState<MoodTrackerItem[] | null>(null);
   const [lastFiveDays, setLastFiveDays] = useState<MoodTrackerItem[]>([]);
@@ -318,6 +316,7 @@ const MoodTracker: React.FC = () => {
   );
 
   const fetchMoodHistory = useCallback(async () => {
+    if (!isOnline) return;
     try {
       const res = await getAllMoodTracker({ page: 1, limit: 5 });
       if (res?.status === 200) {
@@ -330,7 +329,10 @@ const MoodTracker: React.FC = () => {
 
   const fetchMonthlyData = useCallback(
     async (month: number, year: number) => {
-      // We don't set loading=true here anymore → only initial load shows loader
+      if (!isOnline) {
+        setLoading(false);
+        return;
+      }
       try {
         const result = await getMoodTrackerAnalysis({ month, year });
         if (result.status === 200) {
@@ -353,13 +355,14 @@ const MoodTracker: React.FC = () => {
       } catch (error) {
         console.error("Monthly mood data fetch failed:", error);
       } finally {
-        setLoading(false); // ← always turn off after fetch (initial or month change)
+        setLoading(false);
       }
     },
     [fetchMoodHistory]
   );
 
   useEffect(() => {
+    if (!isOnline) return;
     const month = currentDate.getMonth() + 1;
     const year = currentDate.getFullYear();
     fetchMonthlyData(month, year);
@@ -373,8 +376,8 @@ const MoodTracker: React.FC = () => {
         const data = JSON.parse(stored);
         const todayStr = moment().format("YYYY-MM-DD");
         setIsTodayChecked(data.lastMoodDate === todayStr && data.isMoodTracker);
-      } catch {
-        // silent fail
+      } catch (error) {
+        console.log('Error', error)
       }
     };
     checkToday();
@@ -456,10 +459,45 @@ const MoodTracker: React.FC = () => {
     setReasonText("");
   }, []);
 
+  const dispatch = useDispatch()
+  const moodTrackerData = useSelector(
+    (state: RootState) => state.moodTrackerData
+  );
+  useEffect(()=>{
+    const checkTodayFill = async()=>{
+      try {
+
+        dispatch(updateMoodTrackerLoading(true))
+        const today = new Date()
+        const day = String(today.getDate()).padStart(2,"0")
+        const month = String(today.getMonth()+1).padStart(2,"0")
+        const year = today.getFullYear()
+        const date = `${day}-${month}-${year}`
+        
+
+       const moodData = await checkTodayMoodTracker({date})
+       if(moodData.status == 200){
+        dispatch(updateMoodTrackerLoading(false))
+        dispatch(updateMoodTrackerTodayFillData(moodData.data.isTodayFill))
+       }
+        
+      } catch (error) {
+        dispatch(updateMoodTrackerLoading(false))
+      }finally{
+         dispatch(updateMoodTrackerLoading(false))
+      }
+
+    
+    }
+checkTodayFill()
+  },[])
+
   return (
     <View style={styles.mainContainer}>
       <GlobalHeader title={t("moodTracker")} />
-      {
+      {!isOnline ? (
+        <EmptyComponent text={t("nointernetconnection")} />
+      ) :
         loading && monthlyAverage.length === 0 && !moodData ? <View style={styles.container}>
           <CommonLoader fullScreen />
         </View> : <ScrollView
@@ -504,13 +542,13 @@ const MoodTracker: React.FC = () => {
             <TouchableOpacity
               style={[
                 styles.checkInButton,
-                isTodayChecked && styles.checkInDisabled,
+                (isTodayChecked || moodTrackerData.isTodayFill) && styles.checkInDisabled,
               ]}
               onPress={() => setModalVisible(true)}
-              disabled={isTodayChecked} // removed || loading here
+              disabled={isTodayChecked && !moodTrackerData.isTodayFill} // removed || loading here
             >
               <Text style={styles.checkInText}>
-                {isTodayChecked
+                {(isTodayChecked || moodTrackerData.isTodayFill)
                   ? t("alreadycheckedintoday")
                   : t("checkintoday")}
               </Text>

@@ -1,4 +1,5 @@
 import { getallassessments, saveassessmentresponse } from '@/src/apis/apiService';
+import CommonLoader from '@/src/components/CommonLoader';
 import GlobalButton from '@/src/components/GlobalButton';
 import { showToast } from '@/src/components/GlobalToast';
 import Colors from '@/src/utils/Colors';
@@ -172,6 +173,7 @@ const MonthlyWellbeingPulseTestScreen = () => {
     if (loading) {
         return (
             <View style={styles.loadingContainer}>
+                <CommonLoader fullScreen/>
                 <Text style={styles.loadingText}>{t('loading')}...</Text>
             </View>
         );

@@ -8,6 +8,7 @@ import { showToast } from '@/src/components/GlobalToast'
 import { formatDate, formatStatus } from '@/src/utils/helperFunctions'
 import CommonLoader from '@/src/components/CommonLoader'
 import EmptyComponent from '@/src/components/EmptyComponent'
+import { useNetwork } from '@/src/hooks/useNetworkStatusHook'
 
 interface Complaint {
     id: string,
@@ -21,7 +22,7 @@ interface Complaint {
 
 const ComplaintHistoryScreen = () => {
     const { t } = useTranslation();
-
+    const isOnline = useNetwork();
     const [complaintdata, setcomplaintdata] = useState<Complaint[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -30,6 +31,7 @@ const ComplaintHistoryScreen = () => {
 
     const fetchComplaints = async (pageNo: number) => {
         if (pageNo > totalPages) return;
+        if (!isOnline) return;
 
         pageNo === 1 ? setLoading(true) : setLoadingMore(true);
 
@@ -120,9 +122,12 @@ const ComplaintHistoryScreen = () => {
                     ListFooterComponent={<ListFooter />}
                 />
             ) : (
-                <View style={styles.nodatafoundView}>
-                    <EmptyComponent text={t('nocomplaintHistoryFound')} />
-                </View>
+                isOnline ?
+                    <View style={styles.nodatafoundView}>
+                        <EmptyComponent text={t('nocomplaintHistoryFound')} />
+                    </View> : <View style={styles.nodatafoundView}>
+                        <EmptyComponent text={t('nointernetconnection')} />
+                    </View>
             )}
 
         </View>

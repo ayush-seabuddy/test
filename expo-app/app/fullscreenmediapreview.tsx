@@ -9,9 +9,8 @@ import {
   Animated,
   PanResponder,
   StatusBar,
-  ActivityIndicator,
 } from "react-native";
-import { X, Volume2, VolumeX } from "lucide-react-native";
+import { X, Volume2, VolumeX, ChevronLeft, ChevronRight } from "lucide-react-native";
 import ImageViewer from "react-native-image-zoom-viewer";
 import Video, { VideoRef } from "react-native-video";
 import Colors from "@/src/utils/Colors";
@@ -43,48 +42,49 @@ const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
   const [loadingStates, setLoadingStates] = useState<{ [key: number]: boolean }>({});
   const [paused, setPaused] = useState(false);
 
-  // Animation values for swipe-to-dismiss
   const translateY = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(1)).current;
 
-  // Refs for video players
   const videoRefs = useRef<{ [key: number]: VideoRef | null }>({});
 
-  // Auto scroll to initial index
   useEffect(() => {
     if (visible) {
       setActiveIndex(initialIndex);
       setShowUI(true);
       setPaused(false);
+      setLoadingStates({});
     } else {
-      // Pause all videos when modal is closed
       setPaused(true);
     }
   }, [visible, initialIndex]);
 
-  // Reset loading state when index changes
-  useEffect(() => {
-    setLoadingStates({});
-  }, [activeIndex]);
-
-  // Toggle UI on tap
   const toggleUI = () => {
-    setShowUI(prev => !prev);
+    setShowUI((prev) => !prev);
   };
 
-  // Toggle mute
   const toggleMute = () => {
-    setIsMuted(prev => !prev);
+    setIsMuted((prev) => !prev);
   };
 
-  // Swipe down to close (only for videos)
+  const goToPrev = () => {
+    if (activeIndex > 0) {
+      setActiveIndex(activeIndex - 1);
+    }
+  };
+
+  const goToNext = () => {
+    if (activeIndex < media.length - 1) {
+      setActiveIndex(activeIndex + 1);
+    }
+  };
+
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dy) > 20,
       onPanResponderMove: (_, gesture) => {
         if (gesture.dy > 0) {
           translateY.setValue(gesture.dy);
-          opacity.setValue(1 - gesture.dy / SCREEN_HEIGHT * 0.7);
+          opacity.setValue(1 - (gesture.dy / SCREEN_HEIGHT) * 0.7);
         }
       },
       onPanResponderRelease: (_, gesture) => {
@@ -123,7 +123,7 @@ const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
   ).current;
 
   const setLoading = (index: number, loading: boolean) => {
-    setLoadingStates(prev => ({ ...prev, [index]: loading }));
+    setLoadingStates((prev) => ({ ...prev, [index]: loading }));
   };
 
   const handleIndexChange = (index?: number) => {
@@ -155,32 +155,30 @@ const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
             playInBackground={false}
             playWhenInactive={false}
           />
-          
+
           {loadingStates[index] && (
             <View style={styles.loaderContainer}>
-              <CommonLoader color="#ffffff" />
+              <CommonLoader fullScreen color="#ffffff" />
             </View>
           )}
-          
-          {/* Transparent overlay to capture taps when controls are hidden */}
+
           {!showUI && (
-            <Pressable
-              style={StyleSheet.absoluteFillObject}
-              onPress={toggleUI}
-            />
+            <Pressable style={StyleSheet.absoluteFillObject} onPress={toggleUI} />
           )}
         </View>
       );
     }
 
-    return null; // Images are handled by ImageViewer
+    return null;
   };
 
   const currentMedia = media[activeIndex];
   const isVideo = currentMedia?.type === "video";
 
-  // Prepare images for ImageViewer
-  const imageUrls = media.map(item => ({ url: item.uri }));
+  const imageUrls = media.map((item) => ({ url: item.uri }));
+
+  const showLeftArrow = activeIndex > 0;
+  const showRightArrow = activeIndex < media.length - 1;
 
   return (
     <Modal
@@ -191,10 +189,7 @@ const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
       onRequestClose={onClose}
     >
       <Animated.View
-        style={[
-          styles.modalBackdrop,
-          { opacity },
-        ]}
+        style={[styles.modalBackdrop, { opacity }]}
         pointerEvents="box-none"
       >
         <StatusBar hidden={!showUI} />
@@ -205,14 +200,9 @@ const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
             transform: [{ translateY }],
           }}
         >
-          {/* Top Bar with Controls */}
           <Animated.View
-            style={[
-              styles.topBar,
-              !showUI && styles.hidden,
-            ]}
+            style={[styles.topBar, !showUI && styles.hidden]}
           >
-            {/* Mute/Unmute Button (only for videos) */}
             {isVideo && (
               <TouchableOpacity onPress={toggleMute} style={styles.iconButton}>
                 {isMuted ? (
@@ -222,23 +212,19 @@ const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
                 )}
               </TouchableOpacity>
             )}
-            
+
             <View style={{ flex: 1 }} />
-            
-            {/* Close Button */}
+
             <TouchableOpacity onPress={onClose} style={styles.iconButton}>
               <X size={24} color="white" strokeWidth={2} />
             </TouchableOpacity>
           </Animated.View>
 
-          {/* Media Content */}
           {isVideo ? (
-            // Render video with swipe to dismiss
             <View {...panResponder.panHandlers} style={{ flex: 1 }}>
               {renderItem(currentMedia, activeIndex)}
             </View>
           ) : (
-            // Render ImageViewer for images with zoom
             <ImageViewer
               imageUrls={imageUrls}
               index={activeIndex}
@@ -249,7 +235,7 @@ const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
               renderIndicator={() => <View />}
               loadingRender={() => (
                 <View style={styles.loaderContainer}>
-                  <CommonLoader color="#ffffff" />
+                  <CommonLoader fullScreen color="#ffffff" />
                 </View>
               )}
               backgroundColor="transparent"
@@ -260,13 +246,33 @@ const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
             />
           )}
 
-          {/* Pagination Dots */}
+          {showUI && media.length > 1 && (
+            <>
+              {showLeftArrow && (
+                <TouchableOpacity
+                  style={[styles.navButton, styles.navButtonLeft]}
+                  onPress={goToPrev}
+                  activeOpacity={0.7}
+                >
+                  <ChevronLeft size={24} color="#ffffff" strokeWidth={1.5} />
+                </TouchableOpacity>
+              )}
+
+              {showRightArrow && (
+                <TouchableOpacity
+                  style={[styles.navButton, styles.navButtonRight]}
+                  onPress={goToNext}
+                  activeOpacity={0.7}
+                >
+                  <ChevronRight size={24} color="#ffffff" strokeWidth={1.5} />
+                </TouchableOpacity>
+              )}
+            </>
+          )}
+
           {media.length > 1 && (
             <Animated.View
-              style={[
-                styles.pagination,
-                !showUI && styles.hidden,
-              ]}
+              style={[styles.pagination, !showUI && styles.hidden]}
             >
               {media.map((_, i) => (
                 <View
@@ -299,11 +305,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   loaderContainer: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: [{ translateX: -25 }, { translateY: -25 }],
-    zIndex: 2,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   topBar: {
     position: "absolute",
@@ -333,6 +337,7 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: "row",
     justifyContent: "center",
+    zIndex: 10,
   },
   dot: {
     width: 8,
@@ -347,5 +352,26 @@ const styles = StyleSheet.create({
   },
   dotInactive: {
     backgroundColor: "rgba(255,255,255,0.4)",
+  },
+
+  navButton: {
+    position: "absolute",
+    top: "50%",
+    transform: [{ translateY: -30 }],
+    width: 40,
+    borderWidth: 0.5,
+    borderColor: '#fff',
+    height: 40,
+    borderRadius: 30,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    alignItems: "center",
+    // zIndex: 15,
+  },
+  navButtonLeft: {
+    left: 16,
+  },
+  navButtonRight: {
+    right: 16,
   },
 });

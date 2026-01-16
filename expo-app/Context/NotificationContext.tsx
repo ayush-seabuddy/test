@@ -1,4 +1,3 @@
-// Context/NotificationContext.tsx
 import React, { createContext, useContext, useEffect, useRef, useState, useTransition } from "react";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
@@ -52,10 +51,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
           if (!toastShownRef.current) {
             toastShownRef.current = true;
-            showToast.error(
-              t("enable_notifications"),
-              t("enable_notifications_description")
-            );
+            // showToast.error(
+            //   t("enable_notifications"),
+            //   t("enable_notifications_description")
+            // );
           }
 
           return;
