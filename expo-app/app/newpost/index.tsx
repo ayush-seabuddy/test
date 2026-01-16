@@ -16,6 +16,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ResizeMode, Video } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import { Image } from 'expo-image';
+import { Linking } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { ArrowRightCircle, Hash, Play, Tag, X } from 'lucide-react-native';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -31,6 +32,7 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import ImagePicker from 'react-native-image-crop-picker';
+import { requestCameraPermission, requestMediaLibraryPermission } from '@/Permission/Permissions';
 
 type AllUsers = {
   id: string;
@@ -49,6 +51,8 @@ type MediaItem = {
   mimeType?: string;
 };
 
+const MAX_MEDIA_ITEMS = 5;
+
 const renderBackdrop = (props: any) => (
   <BottomSheetBackdrop
     {...props}
@@ -64,8 +68,13 @@ const NewPostScreen = () => {
   const params = useLocalSearchParams();
   const isEditMode = params.editMode === 'true';
   const editPostId = params.postId as string;
-
-  const [imageLimit, setImageLimit] = useState(100);
+  const truncateText = (text: string, maxLength = 20) => {
+    if (!text) return '';
+    return text.length > maxLength
+      ? text.substring(0, maxLength) + '...'
+      : text;
+  };
+  const [_, setImageLimit] = useState(100);
   const [videoLimit, setVideoLimit] = useState(200);
   const [caption, setCaption] = useState((params.caption as string) || '');
   const [selectedMedia, setSelectedMedia] = useState<MediaItem[]>([]);
@@ -133,7 +142,13 @@ const NewPostScreen = () => {
     }
   }, [isEditMode, params.imageUrls]);
 
-  const openMediaSheet = useCallback(() => mediaSheetRef.current?.present(), []);
+  const openMediaSheet = useCallback(() => {
+    if (selectedMedia.length >= MAX_MEDIA_ITEMS) {
+      showToast.error(t('oops'), t('You may select a maximum of 5 media files.'));
+      return;
+    }
+    mediaSheetRef.current?.present();
+  }, [selectedMedia.length, t]);
 
   const openTagSheet = useCallback(async () => {
     setLoadingUsers(true);
@@ -165,6 +180,23 @@ const NewPostScreen = () => {
 
   const pickMedia = useCallback(async (type: 'photo' | 'video' | 'gallery') => {
     try {
+      // Check permissions first
+      if (type === 'photo' || type === 'video') {
+        const ok = await requestCameraPermission(t);
+        if (!ok) {
+          showToast.error(t('permissiondenied'), t('camerapermission_description'));
+          Linking.openSettings?.();
+          return;
+        }
+      } else if (type === 'gallery') {
+        const ok = await requestMediaLibraryPermission(t);
+        if (!ok) {
+          showToast.error(t('permissiondenied'), t('medialibrarypermission_description'));
+          Linking.openSettings?.();
+          return;
+        }
+      }
+
       mediaSheetRef.current?.dismiss();
       setIsLoading(true);
 
@@ -187,6 +219,13 @@ const NewPostScreen = () => {
           compressImageQuality: 0.8,
         });
         assets = Array.isArray(result) ? (result as any[]) : [result as any];
+      }
+
+      // Check if adding these assets would exceed the limit
+      const totalAfterAdding = selectedMedia.length + assets.length;
+      if (totalAfterAdding > MAX_MEDIA_ITEMS) {
+        showToast.error(t('oops'), t('You may select a maximum of 5 media files.'));
+        return;
       }
 
       const invalidVideos = assets.filter(
@@ -240,7 +279,7 @@ const NewPostScreen = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [imagePickerOptions, videoLimit, t]);
+  }, [imagePickerOptions, videoLimit, selectedMedia.length, t]);
 
   const uploadNewMediaOnly = useCallback(async (): Promise<string[]> => {
     const newMedia = selectedMedia.filter((m) => !m.isExisting);
@@ -352,6 +391,12 @@ const NewPostScreen = () => {
   const handleSubmit = useCallback(async () => {
     if (!caption.trim()) {
       showToast.error(t('oops'), 'Caption is required');
+      return;
+    }
+
+    // Check media limit before proceeding
+    if (selectedMedia.length > MAX_MEDIA_ITEMS) {
+      showToast.error(t('oops'), t('You may select a maximum of 5 media files.'));
       return;
     }
 
@@ -523,7 +568,7 @@ const NewPostScreen = () => {
               showsHorizontalScrollIndicator={false}
               style={styles.mediaList}
               contentContainerStyle={styles.mediaListContent}
-              ListHeaderComponent={renderMediaHeader}
+              ListHeaderComponent={selectedMedia.length < MAX_MEDIA_ITEMS ? renderMediaHeader : null}
               removeClippedSubviews
             />
           ) : (
@@ -570,7 +615,10 @@ const NewPostScreen = () => {
                       style={styles.taggedAvatar}
                       contentFit="cover"
                     />
-                    <Text style={styles.taggedpeopleName}>{user.fullName}</Text>
+                    <Text style={styles.taggedpeopleName}>
+                      {truncateText(user.fullName, 30)}
+                    </Text>
+
                   </View>
                 ))}
               </View>

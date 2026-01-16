@@ -1,7 +1,9 @@
 import { updateprofile, viewProfile } from '@/src/apis/apiService';
 import CommonLoader from '@/src/components/CommonLoader';
+import EmptyComponent from '@/src/components/EmptyComponent';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
+import { useNetwork } from '@/src/hooks/useNetworkStatusHook';
 import { RootState } from '@/src/redux/store';
 import { updateUserField } from '@/src/redux/userDetailsSlice';
 import Colors from '@/src/utils/Colors';
@@ -38,7 +40,7 @@ import * as Yup from "yup";
 
 const EditProfile = () => {
   const { t } = useTranslation();
-
+  const isOnline = useNetwork();
   const validationSchema = Yup.object().shape({
     name: Yup.string().required(t('validation.name_required', 'Name is required')),
     email: Yup.string().email(t('validation.invalid_email', 'Invalid email')).required(t('validation.email_required', 'Email is required')),
@@ -433,7 +435,7 @@ const EditProfile = () => {
   return (
     <View style={styles.main}>
       <GlobalHeader title={t('editprofile')} />
-      <KeyboardAwareScrollView
+      {isOnline ? <KeyboardAwareScrollView
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
         enableOnAndroid
@@ -573,7 +575,7 @@ const EditProfile = () => {
             <Text style={styles.updateButtonText}>{t('update')}</Text>
           )}
         </TouchableOpacity>
-      </KeyboardAwareScrollView>
+      </KeyboardAwareScrollView> : <EmptyComponent text={t('nointernetconnection')} />}
 
       {loadingdetails && (
         <View style={styles.loadingOverlay} pointerEvents="none">

@@ -10,19 +10,18 @@ import ChatRoomHeader from '@/src/screens/chatroom/ChatRoomHeader';
 import Chats from '@/src/screens/chatroom/components/ChatDataList';
 import Colors from '@/src/utils/Colors';
 import socketService from '@/src/utils/socketService';
+import ImagePicker from 'react-native-image-crop-picker';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { Image } from 'expo-image';
-import * as ImagePicker from "expo-image-picker";
 import { router, useFocusEffect } from 'expo-router';
 import { Camera, Check, Edit, Paperclip, RefreshCw, Reply, SendHorizonal, Trash2, X } from 'lucide-react-native';
 import moment from 'moment-timezone';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { TextInput as RNTextInput } from 'react-native';
 import { Dimensions, Linking, Modal, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import { useDispatch, useSelector } from 'react-redux';
-// import { GestureHandlerRootView, Swipeable } from 'react-native-gesture-handler';
 
 type ChatRoomScreenParams = {
   chatRoomDetails: ChatRoom
@@ -40,40 +39,27 @@ const ChatRoomScreen = () => {
 
   const dispatch = useDispatch();
   // const { chatList, typingStatus } = useSelector(selectChat);
-  const [typingTimeout, setTypingTimeout] = useState(null);
   const [loading, setLoading] = useState(true);
   const [imageUploading, setImageUploading] = useState(false)
   const [chatLoading, setChatLoading] = useState(true);
   const [content, setContent] = useState("");
   const [contentImage, setContentImage] = useState("");
   const [chatListState, setChatList] = useState<ChatMessage[]>([]);
-  const [newMessages, setNewMessages] = useState([]);
-  const [groupName, setGroupName] = useState("");
-  const [participantIds, setParticipantIds] = useState([]);
-  const [recording, setRecording] = useState(false);
-  // const [audioRecorderPlayer] = useState(new AudioRecorderPlayer());
-  const [audioPath, setAudioPath] = useState(null);
   const flatListRef = useRef<FlatList>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPageDataWaiting, setLastPageDataWaiting] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [totalPage, setTotalPage] = useState(1);
-  const [keyboardPadding, setKeyboardPadding] = useState(0);
-  const [chatItemPadding, setChatItemPadding] = useState(0);
   const [mediaModalVisible, setMediaModalVisible] = useState(false);
   const [selectedMedia, setSelectedMedia] = useState<{ uri: string; isVideo: boolean; imageUri?: string, fileName?: any, fileSize?: number, type?: any }>({ uri: "", isVideo: false });
   const [imageLoading, setImageLoading] = useState(false);
-  const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingMessage, setEditingMessage] = useState<ChatMessage | null>(null);
-  const [editedContent, setEditedContent] = useState("");
   const [editingMessageId, setEditingMessageId] = useState<string>("");
   const [inputHeight, setInputHeight] = useState(55);
   const [editModal, setEditModal] = useState(false);
   const [replyingTo, setReplyingTo] = useState<ChatMessage | null>(null);
   const [myReaction, setMyReaction] = useState('');
   const textInputRef = useRef<RNTextInput>(null);
-  const PAGE_SIZE = 50;
   const bottomSheetRef = useRef<any>(null);
   const [reactionCountList, setReactionCountList] = useState<ReactionData[]>([]);
   const [searchResults, setSearchResults] = useState<any>([]);
@@ -129,8 +115,8 @@ const ChatRoomScreen = () => {
     createdAt?: string;
     id?: string;
     messageId: string;
-    reactUsers: any; // you can replace `any` with a proper type if you know the shape
-    reaction: string; // e.g. "❤️"
+    reactUsers: any;
+    reaction: string;
     updatedAt?: string;
     userId: string;
   }
@@ -490,6 +476,22 @@ const ChatRoomScreen = () => {
     }, 4000)
   }
 
+  const imagePickerOptions = useMemo(
+    () => ({
+      cropping: true,
+      freeStyleCropEnabled: true,
+      cropperCircleOverlay: false,
+      compressImageQuality: 0.7,
+      includeBase64: false,
+      multiple: false,
+      forceJpg: false,
+      width: 600,
+      height: 600,
+    }),
+    []
+  );
+
+
 
 
   const sendMessageImageUrl = async (contentImage: string, chat_payload: {
@@ -548,41 +550,67 @@ const ChatRoomScreen = () => {
       setImageLoading(false);
     }
   };
-  const selectImageFromCamera = async (type: "camera" | "library" = "camera") => {
-
+  const selectImageFromCamera = async (
+    type: "camera" | "library" = "camera"
+  ) => {
     try {
       setLoading(true);
 
-      const result = type === "camera"
-        ? await ImagePicker.launchCameraAsync({
-          allowsEditing: true,
-        })
-        : await ImagePicker.launchImageLibraryAsync({
-          allowsEditing: true,
-        });
+      const result =
+        type === "camera"
+          ? await ImagePicker.openCamera({
+            ...imagePickerOptions,
+            mediaType: "photo",
+          })
+          : await ImagePicker.openPicker({
+            ...imagePickerOptions,
+            mediaType: "photo",
+          });
 
-      if (result.canceled) return;
+      if (!result?.path) {
+        setLoading(false);
+        return;
+      }
 
-      const uri = result.assets?.[0]?.uri;
-      console.log("result.assets?.[0]: ", result.assets?.[0]);
-      if (!uri) return;
+      const assetLikeObject = {
+        uri: result.path,
+        fileName: result.filename ?? result.path.split("/").pop(),
+        fileSize: result.size,
+        type: result.mime,
+      };
+
+      console.log("result.assets?.[0]: ", assetLikeObject);
+
+      const uri = assetLikeObject.uri;
+      if (!uri) {
+        setLoading(false);
+        return;
+      }
+
       console.log("uri: ", uri);
+
       setMediaModalVisible(true);
       setSelectedMedia({
-        uri: uri, isVideo: false, imageUri: uri,
-        fileName: result.assets?.[0]?.fileName,
-        fileSize: result.assets?.[0]?.fileSize,
-        type: result.assets?.[0]?.type
+        uri: uri,
+        imageUri: uri,
+        isVideo: false,
+        fileName: assetLikeObject.fileName,
+        fileSize: assetLikeObject.fileSize,
+        type: assetLikeObject.type,
       });
-      setLoading(false);
-    } catch (error) {
 
+      setLoading(false);
+    } catch (error: any) {
+      setLoading(false);
+
+      // Same silent cancel behavior as Expo
+      if (error?.code === "E_PICKER_CANCELLED") {
+        return;
+      }
+
+      console.log("Error", error);
     }
   };
-
-
-
-
 
   const getGroupedChatList = () => {
     const groupedMessages: (ChatMessage | { type: string; date: Date; id: string })[] = [];
@@ -671,13 +699,13 @@ const ChatRoomScreen = () => {
         ) : (
           <>
 
-              <Text style={{ color: Colors.lightGreen }}>No messages yet</Text>
-              <TouchableOpacity
-                onPress={retryFetch}
-                style={{ display: "flex", flexDirection: "row", marginTop: 5, justifyContent: "center", alignItems: "center", gap: 5 }}
+            <Text style={{ color: Colors.lightGreen }}>No messages yet</Text>
+            <TouchableOpacity
+              onPress={retryFetch}
+              style={{ flexDirection: "row", marginTop: 5, gap: 5 }}
             >
-                <Text style={{ color: Colors.lightGreen }}>Refresh</Text> <RefreshCw size={25} color={Colors.lightGreen} />
-              </TouchableOpacity>
+              <Text style={{ color: Colors.lightGreen }}>Refresh</Text> <RefreshCw size={25} color={Colors.lightGreen} />
+            </TouchableOpacity>
           </>
         )}
       </View>
@@ -759,7 +787,7 @@ const ChatRoomScreen = () => {
                   flex: 1,
                   color: "black",
                   backgroundColor: "rgba(0, 0, 0, 0)",
-                  minHeight: Platform.OS == 'ios' ? 27 : 55,
+                  minHeight: Platform.OS == 'ios' ? 27 : 40,
                 }}
                 placeholder={editingMessageId ? "Edit your message..." : "Type something..."}
                 placeholderTextColor="gray"

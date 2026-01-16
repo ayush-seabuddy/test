@@ -321,6 +321,10 @@ export interface GetSurveyByIdParams {
   surveyId: string
 }
 
+export interface GetMoodTrackerParams {
+  date: string
+}
+
 export interface signoutPayload {
   deviceTokens: string[]
 }
@@ -333,6 +337,9 @@ export interface SubmitSurveyPayload {
   }[];
 }
 
+export interface AcknowledgeContentPayload {
+ contentId: String
+}
 export interface ReadSingleNotificationRequest {
   notificationId: string
 }
@@ -986,6 +993,9 @@ export const getsurveybyid = async (params?: GetSurveyByIdParams): Promise<ApiRe
   });
 }
 
+
+
+
 export const submitsurvey = async (payload: SubmitSurveyPayload): Promise<ApiResponse> => {
   return await apiRequest({
     method: "POST",
@@ -993,3 +1003,20 @@ export const submitsurvey = async (payload: SubmitSurveyPayload): Promise<ApiRes
     data: payload,
   });
 }
+
+
+export const checkTodayMoodTracker = async (params?: GetMoodTrackerParams): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: "GET",
+    params,
+    url: ENDPOINTS.CHECK_TODAY_MOOD_TRACKER,
+  });
+}
+export const acknowledgeContent = async (payload:AcknowledgeContentPayload):Promise<ApiResponse> =>{
+    return await apiRequest({
+    method: "POST",
+    url: ENDPOINTS.ACKNOWLEDGE_CONTENT,
+    data: payload,
+  });
+}
+

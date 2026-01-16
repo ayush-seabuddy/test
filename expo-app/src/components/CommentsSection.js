@@ -628,7 +628,7 @@ const styles = StyleSheet.create({
   },
   commentInputContainer: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 10,
     left: 0,
     right: 0,
     marginHorizontal: 10,

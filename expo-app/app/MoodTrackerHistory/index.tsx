@@ -93,6 +93,7 @@ const MoodTrackerHistory = () => {
       {item?.details?.trim() && (
         <View style={styles.noteContainer}>
           <Text style={styles.noteText}>
+            {t('notemoodtracker')}
             {item.details}
           </Text>
         </View>

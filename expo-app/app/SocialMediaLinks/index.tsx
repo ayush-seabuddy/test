@@ -21,6 +21,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import CommonLoader from '@/src/components/CommonLoader';
 import { updateUserField } from '@/src/redux/userDetailsSlice';
+import { useNetwork } from '@/src/hooks/useNetworkStatusHook';
 
 const { width } = Dimensions.get('screen');
 
@@ -44,7 +45,7 @@ const SocialMediaLinks = () => {
   const { t } = useTranslation();
   const userDetails = useSelector((state: RootState) => state.userDetails);
   const dispatch = useDispatch();
-
+  const isOnline = useNetwork();
   const [links, setLinks] = useState({
     linkedin: '',
     instagram: '',
@@ -75,6 +76,10 @@ const SocialMediaLinks = () => {
   }, [userDetails.SocialMediaLinks]);
 
   const getProfileDetails = async () => {
+    if (!isOnline) {
+      showToast.error(t('oops'), t('nointernetconnection'));
+      return;
+    }
     try {
       setLoading(true);
       const response = await viewProfile();

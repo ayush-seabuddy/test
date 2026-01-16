@@ -9,21 +9,19 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "jsEngine": "hermes",
-
-    "assetBundlePatterns": ["assets/**/*"],
-
+    "assetBundlePatterns": [
+      "assets/**/*"
+    ],
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-
     "updates": {
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
       "fallbackToCacheTimeout": 30000
     },
-
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.seekware.seabuddy",
@@ -31,10 +29,13 @@
       "appleTeamId": "Y38GVJM76S",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "UIBackgroundModes": ["audio", "fetch", "remote-notification"]
+        "UIBackgroundModes": [
+          "audio",
+          "fetch",
+          "remote-notification"
+        ]
       }
     },
-
     "android": {
       "package": "co.seabuddy.platform",
       "versionCode": 1,
@@ -52,24 +53,30 @@
         "backgroundColor": "#E6F4FE"
       }
     },
-
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
-
     "extra": {
       "router": {},
       "eas": {
         "projectId": "130f7684-8e60-49eb-8e4c-746ee8b1ff0b"
       }
     },
-
-    "owner": "seabuddyco1"
+    "owner": "seabuddyco1",
+    "plugins": [
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "seabuddy",
+          "organization": "seekware-technology-private-li"
+        }
+      ]
+    ]
   }
 }

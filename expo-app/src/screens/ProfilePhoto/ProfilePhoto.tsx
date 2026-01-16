@@ -15,7 +15,8 @@ import {
 } from '@gorhom/bottom-sheet';
 import axios from 'axios';
 import { Image } from 'expo-image';
-import * as ImagePicker from 'expo-image-picker';
+import ImagePicker from 'react-native-image-crop-picker';
+import { requestCameraPermission, requestMediaLibraryPermission } from '@/Permission/Permissions';
 import { t } from 'i18next';
 import { Camera, Image as GalleryIcon } from 'lucide-react-native';
 import React, { useEffect, useRef, useState } from 'react';
@@ -23,7 +24,8 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
+  Linking,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -47,26 +49,19 @@ const ProfilePhoto = () => {
     fetchProfileDetails();
   }, []);
 
-  const requestPermissions = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    const { status: mediaStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    return status === 'granted' && mediaStatus === 'granted';
-  };
-
   const pickImage = async (source: 'camera' | 'library') => {
-    let permissionStatus;
     if (source === 'camera') {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      permissionStatus = status;
-      if (permissionStatus !== 'granted') {
+      const granted = await requestCameraPermission(t);
+      if (!granted) {
         showToast.error(t('permissiondenied'), t('camerapermission_description'));
+        Linking.openSettings?.();
         return;
       }
     } else {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      permissionStatus = status;
-      if (permissionStatus !== 'granted') {
+      const granted = await requestMediaLibraryPermission(t);
+      if (!granted) {
         showToast.error(t('permissiondenied'), t('medialibrarypermission_description'));
+        Linking.openSettings?.();
         return;
       }
     }
@@ -75,28 +70,44 @@ const ProfilePhoto = () => {
 
     setIsLoading(true);
     try {
-      let result;
+      let image: any;
       if (source === 'camera') {
-        result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
-          quality: 0.8,
+        image = await ImagePicker.openCamera({
+          cropping: true,
+          freeStyleCropEnabled: true,
+          cropperCircleOverlay: false,
+          compressImageQuality: 0.7,
+          includeBase64: false,
+          multiple: false,
+          forceJpg: false,
+          width: 600,
+          height: 600,
         });
       } else {
-        result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
-          quality: 0.8,
+        image = await ImagePicker.openPicker({
+          cropping: true,
+          freeStyleCropEnabled: true,
+          cropperCircleOverlay: false,
+          compressImageQuality: 0.7,
+          includeBase64: false,
+          multiple: false,
+          forceJpg: false,
+          width: 600,
+          height: 600,
         });
       }
 
-      if (!result.canceled && result.assets?.[0]) {
-        const image = result.assets[0];
-        await uploadProfilePhoto(image.uri);
+      const imagePath = image?.path || image?.uri;
+      if (imagePath) {
+        await uploadProfilePhoto(imagePath);
       }
-    } catch (error) {
-      console.error('Image Picker Error:', error);
-      showToast.error(t('error'), t('imagePickFailed'));
+    } catch (error: any) {
+      if (error?.message && error.message.toLowerCase().includes('cancel')) {
+        // user cancelled - ignore
+      } else {
+        console.error('Image Picker Error:', error);
+        showToast.error(t('error'), t('imagePickFailed'));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -172,7 +183,7 @@ const ProfilePhoto = () => {
       <View style={styles.container}>
         <View style={styles.profilePhotoContainer}>
           {isLoading ? (
-            <CommonLoader fullScreen/>
+            <CommonLoader fullScreen />
           ) : (
             <Image
               source={{ uri: userDetails?.profileUrl || 'https://via.placeholder.com/350' }}

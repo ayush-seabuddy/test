@@ -5,7 +5,9 @@ import {
     readsinglenotification
 } from '@/src/apis/apiService';
 import CommonLoader from '@/src/components/CommonLoader';
+import EmptyComponent from '@/src/components/EmptyComponent';
 import { showToast } from '@/src/components/GlobalToast';
+import { useNetwork } from '@/src/hooks/useNetworkStatusHook';
 import Colors from '@/src/utils/Colors';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
 import { Image } from 'expo-image';
@@ -42,6 +44,7 @@ interface Notification {
 
 const NotificationScreen = () => {
     const { t } = useTranslation();
+    const isOnline = useNetwork();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -67,6 +70,7 @@ const NotificationScreen = () => {
 
     const fetchNotifications = useCallback(
         async (pageNum: number, isLoadMore = false) => {
+            if (!isOnline) return;
             if (isLoadMore) setLoadingMore(true);
             else setLoading(true);
 
@@ -201,7 +205,7 @@ const NotificationScreen = () => {
     const renderFooter = useCallback(() => {
         return loadingMore ? (
             <View style={styles.footerLoader}>
-               <CommonLoader/>
+                <CommonLoader />
             </View>
         ) : null;
     }, [loadingMore]);
@@ -280,7 +284,7 @@ const NotificationScreen = () => {
                     {
                         backgroundColor:
                             item.status === 'READ' ? 'white' : 'rgba(243, 250, 217, 0.7)',
-                            borderColor:item.status === 'READ' ? '#ededed' : '#fff',
+                        borderColor: item.status === 'READ' ? '#ededed' : '#fff',
                     },
                 ]}
                 onPress={() => handleNotificationPress(item)}
@@ -337,12 +341,11 @@ const NotificationScreen = () => {
             <View style={styles.content}>
                 {loading && notifications.length === 0 ? (
                     <View style={styles.centerLoader}>
-                        <CommonLoader fullScreen/>
+                        <CommonLoader fullScreen />
                     </View>
-                ) : notifications.length === 0 ? (
+                ) : !isOnline ? <EmptyComponent text={t('nointernetconnection')} /> : notifications.length === 0 ? (
                     <View style={styles.centerLoader}>
-                        <Image source={ImagesAssets.nodatafound} style={styles.nodatafoundImage} />
-                        <Text style={styles.emptyText}>{t('nonotificationfound')}</Text>
+                        <EmptyComponent text={t('nonotificationfound')} />
                     </View>
                 ) : (
                     <FlatList
@@ -530,7 +533,7 @@ const styles = StyleSheet.create({
         marginHorizontal: 10,
         marginTop: 10,
         borderRadius: 10,
-        borderWidth:0.5,
+        borderWidth: 0.5,
     },
     titleRow: {
         flexDirection: 'row',

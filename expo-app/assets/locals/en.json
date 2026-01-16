@@ -240,6 +240,7 @@
   "hashtagAlreadyAdded": "Hashtag {{tag}} is already added.",
   "camerapermission": "Camera Permission",
   "camerapermission_description": "App needs access to your camera to take photos or videos.",
+  "medialibrarypermission_description": "Gallery needs access to your photos and videos.",
   "askmelater": "Ask Me Later",
   "ok": "OK",
   "permissiondenied": "Permission Denied",
@@ -891,7 +892,7 @@
   "Book_Appointment": "Book Appointment",
   "deletexperience": "Delete Experience",
   "moodnoteaddedsuccessfully": "Mood Note Added Successfully",
-  "note:": "Note: ",
+  "notemoodtracker": "Note: ",
   "howareyoufeelingtoday": "How're you feeling today?",
   "wouldyouliketoshare": "Would you like to share some details?",
   "addnote_description": "Your notes will be saved privately and can be viewed anytime in the Mood Tracker on the Health page",
@@ -960,5 +961,8 @@
   "noexperienceadded": "No experience added yet",
   "youarenotpostedanything": "You haven’t posted anything yet",
   "searching": "Searching...",
-  "edit_experience": "Edit Experience"
+  "edit_experience": "Edit Experience",
+  "whatsapp_not_installed": "WhatsApp is not installed on your device.",
+  "cannot_make_call": "Unable to make the call at this moment. Please try again later.",
+  "I_Acknowledge":"I Acknowledge"
 }

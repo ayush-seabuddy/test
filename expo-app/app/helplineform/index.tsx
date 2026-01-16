@@ -31,6 +31,8 @@ import CustomLottie from '@/src/components/CustomLottie';
 import GlobalButton from '@/src/components/GlobalButton';
 import { formatStatus } from '@/src/utils/helperFunctions';
 import CommonLoader from '@/src/components/CommonLoader';
+import { useNetwork } from '@/src/hooks/useNetworkStatusHook';
+import EmptyComponent from '@/src/components/EmptyComponent';
 
 interface Question {
   id: string;
@@ -54,6 +56,7 @@ const ANONYMOUS_DISABLED_IDS = [
 
 const HelplineFormScreen = () => {
   const { t } = useTranslation();
+  const isOnline = useNetwork();
   const { helplineName, helplineId, complaintId, complaintStatus, complaintResponse } = useLocalSearchParams<{
     helplineName: string;
     helplineId: string;
@@ -63,7 +66,13 @@ const HelplineFormScreen = () => {
   }>();
 
   const isViewMode = !!complaintId;
-
+  const ensureOnline = () => {
+    if (!isOnline) {
+      showToast.error(t('nointernetconnection'), t('pleasecheckinternet'));
+      return false;
+    }
+    return true;
+  };
   const [questions, setQuestions] = useState<Question[]>([]);
   const [responses, setResponses] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -89,6 +98,7 @@ const HelplineFormScreen = () => {
   }, [isViewMode]);
 
   const fetchQuestions = async () => {
+    if (!ensureOnline()) return;
     setLoading(true);
     try {
       const res = await gethelplineformquestions();
@@ -106,7 +116,7 @@ const HelplineFormScreen = () => {
 
   const fetchhelplineanswers = async () => {
     if (!complaintId) return;
-
+    if (!ensureOnline()) return;
     setLoading(true);
     try {
       const res = await getsinglehelplineanswer({ helplineFormId: complaintId });
@@ -375,13 +385,13 @@ const HelplineFormScreen = () => {
 
       {loading ? (
         <View style={styles.center}>
-          <CommonLoader fullScreen/>
+          <CommonLoader fullScreen />
         </View>
       ) : (
         <View style={{ flex: 1 }}>
           <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} componentHeight={complaintStatus === 'CLOSED' ? height * 0.70 : height * 0.80} />
 
-          <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          {isOnline ? <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <FlatList
                 ref={flatListRef}
@@ -396,10 +406,10 @@ const HelplineFormScreen = () => {
                 showsVerticalScrollIndicator={false}
               />
             </TouchableWithoutFeedback>
-          </KeyboardAvoidingView>
+          </KeyboardAvoidingView> : <EmptyComponent text={t('nointernetconnection')} />}
 
-          {/* Hide Submit Button in View Mode */}
-          {!isViewMode && (
+          {/* Hide Submit Button in View Mode OR when Offline */}
+          {!isViewMode && isOnline && (
             <View style={styles.floatingButtonContainer}>
               <GlobalButton
                 title={t('submit')}
@@ -410,6 +420,7 @@ const HelplineFormScreen = () => {
               />
             </View>
           )}
+
         </View>
       )}
 

@@ -125,6 +125,7 @@ const BuddyUpEventCard = ({
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 keyExtractor={item => item.id}
+                contentContainerStyle={{paddingBottom:20}}
                 renderItem={({ item }) => {
                     const isCreatedByMe = loggeduserData?.id === item.activityUser.id
                     const couldEditDelete = isCreatedByMe && moment().isBefore(item.startDateTime)

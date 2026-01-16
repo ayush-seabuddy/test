@@ -205,15 +205,6 @@ const GlobalSearch = () => {
   ), []);
 
   const renderSection = useMemo(() => {
-    if (loading) {
-      return (
-        <View style={styles.loadingContainer}>
-          <CommonLoader fullScreen />
-          <Text style={styles.loadingText}>{t('searching')}</Text>
-        </View>
-      );
-    }
-
     const section = visibleSections.find(s => s.section.id === activeSection);
     const data = section?.data || [];
 

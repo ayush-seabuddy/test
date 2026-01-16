@@ -1,7 +1,9 @@
 import { getallassessments, saveassessmentresponse } from '@/src/apis/apiService';
+import EmptyComponent from '@/src/components/EmptyComponent';
 import GlobalButton from '@/src/components/GlobalButton';
 import { showToast } from '@/src/components/GlobalToast';
 import GlobalPopup from '@/src/components/Modals/GlobalPopup';
+import { useNetwork } from '@/src/hooks/useNetworkStatusHook';
 import Colors from '@/src/utils/Colors';
 import Slider from '@react-native-community/slider';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
@@ -44,7 +46,7 @@ const MonthlyHappinessIndexTestScreen = () => {
   const { t } = useTranslation();
   const router = useRouter();
   const params = useLocalSearchParams<{ showPopup?: string; testData?: string }>();
-
+  const isOnline = useNetwork();
   const [sections, setSections] = useState<SectionData[]>([]);
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
@@ -88,6 +90,7 @@ const MonthlyHappinessIndexTestScreen = () => {
   };
 
   const fetchQuestions = useCallback(async () => {
+    if (!isOnline) return;
     try {
       const res = await getallassessments({ questionType: 'HAPPINESS' });
       if (res.success && res.status === 200) {
@@ -293,7 +296,7 @@ const MonthlyHappinessIndexTestScreen = () => {
         <Text style={styles.description}>{t('happinessindexdescription')}</Text>
       </View>
 
-      <KeyboardAwareScrollView
+     {isOnline ? <KeyboardAwareScrollView
         ref={scrollRef}
         enableOnAndroid={true}
         extraHeight={120}
@@ -338,7 +341,7 @@ const MonthlyHappinessIndexTestScreen = () => {
             textStyle={styles.submitText}
           />
         </View>
-      </KeyboardAwareScrollView>
+      </KeyboardAwareScrollView> : <EmptyComponent text={t('nointernetconnection')}/>}
 
       <GlobalPopup
         visible={showPopup}

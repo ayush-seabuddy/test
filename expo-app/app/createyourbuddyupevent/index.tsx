@@ -1084,8 +1084,8 @@ const CreateYourBuddyUpEvent = () => {
                     visible={calendarModalVisible}
                     onClose={() => setCalendarModalVisible(false)}
                     onDateSelect={handleDateSelect}
-                    prefillStartDate={selectedStartDate || undefined}
-                    prefillEndDate={selectedEndDate || undefined}
+                    prefillStartDate={isEditMode ? undefined : selectedStartDate}
+                    prefillEndDate={isEditMode ? undefined :  selectedEndDate}
                     prefillStartTime={selectedStartTime?.toISOString() || undefined}
                     prefillEndTime={selectedEndTime?.toISOString() || undefined}
                 />
@@ -1240,7 +1240,7 @@ const styles = StyleSheet.create({
     },
     inputView: {
         flex: 1,
-        marginTop: 10
+        marginTop: Platform.OS === 'ios' ? 10 : 0,
     },
     dropdown: {
         flex: 1,
