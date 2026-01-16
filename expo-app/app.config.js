@@ -8,11 +8,7 @@ export default ({ config }) => {
 
     splash: {
       ...config.splash,
-      backgroundColor: isProduction
-        ? '#ffffff'
-        : isStaging
-          ? '#FFF3E0'
-          : '#E3F2FD',
+      backgroundColor: '#ffffff'
     },
 
     updates: {
@@ -85,7 +81,17 @@ export default ({ config }) => {
           }
         }
       ],
-
+      [
+        "expo-navigation-bar",
+        {
+          "backgroundColor": "#000000",
+          "barStyle": "light",
+          "borderColor": "#1f2937",
+          "visibility": "visible",
+          "behavior": "inset-swipe",
+          "position": "relative"
+        }
+      ],
       [
         'expo-sqlite',
         {

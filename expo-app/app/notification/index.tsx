@@ -280,6 +280,7 @@ const NotificationScreen = () => {
                     {
                         backgroundColor:
                             item.status === 'READ' ? 'white' : 'rgba(243, 250, 217, 0.7)',
+                            borderColor:item.status === 'READ' ? '#ededed' : '#fff',
                     },
                 ]}
                 onPress={() => handleNotificationPress(item)}
@@ -526,9 +527,10 @@ const styles = StyleSheet.create({
     listContent: { paddingBottom: 50 },
     notificationItem: {
         padding: 20,
-        marginHorizontal: 16,
+        marginHorizontal: 10,
         marginTop: 10,
         borderRadius: 10,
+        borderWidth:0.5,
     },
     titleRow: {
         flexDirection: 'row',

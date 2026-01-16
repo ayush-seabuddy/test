@@ -71,7 +71,7 @@ const CompanyLibrary = () => {
                     alignItems: "center",
                     justifyContent: "space-between",
                     marginVertical: 10,
-                    paddingHorizontal: 14,
+                    paddingHorizontal: 10,
                 }}
             >
                 <Text
@@ -94,7 +94,7 @@ const CompanyLibrary = () => {
                         alignItems: "center",
                         justifyContent: "space-between",
                         marginVertical: 10,
-                        paddingHorizontal: 14,
+                        paddingHorizontal: 10,
                     }}
                 >
                     <Text
@@ -124,7 +124,7 @@ const CompanyLibrary = () => {
                         </TouchableOpacity>
                     )}
                 </View>
-                {!loading && <View style={{ paddingHorizontal: 16 }}>
+                {!loading && <View style={{ paddingHorizontal: 10 }}>
                     <RelatedContentCard data={contentListData?.VIDEO} />
                 </View>}
 
@@ -138,7 +138,7 @@ const CompanyLibrary = () => {
                         alignItems: "center",
                         justifyContent: "space-between",
                         marginVertical: 10,
-                        paddingHorizontal: 14,
+                        paddingHorizontal: 10,
                     }}
                 >
                     <Text
@@ -181,7 +181,7 @@ const CompanyLibrary = () => {
                         alignItems: "center",
                         justifyContent: "space-between",
                         marginVertical: 10,
-                        paddingHorizontal: 14,
+                        paddingHorizontal: 10,
                     }}
                 >
                     <Text
@@ -211,7 +211,7 @@ const CompanyLibrary = () => {
                         </TouchableOpacity>
                     )}
                 </View>
-                {!loading && <View style={{ paddingHorizontal: 16 }}>
+                {!loading && <View style={{ paddingHorizontal: 10 }}>
                     <RelatedContentCard data={contentListData?.READ} />
                 </View>}
 

@@ -119,7 +119,7 @@ const LoginScreen = () => {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : 'padding'}
     >
       <View style={{ flex: 1, backgroundColor: Colors.background }}>
         <View style={styles.wrapper}>

@@ -6,6 +6,7 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { useSelector } from 'react-redux';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const TAB_ICONS: Record<
   string,
@@ -34,13 +35,32 @@ const BottomTabbarLayout = () => {
     (state: RootState) => state.userDetails
   );
 
+  const insets = useSafeAreaInsets();
+  console.log(insets);
+
+
+  /**
+   * Bottom spacing logic:
+   * - Gesture navigation → insets.bottom = 0–8
+   * - Button navigation → insets.bottom = 24–48
+   */
+  const bottomSpacing =
+    Platform.OS === 'android'
+      ? Math.max(insets.bottom, 30)
+      : insets.bottom;
+
   return (
     <Tabs
       backBehavior="history"
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarShowLabel: false,
-        tabBarStyle: styles.bottomNavbar,
+        tabBarStyle: [
+          styles.bottomNavbar,
+          {
+            marginBottom: bottomSpacing,
+          },
+        ],
         tabBarIcon: ({ focused }) => {
           const isProfile = route.name === 'profile';
 
@@ -61,18 +81,17 @@ const BottomTabbarLayout = () => {
             >
               <Image
                 source={iconSource}
+                cachePolicy="memory-disk"
                 style={[
                   styles.tabIcon,
                   {
                     resizeMode: isProfile ? 'cover' : 'contain',
                   },
                   isProfile
-                    ? focused
-                      ? {
-                        borderColor: Colors.lightGreen,
-                        borderWidth: 0.5,
-                      }
-                      : null
+                    ? focused && {
+                      borderColor: Colors.lightGreen,
+                      borderWidth: 0.5,
+                    }
                     : {
                       tintColor: focused
                         ? Colors.lightGreen
@@ -99,12 +118,11 @@ export default BottomTabbarLayout;
 const styles = StyleSheet.create({
   bottomNavbar: {
     position: 'absolute',
-    height: '7%',
+    height: 55,
     borderRadius: 25,
     backgroundColor: 'rgba(84, 97, 94, 1)',
-    marginVertical: 20,
     marginHorizontal: 10,
-    paddingTop: Platform.OS === 'ios' ? 8 : 5,
+    paddingTop: 7,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.2)',
   },

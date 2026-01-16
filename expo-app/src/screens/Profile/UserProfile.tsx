@@ -59,7 +59,7 @@ const UserProfile = () => {
             </TouchableOpacity>
             <View style={{ display: "flex", justifyContent: "center", alignItems: "center", height: height * .35 }}>
                 <View style={{ position: "relative" }}>
-                    <Image source={userDetails.profileUrl} style={{ width: 100, height: 100, borderRadius: 50, borderColor: Colors.lightGreen, borderWidth: 2 }} placeholder={ImagesAssets.userIcon} />
+                    <Image source={userDetails.profileUrl} style={{ width: 100, height: 100, borderRadius: 50, borderColor: Colors.lightGreen, borderWidth: 2 }} placeholder={ImagesAssets.userIcon} cachePolicy={"memory-disk"}/>
                     <TouchableOpacity style={{
                         position: "absolute", bottom: 3, right: 0,
                         borderColor: 'grey',

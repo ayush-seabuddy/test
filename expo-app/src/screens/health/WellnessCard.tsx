@@ -54,7 +54,7 @@ const WellnessCard = () => {
       {/* Health Tracker Cards */}
       <View style={styles.healthRow}>
         {healthTrackerArray.map((item, index) => (
-          <TouchableOpacity key={index} style={styles.healthCard} onPress={() => router.push(item.page)}>
+          <TouchableOpacity key={index} style={styles.healthCard} onPress={() => router.push(item.page as any)}>
             {item.image}
             <Text style={styles.healthCardText}>{item.title}</Text>
           </TouchableOpacity>

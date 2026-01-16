@@ -8,7 +8,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
 const HomeTab = () => {
@@ -16,30 +17,43 @@ const HomeTab = () => {
   const [_, setIsTodayChecked] = useState(false);
   const userDetails = useSelector((state: RootState) => state.userDetails);
 
+  const insets = useSafeAreaInsets();
+
+  /**
+   * FAB spacing logic
+   * - 90 = height above tab bar
+   * - insets.bottom = system navigation space
+   */
+  const fabBottom =
+    Platform.OS === 'android'
+      ? 80 + insets.bottom
+      : 80 + insets.bottom;
+
   useFocusEffect(
     useCallback(() => {
       const checkMoodTracker = async () => {
-        const checkToday = await AsyncStorage.getItem("MoodTrackerOpen");
+        const checkToday = await AsyncStorage.getItem('MoodTrackerOpen');
+        const ONE_DAY = 24 * 60 * 60 * 1000;
 
         if (checkToday) {
           const lastOpenDate = Number(checkToday);
-          const ONE_DAY = 24 * 60 * 60 * 1000;
-
           if (Date.now() > lastOpenDate + ONE_DAY) {
             setModalVisible(true);
             await AsyncStorage.setItem(
-              "MoodTrackerOpen",
+              'MoodTrackerOpen',
               String(Date.now())
             );
           }
         } else {
           setModalVisible(true);
-          await AsyncStorage.setItem("MoodTrackerOpen", String(Date.now()));
+          await AsyncStorage.setItem(
+            'MoodTrackerOpen',
+            String(Date.now())
+          );
         }
       };
 
       checkMoodTracker();
-
       return () => { };
     }, [])
   );
@@ -50,27 +64,26 @@ const HomeTab = () => {
 
       <Posts
         ListHeaderComponent={
-          <Announcements onlyAnnouncement={true} page={1} limit={5} />
+          <Announcements onlyAnnouncement page={1} limit={5} />
         }
       />
 
       <TouchableOpacity
-        style={styles.fab}
+        style={[styles.fab, { bottom: fabBottom }]}
         activeOpacity={0.8}
-        onPress={() => {
-          router.push('/newpost');
-        }}
+        onPress={() => router.push('/newpost')}
       >
-        <Image source={ImagesAssets.PlusImage} style={{ height: 20, width: 20 }} />
+        <Image
+          source={ImagesAssets.PlusImage}
+          style={{ height: 20, width: 20 }}
+        />
       </TouchableOpacity>
 
       <MoodCheckInModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
-        onSuccess={() => {
-          setIsTodayChecked(true);
-        }}
-        userName={userDetails?.fullName?.split(" ")?.[0]}
+        onSuccess={() => setIsTodayChecked(true)}
+        userName={userDetails?.fullName?.split(' ')?.[0]}
       />
     </View>
   );
@@ -85,7 +98,6 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    bottom: 90,
     right: 16,
     width: 50,
     height: 50,

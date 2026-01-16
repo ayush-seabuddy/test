@@ -1,4 +1,6 @@
 import GlobalHeader from '@/src/components/GlobalHeader';
+import { showToast } from '@/src/components/GlobalToast';
+import Colors from '@/src/utils/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { CheckCircle2 } from 'lucide-react-native';
@@ -47,21 +49,11 @@ const ChangeLanguageScreen = () => {
     try {
       await AsyncStorage.setItem('userLanguage', selectedLanguage);
       await i18n.changeLanguage(selectedLanguage);
-
-      Toast.show({
-        type: 'success',
-        text1: t('language_saved'),
-        visibilityTime: 2000,
-      });
-
+      showToast.success(t('success'), t('language_saved'));
       router.back();
     } catch (e) {
       console.error('Error saving language:', e);
-      Toast.show({
-        type: 'error',
-        text1: t('failed_to_save'),
-        visibilityTime: 2000,
-      });
+      showToast.error(t('oops'), t('failed_to_save'));
     }
   };
 
@@ -85,7 +77,7 @@ const ChangeLanguageScreen = () => {
         </View>
 
         {isSelected && (
-          <CheckCircle2 size={24} color="#84A402" strokeWidth={2} />
+          <CheckCircle2 size={24} color={Colors.lightGreen} strokeWidth={2} />
         )}
       </TouchableOpacity>
     );
@@ -122,7 +114,8 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 14,
+    marginTop: 10,
+    padding: 10,
   },
   languageItem: {
     flexDirection: 'row',
@@ -135,7 +128,7 @@ const styles = StyleSheet.create({
   },
   selectedItem: {
     borderWidth: 2,
-    borderColor: '#84A402',
+    borderColor: Colors.lightGreen,
   },
   languageInfo: {
     flexDirection: 'row',

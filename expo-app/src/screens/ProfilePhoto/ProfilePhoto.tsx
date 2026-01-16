@@ -180,6 +180,7 @@ const ProfilePhoto = () => {
               placeholder={ImagesAssets.userIcon}
               placeholderContentFit='cover'
               contentFit="cover"
+              cachePolicy={"memory-disk"}
             />
           )}
         </View>

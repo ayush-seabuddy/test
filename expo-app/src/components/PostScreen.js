@@ -38,10 +38,6 @@ import BottomSheet from './BottomSheet';
 import CommentsSection from './CommentsSection';
 import CommonLoader from './CommonLoader';
 import { showToast } from './GlobalToast';
-
-// Ensure locale data is available for ReactTimeAgo. Use addLocale which is
-// safe to call multiple times. Wrap in try/catch to avoid crashes if the
-// library internals differ across versions or if locale is already present.
 try {
   if (typeof TimeAgo.addLocale === 'function') {
     TimeAgo.addLocale(en);
@@ -822,7 +818,7 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
 };
 
 const styles = StyleSheet.create({
-  ListContainer: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16, marginVertical: 8, marginHorizontal: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3, borderWidth: 1, borderColor: '#E5E7EB' },
+  ListContainer: { backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16, marginVertical: 8, marginHorizontal: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3, borderWidth: 1, borderColor: '#E5E7EB' },
   header: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   avatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#D1D5DB', marginRight: 12 },
   userInfo: { flex: 1, marginLeft: 10 },

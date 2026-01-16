@@ -56,6 +56,7 @@
     "expo-linear-gradient": "^15.0.7",
     "expo-linking": "~8.0.9",
     "expo-localization": "~17.0.7",
+    "expo-navigation-bar": "~5.0.10",
     "expo-notifications": "^0.32.15",
     "expo-print": "~15.0.7",
     "expo-router": "~6.0.15",
@@ -120,7 +121,6 @@
   "devDependencies": {
     "@react-native-community/cli": "^13.6.9",
     "@types/react": "~19.1.0",
-    "@types/react-native": "^0.73.0",
     "dotenv": "^17.2.3",
     "eslint": "^9.25.0",
     "eslint-config-expo": "^10.0.0",

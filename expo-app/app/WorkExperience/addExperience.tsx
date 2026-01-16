@@ -352,8 +352,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#ededed',
     },
     container: {
-        padding: 20,
-        paddingBottom: 20,
+        padding: 10,
+        paddingVertical: 20,
     },
     inputContainer: {
         flexDirection: 'row',

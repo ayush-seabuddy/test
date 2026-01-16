@@ -272,7 +272,7 @@ const BuddyUpRequestApprovalScreen = () => {
         ({ item }: { item: MediaItem }) => (
             <TouchableOpacity style={styles.mediaItemContainer} activeOpacity={0.9}>
                 {item.type === 'image' ? (
-                    <Image source={{ uri: item.uri }} style={styles.mediaImage} contentFit="cover" />
+                    <Image source={{ uri: item.uri }} style={styles.mediaImage} contentFit="cover" cachePolicy={"memory-disk"}/>
                 ) : (
                     <Video
                         source={{ uri: item.uri }}
