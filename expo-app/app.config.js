@@ -110,6 +110,7 @@ export default ({ config }) => {
     ],
 
     extra: {
+      ...config.extra,
       env,
     },
   };
