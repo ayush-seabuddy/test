@@ -95,9 +95,10 @@ Create environment files in the `expo-app` directory:
 - `.env.prod` - Production environment
 
 Required variables:
+
 ```
-API_URL=your_api_url
-SOCKET_URL=your_socket_url
+EXPO_PUBLIC_API_URL=your_api_url
+EXPO_PUBLIC_SOCKET_URL=your_socket_url
 ```
 
 ## Project Structure
@@ -138,17 +139,20 @@ eas build:view <build-id>   # View build details
 ## Troubleshooting
 
 ### Clear Cache
+
 ```bash
 npx expo start --clear
 ```
 
 ### Reset Dependencies
+
 ```bash
 rm -rf node_modules package-lock.json
 npm install
 ```
 
 ### iOS Pods Issues
+
 ```bash
 cd ios && pod install && cd ..
 ```
@@ -158,4 +162,3 @@ cd ios && pod install && cd ..
 - **EAS Dashboard**: https://expo.dev/accounts/seabuddyco1/projects/SeaBuddy
 - **App Store Connect**: https://appstoreconnect.apple.com
 - **Play Console**: https://play.google.com/console
-

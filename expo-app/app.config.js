@@ -8,7 +8,7 @@ export default ({ config }) => {
 
     splash: {
       ...config.splash,
-      backgroundColor: '#ffffff'
+      backgroundColor: '#ffffff',
     },
 
     updates: {
@@ -28,8 +28,8 @@ export default ({ config }) => {
         NSMicrophoneUsageDescription:
           'SeaBuddy needs access to your microphone to record audio and videos.',
         NSLocationWhenInUseUsageDescription:
-          'SeaBuddy uses your location to enhance your experience.'
-      }
+          'SeaBuddy uses your location to enhance your experience.',
+      },
     },
 
     plugins: [
@@ -43,8 +43,8 @@ export default ({ config }) => {
         'expo-video',
         {
           supportsBackgroundPlayback: true,
-          supportsPictureInPicture: true
-        }
+          supportsPictureInPicture: true,
+        },
       ],
 
       [
@@ -52,15 +52,15 @@ export default ({ config }) => {
         {
           icon: './assets/images/icon.png',
           defaultChannel: 'default',
-          enableBackgroundRemoteNotifications: false
-        }
+          enableBackgroundRemoteNotifications: false,
+        },
       ],
 
       [
         'expo-screen-orientation',
         {
-          supportedOrientations: ['portrait', 'landscape']
-        }
+          supportedOrientations: ['portrait', 'landscape'],
+        },
       ],
 
       [
@@ -72,48 +72,45 @@ export default ({ config }) => {
             targetSdkVersion: 35,
             enableProguardInReleaseBuilds: true,
             enableShrinkResourcesInReleaseBuilds: true,
-            enableMinifyInReleaseBuilds: true
+            enableMinifyInReleaseBuilds: true,
           },
           ios: {
             deploymentTarget: '15.1',
             useFrameworks: 'static',
-            flipper: false
-          }
-        }
+            flipper: false,
+          },
+        },
       ],
       [
-        "expo-navigation-bar",
+        'expo-navigation-bar',
         {
-          "backgroundColor": "#000000",
-          "barStyle": "light",
-          "borderColor": "#1f2937",
-          "visibility": "visible",
-          "behavior": "inset-swipe",
-          "position": "relative"
-        }
+          backgroundColor: '#000000',
+          barStyle: 'light',
+          borderColor: '#1f2937',
+          visibility: 'visible',
+          behavior: 'inset-swipe',
+          position: 'relative',
+        },
       ],
       [
         'expo-sqlite',
         {
           enableFTS: true,
-          useSQLCipher: true
-        }
+          useSQLCipher: true,
+        },
       ],
 
       [
         '@sentry/react-native/expo',
         {
-          organization: process.env.SENTRY_ORG,
-          project: process.env.SENTRY_PROJECT
-        }
-      ]
+          organization: process.env.EXPO_PUBLIC_SENTRY_ORG,
+          project: process.env.EXPO_PUBLIC_SENTRY_PROJECT,
+        },
+      ],
     ],
 
     extra: {
-      ...config.extra,
       env,
-      API_URL: process.env.EXPO_PUBLIC_API_URL,
-      SOCKET_URL: process.env.EXPO_PUBLIC_SOCKET_URL
-    }
+    },
   };
 };
