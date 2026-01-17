@@ -3,7 +3,7 @@ name: EAS Build and Deploy
 on:
   push:
     branches:
-      - main
+      - feature/expo-migration
   workflow_dispatch:
     inputs:
       platform:
