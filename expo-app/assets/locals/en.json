@@ -871,8 +871,8 @@
     "confirmRemove": "Are you sure you want to remove {{name}} from the ship?",
     "thisCrew": "this crew member"
   },
-  "month": "Month :",
-  "result": "Result :",
+  "month": "Month -",
+  "result": "Result -",
   "veryunhappy": "Very Unhappy",
   "veryhappy": "Very Happy",
   "happy": "Happy",
@@ -976,5 +976,7 @@
   "calm": "Calm",
   "analytics_description":"Calculated from your latest Wellbeing Pulse survey results to help you spot patterns and manage stress better",
   "from":"From",
-  "to":"To"
+  "to":"To",
+  "clicktoview":"Click to view",
+  "reloadapp":"Reload App"
 }

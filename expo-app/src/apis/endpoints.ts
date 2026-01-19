@@ -12,6 +12,7 @@ const extra = Constants.expoConfig?.extra as ExtraConfig | undefined;
 export const BASE_URL =
   extra?.EXPO_PUBLIC_API_URL || 'https://seabuddyapi.seekware.in/api/v1';
 
+
 // Define endpoints
 export const ENDPOINTS = {
   LOGIN: `${BASE_URL}/user/login`,
@@ -26,7 +27,7 @@ export const ENDPOINTS = {
   GETALLASSESSMENTS: `${BASE_URL}/user/getAssessmentQuestions`,
   GETALLASSESSMENTSRESULT: `${BASE_URL}/user/getAssessmentResult`,
   SAVEASSESSMENTRESPONSE: `${BASE_URL}/user/saveAssessmentResponses`,
-  GETASSESSMENTRESPONSELIST: `${BASE_URL}/user/getAssessmentResponseList`,
+  GETASSESSMENTRESPONSELIST: `${BASE_URL}/user/getUserAssessmentList`,
   GETALLCONTENTS: `${BASE_URL}/content/getAllContents`,
   GETALLPOSTS: `${BASE_URL}/user/getAllHangoutPost`,
   LIKEPOST: `${BASE_URL}/user/likeCommentHangoutPost`,
@@ -80,4 +81,5 @@ export const ENDPOINTS = {
   SUBMITSURVEY: `${BASE_URL}/user/submitSurvey`,
   CHECK_TODAY_MOOD_TRACKER: `${BASE_URL}/user/checkTodayMoodTracker`,
   ACKNOWLEDGE_CONTENT: `${BASE_URL}/user/acknowledgeContent`,
+  GETASSESSMENTRESULTDETAILS:`${BASE_URL}/user/getUserAssessmentDetailsFormMonth`
 };

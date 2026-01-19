@@ -14,8 +14,8 @@ import { Content } from "./type";
 
 const { width } = Dimensions.get("window");
 
-const RelatedVideosCard = ({  data, onArticleClick }:{data:Content[] , onArticleClick?: () => void}) => {
-  const RenderData = ({ item }:{item:Content}) => {
+const RelatedVideosCard = ({ data, onArticleClick }: { data: Content[], onArticleClick?: () => void }) => {
+  const RenderData = ({ item }: { item: Content }) => {
     return (
       <Pressable
         style={styles.cardContainer}
@@ -33,7 +33,7 @@ const RelatedVideosCard = ({  data, onArticleClick }:{data:Content[] , onArticle
           <ImageBackground
             style={styles.imageBackground}
             resizeMode="cover"
-            source={ { uri: item?.thumbnail }}
+            source={{ uri: item?.thumbnail }}
           >
             <LinearGradient
               colors={["transparent", "rgba(0,0,0,0.7)"]}
@@ -60,6 +60,7 @@ const RelatedVideosCard = ({  data, onArticleClick }:{data:Content[] , onArticle
       <FlatList
         horizontal
         data={data}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={RenderData}
         showsHorizontalScrollIndicator={false}
       />

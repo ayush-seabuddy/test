@@ -17,45 +17,55 @@ import {
     View,
 } from 'react-native';
 
-const getScoreStyle = (
-    score: number,
-    assessmentType: 'HAPPINESS' | 'POMS'
-) => {
-    if (assessmentType === 'HAPPINESS') {
+
+type AssessmentType = 'HAPPINESS' | 'POMS';
+
+interface AssessmentItem {
+    month: string;
+    result: string;
+}
+
+
+const getScoreStyle = (score: number, type: AssessmentType) => {
+    if (type === 'HAPPINESS') {
         if (score >= 75) return { bg: '#A9DFBF', text: '#145A32' };
         if (score >= 40) return { bg: '#F9E79F', text: '#7D6608' };
         return { bg: '#F5B7B1', text: '#78281F' };
-    } else {
-        if (score < 6) return { bg: '#A9DFBF', text: '#145A32' };
-        if (score < 21) return { bg: '#F9E79F', text: '#7D6608' };
-        if (score <= 35) return { bg: '#F5B7B1', text: '#78281F' };
-        return { bg: '#E74C3C', text: '#fff' };
     }
+
+    if (score < 6) return { bg: '#A9DFBF', text: '#145A32' };
+    if (score < 21) return { bg: '#F9E79F', text: '#7D6608' };
+    if (score <= 35) return { bg: '#F5B7B1', text: '#78281F' };
+    return { bg: '#E74C3C', text: '#fff' };
 };
 
 const AllAssessmentResultListing = () => {
-    const { assessmentType = 'HAPPINESS' } = useLocalSearchParams();
+    const { assessmentType = 'HAPPINESS' } = useLocalSearchParams<{
+        assessmentType?: AssessmentType;
+    }>();
+
     const router = useRouter();
     const isOnline = useNetwork();
     const { t } = useTranslation();
 
     const [loading, setLoading] = useState(true);
-    const [assessmentData, setAssessmentData] = useState<any[]>([]);
+    const [assessmentData, setAssessmentData] = useState<AssessmentItem[]>([]);
 
     const fetchAssessments = useCallback(async () => {
         setLoading(true);
         try {
             const res = await getassessmentresponseList({
-                assessmentType: assessmentType as string,
+                assessmentType,
             });
 
-            if (res.success && res.status === 200) {
-                setAssessmentData(res.data?.assessmentList || []);
+            if (res?.success && res?.status === 200) {
+                setAssessmentData(res?.data ?? []);
             } else {
-                showToast.error(t('oops'), res.message);
+                showToast.error(t('oops'), res?.message);
                 setAssessmentData([]);
             }
-        } catch {
+        } catch (err) {
+            console.error(err);
             showToast.error(t('oops'), t('somethingwentwrong'));
             setAssessmentData([]);
         } finally {
@@ -68,121 +78,102 @@ const AllAssessmentResultListing = () => {
     }, [fetchAssessments]);
 
     const sortedData = useMemo(() => {
-        return [...assessmentData]
-            .filter(item => item.questionType === assessmentType)
-            .sort((a, b) => b.month.localeCompare(a.month));
-    }, [assessmentData, assessmentType]);
+        return [...assessmentData].sort((a, b) =>
+            moment(b.month, 'MM-YYYY').diff(moment(a.month, 'MM-YYYY')),
+        );
+    }, [assessmentData]);
 
-    const title =
-        assessmentType === 'POMS'
-            ? t('monthlywellbeingpulse')
-            : t('monthlyhappinessindex');
+    const getScoreMeaning = (score: number) => {
+        if (score >= 80) return t('monthlyhappinessindex_resultdescription.veryhappy');
+        if (score >= 60) return t('monthlyhappinessindex_resultdescription.happy');
+        if (score >= 40) return t('monthlyhappinessindex_resultdescription.moderate');
+        if (score >= 20) return t('monthlyhappinessindex_resultdescription.low');
+        return t('monthlyhappinessindex_resultdescription.verylow');
+    };
 
-    const noDataMessage =
-        assessmentType === 'POMS'
-            ? t('nowellbeingdata')
-            : t('nohappinessindexdata');
+    const classifyTMD = (tmd: number) => {
+        if (isNaN(tmd)) {
+            return { mood: t('nodata'), message: t('nomooddata') };
+        }
 
-    const classifyTMD = useCallback(
-        (tmd: number) => {
-            if (!tmd || isNaN(tmd)) {
-                return { mood: 'No Data', message: 'No mood data available.' };
-            }
+        if (tmd < 6) return { mood: t('mood_stable'), message: t('mood_stable_message') };
+        if (tmd < 21) return { mood: t('mood_mild'), message: t('mood_mild_message') };
+        if (tmd <= 35) return { mood: t('mood_moderate'), message: t('mood_moderate_message') };
+        return { mood: t('mood_high'), message: t('mood_high_message') };
+    };
 
-            tmd = Math.round(tmd);
-            if (tmd < 6) return { mood: t('mood_stable'), message: t('mood_stable_message') };
-            if (tmd < 21) return { mood: t('mood_mild'), message: t('mood_mild_message') };
-            if (tmd <= 35) return { mood: t('mood_moderate'), message: t('mood_moderate_message') };
-            return { mood: t('mood_high'), message: t('mood_high_message') };
-        },
-        [t]
-    );
+    const renderItem = ({ item }: { item: AssessmentItem }) => {
+        const score = Number(item.result || 0);
+        const formattedDate = moment(item.month, 'MM-YYYY').format('MMM YYYY');
+        const { bg, text } = getScoreStyle(score, assessmentType);
 
-    const renderItem = useCallback(
-        ({ item }: { item: any }) => {
-            const score = Number(item?.questionsAndAnswers?.[0]?.result ?? 0);
-            const formattedDate = moment(item.month, 'MM-YYYY').format('MMM YYYY');
-            const { bg, text } = getScoreStyle(
-                score,
-                assessmentType as 'HAPPINESS' | 'POMS'
-            );
-
-            const infoContent =
-                assessmentType === 'HAPPINESS' ? (
-                    <Text style={styles.meaningText}>
-                        {score >= 80
-                            ? t('monthlyhappinessindex_resultdescription.veryhappy')
-                            : score >= 60
-                                ? t('monthlyhappinessindex_resultdescription.happy')
-                                : score >= 40
-                                    ? t('monthlyhappinessindex_resultdescription.moderate')
-                                    : score >= 20
-                                        ? t('monthlyhappinessindex_resultdescription.low')
-                                        : t('monthlyhappinessindex_resultdescription.verylow')}
-                    </Text>
-                ) : (
-                    (() => {
-                        const { mood, message } = classifyTMD(score);
-                        return (
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <View style={{ width: '90%' }}>
-                                    <Text style={styles.moodText}>{mood}</Text>
-                                    <Text style={styles.messageText}>{message}</Text>
-                                </View>
-                                <View style={styles.rightIcon}>
-                                    <ArrowUpRight size={16} color="#666" />
-                                </View>
+        const info =
+            assessmentType === 'HAPPINESS' ? (
+                <Text style={styles.meaningText}>{getScoreMeaning(score)}</Text>
+            ) : (
+                (() => {
+                    const { mood, message } = classifyTMD(score);
+                    return (
+                        <View style={styles.pomsRow}>
+                            <View style={{ width: '90%' }}>
+                                <Text style={styles.moodText}>{mood}</Text>
+                                <Text style={styles.messageText}>{message}</Text>
                             </View>
-                        );
-                    })()
-                );
-
-            return (
-                <TouchableOpacity
-                    style={styles.card}
-                    onPress={() =>
-                        router.push({
-                            pathname:
-                                assessmentType === 'POMS'
-                                    ? '/monthlywellbeingpulse/MonthlyWellbeingPulseResultScreen'
-                                    : '/monthlyhappinessindex/MonthlyHappinessIndexResultScreen',
-                            params: { assessmentData: JSON.stringify(item) },
-                        })
-                    }
-                >
-                    <View style={styles.cardContent}>
-                        <View style={styles.leftSection}>
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                <Text style={styles.dateText}>{formattedDate}</Text>
-                                <View style={[styles.scoreBadge, { backgroundColor: bg }]}>
-                                    <Text style={[styles.scoreText, { color: text }]}>
-                                        {t('score')}: {score}
-                                    </Text>
-                                </View>
+                            <View style={styles.rightIcon}>
+                                <ArrowUpRight size={16} color="#666" />
                             </View>
-                            {infoContent}
                         </View>
-                    </View>
-                </TouchableOpacity>
+                    );
+                })()
             );
-        },
-        [assessmentType, classifyTMD, router, t]
-    );
+
+        return (
+            <TouchableOpacity
+                style={styles.card}
+                onPress={() =>
+                    router.push({
+                        pathname:
+                            assessmentType === 'POMS'
+                                ? '/monthlywellbeingpulse/MonthlyWellbeingPulseResultScreen'
+                                : '/monthlyhappinessindex/MonthlyHappinessIndexResultScreen',
+                        params: { month: item.month, assessmentType: assessmentType },
+                    })
+                }
+            >
+                <View style={styles.rowView}>
+                    <Text style={styles.dateText}>{formattedDate}</Text>
+                    <View style={[styles.scoreBadge, { backgroundColor: bg }]}>
+                        <Text style={[styles.scoreText, { color: text }]}>
+                            {t('score')}: {score}
+                        </Text>
+                    </View>
+                </View>
+
+
+
+                {info}
+            </TouchableOpacity>
+        );
+    };
 
     return (
         <View style={styles.container}>
-            {/* HEADER ALWAYS VISIBLE */}
-            <GlobalHeader title={title} />
+            <GlobalHeader
+                title={
+                    assessmentType === 'POMS'
+                        ? t('monthlywellbeingpulse')
+                        : t('monthlyhappinessindex')
+                }
+            />
 
-            {/* CENTER LOADER */}
             {loading ? (
-                <View style={styles.loaderWrapper}>
+                <View style={styles.loadingContainer}>
                     <CommonLoader fullScreen />
                 </View>
             ) : sortedData.length > 0 ? (
                 <FlatList
                     data={sortedData}
-                    keyExtractor={(_, index) => index.toString()}
+                    keyExtractor={(item) => item.month}
                     renderItem={renderItem}
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}
@@ -190,115 +181,64 @@ const AllAssessmentResultListing = () => {
             ) : (
                 <View style={styles.emptyContainer}>
                     <EmptyComponent
-                        text={
-                            isOnline ? noDataMessage : t('nointernetconnection')
-                        }
+                        text={isOnline ? t('nodatafound') : t('nointernetconnection')}
                     />
                 </View>
             )}
         </View>
     );
+
 };
 
 export default AllAssessmentResultListing;
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#f8f8f8',
-    },
-    nodatafoundImage: {
-        height: 150,
-        width: 150,
-        marginBottom: 20,
-    },
-    loaderWrapper: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#f8f8f8',
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#f8f8f8',
-    },
-    listContent: {
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-    },
+    container: { flex: 1, backgroundColor: '#f8f8f8' },
+    loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    listContent: { padding: 16 },
+    rowView: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     card: {
-        backgroundColor: 'rgba(180, 180, 180, 0.4)',
+        backgroundColor: 'rgba(180,180,180,0.4)',
         borderRadius: 12,
         padding: 16,
-        marginVertical: 8,
-    },
-    cardContent: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
-    leftSection: {
-        flex: 1,
-        paddingRight: 10,
+        marginBottom: 12,
     },
     dateText: {
         fontSize: 15,
-        fontWeight: '600',
-        color: '#000',
         fontFamily: 'Poppins-SemiBold',
+        marginBottom: 6,
     },
     scoreBadge: {
         alignSelf: 'flex-start',
         paddingHorizontal: 12,
         paddingVertical: 6,
-        borderRadius: 5,
-        marginVertical: 4,
+        borderRadius: 6,
+        marginBottom: 6,
     },
-    scoreText: {
-        fontWeight: '600',
-        fontSize: 14,
-    },
+    scoreText: { fontSize: 14, fontWeight: '600' },
     meaningText: {
         fontSize: 13,
-        color: '#333',
         fontFamily: 'Poppins-Regular',
-        lineHeight: 18,
-        marginTop: 4,
+        color: '#333',
     },
     moodText: {
         fontSize: 14,
-        fontWeight: '600',
-        color: '#000',
         fontFamily: 'Poppins-SemiBold',
     },
     messageText: {
         fontSize: 12.5,
-        width: '90%',
-        color: '#444',
         fontFamily: 'Poppins-Regular',
         marginTop: 4,
-        lineHeight: 17,
+    },
+    pomsRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 6,
     },
     rightIcon: {
         backgroundColor: '#fff',
         padding: 10,
         borderRadius: 10,
-        justifyContent: 'center',
-        alignItems: 'center',
     },
-    emptyContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: 40,
-    },
-    emptyText: {
-        fontSize: 16,
-        color: '#000',
-        textAlign: 'center',
-        fontFamily: 'Poppins-Regular',
-        lineHeight: 22,
-    }
+    emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });

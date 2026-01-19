@@ -48,6 +48,7 @@ const ContentDetailsScreen = () => {
       setLoading(true);
       const response = await viewContentDetails({
         contentId: contentId as string,
+        isHtml:true
       });
 
       if (response.data) {

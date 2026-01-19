@@ -14,6 +14,8 @@ import { getRecommendedContents, acknowledgeContent } from "@/src/apis/apiServic
 import GlobalHeader from "@/src/components/GlobalHeader";
 import MediaPreviewModal from "@/src/components/Modals/MediaPreviewModal";
 import PDFModal from "@/src/components/Modals/PDFModal";
+import { useWindowDimensions } from 'react-native';
+import RenderHtml from 'react-native-render-html';
 import Colors from "@/src/utils/Colors";
 import { Video } from "expo-av";
 import { BlurView } from "expo-blur";
@@ -31,6 +33,7 @@ const { height } = Dimensions.get("window");
 export default function ArticleDetails({ data: fullDetails }: { data: Content }) {
   const [notificationDetailModalVisible, setNotificationDetailModalVisible] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState<any>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [RecommendedData, setRecommendedData] = useState<any[]>([]);
   const scrollViewRef = useRef<ScrollView>(null);
   const videoRef = useRef<Video>(null);
@@ -42,12 +45,20 @@ export default function ArticleDetails({ data: fullDetails }: { data: Content })
   const [mediaUri, setMediaUri] = useState<string>("");
   const [isAcknowledged, setIsAcknowledged] = useState<boolean>(fullDetails?.contentAcknowledge?.length > 0);
   const [isAcknowledging, setIsAcknowledging] = useState<boolean>(false);
-
+ const { width } = useWindowDimensions();
   const handleOpenPDF: (url: string, title: string) => void = (url, title) => {
     setPdfUrl(url);
     setPdfTitle(title);
     setPdfModalVisible(true);
   };
+  const DESCRIPTION_LIMIT = 500;
+  const isLongDescription =
+    (fullDetails?.description?.length ?? 0) > DESCRIPTION_LIMIT;
+
+  const displayedDescription = isExpanded
+    ? fullDetails?.description
+    : fullDetails?.description?.slice(0, DESCRIPTION_LIMIT);
+
 
   const showMediaPreview = (uri: string) => {
     setMediaUri(uri);
@@ -150,8 +161,33 @@ export default function ArticleDetails({ data: fullDetails }: { data: Content })
               <BlurView intensity={40} style={StyleSheet.absoluteFill} />
               <View style={styles.frameContent}>
                 <Text style={styles.title}>{fullDetails?.contentTitle}</Text>
-                <Text style={styles.description}>{fullDetails?.description}</Text>
-                <Text style={styles.postedOn}><Text style={styles.postedOnText}>Posted on: </Text>{getRelativeTime(fullDetails?.createdAt)}</Text>
+<RenderHtml
+  contentWidth={width}
+  source={{ html: displayedDescription }}
+/>
+
+{isLongDescription && (
+  <TouchableOpacity
+    onPress={() => setIsExpanded(prev => !prev)}
+    activeOpacity={0.7}
+  >
+    <Text style={styles.readMoreText}>
+      {isExpanded ? t("readless") : t("readmore")}
+    </Text>
+  </TouchableOpacity>
+)}
+                {isLongDescription && (
+                  <TouchableOpacity
+                    onPress={() => setIsExpanded(prev => !prev)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.readMoreText}>
+                      {isExpanded ? t("readless") : t("readmore")}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
+                <Text style={styles.postedOn}>{t('postedon')} {getRelativeTime(fullDetails?.createdAt)}</Text>
               </View>
             </View>
           </View>
@@ -168,7 +204,7 @@ export default function ArticleDetails({ data: fullDetails }: { data: Content })
                   activeOpacity={0.8}
                 >
                   <Text style={styles.pdfButtonText}>
-                    Click to view {item.toLowerCase().endsWith(".pdf") ? "PDF" : "Image"}
+                    {t('clicktoview')} {item.toLowerCase().endsWith(".pdf") ? "PDF" : "Image"}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -223,7 +259,7 @@ export default function ArticleDetails({ data: fullDetails }: { data: Content })
             style={styles.closeButton}
             onPress={() => router.back()}
           >
-            <Text style={styles.closeText}>Close</Text>
+            <Text style={styles.closeText}>{t('close')}</Text>
           </TouchableOpacity>
         </View>
       </Modal>
@@ -267,21 +303,27 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#222",
   },
+  readMoreText: {
+    fontSize: 13,
+    fontFamily: 'Poppins-SemiBold',
+    color: Colors.darkGreen
+  },
+
   description: {
     fontSize: 14,
     fontFamily: "Poppins-Regular",
     lineHeight: 22,
     color: "#444",
-    marginVertical: 20
   },
-  postedOn: { fontSize: 12, color: "#06361f" },
+  postedOn: { fontSize: 12, color: "#06361f", fontFamily: 'Poppins-Regular' },
   relatedTitle: {
     marginVertical: 10,
     fontSize: 18,
     fontWeight: "600",
   },
   postedOnText: {
-
+    fontSize: 12,
+    fontFamily: 'Poppins-Regular'
   },
   modalBox: {
     padding: 20,

@@ -964,5 +964,10 @@
   "calm": "平静",
   "analytics_description": "根据您最近一次健康脉搏调查结果计算得出，帮助您发现规律并更好地管理压力。",
   "from": "从",
-  "to": "到"
+  "to": "到",
+  "clicktoview": "点击查看",
+  "watch": "手表",
+  "read": "读",
+  "listen": "听",
+  "reloadapp": "重新加载应用程序"
 }

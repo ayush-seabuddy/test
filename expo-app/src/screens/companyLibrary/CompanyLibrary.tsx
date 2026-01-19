@@ -118,7 +118,7 @@ const CompanyLibrary = () => {
                                     router.push({
                                         pathname: "/companyContentList",
                                         params: {
-                                            title: `Watch`,
+                                            title: `${t('watch')}`,
                                             contentType: `VIDEO`
                                         },
                                     });
@@ -162,7 +162,7 @@ const CompanyLibrary = () => {
                                     router.push({
                                         pathname: "/companyContentList",
                                         params: {
-                                            title: `Listen`,
+                                            title: `${t('listen')}`,
                                             contentType: `MUSIC`
                                         },
                                     });
@@ -205,7 +205,7 @@ const CompanyLibrary = () => {
                                     router.push({
                                         pathname: "/companyContentList",
                                         params: {
-                                            title: `Read`,
+                                            title: `${t('read')}`,
                                             contentType: `READ`
                                         },
                                     });
