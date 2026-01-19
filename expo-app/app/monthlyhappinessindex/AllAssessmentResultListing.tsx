@@ -4,8 +4,6 @@ import EmptyComponent from '@/src/components/EmptyComponent';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import { useNetwork } from '@/src/hooks/useNetworkStatusHook';
-import { ImagesAssets } from '@/src/utils/ImageAssets';
-import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowUpRight } from 'lucide-react-native';
 import moment from 'moment';
@@ -16,10 +14,13 @@ import {
     StyleSheet,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 
-const getScoreStyle = (score: number, assessmentType: 'HAPPINESS' | 'POMS') => {
+const getScoreStyle = (
+    score: number,
+    assessmentType: 'HAPPINESS' | 'POMS'
+) => {
     if (assessmentType === 'HAPPINESS') {
         if (score >= 75) return { bg: '#A9DFBF', text: '#145A32' };
         if (score >= 40) return { bg: '#F9E79F', text: '#7D6608' };
@@ -34,53 +35,27 @@ const getScoreStyle = (score: number, assessmentType: 'HAPPINESS' | 'POMS') => {
 
 const AllAssessmentResultListing = () => {
     const { assessmentType = 'HAPPINESS' } = useLocalSearchParams();
-    const [loading, setLoading] = useState(true);
-    const [assessmentData, setAssessmentData] = useState<any[]>([]);
     const router = useRouter();
     const isOnline = useNetwork();
     const { t } = useTranslation();
 
-    const getScoreMeaning = (score: number) => {
-        if (score >= 80) return t('monthlyhappinessindex_resultdescription.veryhappy');
-        if (score >= 60) return t('monthlyhappinessindex_resultdescription.happy');
-        if (score >= 40) return t('monthlyhappinessindex_resultdescription.moderate');
-        if (score >= 20) return t('monthlyhappinessindex_resultdescription.low');
-        return t('monthlyhappinessindex_resultdescription.verylow');
-    };
-
-    const classifyTMD = (tmd: number) => {
-        if (!tmd || isNaN(tmd)) {
-            return { mood: 'No Data', message: 'No mood data available.' };
-        }
-
-        tmd = Math.round(tmd);
-        if (tmd < 6) {
-            return { mood: t('mood_stable'), message: t('mood_stable_message') };
-        } else if (tmd < 21) {
-            return { mood: t('mood_mild'), message: t('mood_mild_message') };
-        } else if (tmd <= 35) {
-            return { mood: t('mood_moderate'), message: t('mood_moderate_message') };
-        } else {
-            return { mood: t('mood_high'), message: t('mood_high_message') };
-        }
-    };
+    const [loading, setLoading] = useState(true);
+    const [assessmentData, setAssessmentData] = useState<any[]>([]);
 
     const fetchAssessments = useCallback(async () => {
         setLoading(true);
         try {
-            const apiResponse = await getassessmentresponseList({
+            const res = await getassessmentresponseList({
                 assessmentType: assessmentType as string,
             });
 
-            if (apiResponse.success && apiResponse.status === 200) {
-                const list = apiResponse.data?.assessmentList || [];
-                setAssessmentData(list);
+            if (res.success && res.status === 200) {
+                setAssessmentData(res.data?.assessmentList || []);
             } else {
-                showToast.error(t('oops'), apiResponse.message);
+                showToast.error(t('oops'), res.message);
                 setAssessmentData([]);
             }
-        } catch (error) {
-            console.error('Error fetching assessments:', error);
+        } catch {
             showToast.error(t('oops'), t('somethingwentwrong'));
             setAssessmentData([]);
         } finally {
@@ -98,81 +73,113 @@ const AllAssessmentResultListing = () => {
             .sort((a, b) => b.month.localeCompare(a.month));
     }, [assessmentData, assessmentType]);
 
-    const title = assessmentType === 'POMS'
-        ? t('monthlywellbeingpulse')
-        : t('monthlyhappinessindex');
+    const title =
+        assessmentType === 'POMS'
+            ? t('monthlywellbeingpulse')
+            : t('monthlyhappinessindex');
 
-    const noDataMessage = assessmentType === 'POMS'
-        ? t('nowellbeingdata')
-        : t('nohappinessindexdata');
+    const noDataMessage =
+        assessmentType === 'POMS'
+            ? t('nowellbeingdata')
+            : t('nohappinessindexdata');
 
-    const renderItem = ({ item }: { item: any }) => {
-        const score = Number(item?.questionsAndAnswers?.[0]?.result ?? 0);
-        const formattedDate = moment(item.month, 'MM-YYYY').format('MMM YYYY');
-        const { bg, text } = getScoreStyle(score, assessmentType as 'HAPPINESS' | 'POMS');
+    const classifyTMD = useCallback(
+        (tmd: number) => {
+            if (!tmd || isNaN(tmd)) {
+                return { mood: 'No Data', message: 'No mood data available.' };
+            }
 
-        let infoContent;
-        if (assessmentType === 'HAPPINESS') {
-            infoContent = <Text style={styles.meaningText}>{getScoreMeaning(score)}</Text>;
-        } else {
-            const { mood, message } = classifyTMD(score);
-            infoContent = (
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <View style={{ marginTop: 6, width: '90%' }}>
-                        <Text style={styles.moodText}>{mood}</Text>
-                        <Text style={styles.messageText}>{message}</Text>
-                    </View>
+            tmd = Math.round(tmd);
+            if (tmd < 6) return { mood: t('mood_stable'), message: t('mood_stable_message') };
+            if (tmd < 21) return { mood: t('mood_mild'), message: t('mood_mild_message') };
+            if (tmd <= 35) return { mood: t('mood_moderate'), message: t('mood_moderate_message') };
+            return { mood: t('mood_high'), message: t('mood_high_message') };
+        },
+        [t]
+    );
 
-                    <View style={styles.rightIcon}>
-                        <ArrowUpRight size={16} color="#666" />
-                    </View>
-                </View>
-
+    const renderItem = useCallback(
+        ({ item }: { item: any }) => {
+            const score = Number(item?.questionsAndAnswers?.[0]?.result ?? 0);
+            const formattedDate = moment(item.month, 'MM-YYYY').format('MMM YYYY');
+            const { bg, text } = getScoreStyle(
+                score,
+                assessmentType as 'HAPPINESS' | 'POMS'
             );
-        }
 
-        return (
-            <TouchableOpacity
-                style={styles.card}
-                onPress={() => {
-                    router.push({
-                        pathname: assessmentType === 'POMS' ? '/monthlywellbeingpulse/MonthlyWellbeingPulseResultScreen' : '/monthlyhappinessindex/MonthlyHappinessIndexResultScreen',
-                        params: { assessmentData: JSON.stringify(item) },
-                    });
-                }}
-            >
-                <View style={styles.cardContent}>
-                    <View style={styles.leftSection}>
-                        <View style={{ justifyContent: 'space-between', flexDirection: 'row', alignItems: 'center' }}>
-                            <Text style={styles.dateText}>{formattedDate}</Text>
-                            <View style={[styles.scoreBadge, { backgroundColor: bg }]}>
-                                <Text style={[styles.scoreText, { color: text }]}>
-                                    {t('score')}: {score}
-                                </Text>
+            const infoContent =
+                assessmentType === 'HAPPINESS' ? (
+                    <Text style={styles.meaningText}>
+                        {score >= 80
+                            ? t('monthlyhappinessindex_resultdescription.veryhappy')
+                            : score >= 60
+                                ? t('monthlyhappinessindex_resultdescription.happy')
+                                : score >= 40
+                                    ? t('monthlyhappinessindex_resultdescription.moderate')
+                                    : score >= 20
+                                        ? t('monthlyhappinessindex_resultdescription.low')
+                                        : t('monthlyhappinessindex_resultdescription.verylow')}
+                    </Text>
+                ) : (
+                    (() => {
+                        const { mood, message } = classifyTMD(score);
+                        return (
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <View style={{ width: '90%' }}>
+                                    <Text style={styles.moodText}>{mood}</Text>
+                                    <Text style={styles.messageText}>{message}</Text>
+                                </View>
+                                <View style={styles.rightIcon}>
+                                    <ArrowUpRight size={16} color="#666" />
+                                </View>
                             </View>
-                        </View>
-                        {infoContent}
-                    </View>
-                </View>
-            </TouchableOpacity>
-        );
-    };
+                        );
+                    })()
+                );
 
-    if (loading) {
-        return (
-            <View style={styles.loadingContainer}>
-                <CommonLoader fullScreen />
-            </View>
-        );
-    }
+            return (
+                <TouchableOpacity
+                    style={styles.card}
+                    onPress={() =>
+                        router.push({
+                            pathname:
+                                assessmentType === 'POMS'
+                                    ? '/monthlywellbeingpulse/MonthlyWellbeingPulseResultScreen'
+                                    : '/monthlyhappinessindex/MonthlyHappinessIndexResultScreen',
+                            params: { assessmentData: JSON.stringify(item) },
+                        })
+                    }
+                >
+                    <View style={styles.cardContent}>
+                        <View style={styles.leftSection}>
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                                <Text style={styles.dateText}>{formattedDate}</Text>
+                                <View style={[styles.scoreBadge, { backgroundColor: bg }]}>
+                                    <Text style={[styles.scoreText, { color: text }]}>
+                                        {t('score')}: {score}
+                                    </Text>
+                                </View>
+                            </View>
+                            {infoContent}
+                        </View>
+                    </View>
+                </TouchableOpacity>
+            );
+        },
+        [assessmentType, classifyTMD, router, t]
+    );
 
     return (
         <View style={styles.container}>
-            <GlobalHeader
-                title={title}
-            />
+            {/* HEADER ALWAYS VISIBLE */}
+            <GlobalHeader title={title} />
 
-            {sortedData.length > 0 ? (
+            {/* CENTER LOADER */}
+            {loading ? (
+                <View style={styles.loaderWrapper}>
+                    <CommonLoader fullScreen />
+                </View>
+            ) : sortedData.length > 0 ? (
                 <FlatList
                     data={sortedData}
                     keyExtractor={(_, index) => index.toString()}
@@ -181,10 +188,12 @@ const AllAssessmentResultListing = () => {
                     showsVerticalScrollIndicator={false}
                 />
             ) : (
-                isOnline ? <View style={styles.emptyContainer}>
-                    <EmptyComponent text={noDataMessage} />
-                </View> : <View style={styles.emptyContainer}>
-                    <EmptyComponent text={t('nointernetconnection')} />
+                <View style={styles.emptyContainer}>
+                    <EmptyComponent
+                        text={
+                            isOnline ? noDataMessage : t('nointernetconnection')
+                        }
+                    />
                 </View>
             )}
         </View>
@@ -202,6 +211,12 @@ const styles = StyleSheet.create({
         height: 150,
         width: 150,
         marginBottom: 20,
+    },
+    loaderWrapper: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f8f8f8',
     },
     loadingContainer: {
         flex: 1,

@@ -434,7 +434,7 @@ const styles = StyleSheet.create({
         fontFamily: 'Poppins-Regular', 
         marginTop: 4 
     },
-    infoIcon: { marginTop: 2 },
+    infoIcon: { marginBottom: 8 },
     sailorsIcon: { height: 50, width: 50 },
     sailorsListContainer: { paddingHorizontal: 16, paddingVertical: 12 },
     overallHeaderContainer: { marginTop: 20, paddingHorizontal: 16, paddingBottom: 10 },

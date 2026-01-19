@@ -74,7 +74,7 @@ const CompanyLibrary = () => {
                         flexDirection: "row",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        marginVertical: 10,
+                        marginVertical: 16,
                         paddingHorizontal: 10,
                     }}
                 >

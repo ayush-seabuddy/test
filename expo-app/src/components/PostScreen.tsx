@@ -22,7 +22,6 @@ import {
   ActivityIndicator,
   Dimensions,
   FlatList,
-  Image,
   Modal,
   StyleSheet,
   Text,
@@ -30,6 +29,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { Image } from 'expo-image';
 import ReactTimeAgo from 'react-time-ago';
 import { likecommentpost, updatepost } from '../apis/apiService';
 import Colors from '../utils/Colors';
@@ -74,9 +74,57 @@ const ColorsLight = {
   commentBg: '#F9FAFB',
 };
 
-const isVideo = (uri) => !!uri && /\.(mp4|mov|avi|m4v)$/i.test(uri);
+const isVideo = (uri?: string | null) => !!uri && /\.(mp4|mov|avi|m4v)$/i.test(uri || '');
 
-const UserItem = React.memo(({ user, onPress }) => {
+// Types
+type User = {
+  id?: string | number | null;
+  profileUrl?: string | null;
+  fullName?: string | null;
+  designation?: string | null;
+  ship?: { shipName?: string } | null;
+  associatedShip?: { shipName?: string } | null;
+};
+
+type MediaItem = { uri: string; type: 'image' | 'video' };
+
+type Post = {
+  id: string | number;
+  userDetails?: User | null;
+  imageUrls?: string[];
+  isLiked?: boolean;
+  totalLike?: number;
+  likeUser?: User[];
+  totalComments?: number;
+  viewCount?: number;
+  caption?: string;
+  createdAt?: string | number;
+  createdTime?: string | number;
+  hashtags?: string[];
+  taggedUsers?: User[];
+  groupActivityId?: string | number | null;
+  ratioValue?: number;
+};
+
+type PostScreenProps = {
+  post: Post;
+  index?: number;
+  onPostDeleted?: (id: string | number) => void;
+  onPostReported?: (id: string | number) => void;
+};
+
+type PostState = {
+  isLiked: boolean;
+  likesCount: number;
+  currentIndex: number;
+  expandedIndex: number | null;
+  imageLoading: Record<string, boolean>;
+  isLikeLoading: boolean;
+  fullLines: number;
+  likedUsers: User[];
+};
+
+const UserItem: React.FC<{ user: User; onPress?: () => void }> = React.memo(({ user, onPress }) => {
   const imageSource = user.profileUrl
     ? { uri: user.profileUrl }
     : ImagesAssets.userIcon;
@@ -97,7 +145,7 @@ const UserItem = React.memo(({ user, onPress }) => {
 
 UserItem.displayName = 'UserItem';
 
-const TaggedUsersRow = ({ users, onPress }) => (
+const TaggedUsersRow: React.FC<{ users?: User[]; onPress?: () => void }> = ({ users = [], onPress }) => (
   <TouchableOpacity activeOpacity={0.8} onPress={onPress}>
     <View style={styles.avatarRow}>
       {users.slice(0, 3).map((user, index) => {
@@ -127,7 +175,15 @@ const TaggedUsersRow = ({ users, onPress }) => (
   </TouchableOpacity>
 );
 
-const PostHeader = ({
+  const PostHeader: React.FC<{
+  profileUrl?: string | null | undefined;
+  userName?: string | null | undefined;
+  designation?: string | null | undefined;
+  taggedUsers?: User[];
+  onTaggedPress?: () => void;
+  onProfilePress?: () => void;
+  onMenuPress?: () => void;
+}> = ({
   profileUrl,
   userName,
   designation,
@@ -163,7 +219,7 @@ const PostHeader = ({
 
       <Text style={styles.timestamp}>{designation}</Text>
 
-      {taggedUsers?.length > 0 && (
+      {(taggedUsers?.length ?? 0) > 0 && (
         <View style={styles.taggedUsersContainer}>
           <TaggedUsersRow users={taggedUsers} onPress={onTaggedPress} />
         </View>
@@ -176,7 +232,13 @@ const PostHeader = ({
   </View>
 );
 
-const VideoItem = ({ uri, isActive, ratioValue, muted, onPress }) => {
+const VideoItem: React.FC<{
+  uri: string;
+  isActive: boolean;
+  ratioValue: number;
+  muted?: boolean;
+  onPress?: () => void;
+}> = ({ uri, isActive, ratioValue, muted = true, onPress }) => {
   const player = useVideoPlayer({ uri }, (p) => {
     p.loop = true;
     p.bufferOptions = {
@@ -207,7 +269,16 @@ const VideoItem = ({ uri, isActive, ratioValue, muted, onPress }) => {
   );
 };
 
-const PostMedia = ({
+const PostMedia: React.FC<{
+  post: Post;
+  images: MediaItem[];
+  currentIndex: number;
+  handleMediaPress: (i: number) => void;
+  imageLoading: Record<string, boolean>;
+  setImageLoading: (fn: any) => void;
+  viewabilityConfigCallbackPairs: React.RefObject<any>;
+  hashtagsDisplay?: React.ReactNode;
+}> = ({
   post,
   images,
   currentIndex,
@@ -217,10 +288,10 @@ const PostMedia = ({
   viewabilityConfigCallbackPairs,
   hashtagsDisplay,
 }) => {
-  const ratioValue = post?.ratioValue || 1;
+  const ratioValue = post?.ratioValue ?? 1;
 
   const renderItem = useCallback(
-    ({ item, index }) => {
+    ({ item, index }: { item: MediaItem; index: number }) => {
       const isActive = currentIndex === index;
       if (item.type === 'video') {
         return (
@@ -234,14 +305,15 @@ const PostMedia = ({
             <Image
               style={{ width: '100%', height: '100%' }}
               source={{ uri: item.uri }}
+              transition={0}
               contentFit="cover"
               cachePolicy="memory-disk"
               recyclingKey={item.uri}
               priority="normal"
               placeholder={ImagesAssets.PlaceholderImage}
               placeholderContentFit='cover'
-              onLoadStart={() => setImageLoading((prev) => ({ ...prev, [item.uri]: true }))}
-              onLoad={() => setImageLoading((prev) => ({ ...prev, [item.uri]: false }))}
+              onLoadStart={() => setImageLoading((prev: Record<string, boolean>) => ({ ...prev, [item.uri]: true }))}
+              onLoad={() => setImageLoading((prev: Record<string, boolean>) => ({ ...prev, [item.uri]: false }))}
             />
           </View>
         </TouchableOpacity>
@@ -256,11 +328,10 @@ const PostMedia = ({
         data={images}
         horizontal
         pagingEnabled
+        drawDistance={250}
         showsHorizontalScrollIndicator={false}
         keyExtractor={(_, i) => i.toString()}
         renderItem={renderItem}
-        estimatedItemSize={width}
-        windowSize={2}
         removeClippedSubviews={true}
         viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
       />
@@ -269,10 +340,21 @@ const PostMedia = ({
   );
 };
 
-const PostContent = ({
+const PostContent: React.FC<{
+  post: Post;
+  expandedIndex: number | null;
+  index?: number;
+  toggleExpand: (i: number) => void;
+  hashtagsDisplay?: React.ReactNode;
+  images: MediaItem[];
+  currentIndex: number;
+  fullLines: number;
+  setFullLines: (l: number) => void;
+  hasMedia: boolean;
+}> = ({
   post,
   expandedIndex,
-  index,
+  index = 0,
   toggleExpand,
   hashtagsDisplay,
   images,
@@ -326,7 +408,15 @@ const PostContent = ({
   );
 };
 
-const PostFooter = ({ post, isLiked, likesCount, handleLikeToggle, isLikeLoading, openLikesSheet, openCommentSheet }) => (
+const PostFooter: React.FC<{
+  post: Post;
+  isLiked: boolean;
+  likesCount: number;
+  handleLikeToggle: () => void;
+  isLikeLoading: boolean;
+  openLikesSheet: () => void;
+  openCommentSheet: () => void;
+}> = ({ post, isLiked, likesCount, handleLikeToggle, isLikeLoading, openLikesSheet, openCommentSheet }) => (
   <View style={styles.footer}>
     <TouchableOpacity style={styles.button} onPress={handleLikeToggle} disabled={isLikeLoading}>
       <Heart size={24} color={isLiked ? '#8DAF02' : '#4B5563'} fill={isLiked ? '#8DAF02' : 'none'} strokeWidth={1.7} />
@@ -338,19 +428,26 @@ const PostFooter = ({ post, isLiked, likesCount, handleLikeToggle, isLikeLoading
     </TouchableOpacity>
     <TouchableOpacity style={styles.button} onPress={openCommentSheet}>
       <MessageCircle size={22} color="#4B5563" strokeWidth={1.7} />
-      {post.totalComments > 0 && <Text style={styles.buttonText}>{post.totalComments}</Text>}
+  {(post.totalComments ?? 0) > 0 && <Text style={styles.buttonText}>{post.totalComments ?? 0}</Text>}
     </TouchableOpacity>
     <View style={styles.button}>
       <TrendingUp size={22} color="#4B5563" strokeWidth={1.7} />
-      {post.viewCount > 0 && <Text style={styles.buttonText}>{post.viewCount}</Text>}
+      {(post.viewCount ?? 0) > 0 && <Text style={styles.buttonText}>{post.viewCount ?? 0}</Text>}
     </View>
   </View>
 );
 
 // Menu as BottomSheet
-const MenuBottomSheet = ({ visible, onClose, isOwner, onEdit, onDeleteTrigger, onReportTrigger }) => {
+const MenuBottomSheet: React.FC<{
+  visible: boolean;
+  onClose: () => void;
+  isOwner: boolean;
+  onEdit: () => void;
+  onDeleteTrigger: () => void;
+  onReportTrigger: () => void;
+}> = ({ visible, onClose, isOwner, onEdit, onDeleteTrigger, onReportTrigger }) => {
   return (
-    <BottomSheet visible={visible} onClose={onClose} snapPoints={['23%']}>
+  <BottomSheet visible={visible} onClose={onClose} snapPoints={['23%'] as any}>
       <View style={styles.menuSheetContent}>
         {isOwner ? (
           <>
@@ -397,7 +494,7 @@ const MenuBottomSheet = ({ visible, onClose, isOwner, onEdit, onDeleteTrigger, o
 };
 
 // Delete Confirmation Modal
-const DeleteConfirmationModal = ({ visible, onClose, onConfirm, loading }) => (
+const DeleteConfirmationModal: React.FC<{ visible: boolean; onClose: () => void; onConfirm: () => void; loading?: boolean }> = ({ visible, onClose, onConfirm, loading }) => (
   <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
     <View style={styles.modalOverlay}>
       <View style={styles.modalContainer}>
@@ -417,7 +514,7 @@ const DeleteConfirmationModal = ({ visible, onClose, onConfirm, loading }) => (
 );
 
 // Report as Modal (original)
-const ReportModal = ({ visible, onClose, onSubmit, loading }) => {
+const ReportModal: React.FC<{ visible: boolean; onClose: () => void; onSubmit: (reason: string) => void; loading?: boolean }> = ({ visible, onClose, onSubmit, loading }) => {
   const [reason, setReason] = useState('');
   const handleSubmit = () => {
     if (!reason.trim()) return;
@@ -460,17 +557,17 @@ const ReportModal = ({ visible, onClose, onSubmit, loading }) => {
   );
 };
 
-const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
+const PostScreen: React.FC<PostScreenProps> = ({ post, index = 0, onPostDeleted, onPostReported }) => {
   const { t } = useTranslation();
   const router = useRouter();
-  const navigateToProfile = useCallback((userId) => {
+  const navigateToProfile = useCallback((userId?: string | number | null) => {
     if (!userId) return;
     setCommentSheetVisible(false);
     router.push({ pathname: '/crewProfile', params: { crewId: userId } });
   }, [router]);
 
-  const [currentUserId, setCurrentUserId] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState<string | number | null>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     (async () => {
@@ -497,8 +594,8 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
       try {
         const stored = await AsyncStorage.getItem('userDetails');
         if (!stored) return setYourActivity(false);
-        const currentUser = JSON.parse(stored);
-        setYourActivity(post.userDetails?.id && currentUser?.id === post.userDetails.id);
+  const currentUser = JSON.parse(stored) as any;
+  setYourActivity(Boolean(post.userDetails?.id && currentUser?.id === post.userDetails.id));
       } catch {
         setYourActivity(false);
       }
@@ -506,7 +603,7 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
     checkOwnership();
   }, [post.userDetails?.id]);
 
-  const [postState, setPostState] = useState({
+  const [postState, setPostState] = useState<PostState>({
     isLiked: post.isLiked || false,
     likesCount: post.totalLike || 0,
     currentIndex: 0,
@@ -514,22 +611,22 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
     imageLoading: {},
     isLikeLoading: false,
     fullLines: 0,
-    likedUsers: post.likeUser || [],
+    likedUsers: (post.likeUser as User[]) || [],
   });
 
   const [likesSheetVisible, setLikesSheetVisible] = useState(false);
   const [taggedSheetVisible, setTaggedSheetVisible] = useState(false);
 
-  const images = useMemo(() => (post.imageUrls || []).map(uri => ({ uri, type: isVideo(uri) ? 'video' : 'image' })), [post.imageUrls]);
+  const images = useMemo<MediaItem[]>(() => (post.imageUrls || []).map(uri => ({ uri, type: isVideo(uri) ? 'video' : 'image' as 'image' })), [post.imageUrls]);
   const hasMedia = images.length > 0;
-  const taggedUsers = useMemo(() => post.taggedUsers || [], [post.taggedUsers]);
+  const taggedUsers = useMemo(() => post.taggedUsers || ([] as User[]), [post.taggedUsers]);
   const shipName = post.userDetails?.ship?.shipName || post.userDetails?.associatedShip?.shipName;
   const isBuddyUpEvent = !!post.groupActivityId;
 
-  const handleMediaPress = useCallback((i) => { setSelectedMediaIndex(i); setMediaModalVisible(true); }, []);
-  const toggleExpand = useCallback((i) => setPostState(prev => ({ ...prev, expandedIndex: prev.expandedIndex === i ? null : i })), []);
-  const onViewableItemsChanged = useCallback(({ viewableItems }) => {
-    if (viewableItems.length > 0) setPostState(prev => ({ ...prev, currentIndex: viewableItems[0].index || 0 }));
+  const handleMediaPress = useCallback((i: number) => { setSelectedMediaIndex(i); setMediaModalVisible(true); }, []);
+  const toggleExpand = useCallback((i: number) => setPostState(prev => ({ ...prev, expandedIndex: prev.expandedIndex === i ? null : i })), []);
+  const onViewableItemsChanged = useCallback(({ viewableItems }: { viewableItems: Array<{ index?: number }> }) => {
+    if (viewableItems.length > 0) setPostState(prev => ({ ...prev, currentIndex: viewableItems[0].index ?? 0 }));
   }, []);
   const viewabilityConfigCallbackPairs = useRef([{ viewabilityConfig: { viewAreaCoveragePercentThreshold: 50 }, onViewableItemsChanged }]);
 
@@ -540,17 +637,17 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
     const wasLiked = postState.isLiked;
 
     setPostState(prev => {
-      let updatedLikedUsers = [...prev.likedUsers];
+      let updatedLikedUsers = [...(prev.likedUsers as User[])];
       if (newLikeState) {
-        if (!updatedLikedUsers.some(u => u.id === currentUser.id)) {
+          if (!updatedLikedUsers.some(u => u.id === (currentUser as any).id)) {
           updatedLikedUsers.unshift({
-            id: currentUser.id,
-            fullName: currentUser.fullName || 'You',
-            profileUrl: currentUser.profileUrl || null,
+            id: (currentUser as any).id,
+            fullName: (currentUser as any).fullName || 'You',
+            profileUrl: (currentUser as any).profileUrl || null,
           });
         }
       } else {
-        updatedLikedUsers = updatedLikedUsers.filter(u => u.id !== currentUser.id);
+        updatedLikedUsers = updatedLikedUsers.filter(u => u.id !== (currentUser as any).id);
       }
 
       return {
@@ -565,9 +662,9 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
     likePost(newLikeState, wasLiked);
   }, [postState.isLiked, postState.likesCount, postState.isLikeLoading, currentUser]);
 
-  const likePost = async (newLikeState, wasLiked) => {
+  const likePost = async (newLikeState: boolean, wasLiked: boolean) => {
     try {
-      await likecommentpost({ likeComments: [{ hangoutId: post.id, isLiked: newLikeState }] });
+      await likecommentpost({ likeComments: [{ hangoutId: post.id, isLiked: newLikeState }] } as any);
     } catch (err) {
       console.log('Error', err)
       setPostState(prev => {
@@ -598,7 +695,7 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
     }
   };
 
-  const handleCommentCountChange = useCallback((delta) => {
+  const handleCommentCountChange = useCallback((delta: number) => {
     post.totalComments = Math.max(0, (post.totalComments || 0) + delta);
   }, [post]);
 
@@ -608,7 +705,7 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
   const deletePost = async () => {
     setLoading(true);
     try {
-      const res = await updatepost({ hangouts: [{ hangoutId: post.id, status: "DELETE" }] });
+      const res = await updatepost({ hangouts: [{ hangoutId: post.id, status: 'DELETE' }] } as any);
       if (res.success && res.status === 200) {
         showToast.success(t("success"), t('postdeleted'));
         onPostDeleted?.(post.id);
@@ -621,10 +718,10 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
     }
   };
 
-  const reportPost = async (reason) => {
+  const reportPost = async (reason: string) => {
     setLoading(true);
     try {
-      const res = await updatepost({ hangouts: [{ hangoutId: post.id, reason, status: "REPORTED" }] });
+      const res = await updatepost({ hangouts: [{ hangoutId: post.id, reason, status: 'REPORTED' }] } as any);
       if (res.success && res.status === 200) {
         showToast.success(t("success"), t('reportsubmitted'));
         onPostReported?.(post.id);
@@ -696,12 +793,12 @@ const PostScreen = ({ post, index, onPostDeleted, onPostReported }) => {
     <>
       <View style={styles.ListContainer}>
         <PostHeader
-          profileUrl={post.userDetails.profileUrl}
-          userName={post.userDetails.fullName}
-          designation={post.userDetails.designation}
+          profileUrl={post.userDetails?.profileUrl}
+          userName={post.userDetails?.fullName}
+          designation={post.userDetails?.designation}
           taggedUsers={taggedUsers}
           onTaggedPress={() => setTaggedSheetVisible(true)}
-          onProfilePress={() => navigateToProfile(post.userDetails.id)}
+          onProfilePress={() => navigateToProfile(post.userDetails?.id)}
           onMenuPress={() => setMenuSheetVisible(true)}
         />
 

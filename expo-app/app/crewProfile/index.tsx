@@ -22,11 +22,10 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ActivityIndicator,
 } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 const ProfileColors = {
   background: 'rgba(255, 255, 255, 0.27)',
@@ -365,13 +364,11 @@ const Profile: React.FC = () => {
                     <Text style={styles.experienceTitle}>{t('experience')}</Text>
                     {workingExperienceItems.map((item) => (
                       <View key={item.key} style={styles.experienceItem}>
-                        <View style={styles.experienceHeader}>
-                          <Text style={styles.companyName}>{item.companyName.slice(0, 30)}</Text>
+                          <Text style={styles.companyName}>{item.companyName}</Text>
+                        <Text style={styles.role}>{item.role}</Text>
                           <Text style={styles.dateRange}>
                             {formatDate(item.from)} - {formatDate(item.to)}
                           </Text>
-                        </View>
-                        <Text style={styles.role}>{item.role.slice(0, 30)}</Text>
                       </View>
                     ))}
                   </View>

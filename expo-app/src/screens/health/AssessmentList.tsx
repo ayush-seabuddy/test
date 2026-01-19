@@ -11,6 +11,7 @@ import { ArrowUpRight, ChevronDown, ChevronUp, TriangleAlert } from 'lucide-reac
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import PersonalityTestCard from './PersonalityTestCard';
+import i18n from '@/src/localization/i18n';
 
 const { height } = Dimensions.get('window');
 const isProMax = height >= 926;
@@ -23,7 +24,7 @@ type TestItem = {
 };
 
 const AssessmentList = ({ isProfileScreen = false }: { isProfileScreen?: boolean }) => {
-  const [listOpen, setListOpen] = useState(true);
+  const [listOpen, setListOpen] = useState(false);
   const [profileDetails, setProfileDetails] = useState<UserDetails | null>(null);
   const [testArray, setTestArray] = useState<TestItem[]>([]);
   const [isPersonalityTestCompleted, setIsPersonalityTestCompleted] = useState<boolean | null>(null);
@@ -128,7 +129,7 @@ const AssessmentList = ({ isProfileScreen = false }: { isProfileScreen?: boolean
   };
 
   const hasPendingAssessment = profileDetails?.isPOMSAssessment || profileDetails?.isHappinessIndex;
-
+  const isChinese = i18n.language.startsWith('zh');
   return (
     <View>
       {!isProfileScreen &&
@@ -210,7 +211,11 @@ const AssessmentList = ({ isProfileScreen = false }: { isProfileScreen?: boolean
                   <View style={styles.warningTag}>
                     <TriangleAlert size={15} color="#f45050" strokeWidth={1.5} />
                     <Text style={styles.warningText}>
-                      Submit before {currentMonth} {lastDayOfMonth}{ordinalSuffix}
+                      {t('submitBeforeDate', {
+                        month: currentMonth,
+                        day: lastDayOfMonth,
+                        suffix: isChinese ? '' : ordinalSuffix
+                      })}
                     </Text>
                   </View>
                 )}

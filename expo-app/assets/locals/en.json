@@ -964,5 +964,17 @@
   "edit_experience": "Edit Experience",
   "whatsapp_not_installed": "WhatsApp is not installed on your device.",
   "cannot_make_call": "Unable to make the call at this moment. Please try again later.",
-  "I_Acknowledge":"I Acknowledge"
+  "I_Acknowledge": "I Acknowledge",
+  "submitBeforeDate": "Submit before {{month}} {{day}}{{suffix}}",
+  "goodmorning": "Good Morning",
+  "goodafternoon": "Good Afternoon",
+  "goodevening": "Good Evening",
+  "hello": "Hello",
+  "anxious": "Anxious",
+  "sad": "Sad",
+  "angry": "Angry",
+  "calm": "Calm",
+  "analytics_description":"Calculated from your latest Wellbeing Pulse survey results to help you spot patterns and manage stress better",
+  "from":"From",
+  "to":"To"
 }

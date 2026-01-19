@@ -168,15 +168,6 @@ const MonthlyWellbeingPulseTestScreen = () => {
     const handleResultOk = () => {
         setResultModal(prev => ({ ...prev, visible: false }));
         router.replace('/home');
-    };
-
-    if (loading) {
-        return (
-            <View style={styles.loadingContainer}>
-                <CommonLoader fullScreen/>
-                <Text style={styles.loadingText}>{t('loading')}...</Text>
-            </View>
-        );
     }
 
     return (
@@ -198,67 +189,75 @@ const MonthlyWellbeingPulseTestScreen = () => {
                 </Text>
                 <View style={{ width: 40 }} />
             </View>
-
-            <ScrollView showsVerticalScrollIndicator={false}>
-                <View style={styles.topContainer}>
-                    <Text style={styles.descriptionText}>{t('monthlywellbeingdescription')}</Text>
-                    <Text style={styles.under2minText}>{t('undertwominutes')}</Text>
-
-                    <ProgressBar progress={progress} color="#84A402" style={styles.progressBar} />
-                    <View style={styles.progressLabelContainer}>
-                        <Text style={styles.progressLabelText}>{progressPercentage}%</Text>
-                    </View>
-
-                    <Text style={styles.monthText}>{previousMonthKey}</Text>
+            {loading ? (
+                <View style={styles.loaderWrapper}>
+                    <CommonLoader fullScreen />
                 </View>
+            ) : (
+                <>
+                    <ScrollView showsVerticalScrollIndicator={false}>
+                        <View style={styles.topContainer}>
+                            <Text style={styles.descriptionText}>{t('monthlywellbeingdescription')}</Text>
+                            <Text style={styles.under2minText}>{t('undertwominutes')}</Text>
 
-                <View style={styles.darkSection}>
-                    <View style={styles.dragHandle} />
-                    <View style={styles.counterContainer}>
-                        <Text style={styles.counterText}>{answered}/{total}</Text>
-                    </View>
+                            <ProgressBar progress={progress} color="#84A402" style={styles.progressBar} />
+                            <View style={styles.progressLabelContainer}>
+                                <Text style={styles.progressLabelText}>{progressPercentage}%</Text>
+                            </View>
 
-                    {sections.map((section, idx) => (
-                        <View key={idx} style={styles.sectionWrapper}>
-                            <Text style={styles.sectionTitle}>{section.title}</Text>
-                            {section.data.map(q => {
-                                const selected = responses[q.id];
-                                return (
-                                    <View key={q.id} style={styles.questionCard}>
-                                        <Text style={styles.questionText}>{q.order}. {q.question}</Text>
-                                        <View style={styles.optionsContainer}>
-                                            {optionLabels.map((label, i) => (
-                                                <TouchableOpacity
-                                                    key={i}
-                                                    style={styles.radioRow}
-                                                    onPress={() => updateAnswer(q.id, i)}
-                                                    activeOpacity={0.7}
-                                                >
-                                                    <View style={[styles.radioCircle, selected === i && styles.radioCircleSelected]}>
-                                                        {selected === i && <View style={styles.radioDot} />}
-                                                    </View>
-                                                    <Text style={styles.optionLabel}>{label}</Text>
-                                                </TouchableOpacity>
-                                            ))}
-                                        </View>
-                                    </View>
-                                );
-                            })}
+                            <Text style={styles.monthText}>{previousMonthKey}</Text>
                         </View>
-                    ))}
 
-                    <View style={styles.footer}>
-                        <Text style={styles.disclaimerText}>{t('happinessindexdisclaimer')}</Text>
-                        <GlobalButton
-                            title={submitting ? t('submitting') : t('submit')}
-                            onPress={handleSubmit}
-                            style={[styles.submitButton, (!isComplete || submitting) && styles.submitButtonDisabled]}
-                            textStyle={isComplete && !submitting ? styles.submitButtonTextActive : undefined}
-                            disabled={!isComplete || submitting}
-                        />
-                    </View>
-                </View>
-            </ScrollView>
+                        <View style={styles.darkSection}>
+                            <View style={styles.dragHandle} />
+                            <View style={styles.counterContainer}>
+                                <Text style={styles.counterText}>{answered}/{total}</Text>
+                            </View>
+
+                            {sections.map((section, idx) => (
+                                <View key={idx} style={styles.sectionWrapper}>
+                                    <Text style={styles.sectionTitle}>{section.title}</Text>
+                                    {section.data.map(q => {
+                                        const selected = responses[q.id];
+                                        return (
+                                            <View key={q.id} style={styles.questionCard}>
+                                                <Text style={styles.questionText}>{q.order}. {q.question}</Text>
+                                                <View style={styles.optionsContainer}>
+                                                    {optionLabels.map((label, i) => (
+                                                        <TouchableOpacity
+                                                            key={i}
+                                                            style={styles.radioRow}
+                                                            onPress={() => updateAnswer(q.id, i)}
+                                                            activeOpacity={0.7}
+                                                        >
+                                                            <View style={[styles.radioCircle, selected === i && styles.radioCircleSelected]}>
+                                                                {selected === i && <View style={styles.radioDot} />}
+                                                            </View>
+                                                            <Text style={styles.optionLabel}>{label}</Text>
+                                                        </TouchableOpacity>
+                                                    ))}
+                                                </View>
+                                            </View>
+                                        );
+                                    })}
+                                </View>
+                            ))}
+
+                            <View style={styles.footer}>
+                                <Text style={styles.disclaimerText}>{t('happinessindexdisclaimer')}</Text>
+                                <GlobalButton
+                                    title={submitting ? t('submitting') : t('submit')}
+                                    onPress={handleSubmit}
+                                    style={[styles.submitButton, (!isComplete || submitting) && styles.submitButtonDisabled]}
+                                    textStyle={isComplete && !submitting ? styles.submitButtonTextActive : undefined}
+                                    disabled={!isComplete || submitting}
+                                />
+                            </View>
+                        </View>
+                    </ScrollView>
+                </>
+            )}
+
 
             <Modal visible={resultModal.visible} transparent animationType="fade">
                 <View style={styles.modalOverlay}>
@@ -308,6 +307,7 @@ const styles = StyleSheet.create({
     main: { flex: 1, backgroundColor: Colors.captainanimatedlayoutbg },
     loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.captainanimatedlayoutbg },
     loadingText: { fontSize: 16, color: '#000', fontFamily: 'Poppins-Regular' },
+    loaderWrapper: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: Colors.captainanimatedlayoutbg },
     headerStyle: {
         height: 50,
         backgroundColor: '#fff',
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
     darkSection: { backgroundColor: '#00000066', borderTopLeftRadius: 25, borderTopRightRadius: 25, minHeight: height * 0.8 },
     dragHandle: { height: 3, width: 100, backgroundColor: '#FFFFFF66', alignSelf: 'center', borderRadius: 2, marginVertical: 4 },
     counterContainer: { paddingHorizontal: 20, marginBottom: 10 },
-    counterText: { color: '#fff', textAlign: 'right', fontSize: 15, fontFamily: 'WhyteInktrap-Medium' },
+    counterText: { color: '#fff', textAlign: 'right', fontSize: 15, fontFamily: 'WhyteInktrap-Medium',lineHeight:20 },
     sectionWrapper: { marginTop: 10 },
     sectionTitle: { color: '#fff', fontSize: 16, fontFamily: 'Poppins-SemiBold', paddingHorizontal: 20, marginBottom: 12 },
     questionCard: { backgroundColor: 'rgba(0,0,0,0.4)', marginHorizontal: 16, marginBottom: 16, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 20 },
