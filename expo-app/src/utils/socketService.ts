@@ -1,5 +1,7 @@
 import Constants from 'expo-constants';
 import { io, Socket } from 'socket.io-client';
+import { showToast } from '../components/GlobalToast';
+import { useTranslation } from 'react-i18next';
 
 // Type-safe extra config
 type ExtraConfig = {
@@ -19,7 +21,6 @@ type SocketCallback = (data: any) => void;
 
 class WSService {
   private socket: Socket | null = null;
-
   initializeSocket = async (): Promise<void> => {
     try {
       // Prevent multiple initializations
@@ -45,7 +46,8 @@ class WSService {
       });
 
       this.socket.on('connect_error', (error) => {
-        console.error('Socket Connection Error:', error);
+        showToast.error('Oops!', 'Socket Connection Error');
+        console.log('Socket Connection Error:', error);
       });
     } catch (error) {
       console.error('Failed to initialize socket:', error);

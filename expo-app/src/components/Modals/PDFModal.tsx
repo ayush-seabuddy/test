@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 import CommonLoader from "../CommonLoader";
+import { t } from "i18next";
 
 type PDFModalProps = {
   visible: boolean;
@@ -24,7 +25,6 @@ const PDFModal: React.FC<PDFModalProps> = ({
   visible,
   onClose,
   pdfUrl,
-  useLocal = false,
   title = "App Guide",
 
 }) => {
@@ -71,14 +71,14 @@ const PDFModal: React.FC<PDFModalProps> = ({
               renderLoading={() => (
                 <View style={styles.loadingContainer}>
                   <CommonLoader fullScreen />
-                  <Text>Loading PDF...</Text>
+                  <Text>{t('loadingpdf')}</Text>
                 </View>
               )}
               renderError={() => (
                 <View style={styles.loadingContainer}>
-                  <Text>Error loading PDF. Please try again.</Text>
+                  <Text>{t('errorloadingpdf')}</Text>
                   <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                    <Text style={styles.closeButtonText}>Close</Text>
+                    <Text style={styles.closeButtonText}>{t('close')}</Text>
                   </TouchableOpacity>
                 </View>
               )}
@@ -86,9 +86,9 @@ const PDFModal: React.FC<PDFModalProps> = ({
           </>
         ) : (
           <View style={styles.loadingContainer}>
-            <Text>No valid PDF URL found</Text>
+            <Text>{t('invalidUrlTitle')}</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>Close</Text>
+              <Text style={styles.closeButtonText}>{t('close')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -115,8 +115,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    marginTop: 50,
-    backgroundColor: "white",
+    marginVertical: 16,
   },
   headerButton: {
     width: 40,

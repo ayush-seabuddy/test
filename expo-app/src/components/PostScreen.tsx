@@ -774,7 +774,7 @@ const PostScreen: React.FC<PostScreenProps> = ({ post, index = 0, onPostDeleted,
           </View>
         )}
 
-        {visibleHashtags?.map((h, i) => (
+        {post.hashtags?.map((h, i) => (
           <View
             key={`${h}-${i}`}
             style={[styles.tag, { backgroundColor: ColorsLight.tagBg }]}

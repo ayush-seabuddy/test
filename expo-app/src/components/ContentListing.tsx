@@ -75,7 +75,7 @@ const ContentListing = ({ data }: any) => {
 
           <Image
             style={config.imageStyle}
-            resizeMode="cover"
+            contentFit="cover"
             source={{
               uri: item?.thumbnail
             }} />
@@ -89,7 +89,7 @@ const ContentListing = ({ data }: any) => {
             </Text>
           </View>
           <LinearGradient
-            colors={['transparent', 'rgba(65, 65, 65, 0.56)']} // adjust opacity as you like
+            colors={['transparent', 'rgba(65, 65, 65, 0.56)']}
             style={styles.gradientOverlay}
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
@@ -117,10 +117,6 @@ const ContentListing = ({ data }: any) => {
 export default ContentListing
 
 const styles = StyleSheet.create({
-  // container: {
-  //   flex: 1,
-  //   backgroundColor: '#f5f5f5',
-  // },
   listContent: {
     padding: 12,
     flexGrow: 1,
@@ -142,49 +138,6 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     maxWidth: '48%',
   },
-  // cardImage: {
-  //   width: '100%',
-  //   height: 120,
-  //   resizeMode: 'cover',
-  // },
-  // cardTitle: {
-  //   fontSize: 14,
-  //   fontWeight: '600',
-  //   color: '#222',
-  // },
-  // cardPrice: {
-  //   fontSize: 16,
-  //   fontWeight: 'bold',
-  //   color: '#e74c3c',
-  //   marginVertical: 4,
-  // },
-  // cardDetails: {
-  //   fontSize: 12,
-  //   color: '#777',
-  // },
-  // header: {
-  //   padding: 16,
-  //   paddingBottom: 8,
-  // },
-  // headerTitle: {
-  //   fontSize: 28,
-  //   fontWeight: 'bold',
-  //   color: '#222',
-  // },
-  // headerSubtitle: {
-  //   fontSize: 14,
-  //   color: '#666',
-  //   marginTop: 4,
-  // },
-  // loader: {
-  //   paddingVertical: 20,
-  // },
-  // empty: {
-  //   flex: 1,
-  //   justifyContent: 'center',
-  //   alignItems: 'center',
-  //   paddingTop: 100,
-  // },
   cardContainer: {
     borderRadius: 5,
     alignSelf: "center",

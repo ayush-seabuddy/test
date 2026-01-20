@@ -10,7 +10,7 @@ import { AntDesign, Entypo } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { router, useLocalSearchParams } from 'expo-router';
 import { t } from 'i18next';
-import { ExternalLink, Globe, Mars, Maximize2 } from 'lucide-react-native';
+import { ExternalLink, Globe, HeartPulseIcon, Mars, Maximize2 } from 'lucide-react-native';
 import moment from 'moment-timezone';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -180,6 +180,7 @@ const Profile: React.FC = () => {
         return null;
     }
   }, []);
+  
 
   const handleOpenLink = useCallback(async (link: string, platform: string) => {
     if (!link) {
@@ -254,7 +255,7 @@ const Profile: React.FC = () => {
         {/* Loader overlay */}
         {imageLoading && crewProfileDetails.profileUrl && (
           <View style={styles.loaderOverlay}>
-           <CommonLoader fullScreen/>
+            <CommonLoader fullScreen />
           </View>
         )}
       </ImageBackground>
@@ -303,6 +304,7 @@ const Profile: React.FC = () => {
                       )}
                       {crewProfileDetails.relationshipStatus && (
                         <View style={styles.pill}>
+                          <HeartPulseIcon size={16} color={ProfileColors.textMuted} />
                           <Text style={styles.pillText}>{crewProfileDetails.relationshipStatus}</Text>
                         </View>
                       )}
@@ -364,11 +366,11 @@ const Profile: React.FC = () => {
                     <Text style={styles.experienceTitle}>{t('experience')}</Text>
                     {workingExperienceItems.map((item) => (
                       <View key={item.key} style={styles.experienceItem}>
-                          <Text style={styles.companyName}>{item.companyName}</Text>
+                        <Text style={styles.companyName}>{item.companyName}</Text>
                         <Text style={styles.role}>{item.role}</Text>
-                          <Text style={styles.dateRange}>
-                            {formatDate(item.from)} - {formatDate(item.to)}
-                          </Text>
+                        <Text style={styles.dateRange}>
+                          {formatDate(item.from)} - {formatDate(item.to)}
+                        </Text>
                       </View>
                     ))}
                   </View>
@@ -470,7 +472,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
     fontWeight: '500',
   },
-  pillsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginVertical: 3 },
+  pillsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginTop: 5 },
   pill: {
     paddingHorizontal: 16,
     paddingVertical: 8,

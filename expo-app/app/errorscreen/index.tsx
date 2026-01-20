@@ -74,7 +74,6 @@ const ErrorScreen: React.FC<ErrorScreenProps> = ({
                 </TouchableOpacity>
             )}
 
-            {/* Error details (collapsible) */}
             {!!message && (
                 <TouchableOpacity
                     onPress={() => setShowDetails(prev => !prev)}

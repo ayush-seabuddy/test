@@ -156,6 +156,11 @@ const AllAssessmentResultListing = () => {
         );
     };
 
+    const noDataMessage =
+        assessmentType === 'POMS'
+            ? t('nowellbeingdata')
+            : t('nohappinessindexdata')
+
     return (
         <View style={styles.container}>
             <GlobalHeader
@@ -181,7 +186,7 @@ const AllAssessmentResultListing = () => {
             ) : (
                 <View style={styles.emptyContainer}>
                     <EmptyComponent
-                        text={isOnline ? t('nodatafound') : t('nointernetconnection')}
+                        text={isOnline ? noDataMessage : t('nointernetconnection')}
                     />
                 </View>
             )}

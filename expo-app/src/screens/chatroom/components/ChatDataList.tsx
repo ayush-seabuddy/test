@@ -109,7 +109,7 @@ const Chats = ({
                       borderRadius: 20,
                       marginRight: 5,
                     }}
-                    resizeMode="cover"
+                    contentFit="cover"
                   />
                 </TouchableOpacity>
               )}
@@ -347,7 +347,7 @@ const Chats = ({
             marginRight: senderId === item.senderId ? 9 : 0,
             backgroundColor: "#ededed",
             borderRadius:
-              item.chatReactionDetails.length === 1 ? 30 : 15, // rounder for single
+              item.chatReactionDetails.length === 1 ? 30 : 15,
             paddingHorizontal:
               item.chatReactionDetails.length === 1 ? 6 : 5,
             paddingVertical:
@@ -362,10 +362,6 @@ const Chats = ({
           onPress={() => {
             fetchChatReactions(item.id);
             setLoading(true);
-            // setTimeout(() => {
-            //   bottomSheetRef.current.open();
-            //   setLoading(false);
-            // }, 2000);
           }}
         >
           <Text style={{ fontSize: 14, color: "black" }}>

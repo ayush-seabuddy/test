@@ -978,5 +978,7 @@
   "from":"From",
   "to":"To",
   "clicktoview":"Click to view",
-  "reloadapp":"Reload App"
+  "reloadapp":"Reload App",
+  "content":"Content",
+  "groupmembers":"Group Members"
 }

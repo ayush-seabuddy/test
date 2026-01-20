@@ -585,6 +585,6 @@ const styles = StyleSheet.create({
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center' },
   modalContent: { backgroundColor: '#fff', padding: 24, borderRadius: 16, width: '85%', alignItems: 'center' },
   modalText: { fontSize: 14, textAlign: 'center', marginBottom: 20, lineHeight: 22, fontFamily: 'Poppins-Regular' },
-  modalButton: { backgroundColor: '#02130B', paddingHorizontal: 40, paddingVertical: 12, borderRadius: 8 },
+  modalButton: { backgroundColor: '#02130B', width: '100%', paddingVertical: 12, alignItems: 'center', borderRadius: 8 },
   modalButtonText: { color: '#fff', fontWeight: '600' },
 });

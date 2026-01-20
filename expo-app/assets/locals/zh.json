@@ -969,5 +969,7 @@
   "watch": "手表",
   "read": "读",
   "listen": "听",
-  "reloadapp": "重新加载应用程序"
+  "reloadapp": "重新加载应用程序",
+  "content": "内容",
+  "groupmembers": "团体成员"
 }

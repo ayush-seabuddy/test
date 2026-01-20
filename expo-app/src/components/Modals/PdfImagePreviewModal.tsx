@@ -80,7 +80,7 @@ const PdfImagePreviewModal: React.FC<PdfImagePreviewModalProps> = ({
           <ImageBackground
             source={{ uri: url }}
             style={styles.image}
-            resizeMode="contain"
+            contentFit="contain"
             >
             <View style={styles.imageOverlay}>
               <Text style={styles.zoomHint}>Pinch to zoom</Text>

@@ -165,7 +165,7 @@ const CompanyAnnouncements: React.FC<CompanyAnnouncementsProps> = ({
                 horizontal
                 data={announcement}
                 renderItem={renderAnnouncement}
-                keyExtractor={(index) => index.toString()}
+                keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.listContent}
                 showsHorizontalScrollIndicator={false}
                 pagingEnabled
