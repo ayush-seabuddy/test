@@ -379,6 +379,7 @@ export interface GetAllMoodTrackerParams {
 
 export interface ListAllUsersForTagParams {
   shipId: string;
+  search?: string;
 }
 
 export interface GetLeaderboardParams {

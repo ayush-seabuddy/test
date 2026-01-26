@@ -33,6 +33,7 @@ import {
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import ImagePicker from 'react-native-image-crop-picker';
 import { requestCameraPermission, requestMediaLibraryPermission } from '@/Permission/Permissions';
+import EmptyComponent from '@/src/components/EmptyComponent';
 
 type AllUsers = {
   id: string;
@@ -89,12 +90,29 @@ const NewPostScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [searchKey, setSearchKey] = useState('');
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const mediaSheetRef = useRef<BottomSheetModal>(null);
   const tagSheetRef = useRef<BottomSheetModal>(null);
 
   const snapPoints = useMemo(() => ['40%'], []);
   const tagSnapPoints = useMemo(() => ['70%'], []);
+
+
+  const onSearchChange = (text: string) => {
+    setSearchKey(text);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      if (text.trim().length > 0) {
+        fetchUsersForTag(text);
+      }
+    }, 1000);
+  };
 
   const imagePickerOptions = useMemo(
     () => ({
@@ -150,33 +168,50 @@ const NewPostScreen = () => {
     mediaSheetRef.current?.present();
   }, [selectedMedia.length, t]);
 
-  const openTagSheet = useCallback(async () => {
-    setLoadingUsers(true);
-    try {
-      const userData = await getUserDetails();
-      const apiResponse = await listallusersfortag({ shipId: userData.shipId });
+  const fetchUsersForTag = useCallback(
+    async (search?: string) => {
+      setLoadingUsers(true);
+      try {
+        const userData = await getUserDetails();
 
-      if (apiResponse.success && apiResponse.status === 200) {
-        const usersList = apiResponse.data?.usersList || [];
-        const filteredUsers = usersList.filter((user: any) => user.id !== userData.id);
+        const params: any = {
+          shipId: userData.shipId,
+        };
 
-        setAllUsers(filteredUsers);
-
-        if (filteredUsers.length === 0) {
-          showToast.error(t('oops'), t('nousersboarded'));
-        } else {
-          tagSheetRef.current?.present();
+        // ✅ ONLY attach search if user actually typed
+        if (search && search.trim().length > 0) {
+          params.search = search.trim();
         }
-      } else {
-        showToast.error(t('oops'), apiResponse.message);
+
+        const apiResponse = await listallusersfortag(params);
+
+        if (apiResponse.success && apiResponse.status === 200) {
+          const usersList = apiResponse.data?.usersList || [];
+          const filteredUsers = usersList.filter(
+            (user: any) => user.id !== userData.id
+          );
+
+          setAllUsers(filteredUsers);
+        } else {
+          showToast.error(t('oops'), apiResponse.message);
+        }
+      } catch (error) {
+        console.log('Error fetching users:', error);
+        showToast.error(t('error'), 'Failed to load users');
+      } finally {
+        setLoadingUsers(false);
       }
-    } catch (error: any) {
-      console.log('Error fetching users:', error);
-      showToast.error(t('error'), 'Failed to load users');
-    } finally {
-      setLoadingUsers(false);
-    }
-  }, [t]);
+    },
+    [t]
+  );
+
+  const openTagSheet = useCallback(async () => {
+    setSearchKey('');
+    await fetchUsersForTag();
+    tagSheetRef.current?.present();
+  }, [fetchUsersForTag]);
+
+
 
   const pickMedia = useCallback(async (type: 'photo' | 'video' | 'gallery') => {
     try {
@@ -721,8 +756,17 @@ const NewPostScreen = () => {
               onPress={() => tagSheetRef.current?.dismiss()}
               disabled={taggedUsers.length === 0}
             >
-              <Text style={styles.doneText}>{t('done')}</Text>
+              <Text style={styles.doneText}>{t('done')} ({taggedUsers.length})</Text>
             </TouchableOpacity>
+          </View>
+          <View style={styles.searchContainer}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder={t('typetosearch')}
+              placeholderTextColor="#999"
+              value={searchKey}
+              onChangeText={onSearchChange}
+            />
           </View>
 
           <BottomSheetFlatList
@@ -732,6 +776,9 @@ const NewPostScreen = () => {
             contentContainerStyle={styles.flatListContent}
             showsVerticalScrollIndicator={false}
             removeClippedSubviews
+            ListEmptyComponent={
+              loadingUsers ? null : <View style={{ marginTop: '25%' }}><EmptyComponent text={t('nodataavailable')} /></View>
+            }
           />
         </BottomSheetModal>
       </View>
@@ -848,6 +895,20 @@ const styles = StyleSheet.create({
     padding: 16,
     marginHorizontal: 10,
     marginBottom: 10,
+  },
+  searchContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+  },
+
+  searchInput: {
+    height: 42,
+    borderRadius: 8,
+    backgroundColor: '#f2f2f2',
+    paddingHorizontal: 12,
+    fontSize: 12,
+    fontFamily: 'Poppins-Regular',
+    color: '#000',
   },
   writeacaption: {
     fontFamily: 'Poppins-SemiBold',

@@ -430,6 +430,7 @@ const HelplineFormScreen = () => {
         open={openPickerFor !== null}
         date={tempDate}
         mode={pickerMode}
+        maximumDate={new Date()}
         onConfirm={selectedDate => {
           if (!openPickerFor) return;
 

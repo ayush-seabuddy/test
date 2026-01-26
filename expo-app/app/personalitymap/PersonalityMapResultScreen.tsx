@@ -11,7 +11,6 @@ import { ChevronDown, InfoIcon, Share2 } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Alert,
   Animated,
   BackHandler,
   Dimensions,
@@ -158,9 +157,8 @@ const PersonalityMapResultScreen = () => {
     try {
       setloading(true);
       const apiResponse = await getallassessmentsResult({ questionType: "PERSONALITY" });
-
+      setloading(false);
       if (apiResponse.success && apiResponse.status === 200) {
-        setloading(false);
         const insights = apiResponse.data.data.insights;
         setData(insights);
       } else {
@@ -226,13 +224,13 @@ const PersonalityMapResultScreen = () => {
 
       {!isConnected ? (
         <View style={styles.emptyContainer}>
-          <EmptyComponent text={t('nointernetconnection')} />
+          <EmptyComponent text={t("nointernetconnection")} />
         </View>
       ) : loading ? (
         <View style={styles.loader}>
           <CommonLoader fullScreen />
         </View>
-      ) : (
+      ) : data ? (
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContainer}
@@ -243,16 +241,6 @@ const PersonalityMapResultScreen = () => {
               <Text style={styles.maritime_title}>
                 {data?.maritime_title ?? "--"}
               </Text>
-              <TouchableOpacity
-                onPress={() =>
-                  Alert.alert(
-                    data?.big_five_type_code ?? "",
-                    data?.big_five_type_full ?? ""
-                  )
-                }
-              >
-                <InfoIcon size={20} color="#666" />
-              </TouchableOpacity>
             </View>
 
             <Text style={styles.personality_type}>
@@ -280,7 +268,9 @@ const PersonalityMapResultScreen = () => {
                 {t("personalityDescText") || "Personality Description"}
               </Text>
               <TouchableOpacity
-                onPress={() => toggleAnim(descExpanded, rotateDescAnim, setDescExpanded)}
+                onPress={() =>
+                  toggleAnim(descExpanded, rotateDescAnim, setDescExpanded)
+                }
                 style={styles.iconButton}
               >
                 <Animated.View
@@ -299,6 +289,7 @@ const PersonalityMapResultScreen = () => {
                 </Animated.View>
               </TouchableOpacity>
             </View>
+
             <Text style={styles.desc} numberOfLines={descExpanded ? undefined : 4}>
               {data?.description ?? ""}
             </Text>
@@ -312,7 +303,9 @@ const PersonalityMapResultScreen = () => {
                 {t("personalitytraits") || "Personality Traits"}
               </Text>
               <TouchableOpacity
-                onPress={() => toggleAnim(traitsExpanded, rotateTraitsAnim, setTraitsExpanded)}
+                onPress={() =>
+                  toggleAnim(traitsExpanded, rotateTraitsAnim, setTraitsExpanded)
+                }
                 style={styles.iconButton}
               >
                 <Animated.View
@@ -348,7 +341,6 @@ const PersonalityMapResultScreen = () => {
                 ))}
               </View>
             )}
-
           </View>
 
           {/* Career Path */}
@@ -359,7 +351,9 @@ const PersonalityMapResultScreen = () => {
                 {t("careerpath") || "Career Path"}
               </Text>
               <TouchableOpacity
-                onPress={() => toggleAnim(careerExpanded, rotateCareerAnim, setCareerExpanded)}
+                onPress={() =>
+                  toggleAnim(careerExpanded, rotateCareerAnim, setCareerExpanded)
+                }
                 style={styles.iconButton}
               >
                 <Animated.View
@@ -400,12 +394,15 @@ const PersonalityMapResultScreen = () => {
             )}
           </View>
         </ScrollView>
+      ) : (
+        <View style={styles.emptyContainer}>
+          <EmptyComponent text={t("nodataavailable")} />
+        </View>
       )}
 
-      {/* Hide buttons when no internet connection */}
+      {/* Bottom Buttons */}
       {isConnected && (
         <View style={styles.buttonContainer}>
-          {/* Show Go Back only when NOT loading and data exists */}
           {!loading && data !== null && (
             <GlobalButton
               title={t("goback")}
@@ -416,7 +413,7 @@ const PersonalityMapResultScreen = () => {
               }
             />
           )}
-          {/* Show Refresh when data is null (both loading or not loading) */}
+
           {data === null && (
             <GlobalButton
               title={t("refresh")}
@@ -428,6 +425,7 @@ const PersonalityMapResultScreen = () => {
       )}
     </View>
   );
+
 };
 
 export default PersonalityMapResultScreen;

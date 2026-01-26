@@ -10,7 +10,7 @@ type ExtraConfig = {
 const extra = Constants.expoConfig?.extra as ExtraConfig | undefined;
 
 export const BASE_URL =
-  extra?.EXPO_PUBLIC_API_URL || 'https://seabuddyapi.seekware.in/api/v1';
+  extra?.EXPO_PUBLIC_API_URL || 'https://api-canary.seabuddy.co/api/v1';
 
 
 // Define endpoints

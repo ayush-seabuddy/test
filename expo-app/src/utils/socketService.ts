@@ -1,7 +1,6 @@
 import Constants from 'expo-constants';
 import { io, Socket } from 'socket.io-client';
 import { showToast } from '../components/GlobalToast';
-import { useTranslation } from 'react-i18next';
 
 // Type-safe extra config
 type ExtraConfig = {
@@ -13,7 +12,7 @@ type ExtraConfig = {
 const extra = Constants.expoConfig?.extra as ExtraConfig | undefined;
 
 const SOCKET_URL =
-  extra?.EXPO_PUBLIC_SOCKET_URL || 'https://seabuddyapi.seekware.in';
+  extra?.EXPO_PUBLIC_SOCKET_URL || 'https://api-canary.seabuddy.co';
 
 type SocketEvent = string;
 type SocketData = any;
