@@ -74,7 +74,11 @@ export default function ArticleDetails({
 
   const displayedDescription = isExpanded
     ? fullDetails?.description
-    : fullDetails?.description?.slice(0, DESCRIPTION_LIMIT);
+    : fullDetails?.description &&
+      fullDetails.description.length > DESCRIPTION_LIMIT
+      ? `${fullDetails.description.slice(0, DESCRIPTION_LIMIT)}...`
+      : fullDetails?.description;
+
 
   useEffect(() => {
     const subscription = AppState.addEventListener(
@@ -204,7 +208,19 @@ export default function ArticleDetails({
 
               <HTMLView
                 value={displayedDescription}
+                stylesheet={{
+                  p: {
+                    lineHeight: 22,
+                  },
+                  span: {
+                    lineHeight: 22,
+                  },
+                  div: {
+                    lineHeight: 22,
+                  },
+                }}
               />
+
 
               {isLongDescription && (
                 <TouchableOpacity

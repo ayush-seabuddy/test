@@ -3,6 +3,7 @@ import CommonLoader from '@/src/components/CommonLoader';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import MediaPreviewModal from '@/src/components/Modals/MediaPreviewModal';
+import PostsOnCrewProfile from '@/src/components/PostsOnCrewProfile';
 import Colors from '@/src/utils/Colors';
 import { formatHobbies, formatShipName } from '@/src/utils/helperFunctions';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
@@ -180,7 +181,7 @@ const Profile: React.FC = () => {
         return null;
     }
   }, []);
-  
+
 
   const handleOpenLink = useCallback(async (link: string, platform: string) => {
     if (!link) {
@@ -388,6 +389,10 @@ const Profile: React.FC = () => {
                     />
                   </View>
                 ) : null}
+                {/* <View style={{ marginVertical: 10}}>
+                  <Text style={styles.socialTitle}>{t('posts')}</Text>
+                  <PostsOnCrewProfile userId={crewId}/>
+                </View> */}
               </View>
             </View>
           </View>
@@ -440,7 +445,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
-  scrollContent: { paddingTop: height * 0.42, paddingHorizontal: 20 },
+  scrollContent: { paddingTop: height * 0.42, paddingHorizontal: 10 },
   cardContainer: {
     backgroundColor: '#fff',
     borderRadius: 20,
@@ -466,9 +471,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   bio: {
-    marginVertical:10,
+    marginVertical: 10,
     fontSize: 12,
-    lineHeight:20,
+    lineHeight: 20,
     color: 'rgb(49, 49, 49)',
     fontFamily: 'Poppins-Regular',
     fontWeight: '500',
@@ -478,7 +483,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 100,
-    backgroundColor:ProfileColors.rankingBg,
+    backgroundColor: ProfileColors.rankingBg,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,

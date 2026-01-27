@@ -5,10 +5,10 @@ import Colors from '@/src/utils/Colors';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { t } from 'i18next';
 import { ArrowUpRight, ChevronDown, ChevronUp, TriangleAlert } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import PersonalityTestCard from './PersonalityTestCard';
 import i18n from '@/src/localization/i18n';
@@ -42,15 +42,17 @@ const AssessmentList = ({ isProfileScreen = false }: { isProfileScreen?: boolean
   }, []);
 
   // Fetch user tests
-  useEffect(() => {
-    const fetchUserTests = async () => {
-      const result = await viewUserTest();
-      if (result?.data) {
-        setTestArray(result.data);
-      }
-    };
-    fetchUserTests();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      const fetchUserTests = async () => {
+        const result = await viewUserTest();
+        if (result?.data) {
+          setTestArray(result.data);
+        }
+      };
+      fetchUserTests();
+    }, [])
+  );
 
   // Fetch personality test completion status from AsyncStorage
   useEffect(() => {

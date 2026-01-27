@@ -167,7 +167,7 @@ const MonthlyWellbeingPulseTestScreen = () => {
 
     const handleResultOk = () => {
         setResultModal(prev => ({ ...prev, visible: false }));
-        router.replace('/home');
+        router.canGoBack() ? router.back() : router.replace('/home')
     }
 
     return (
@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
     darkSection: { backgroundColor: '#00000066', borderTopLeftRadius: 25, borderTopRightRadius: 25, minHeight: height * 0.8 },
     dragHandle: { height: 3, width: 100, backgroundColor: '#FFFFFF66', alignSelf: 'center', borderRadius: 2, marginVertical: 4 },
     counterContainer: { paddingHorizontal: 20, marginBottom: 10 },
-    counterText: { color: '#fff', textAlign: 'right', fontSize: 15, fontFamily: 'WhyteInktrap-Medium',lineHeight:20 },
+    counterText: { color: '#fff', textAlign: 'right', fontSize: 15, fontFamily: 'WhyteInktrap-Medium', lineHeight: 20 },
     sectionWrapper: { marginTop: 10 },
     sectionTitle: { color: '#fff', fontSize: 16, fontFamily: 'Poppins-SemiBold', paddingHorizontal: 20, marginBottom: 12 },
     questionCard: { backgroundColor: 'rgba(0,0,0,0.4)', marginHorizontal: 16, marginBottom: 16, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 20 },

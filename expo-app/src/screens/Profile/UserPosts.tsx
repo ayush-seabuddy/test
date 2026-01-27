@@ -133,7 +133,6 @@ const UserPost = () => {
                 data={posts}
                 renderItem={({ item }) => (
                     <PostScreen
-                        index={item.id}
                         post={item}
                         key={item.id}
                         onPostDeleted={() => {
