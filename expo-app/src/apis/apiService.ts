@@ -233,6 +233,7 @@ export interface GetAllContentsParams {
 
 export interface ViewContentDetailsParams {
   contentId?: string;
+  isHtml?: boolean
 }
 
 export interface GetAllDoctorsParams {
@@ -321,6 +322,11 @@ export interface GetMoodTrackerParams {
   date: string;
 }
 
+export interface GetAssessmentResultParams {
+  month: string;
+  assessmentType:string
+}
+
 export interface signoutPayload {
   deviceTokens: string[];
 }
@@ -373,6 +379,7 @@ export interface GetAllMoodTrackerParams {
 
 export interface ListAllUsersForTagParams {
   shipId: string;
+  search?: string;
 }
 
 export interface GetLeaderboardParams {
@@ -1072,5 +1079,16 @@ export const acknowledgeContent = async (
     method: 'POST',
     url: ENDPOINTS.ACKNOWLEDGE_CONTENT,
     data: payload,
+  });
+};
+
+
+export const getassessmentresultdetails = async (
+  params?: GetAssessmentResultParams,
+): Promise<ApiResponse> => {
+  return await apiRequest({
+    method: 'GET',
+    params,
+    url: ENDPOINTS.GETASSESSMENTRESULTDETAILS,
   });
 };

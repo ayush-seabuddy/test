@@ -38,6 +38,7 @@ export const ImagesAssets = {
   PlusImage: require("../../assets/images/plus.png"),
   Norse: require("../../assets/images/Norse.png"),
   SurveyImage: require("../../assets/images/Survey.png"),
+    Somethingwentwrong: require("../../assets/images/somethingwentwrong.png"),
 
 
 

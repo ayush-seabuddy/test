@@ -1,102 +1,134 @@
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import React from 'react';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import GlobalHeader from '@/src/components/GlobalHeader';
-import Colors from '@/src/utils/Colors';
-import { ChevronLeft } from 'lucide-react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
+import GlobalHeader from '@/src/components/GlobalHeader';
+import Colors from '@/src/utils/Colors';
+import { getassessmentresultdetails } from '@/src/apis/apiService';
+import { showToast } from '@/src/components/GlobalToast';
+import CommonLoader from '@/src/components/CommonLoader';
+
+
+type Question = {
+    questionId: string;
+    question: string;
+    answer: number;
+    answerOptions: number[];
+    section: string;
+    order: number;
+};
+
+
+const formatMonth = (value?: string) => {
+    if (!value) return '';
+    const [mm, yyyy] = value.split('-');
+    return new Date(Number(yyyy), Number(mm) - 1).toLocaleString('en-US', {
+        month: 'short',
+        year: 'numeric',
+    });
+};
+
+const optionLabels = ['Not at all', 'A little', 'Moderately', 'Quite a bit', 'Extremely'];
+
+const classifyTMD = (value: number) => {
+    if (!value || isNaN(value)) {
+        return {
+            mood: 'No Data',
+            message:
+                'Calculated from your latest Monthly Wellbeing Pulse test results to help you spot patterns and manage stress better',
+        };
+    }
+
+    if (value < 6) return { mood: 'Stable Mood', message: 'Great job! Your mood is stable, keep it up.' };
+    if (value < 21) return { mood: 'Mild Mood Disturbance', message: 'You’re doing well, but there’s room to improve.' };
+    if (value <= 35)
+        return { mood: 'Moderate Mood Disturbance', message: 'Try stress-relief techniques to get back on track.' };
+
+    return {
+        mood: 'High Mood Disturbance',
+        message: 'High stress detected. Consider connecting with a consultant.',
+    };
+};
+
+const getScoreColors = (score: number) => {
+    if (score < 6) return { backgroundColor: '#A9DFBF', textColor: '#145A32' };
+    if (score < 21) return { backgroundColor: '#F9E79F', textColor: '#7D6608' };
+    if (score <= 35) return { backgroundColor: '#F5B7B1', textColor: '#78281F' };
+    return { backgroundColor: '#E74C3C', textColor: '#fff' };
+};
+
+
 const MonthlyWellbeingPulseResultScreen = () => {
-    const { assessmentData } = useLocalSearchParams();
     const { t } = useTranslation();
-    const router = useRouter();
+    const { month, assessmentType } = useLocalSearchParams<{
+        month: string;
+        assessmentType: string;
+    }>();
 
-    const parsedData = (() => {
-        if (!assessmentData || typeof assessmentData !== 'string') return null;
+    const [loading, setLoading] = useState(true);
+    const [questions, setQuestions] = useState<Question[]>([]);
+    const [tmd, setTmd] = useState<number>(0);
+
+    const formattedMonth = useMemo(() => formatMonth(month), [month]);
+
+
+    const fetchResult = useCallback(async () => {
+        setLoading(true);
         try {
-            return JSON.parse(assessmentData);
-        } catch (e) {
-            console.error('Parse error:', e);
-            return null;
+            const res = await getassessmentresultdetails({ month, assessmentType });
+
+            if (res?.status === 200 && Array.isArray(res?.data)) {
+                const apiData = res.data;
+
+                setTmd(Number(apiData[0]?.result ?? 0));
+
+                const formatted = apiData.map((item: any) => ({
+                    questionId: item.questionId,
+                    question: item.questionDetail?.question,
+                    answer: Number(item.answer),
+                    answerOptions: item.questionDetail?.answerOptions ?? [],
+                    section: item.questionDetail?.section ?? '',
+                    order: Number(item.questionDetail?.order),
+                }));
+
+                setQuestions(formatted);
+            } else {
+                showToast.error(t('oops'), res?.message);
+            }
+        } catch {
+            showToast.error(t('oops'), t('somethingwentwrong'));
+        } finally {
+            setLoading(false);
         }
-    })();
+    }, [month, assessmentType, t]);
 
-    const tmd = parsedData?.questionsAndAnswers?.[0]?.result || 0;
+    useEffect(() => {
+        fetchResult();
+    }, [fetchResult]);
 
-    const monthRaw = parsedData?.month || '';
-    const formattedMonth = monthRaw
-        ? (() => {
-            const [month, year] = monthRaw.split('-');
-            return new Date(`${year}-${month}-01`).toLocaleString('en-US', {
-                month: 'short',
-                year: 'numeric',
-            });
-        })()
-        : '';
 
-    const totalQuestions = parsedData?.questionsAndAnswers?.length || 0;
-    const answeredQuestions = parsedData?.questionsAndAnswers?.filter(
-        (q: any) => q.answer !== null && q.answer !== undefined
-    ).length;
-
-    const optionLabels = ['Not at all', 'A little', 'Moderately', 'Quite a bit', 'Extremely'];
-
-    const classifyTMD = (tmdValue: number) => {
-        if (!tmdValue || isNaN(tmdValue)) {
-            return {
-                mood: 'No Data',
-                message:
-                    "Calculated from your latest Monthly Wellbeing Pulse test results to help you spot patterns and manage stress better",
-            };
-        }
-
-        tmdValue = Math.round(Number(tmdValue));
-        if (tmdValue < 6) {
-            return { mood: 'Stable Mood', message: 'Great job! Your mood is stable, keep up the positive vibes!' };
-        } else if (tmdValue >= 6 && tmdValue < 21) {
-            return { mood: 'Mild Mood Disturbance', message: 'You’re doing well, but there’s room to boost your mood even further.' };
-        } else if (tmdValue >= 21 && tmdValue <= 35) {
-            return {
-                mood: 'Moderate Mood Disturbance',
-                message: 'Your mood is showing some disturbance. Try stress-relief techniques to get back on track.',
-            };
-        } else {
-            return {
-                mood: 'High Mood Disturbance',
-                message: 'It looks like you’re experiencing high stress. Consider connecting with a consultant for support.',
-            };
-        }
-    };
-
-    const getScoreColors = (score: number) => {
-        if (score < 6) return { backgroundColor: '#A9DFBF', textColor: '#145A32' };
-        if (score >= 6 && score < 21) return { backgroundColor: '#F9E79F', textColor: '#7D6608' };
-        if (score >= 21 && score <= 35) return { backgroundColor: '#F5B7B1', textColor: '#78281F' };
-        return { backgroundColor: '#E74C3C', textColor: '#fff' };
-    };
+    const groupedQuestions = useMemo(() => {
+        return questions.reduce<Record<string, Question[]>>((acc, q) => {
+            if (!acc[q.section]) acc[q.section] = [];
+            acc[q.section].push(q);
+            return acc;
+        }, {});
+    }, [questions]);
 
     const { mood, message } = classifyTMD(tmd);
-    const { backgroundColor, textColor } = getScoreColors(Number(tmd));
+    const { backgroundColor, textColor } = getScoreColors(tmd);
 
     return (
         <View style={styles.main}>
-            <GlobalHeader
-                title={`Result ${formattedMonth}`}
-            />
+            <GlobalHeader title={`${t('result')} ${formattedMonth}`} />
 
-            <ScrollView style={{ flex: 1 }}>
+            {loading ? <View style={styles.loaderView}><CommonLoader fullScreen /></View> : <ScrollView showsVerticalScrollIndicator={false}>
                 <View style={styles.briefdescriptionView}>
                     <Text style={styles.briefdescription}>{t('monthlywellbeingdescription')}</Text>
 
-
-                    <Text style={styles.monthlabel}>Month: {formattedMonth}</Text>
-                    <Text style={styles.monthlabel}>Result: {tmd}</Text>
-
-                    {/*                  
-                    <Text style={styles.monthlabel}>
-                        Completed: {answeredQuestions} / {totalQuestions}
-                    </Text> */}
-
+                    <Text style={styles.monthlabel}>{t('month')} {formattedMonth}</Text>
+                    <Text style={styles.monthlabel}>{t('result')} {tmd}</Text>
 
                     <View style={[styles.moodContainer, { backgroundColor }]}>
                         <Text style={[styles.moodText, { color: textColor }]}>{mood}</Text>
@@ -104,92 +136,67 @@ const MonthlyWellbeingPulseResultScreen = () => {
 
                     <Text style={styles.moodMessage}>{message}</Text>
 
-                    <View style={{ marginTop: 20 }}>
-                        {(() => {
-                            const grouped: Record<string, any[]> = {};
+                    {Object.keys(groupedQuestions).map((section) => (
+                        <View key={section} style={{ marginTop: 20 }}>
+                            <Text style={styles.sectionTitle}>{section}</Text>
 
-                            parsedData?.questionsAndAnswers?.forEach((q: any) => {
-                                const key = String(q?.section ?? '');
-                                if (!grouped[key]) grouped[key] = [];
-                                grouped[key].push(q);
-                            });
+                            {groupedQuestions[section].map((q) => (
+                                <View key={q.questionId} style={styles.questionBlock}>
+                                    <Text style={styles.questionText}>
+                                        {q.order}. {q.question}
+                                    </Text>
 
-                            return Object.keys(grouped).map((sectionName, sectionIndex) => (
-                                <View key={sectionIndex} style={{ marginBottom: 20 }}>
-
-                                    <Text style={styles.sectionTitle}>{sectionName}</Text>
-
-                                    {grouped[sectionName].map((q: any, index: number) => {
-                                        const selectedAnswer = Number(q.answer);
-
+                                    {q.answerOptions.map((opt) => {
+                                        const isSelected = opt === q.answer;
                                         return (
-                                            <View key={q.questionId} style={styles.questionBlock}>
-                                                <Text style={styles.questionText}>
-                                                    {q.order}. {q.question}
+                                            <View key={opt} style={styles.optionRow}>
+                                                <View
+                                                    style={[
+                                                        styles.radioOuter,
+                                                        isSelected && { borderColor: Colors.lightGreen },
+                                                    ]}
+                                                >
+                                                    {isSelected && (
+                                                        <View
+                                                            style={[
+                                                                styles.radioInner,
+                                                                { backgroundColor: Colors.lightGreen },
+                                                            ]}
+                                                        />
+                                                    )}
+                                                </View>
+
+                                                <Text
+                                                    style={[
+                                                        styles.optionText,
+                                                        isSelected && { fontFamily: 'Poppins-SemiBold' },
+                                                    ]}
+                                                >
+                                                    {optionLabels[opt]}
                                                 </Text>
-
-                                                {q.answerOptions?.map((opt: number, i: number) => {
-                                                    const isSelected = opt === selectedAnswer;
-
-                                                    return (
-                                                        <View key={i} style={styles.optionRow}>
-                                                            <View
-                                                                style={[
-                                                                    styles.radioOuter,
-                                                                    isSelected && { borderColor: Colors.lightGreen },
-                                                                ]}
-                                                            >
-                                                                {isSelected && (
-                                                                    <View
-                                                                        style={[
-                                                                            styles.radioInner,
-                                                                            { backgroundColor: Colors.lightGreen },
-                                                                        ]}
-                                                                    />
-                                                                )}
-                                                            </View>
-
-                                                            <Text
-                                                                style={[
-                                                                    styles.optionText,
-                                                                    isSelected && { fontFamily: 'Poppins-SemiBold' },
-                                                                ]}
-                                                            >
-                                                                {optionLabels[opt]}
-                                                            </Text>
-                                                        </View>
-                                                    );
-                                                })}
                                             </View>
                                         );
                                     })}
                                 </View>
-                            ));
-                        })()}
-                    </View>
-
+                            ))}
+                        </View>
+                    ))}
                 </View>
-            </ScrollView>
+            </ScrollView>}
+
         </View>
     );
 };
 
 export default MonthlyWellbeingPulseResultScreen;
 
+/* -------------------- Styles -------------------- */
+
 const styles = StyleSheet.create({
-    main: {
-        flex: 1,
-        backgroundColor: Colors.captainanimatedlayoutbg,
-    },
-    sectionTitle: {
-        fontSize: 14,
-        color: "#000",
-        fontFamily: "Poppins-SemiBold",
-    },
-    briefdescriptionView: {
-        paddingHorizontal: 16,
-        paddingVertical: 24,
-    },
+    main: { flex: 1, backgroundColor: Colors.captainanimatedlayoutbg },
+
+    briefdescriptionView: { paddingHorizontal: 16, paddingVertical: 24 },
+
     briefdescription: {
         color: '#000',
         fontSize: 14,
@@ -197,24 +204,27 @@ const styles = StyleSheet.create({
         lineHeight: 22,
         marginBottom: 10,
     },
+
     monthlabel: {
-        lineHeight: 22,
         fontSize: 16,
         color: '#161616',
         fontFamily: 'WhyteInktrap-Medium',
         marginTop: 8,
     },
+
     moodContainer: {
         paddingHorizontal: 10,
-        paddingVertical: 3,
+        paddingVertical: 4,
         borderRadius: 5,
-        marginVertical: 5,
+        marginTop: 8,
         alignSelf: 'flex-start',
     },
-    moodText: {
-        fontSize: 14,
-        fontFamily: "Poppins-SemiBold",
+    loaderView: {
+        flex: 1, justifyContent: 'center', alignItems: 'center'
     },
+
+    moodText: { fontSize: 14, fontFamily: 'Poppins-SemiBold' },
+
     moodMessage: {
         marginTop: 6,
         fontSize: 14,
@@ -222,9 +232,9 @@ const styles = StyleSheet.create({
         fontFamily: 'Poppins-Regular',
     },
 
-    sectionLabel: {
-        color: '#FFD700',
-        fontSize: 13,
+    sectionTitle: {
+        fontSize: 14,
+        color: '#000',
         fontFamily: 'Poppins-SemiBold',
         marginBottom: 6,
     },
@@ -235,17 +245,16 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         marginVertical: 8,
     },
+
     questionText: {
         fontSize: 15,
         color: '#fff',
         fontFamily: 'Poppins-Medium',
         marginBottom: 10,
     },
-    optionRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 6,
-    },
+
+    optionRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 6 },
+
     radioOuter: {
         height: 20,
         width: 20,
@@ -256,14 +265,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginRight: 12,
     },
-    radioInner: {
-        height: 14,
-        width: 14,
-        borderRadius: 50,
-    },
-    optionText: {
-        fontSize: 14,
-        color: '#fff',
-        fontFamily: 'Poppins-Regular',
-    },
+
+    radioInner: { height: 14, width: 14, borderRadius: 7 },
+
+    optionText: { fontSize: 14, color: '#fff', fontFamily: 'Poppins-Regular' },
 });

@@ -131,7 +131,7 @@ const MoodNoteCard = memo(({ item }: { item: MoodTrackerItem }) => {
       {item.details && (
         <View style={styles.moodNoteDetails}>
           <Text style={styles.moodNoteDetailsText}>
-            Note:
+            {t('notemoodtracker')}
             {item.details}
           </Text>
         </View>
@@ -156,12 +156,11 @@ const MoodModalStep1 = memo(
 
     const greeting = useMemo(() => {
       const hour = new Date().getHours();
-      if (hour < 12) return "Good Morning";
-      if (hour < 18) return "Good Afternoon";
-      if (hour < 22) return "Good Evening";
-      return "Hello";
-    }, []);
-
+      if (hour < 12) return t('goodmorning');
+      if (hour < 18) return t('goodafternoon');
+      if (hour < 22) return t('goodevening');
+      return t('hello');
+    }, [t]);
     return (
       <View style={styles.modalStepContainer}>
         <BlurView style={StyleSheet.absoluteFill} intensity={80} tint="light" />
@@ -463,34 +462,34 @@ const MoodTracker: React.FC = () => {
   const moodTrackerData = useSelector(
     (state: RootState) => state.moodTrackerData
   );
-  useEffect(()=>{
-    const checkTodayFill = async()=>{
+  useEffect(() => {
+    const checkTodayFill = async () => {
       try {
 
         dispatch(updateMoodTrackerLoading(true))
         const today = new Date()
-        const day = String(today.getDate()).padStart(2,"0")
-        const month = String(today.getMonth()+1).padStart(2,"0")
+        const day = String(today.getDate()).padStart(2, "0")
+        const month = String(today.getMonth() + 1).padStart(2, "0")
         const year = today.getFullYear()
         const date = `${day}-${month}-${year}`
-        
 
-       const moodData = await checkTodayMoodTracker({date})
-       if(moodData.status == 200){
-        dispatch(updateMoodTrackerLoading(false))
-        dispatch(updateMoodTrackerTodayFillData(moodData.data.isTodayFill))
-       }
-        
+
+        const moodData = await checkTodayMoodTracker({ date })
+        if (moodData.status == 200) {
+          dispatch(updateMoodTrackerLoading(false))
+          dispatch(updateMoodTrackerTodayFillData(moodData.data.isTodayFill))
+        }
+
       } catch (error) {
         dispatch(updateMoodTrackerLoading(false))
-      }finally{
-         dispatch(updateMoodTrackerLoading(false))
+      } finally {
+        dispatch(updateMoodTrackerLoading(false))
       }
 
-    
+
     }
-checkTodayFill()
-  },[])
+    checkTodayFill()
+  }, [])
 
   return (
     <View style={styles.mainContainer}>
@@ -545,7 +544,7 @@ checkTodayFill()
                 (isTodayChecked || moodTrackerData.isTodayFill) && styles.checkInDisabled,
               ]}
               onPress={() => setModalVisible(true)}
-              disabled={isTodayChecked && !moodTrackerData.isTodayFill} // removed || loading here
+              disabled={isTodayChecked && !moodTrackerData.isTodayFill}
             >
               <Text style={styles.checkInText}>
                 {(isTodayChecked || moodTrackerData.isTodayFill)

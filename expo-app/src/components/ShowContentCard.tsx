@@ -11,12 +11,14 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import EmptyComponent from "./EmptyComponent";
+import { useTranslation } from "react-i18next";
 
 const { width } = Dimensions.get("window");
 
 const ShowContentCard = ({ data, keyId }: { data: any, keyId: any }) => {
     const displayData = data.allContents || data;
-
+    const { t } = useTranslation();
     const getContentTypeConfig = (contentType: 'ARTICLE' | 'VIDEO' | 'MUSIC') => {
         switch (contentType) {
             case "ARTICLE":
@@ -57,7 +59,7 @@ const ShowContentCard = ({ data, keyId }: { data: any, keyId: any }) => {
         }
     };
 
-    const RenderData = ({ item, index }: { item: any, index: number }) => {
+    const RenderData = ({ item }: { item: any, index: number }) => {
 
         const config = getContentTypeConfig(item.contentType);
         if (!config) return null;
@@ -81,7 +83,7 @@ const ShowContentCard = ({ data, keyId }: { data: any, keyId: any }) => {
 
                     <Image
                         style={config.imageStyle}
-                        resizeMode="cover"
+                        contentFit="cover"
                         source={{
                             uri: item?.thumbnail
                         }} />
@@ -95,7 +97,7 @@ const ShowContentCard = ({ data, keyId }: { data: any, keyId: any }) => {
                         </Text>
                     </View>
                     <LinearGradient
-                        colors={['transparent', 'rgba(65, 65, 65, 0.56)']} // adjust opacity as you like
+                        colors={['transparent', 'rgba(65, 65, 65, 0.56)']}
                         style={styles.gradientOverlay}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 0, y: 1 }}
@@ -113,18 +115,10 @@ const ShowContentCard = ({ data, keyId }: { data: any, keyId: any }) => {
     if (!config) {
         return (
             <View style={styles.emptyContainer}>
-                <Image
-                    style={{ height: 80, width: 80 }}
-                    resizeMode='contain'
-                    source={ImagesAssets.NoContent}
-                />
-                <Text style={styles.emptyText}>No Data Found</Text>
+                <EmptyComponent text={t('nodataavailable')}/>
             </View>
         );
     }
-
-
-
 
     return (
         <View style={{ flex: 1 }}>
@@ -138,7 +132,7 @@ const ShowContentCard = ({ data, keyId }: { data: any, keyId: any }) => {
 
                         <Image
                             style={{ height: 80, width: 80 }}
-                            resizeMode='contain'
+                            contentFit='contain'
                             source={ImagesAssets.NoContent}
                         />
                         <Text style={styles.emptyText}>{config.emptyMessage}</Text>

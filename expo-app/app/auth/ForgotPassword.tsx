@@ -113,7 +113,7 @@ const ForgotPasswordScreen = () => {
                 onChangeText={handleEmailChange}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                containerStyle={{ width: '90%', marginTop: 30, alignItems: 'center' }}
+                containerStyle={{ width: '90%', marginTop: 30 }}
                 leftIcon={<Mail size={20} color={Colors.iconMuted} />}
                 error={email && emailError}
               />

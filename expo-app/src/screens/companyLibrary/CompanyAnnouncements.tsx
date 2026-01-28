@@ -120,6 +120,14 @@ const CompanyAnnouncements: React.FC<CompanyAnnouncementsProps> = ({
         const isNew = !item.alreadySeen;
         return (
             <TouchableOpacity style={styles.card} onPress={() => {
+                // ✅ Optimistic local update
+                setannouncement(prev =>
+                    prev.map(ann =>
+                        ann.id === item.id
+                            ? { ...ann, alreadySeen: true }
+                            : ann
+                    )
+                );
                 router.push({
                     pathname: "/contentDetails/[contentId]",
                     params: { contentId: item.id },
@@ -157,8 +165,7 @@ const CompanyAnnouncements: React.FC<CompanyAnnouncementsProps> = ({
                 horizontal
                 data={announcement}
                 renderItem={renderAnnouncement}
-                keyExtractor={(item, index) => index.toString()}
-                style={styles.horizontalList}
+                keyExtractor={(item) => item.id}
                 contentContainerStyle={styles.listContent}
                 showsHorizontalScrollIndicator={false}
                 pagingEnabled
@@ -173,7 +180,6 @@ const CompanyAnnouncements: React.FC<CompanyAnnouncementsProps> = ({
                 })}
             />
 
-            {/* Pagination Dots */}
             <View style={styles.dotsContainer}>
                 {announcement.map((_, index) => (
                     <View
@@ -189,10 +195,6 @@ const CompanyAnnouncements: React.FC<CompanyAnnouncementsProps> = ({
 export default CompanyAnnouncements;
 
 const styles = StyleSheet.create({
-    horizontalList: {
-        // marginTop: 63,
-    },
-
     listContent: {
         paddingHorizontal: 10,
         gap: CARD_SPACING,

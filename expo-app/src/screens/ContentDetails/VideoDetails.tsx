@@ -95,7 +95,7 @@ export default function VideosDetails({ data: fullDetails }: { data: Content }) 
         {loading && (
           <CommonLoader fullScreen containerStyle={{ position: "absolute", top: "40%", left: "40%", zIndex: 2 }} />
         )}
-        <VideoPlayer uri={fullDetails?.contentUrl[0]} />
+        <VideoPlayer uri={fullDetails?.contentUrl?.[0]} />
       </View>
 
       {/* Content Scroll */}

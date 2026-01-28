@@ -3,37 +3,41 @@ import { router } from "expo-router";
 import React from "react";
 import {
   Dimensions,
-  FlatList,
   ImageBackground,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
-  View
+  View,
 } from "react-native";
 import { Content } from "./type";
 
 const { width } = Dimensions.get("window");
 
-const RelatedVideosCard = ({  data, onArticleClick }:{data:Content[] , onArticleClick?: () => void}) => {
-  const RenderData = ({ item }:{item:Content}) => {
+const RelatedVideosCard = ({
+  data,
+  onArticleClick,
+}: {
+  data: Content[];
+  onArticleClick?: () => void;
+}) => {
+  const RenderData = ({ item }: { item: Content }) => {
     return (
       <Pressable
         style={styles.cardContainer}
         onPress={() => {
-          if (onArticleClick) {
-            onArticleClick();
-          }
+          onArticleClick?.();
           router.push({
             pathname: "/contentDetails/[contentId]",
-            params: { item: JSON.stringify(item), contentId: item?.id },
-          })
+            params: { item: JSON.stringify(item), contentId: item.id },
+          });
         }}
       >
         <View style={styles.cardContent}>
           <ImageBackground
             style={styles.imageBackground}
             resizeMode="cover"
-            source={ { uri: item?.thumbnail }}
+            source={{ uri: item.thumbnail }}
           >
             <LinearGradient
               colors={["transparent", "rgba(0,0,0,0.7)"]}
@@ -46,7 +50,7 @@ const RelatedVideosCard = ({  data, onArticleClick }:{data:Content[] , onArticle
                 numberOfLines={1}
                 ellipsizeMode="tail"
               >
-                {item?.contentTitle?.slice(0, 25)}
+                {item.contentTitle?.slice(0, 25)}
               </Text>
             </View>
           </ImageBackground>
@@ -55,17 +59,22 @@ const RelatedVideosCard = ({  data, onArticleClick }:{data:Content[] , onArticle
     );
   };
 
+  if (!data?.length) return null;
+
   return (
-    <View>
-      <FlatList
-        horizontal
-        data={data}
-        renderItem={RenderData}
-        showsHorizontalScrollIndicator={false}
-      />
-    </View>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={{ paddingVertical: 8 }}
+    >
+      {data.map((item) => (
+        <RenderData key={item.id} item={item} />
+      ))}
+    </ScrollView>
   );
 };
+
+export default RelatedVideosCard;
 
 const styles = StyleSheet.create({
   cardContainer: {
@@ -104,18 +113,4 @@ const styles = StyleSheet.create({
   textColorWhite: {
     color: "#fff",
   },
-  emptyContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 30,
-    width,
-  },
-  emptyText: {
-    fontSize: 14,
-    fontFamily: "Poppins-Regular",
-    color: "#000",
-    marginTop: 10,
-  },
 });
-
-export default RelatedVideosCard;

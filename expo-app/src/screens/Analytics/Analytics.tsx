@@ -33,7 +33,7 @@ const Analytics = () => {
   const moodType = {
     mood: "",
     message:
-      "Calculated from your latest Wellbeing Pulse survey results to help you spot patterns and manage stress better",
+      t('analytics_description'),
   };
 
 
@@ -135,7 +135,7 @@ const Analytics = () => {
               <View style={styles.header}>
                 <View style={styles.headerRow}>
                   <View style={styles.monthNavigationContainer}>
-                    <Text style={styles.month}>From</Text>
+                    <Text style={styles.month}>{t('from')}</Text>
                     <View style={styles.monthRow}>
                       <TouchableOpacity onPress={() => handleMonthChange(-1)}>
                         <ChevronLeft size={20} />
@@ -147,7 +147,7 @@ const Analytics = () => {
                     </View>
                   </View>
                   <View style={styles.monthNavigationContainer}>
-                    <Text style={styles.month}>To</Text>
+                    <Text style={styles.month}>{t('to')}</Text>
                     <View style={styles.monthRow}>
                       <TouchableOpacity onPress={() => handleMonthChangeTo(-1)}>
                         <ChevronLeft size={20} />

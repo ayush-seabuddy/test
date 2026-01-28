@@ -43,8 +43,11 @@ const UserItem = React.memo(({ item, onPress }: { item: any; onPress: (user: any
         />
         <View style={{ marginLeft: 10 }}>
           <Text style={styles.userItem}>
-            {item.fullName}
+            {item.fullName.length > 30
+              ? `${item.fullName.slice(0, 30)}...`
+              : item.fullName}
           </Text>
+
 
           {item?.department !== "Shore_Staff" && (
             <View style={styles.statusContainer}>

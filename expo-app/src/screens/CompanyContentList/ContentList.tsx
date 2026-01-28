@@ -109,7 +109,7 @@ const CompanyContentList = ({headerTitle, contentType}:{headerTitle:string , con
             </Text>
           </View>
           <LinearGradient
-            colors={['transparent', 'rgba(65, 65, 65, 0.56)']} // adjust opacity as you like
+            colors={['transparent', 'rgba(65, 65, 65, 0.56)']} 
             style={styles.gradientOverlay}
             start={{ x: 0, y: 0 }}
             end={{ x: 0, y: 1 }}
@@ -175,8 +175,7 @@ const CompanyContentList = ({headerTitle, contentType}:{headerTitle:string , con
   const loadMoreItems = () => {
     if (loading || !hasMore) return;
 
-    const nextPage = page + 1;  // Calculate next page first
-    console.log(nextPage, "sfdfjsdklfsd");
+    const nextPage = page + 1;
 
 
     setLoading(true);
@@ -185,9 +184,9 @@ const CompanyContentList = ({headerTitle, contentType}:{headerTitle:string , con
 
       if (newItems.length > 0) {
         setData((prev) => [...prev, ...newItems]);
-        setPage(nextPage);  // Only update page if we got data
+        setPage(nextPage); 
       } else {
-        setHasMore(false);  // No more data
+        setHasMore(false);
       }
 
       setLoading(false);

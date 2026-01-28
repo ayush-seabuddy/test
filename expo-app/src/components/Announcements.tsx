@@ -6,7 +6,16 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Dimensions, FlatList, NativeScrollEvent, NativeSyntheticEvent, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+    Dimensions,
+    FlatList,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
 import CustomSurveyCard from './CustomSurveyCard';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -15,8 +24,6 @@ const CARD_SPACING = 10;
 
 type AnnouncementsProps = {
     onlyAnnouncement?: boolean;
-    contentCategory?: string;
-    contentType?: string;
     page?: number;
     limit?: number;
 };
@@ -36,7 +43,7 @@ type Survey = {
     image: string;
     title: string;
     description: string;
-}
+};
 
 const Announcements: React.FC<AnnouncementsProps> = ({
     onlyAnnouncement = false,
@@ -47,6 +54,7 @@ const Announcements: React.FC<AnnouncementsProps> = ({
     const [surveyData, setsurveyData] = useState<Survey | null>(null);
     const [announcement, setannouncement] = useState<Announcement[]>([]);
     const { t } = useTranslation();
+
     const flatListRef = useRef<FlatList>(null);
     const [currentIndex, setCurrentIndex] = useState(0);
     const autoScrollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -55,12 +63,10 @@ const Announcements: React.FC<AnnouncementsProps> = ({
         setloading(true);
         try {
             const apiResponse = await getallcontents({
-                page: page,
-                limit: limit,
-                onlyAnnouncement: onlyAnnouncement,
+                page,
+                limit,
+                onlyAnnouncement,
             });
-
-            setloading(false);
 
             if (apiResponse.success && apiResponse.status === 200) {
                 setannouncement(apiResponse.data.allContents);
@@ -68,9 +74,9 @@ const Announcements: React.FC<AnnouncementsProps> = ({
                 showToast.error(t('oops'), apiResponse.message);
             }
         } catch (error) {
-            console.log('Error', error)
-            setloading(false);
             showToast.error(t('oops'), t('somethingwentwrong'));
+        } finally {
+            setloading(false);
         }
     };
 
@@ -79,21 +85,18 @@ const Announcements: React.FC<AnnouncementsProps> = ({
         try {
             const apiResponse = await fetchcustomsurvey();
 
-            setloading(false);
-
             if (apiResponse.success && apiResponse.status === 200) {
-                // Filter for CUSTOM_SURVEY type and get the first one
                 const customSurveyList = (apiResponse.data || []).filter(
                     (item: Survey) => item.type === "CUSTOM_SURVEY"
                 );
-                setsurveyData(customSurveyList.length > 0 ? customSurveyList[0] : null);
+                setsurveyData(customSurveyList[0] ?? null);
             } else {
                 showToast.error(t('oops'), apiResponse.message);
             }
         } catch (error) {
-            console.log('Error', error)
-            setloading(false);
             showToast.error(t('oops'), t('somethingwentwrong'));
+        } finally {
+            setloading(false);
         }
     };
 
@@ -104,84 +107,77 @@ const Announcements: React.FC<AnnouncementsProps> = ({
 
     useEffect(() => {
         if (announcement.length === 0) return;
-        if (autoScrollTimerRef.current) {
-            clearInterval(autoScrollTimerRef.current);
-        }
+
+        autoScrollTimerRef.current && clearInterval(autoScrollTimerRef.current);
 
         autoScrollTimerRef.current = setInterval(() => {
-            setCurrentIndex((prevIndex) => {
-                const nextIndex = prevIndex + 1 >= announcement.length ? 0 : prevIndex + 1;
-
-                flatListRef.current?.scrollToIndex({
-                    index: nextIndex,
-                    animated: true,
-                });
-
+            setCurrentIndex(prev => {
+                const nextIndex = prev + 1 >= announcement.length ? 0 : prev + 1;
+                flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
                 return nextIndex;
             });
         }, 4000);
 
         return () => {
-            if (autoScrollTimerRef.current) {
-                clearInterval(autoScrollTimerRef.current);
-            }
+            autoScrollTimerRef.current && clearInterval(autoScrollTimerRef.current);
         };
     }, [announcement.length]);
 
     const onScrollEnd = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         const offsetX = event.nativeEvent.contentOffset.x;
         const index = Math.round(offsetX / (CARD_WIDTH + CARD_SPACING));
+        if (index !== currentIndex) setCurrentIndex(index);
+    }, [currentIndex]);
 
-        if (index !== currentIndex && index >= 0 && index < announcement.length) {
-            setCurrentIndex(index);
-        }
-    }, [currentIndex, announcement.length]);
-
-    const onScrollToIndexFailed = useCallback((info: {
-        index: number;
-        highestMeasuredFrameIndex: number;
-        averageItemLength: number;
-    }) => {
-        setTimeout(() => {
-            flatListRef.current?.scrollToIndex({
-                index: info.index,
-                animated: true,
-            });
-        }, 100);
-    }, []);
+    const markAsSeenAndNavigate = (item: Announcement) => {
+        // ✅ Optimistic local update
+        setannouncement(prev =>
+            prev.map(ann =>
+                ann.id === item.id
+                    ? { ...ann, alreadySeen: true }
+                    : ann
+            )
+        );
+        router.push({
+            pathname: "/contentDetails/[contentId]",
+            params: { contentId: item.id },
+        });
+    };
 
     const renderAnnouncement = ({ item }: { item: Announcement }) => {
         const isNew = !item.alreadySeen;
+
         return (
-            <TouchableOpacity style={styles.card} onPress={() => {
-                router.push({
-                    pathname: "/contentDetails/[contentId]",
-                    params: { contentId: item.id },
-                })
-            }}>
+            <TouchableOpacity
+                style={styles.card}
+                onPress={() => markAsSeenAndNavigate(item)}
+                activeOpacity={0.9}
+            >
                 <Image source={{ uri: item.thumbnail }} style={styles.image} contentFit="cover" />
+
                 <LinearGradient
-                    colors={["rgba(0, 0, 0, 0.34)", "rgba(0, 0, 0, 0.4)"]}
+                    colors={["rgba(0,0,0,0.34)", "rgba(0,0,0,0.4)"]}
                     style={StyleSheet.absoluteFillObject}
                 />
+
                 <View style={styles.overlay}>
                     {isNew && (
                         <View style={styles.newBadge}>
                             <Text style={styles.newText}>{t('new')}</Text>
                         </View>
                     )}
+
                     <Text style={styles.title}>{item.contentTitle}</Text>
+
                     <Text style={styles.description} numberOfLines={2}>
-                        {item?.description?.replace(/<[^>]*>/g, "") || ""}
+                        {item.description?.replace(/<[^>]*>/g, "")}
                     </Text>
                 </View>
             </TouchableOpacity>
         );
     };
 
-    if (announcement.length === 0) {
-        return null;
-    }
+    if (announcement.length === 0) return null;
 
     return (
         <View>
@@ -190,7 +186,7 @@ const Announcements: React.FC<AnnouncementsProps> = ({
                 horizontal
                 data={announcement}
                 renderItem={renderAnnouncement}
-                keyExtractor={(item, index) => index.toString()}
+                keyExtractor={item => item.id}
                 style={styles.horizontalList}
                 contentContainerStyle={styles.listContent}
                 showsHorizontalScrollIndicator={false}
@@ -198,8 +194,7 @@ const Announcements: React.FC<AnnouncementsProps> = ({
                 snapToInterval={CARD_WIDTH + CARD_SPACING}
                 decelerationRate="fast"
                 onMomentumScrollEnd={onScrollEnd}
-                onScrollToIndexFailed={onScrollToIndexFailed}
-                getItemLayout={(data, index) => ({
+                getItemLayout={(_, index) => ({
                     length: CARD_WIDTH + CARD_SPACING,
                     offset: (CARD_WIDTH + CARD_SPACING) * index,
                     index,
@@ -215,14 +210,13 @@ const Announcements: React.FC<AnnouncementsProps> = ({
                 ))}
             </View>
 
-            {surveyData && (
-                <CustomSurveyCard surveyData={surveyData} />
-            )}
+            {surveyData && <CustomSurveyCard surveyData={surveyData} />}
         </View>
     );
 };
 
 export default Announcements;
+
 
 const styles = StyleSheet.create({
     horizontalList: {

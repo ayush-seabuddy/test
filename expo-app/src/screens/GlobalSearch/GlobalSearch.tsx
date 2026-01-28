@@ -21,6 +21,7 @@ import {
 import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import { PostInterface } from '../ContentDetails/type';
 import MusicCard from '../companyLibrary/MusicCard';
+import EmptyComponent from '@/src/components/EmptyComponent';
 
 const GlobalSearch = () => {
   const [searchText, setSearchText] = useState('');
@@ -127,7 +128,7 @@ const GlobalSearch = () => {
     setLoading(true);
     debounceTimeout.current = setTimeout(() => {
       searchQuery(query);
-    }, 500); // Reduced to 500ms for better UX
+    }, 2000);
 
     return () => {
       if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
@@ -140,7 +141,6 @@ const GlobalSearch = () => {
         data={postData}
         renderItem={({ item }) => (
           <PostScreen
-            index={item.id}
             post={item}
             key={item.id}
             onPostDeleted={() => {
@@ -224,7 +224,6 @@ const GlobalSearch = () => {
           </View>
         );
       case 'buddyup':
-        // Ensure BuddyUpEventList properly wraps text content
         return <BuddyUpEventList ActivitiesData={data} />;
       default:
         return null;
@@ -238,7 +237,6 @@ const GlobalSearch = () => {
 
   return (
     <View style={styles.container}>
-      {/* ---------- Header with Loading Indicator ---------- */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <ChevronLeft size={24} color="#000" />
@@ -262,7 +260,6 @@ const GlobalSearch = () => {
         <View style={{ width: 24 }} />
       </View>
 
-      {/* ---------- Tabs Section ---------- */}
       {!loading && hasVisibleSections && (
         <View>
           <ScrollView
@@ -296,13 +293,10 @@ const GlobalSearch = () => {
         </View>
       )}
 
-      {/* ---------- Content Section ---------- */}
       <View style={styles.contentContainer}>
         {!loading && !hasVisibleSections && searchText.trim() !== '' ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              {t('norecordsfound')}
-            </Text>
+            <EmptyComponent text={t('norecordsfound')} />
           </View>
         ) : (
           renderSection
@@ -341,14 +335,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(183, 183, 183, 0.1)',
-    paddingHorizontal: 10,
-    paddingVertical: 3,
+    paddingHorizontal: 14,
     borderRadius: 25,
     marginHorizontal: 10,
   },
   searchInput: {
     flex: 1,
-    height: 39,
+    fontSize: 14,
+    marginTop: 5,
+    fontFamily: 'Poppins-Regular',
     color: '#000',
     paddingLeft: 10,
     paddingRight: 10,

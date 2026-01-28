@@ -3,6 +3,7 @@ import CommonLoader from '@/src/components/CommonLoader';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import MediaPreviewModal from '@/src/components/Modals/MediaPreviewModal';
+import PostsOnCrewProfile from '@/src/components/PostsOnCrewProfile';
 import Colors from '@/src/utils/Colors';
 import { formatHobbies, formatShipName } from '@/src/utils/helperFunctions';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
@@ -10,7 +11,7 @@ import { AntDesign, Entypo } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { router, useLocalSearchParams } from 'expo-router';
 import { t } from 'i18next';
-import { ExternalLink, Globe, Mars, Maximize2 } from 'lucide-react-native';
+import { ExternalLink, Globe, HeartPulseIcon, Mars, Maximize2 } from 'lucide-react-native';
 import moment from 'moment-timezone';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -22,11 +23,10 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ActivityIndicator,
 } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 const ProfileColors = {
   background: 'rgba(255, 255, 255, 0.27)',
@@ -182,6 +182,7 @@ const Profile: React.FC = () => {
     }
   }, []);
 
+
   const handleOpenLink = useCallback(async (link: string, platform: string) => {
     if (!link) {
       showToast.error(t('url_error', { url: platform }));
@@ -255,7 +256,7 @@ const Profile: React.FC = () => {
         {/* Loader overlay */}
         {imageLoading && crewProfileDetails.profileUrl && (
           <View style={styles.loaderOverlay}>
-           <CommonLoader fullScreen/>
+            <CommonLoader fullScreen />
           </View>
         )}
       </ImageBackground>
@@ -304,6 +305,7 @@ const Profile: React.FC = () => {
                       )}
                       {crewProfileDetails.relationshipStatus && (
                         <View style={styles.pill}>
+                          <HeartPulseIcon size={16} color={ProfileColors.textMuted} />
                           <Text style={styles.pillText}>{crewProfileDetails.relationshipStatus}</Text>
                         </View>
                       )}
@@ -365,13 +367,11 @@ const Profile: React.FC = () => {
                     <Text style={styles.experienceTitle}>{t('experience')}</Text>
                     {workingExperienceItems.map((item) => (
                       <View key={item.key} style={styles.experienceItem}>
-                        <View style={styles.experienceHeader}>
-                          <Text style={styles.companyName}>{item.companyName.slice(0, 30)}</Text>
-                          <Text style={styles.dateRange}>
-                            {formatDate(item.from)} - {formatDate(item.to)}
-                          </Text>
-                        </View>
-                        <Text style={styles.role}>{item.role.slice(0, 30)}</Text>
+                        <Text style={styles.companyName}>{item.companyName}</Text>
+                        <Text style={styles.role}>{item.role}</Text>
+                        <Text style={styles.dateRange}>
+                          {formatDate(item.from)} - {formatDate(item.to)}
+                        </Text>
                       </View>
                     ))}
                   </View>
@@ -389,6 +389,10 @@ const Profile: React.FC = () => {
                     />
                   </View>
                 ) : null}
+                {/* <View style={{ marginVertical: 10}}>
+                  <Text style={styles.socialTitle}>{t('posts')}</Text>
+                  <PostsOnCrewProfile userId={crewId}/>
+                </View> */}
               </View>
             </View>
           </View>
@@ -441,9 +445,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
-  scrollContent: { paddingTop: height * 0.42, paddingHorizontal: 20 },
+  scrollContent: { paddingTop: height * 0.42, paddingHorizontal: 10 },
   cardContainer: {
-    backgroundColor: ProfileColors.background,
+    backgroundColor: '#fff',
     borderRadius: 20,
     overflow: 'hidden',
     position: 'relative',
@@ -467,18 +471,19 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   bio: {
-    marginTop: 4,
+    marginVertical: 10,
     fontSize: 12,
+    lineHeight: 20,
     color: 'rgb(49, 49, 49)',
     fontFamily: 'Poppins-Regular',
     fontWeight: '500',
   },
-  pillsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginVertical: 3 },
+  pillsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginTop: 5 },
   pill: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 100,
-    backgroundColor: ProfileColors.pillBg,
+    backgroundColor: ProfileColors.rankingBg,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
@@ -495,7 +500,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Poppins-Regular',
     fontWeight: '400',
-    paddingTop: 10,
+    paddingTop: 20,
   },
   infoList: { paddingVertical: 10 },
   infoRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 5, gap: 5 },
@@ -544,7 +549,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: ProfileColors.textLight,
     fontFamily: 'Poppins-Regular',
-    lineHeight: 18,
+    lineHeight: 20,
   },
   dateRange: {
     fontSize: 10,
@@ -557,7 +562,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
     color: ProfileColors.textLight,
     fontFamily: 'Poppins-Regular',
-    lineHeight: 12,
+    lineHeight: 20,
   },
   socialCard: {
     backgroundColor: ProfileColors.rankingBg,

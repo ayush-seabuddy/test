@@ -580,16 +580,14 @@ const styles = StyleSheet.create({
   },
   centerContainer: {
     flex: 1,
-    justifyContent:'center',
     alignItems: 'center',
-    paddingHorizontal: 30,
+    marginTop:'30%'
   },
   notOnShipText: {
     fontSize: 14,
     fontFamily: 'Poppins-Regular',
     color: '#8A8A8A',
     textAlign: 'center',
-    marginTop: 20,
   },
   shoreStaffText: {
     fontSize: 16,

@@ -5,12 +5,13 @@ import Colors from '@/src/utils/Colors';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { t } from 'i18next';
 import { ArrowUpRight, ChevronDown, ChevronUp, TriangleAlert } from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import PersonalityTestCard from './PersonalityTestCard';
+import i18n from '@/src/localization/i18n';
 
 const { height } = Dimensions.get('window');
 const isProMax = height >= 926;
@@ -23,7 +24,7 @@ type TestItem = {
 };
 
 const AssessmentList = ({ isProfileScreen = false }: { isProfileScreen?: boolean }) => {
-  const [listOpen, setListOpen] = useState(true);
+  const [listOpen, setListOpen] = useState(false);
   const [profileDetails, setProfileDetails] = useState<UserDetails | null>(null);
   const [testArray, setTestArray] = useState<TestItem[]>([]);
   const [isPersonalityTestCompleted, setIsPersonalityTestCompleted] = useState<boolean | null>(null);
@@ -41,15 +42,17 @@ const AssessmentList = ({ isProfileScreen = false }: { isProfileScreen?: boolean
   }, []);
 
   // Fetch user tests
-  useEffect(() => {
-    const fetchUserTests = async () => {
-      const result = await viewUserTest();
-      if (result?.data) {
-        setTestArray(result.data);
-      }
-    };
-    fetchUserTests();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      const fetchUserTests = async () => {
+        const result = await viewUserTest();
+        if (result?.data) {
+          setTestArray(result.data);
+        }
+      };
+      fetchUserTests();
+    }, [])
+  );
 
   // Fetch personality test completion status from AsyncStorage
   useEffect(() => {
@@ -128,7 +131,7 @@ const AssessmentList = ({ isProfileScreen = false }: { isProfileScreen?: boolean
   };
 
   const hasPendingAssessment = profileDetails?.isPOMSAssessment || profileDetails?.isHappinessIndex;
-
+  const isChinese = i18n.language.startsWith('zh');
   return (
     <View>
       {!isProfileScreen &&
@@ -210,7 +213,11 @@ const AssessmentList = ({ isProfileScreen = false }: { isProfileScreen?: boolean
                   <View style={styles.warningTag}>
                     <TriangleAlert size={15} color="#f45050" strokeWidth={1.5} />
                     <Text style={styles.warningText}>
-                      Submit before {currentMonth} {lastDayOfMonth}{ordinalSuffix}
+                      {t('submitBeforeDate', {
+                        month: currentMonth,
+                        day: lastDayOfMonth,
+                        suffix: isChinese ? '' : ordinalSuffix
+                      })}
                     </Text>
                   </View>
                 )}

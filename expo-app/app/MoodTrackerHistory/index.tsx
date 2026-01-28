@@ -4,12 +4,12 @@ import EmptyComponent from "@/src/components/EmptyComponent";
 import GlobalHeader from "@/src/components/GlobalHeader";
 import { showToast } from "@/src/components/GlobalToast";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { Image } from "expo-image";
 import moment from "moment";
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   FlatList,
-  Image,
   StyleSheet,
   Text,
   View
@@ -17,7 +17,7 @@ import {
 
 interface MoodEntry {
   id: string;
-  mood: "HAPPY" | "SAD" | "SLEEPY" | "ANGRY" | "ANXIOUS";
+  mood: "HAPPY" | "SAD" | "CALM" | "ANGRY" | "ANXIOUS";
   feeling: string;
   reason: string;
   details: string;
@@ -28,7 +28,7 @@ const getMoodEmoji = (mood: MoodEntry["mood"]) => {
   const moodImages: Record<MoodEntry["mood"], any> = {
     HAPPY: ImagesAssets.Emoji_1,
     SAD: ImagesAssets.Emoji_3,
-    SLEEPY: ImagesAssets.Emoji_2,
+    CALM: ImagesAssets.Emoji_2,
     ANGRY: ImagesAssets.Emoji_4,
     ANXIOUS: ImagesAssets.Emoji_5,
   };
@@ -81,7 +81,7 @@ const MoodTrackerHistory = () => {
   const renderItem = ({ item }: { item: MoodEntry }) => (
     <View style={styles.moodCard}>
       <View style={styles.header}>
-        <Image source={getMoodEmoji(item.mood)} style={styles.emoji} />
+        <Image source={getMoodEmoji(item.mood)} style={styles.emoji} placeholder={ImagesAssets.Emoji_1} />
         <View>
           <Text style={styles.moodTitle}>{item.mood}</Text>
           <Text style={styles.dateText}>
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
 
   moodTitle: {
     fontSize: 14,
-    fontFamily:'Poppins-SemiBold',
+    fontFamily: 'Poppins-SemiBold',
     fontWeight: "600",
     color: "#262626",
   },
