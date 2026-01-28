@@ -4,10 +4,11 @@ import { showToast } from "@/src/components/GlobalToast";
 import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import NetInfo from "@react-native-community/netinfo";
 import { BlurView } from "expo-blur";
 import { Image } from "expo-image";
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
-import { ChevronDown, InfoIcon, Share2 } from "lucide-react-native";
+import { ChevronDown, Share2 } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -20,7 +21,6 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import NetInfo from "@react-native-community/netinfo";
 
 import CommonLoader from "@/src/components/CommonLoader";
 import EmptyComponent from "@/src/components/EmptyComponent";
@@ -406,11 +406,15 @@ const PersonalityMapResultScreen = () => {
           {!loading && data !== null && (
             <GlobalButton
               title={t("goback")}
-              onPress={() =>
-                newuser === "true"
-                  ? router.replace("/home")
-                  : router.replace("/(bottomtab)/health")
-              }
+              onPress={() => {
+                if (newuser === "true") {
+                  router.replace("/home");
+                } else if (navigation.canGoBack && navigation.canGoBack()) {
+                  navigation.goBack();
+                } else {
+                  router.replace("/(bottomtab)/health");
+                }
+              }}
             />
           )}
 
