@@ -481,7 +481,7 @@ export const uploadfile = async (payload: UploadFileRequest) => {
     });
 
     console.log('response: ', response);
-    const { uploadUrl, key } = response.data;
+    const { uploadUrl, key , fileUrl } = response.data;
 
     let fileBlob;
     if (Platform.OS === 'ios') {
@@ -520,7 +520,7 @@ export const uploadfile = async (payload: UploadFileRequest) => {
     return {
       success: true,
       status: 200,
-      data: `https://seabuddy.s3.us-east-1.amazonaws.com/${key}`,
+      data: fileUrl || `https://seabuddy.s3.us-east-1.amazonaws.com/${key}`,
     };
   } catch (error) {
     console.log('UPLOAD ERROR:', error);

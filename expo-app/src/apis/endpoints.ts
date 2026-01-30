@@ -81,5 +81,5 @@ export const ENDPOINTS = {
   SUBMITSURVEY: `${BASE_URL}/user/submitSurvey`,
   CHECK_TODAY_MOOD_TRACKER: `${BASE_URL}/user/checkTodayMoodTracker`,
   ACKNOWLEDGE_CONTENT: `${BASE_URL}/user/acknowledgeContent`,
-  GETASSESSMENTRESULTDETAILS:`${BASE_URL}/user/getUserAssessmentDetailsFormMonth`
+  GETASSESSMENTRESULTDETAILS: `${BASE_URL}/user/getUserAssessmentDetailsFormMonth`
 };
