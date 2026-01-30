@@ -109,10 +109,19 @@ export default function VideosDetails({ data: fullDetails }: { data: Content }) 
             <View style={styles.frameContainer}>
               <BlurView intensity={40} style={StyleSheet.absoluteFill} />
               <View style={styles.frameContent}>
-                <Text style={styles.title}>{fullDetails?.contentTitle}</Text>
-                <Text style={styles.description}>{fullDetails?.description}</Text>
-                <Text style={styles.postedOn}>{t('postedon')} {getRelativeTime(fullDetails?.createdAt)}</Text>
+                <Text style={styles.title}>
+                  {fullDetails?.contentTitle?.trim() ?? ''}
+                </Text>
+
+                <Text style={styles.description}>
+                  {fullDetails?.description?.trim() ?? ''}
+                </Text>
+
+                <Text style={styles.postedOn}>
+                  {t('postedon')} {getRelativeTime(fullDetails?.createdAt)}
+                </Text>
               </View>
+
             </View>
           </View>
         </View>
@@ -167,7 +176,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     padding: 16,
   },
-  frameContent: { gap: 16 },
+  frameContent: { gap: 10 },
   title: {
     fontSize: 18,
     fontWeight: "600",

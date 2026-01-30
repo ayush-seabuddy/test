@@ -1,51 +1,78 @@
-import { ImagesAssets } from "@/src/utils/ImageAssets";
-import { router } from "expo-router";
-import { ArrowUpRight } from "lucide-react-native";
 import * as React from "react";
-import { useTranslation } from "react-i18next";
 import { Dimensions, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { ArrowUpRight } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
+import { router } from "expo-router";
+import { ImagesAssets } from "@/src/utils/ImageAssets";
 
 const { height } = Dimensions.get("window");
 const isProMax = height >= 926;
-const PersonalityTestCard = ({  data, ApiData , testArray ,screenName }:{data: any; ApiData: any; testArray: any; screenName:string}) => {
- 
-  const { t } = useTranslation();
-  return (
-    <Pressable
-      style={styles.frameParent}
-      onPress={() => {
-        console.log(screenName);
-        {
-          testArray && testArray[2] && testArray[2].open
-            ?  router.push({pathname:'/personalitymap/PersonalityMapTestScreen',params:{screenName:screenName}})
-            : router.push({pathname:'/personalitymap/PersonalityMapResultScreen',params:{screenName:screenName}})
-        }
-      }}
-    >
-      <View style={[styles.frameGroup, styles.frameGroupFlexBox]}>
-        <Image
-          style={styles.frameChild}
-          resizeMode="cover"
-          source={ImagesAssets.personality}
-        />
-        <View style={[styles.frameContainer, styles.frameFlexBox]}>
-          <View style={styles.personalityMapParent}>
-            <Text style={[styles.personalityMap,{color: data === false ? '#06361f' : 'grey'}]}>{t('personalitymap')}</Text>
-            <Text style={[styles.music, { color: "#444444", fontSize: 10, lineHeight: 16 }]}>{t('personalitymap_description')}</Text>
-            {ApiData?.insights?.maritime_title &&
-              <View style={[styles.frameView, styles.frameFlexBox]}>
-                <View style={[styles.musicWrapper, styles.frameGroupFlexBox]}>
-                  <Text style={styles.music}>{ApiData?.insights?.maritime_title}</Text>
-                </View>
 
-              </View>
-            }
-          </View>
-          <View
-            style={{ backgroundColor: "white", padding: 8, borderRadius: 8 }}
+interface PersonalityTestCardProps {
+  data: any;
+  ApiData: any;
+  testArray: any;
+  screenName: string;
+}
+
+const PersonalityTestCard = ({
+  data,
+  ApiData,
+  testArray,
+  screenName,
+}: PersonalityTestCardProps) => {
+  const { t } = useTranslation();
+
+  const handlePress = () => {
+    if (testArray?.[2]?.open) {
+      router.push({
+        pathname: "/personalitymap/PersonalityMapTestScreen",
+        params: { screenName },
+      });
+    } else {
+      router.push({
+        pathname: "/personalitymap/PersonalityMapResultScreen",
+        params: { screenName },
+      });
+    }
+  };
+
+  return (
+    <Pressable onPress={handlePress}>
+      <View style={styles.container}>
+        <Image
+          source={ImagesAssets.personality}
+          resizeMode="cover"
+          style={styles.image}
+        />
+
+        <View style={styles.content}>
+          <Text
+            style={[
+              styles.title,
+              { color: data === false ? "#06361f" : "grey" },
+            ]}
           >
-            <ArrowUpRight size={18} color="black" />
-          </View>
+            {t("personalitymap")}
+          </Text>
+
+          <Text style={styles.description}>
+            {t("personalitymap_description")}
+          </Text>
+
+          {ApiData?.insights?.maritime_title && (
+            <View style={styles.badgeWrapper}>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>
+                  {ApiData.insights.maritime_title}
+                </Text>
+              </View>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.iconWrapper}>
+          <ArrowUpRight size={18} color="black" />
         </View>
       </View>
     </Pressable>
@@ -53,74 +80,65 @@ const PersonalityTestCard = ({  data, ApiData , testArray ,screenName }:{data: a
 };
 
 const styles = StyleSheet.create({
-  frameGroupFlexBox: {
-    justifyContent: "center",
-    alignItems: "center",
+  container: {
+    backgroundColor: "rgba(180, 180, 180, 0.4)",
+    borderRadius: 10,
     flexDirection: "row",
-  },
-  frameFlexBox: {
     alignItems: "center",
-    flexDirection: "row",
+    gap: 10,
+    padding: 10,
   },
-  frameChild: {
-    borderRadius: 20,
+
+  image: {
     width: 70,
     height: 70,
-    backgroundColor: "white"
+    borderRadius: 20,
+    backgroundColor: "white",
   },
-  personalityMap: {
+
+  content: {
+    flex: 1,
+    flexDirection: "column",
+  },
+
+  title: {
     fontSize: isProMax ? 14 : 12,
     lineHeight: 18,
-    fontWeight: "500",
     fontFamily: "Poppins-SemiBold",
-    color: "#1e1f1e",
-    textAlign: "left",
-    alignSelf: "stretch",
+    fontWeight: "500",
   },
-  music: {
-    fontSize: 10,
-    fontFamily: "Poppins-Regular",
-    color: "#fff",
-    textAlign: "left",
 
+  description: {
+    fontSize: 10,
+    lineHeight: 16,
+    fontFamily: "Poppins-Regular",
+    color: "#444444",
   },
-  musicWrapper: {
+
+  badgeWrapper: {
+    marginTop: 5,
+    width: "55%",
+  },
+
+  badge: {
     backgroundColor: "#D1AF90",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 5,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  frameView: {
-    gap: 4,
-    alignSelf: "stretch",
+
+  badgeText: {
+    fontSize: 10,
+    fontFamily: "Poppins-Regular",
+    color: "#fff",
   },
-  personalityMapParent: {
-    gap: 4,
-    flex: 1,
-    paddingTop: 10
-  },
-  frameItem: {
-    width: 12,
-    height: 12,
-  },
-  frameContainer: {
-    gap: 8,
-    flex: 1,
-  },
-  frameGroup: {
-    gap: 16,
-    alignSelf: "stretch",
-    flex:1
-  },
-  frameParent: {
-    backgroundColor: "rgba(180, 180, 180, 0.4)",
-    width: "100%",
-    padding:10,
-    flex: 1,
-    borderRadius: 10,
-    alignSelf: "stretch",
-   
-    
+
+  iconWrapper: {
+    backgroundColor: "white",
+    padding: 8,
+    borderRadius: 8,
   },
 });
 

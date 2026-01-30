@@ -201,7 +201,7 @@ export default function ArticleDetails({
         <View style={styles.cardContainer}>
           <View style={styles.frameContainer}>
             <BlurView intensity={40} style={StyleSheet.absoluteFill} />
-            <View style={styles.frameContent}>
+            <View>
               <Text style={styles.title}>
                 {fullDetails?.contentTitle}
               </Text>
@@ -381,21 +381,23 @@ const styles = StyleSheet.create({
     padding: 16,
   },
 
-  frameContent: { gap: 16 },
-
   title: {
     fontSize: 14,
     fontFamily: 'Poppins-SemiBold',
     color: "#222",
+    marginBottom: 10,
   },
 
   readMoreText: {
     fontSize: 13,
+    marginTop: 10,
     fontFamily: "Poppins-SemiBold",
     color: Colors.darkGreen,
+    textDecorationLine: 'underline',
   },
 
   postedOn: {
+    marginTop: 10,
     fontSize: 12,
     color: "#06361f",
     fontFamily: "Poppins-Regular",

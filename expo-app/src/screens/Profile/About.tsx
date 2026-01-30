@@ -503,7 +503,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Poppins-Regular',
     fontSize: 14,
     color: '#555',
-    marginLeft: 10,
+    marginLeft: 'auto',
+    width: "60%",
+    textAlign: 'right',
   },
   switchRow: {
     flexDirection: 'row',
