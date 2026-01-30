@@ -520,7 +520,7 @@ export const uploadfile = async (payload: UploadFileRequest) => {
     return {
       success: true,
       status: 200,
-      data: fileUrl || `https://seabuddy.s3.us-east-1.amazonaws.com/${key}`,
+      data: fileUrl ? fileUrl : `https://seabuddy.s3.us-east-1.amazonaws.com/${key}`,
     };
   } catch (error) {
     console.log('UPLOAD ERROR:', error);

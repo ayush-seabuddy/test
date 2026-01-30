@@ -263,7 +263,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
               removeClippedSubviews
               ListEmptyComponent={
                 <View style={{ marginTop: '30%' }}>
-                  <EmptyComponent text={t('nodataavailable')} />
+                  <EmptyComponent text={t('nocrewfound')} />
                 </View>
               }
             />

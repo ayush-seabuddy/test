@@ -79,6 +79,8 @@ const OverallCrewRankingCard: React.FC<OverallCrewRankingCardProps> = ({
                                 ? { uri: item.profileUrl }
                                 : ImagesAssets.userIcon
                         }
+                        placeholder={ImagesAssets.userIcon}
+                        placeholderContentFit='cover'
                         style={[
                             styles.userImage,
                             isCurrentUser && styles.currentUserImage,

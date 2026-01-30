@@ -777,7 +777,7 @@ const NewPostScreen = () => {
             showsVerticalScrollIndicator={false}
             removeClippedSubviews
             ListEmptyComponent={
-              loadingUsers ? null : <View style={{ marginTop: '25%' }}><EmptyComponent text={t('nodataavailable')} /></View>
+              loadingUsers ? null : <View style={{ marginTop: '25%' }}><EmptyComponent text={t('nocrewfound')} /></View>
             }
           />
         </BottomSheetModal>
