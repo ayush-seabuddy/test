@@ -154,7 +154,7 @@ const ProfilePhoto = () => {
       }
     } catch (error) {
       console.error('Upload failed:', error);
-      showToast.error(t('error'), 'Failed to upload profile photo');
+      showToast.error(t('error'), t('failedtouploadimagetoserver'));
     } finally {
       setIsLoading(false);
     }
