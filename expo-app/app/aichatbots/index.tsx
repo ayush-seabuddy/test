@@ -130,7 +130,7 @@ const AIChatbotScreen = () => {
     };
 
     useEffect(() => {
-        socketService.initializeSocket?.();
+        // socketService.initializeSocket?.();
         loadChatHistory();
 
         return () => {

@@ -214,10 +214,10 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
         />
       }
       showsVerticalScrollIndicator={false}
-      removeClippedSubviews
-      windowSize={3}
-      initialNumToRender={2}
-      maxToRenderPerBatch={2}
+      removeClippedSubviews={true}
+      windowSize={7}
+      initialNumToRender={5}
+      maxToRenderPerBatch={5}
       updateCellsBatchingPeriod={50}
       contentContainerStyle={
         posts.length === 0 ? styles.emptyContainer : undefined

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import CommonLoader from '../CommonLoader'
 import EmptyComponent from '../EmptyComponent'
+import { getUserDetails } from '@/src/utils/helperFunctions'
 
 interface CrewMember {
     id: string
@@ -37,6 +38,15 @@ const OverallCrewRankingCard: React.FC<OverallCrewRankingCardProps> = ({
     const { t } = useTranslation()
     const flatListRef = useRef<FlatList>(null)
     const [hasTriggeredLoadMore, setHasTriggeredLoadMore] = useState(false)
+    const [userId, setUserId] = useState<string | null>(null)
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const userData = await getUserDetails()
+            setUserId(userData?.id)
+        }
+        fetchUser()
+    }, [])
 
     const handleCardPress = useCallback((item: CrewMember) => {
         router.push({
@@ -45,37 +55,76 @@ const OverallCrewRankingCard: React.FC<OverallCrewRankingCardProps> = ({
         })
     }, [])
 
-    const renderItem = useCallback(({ item }: { item: CrewMember }) => (
-        <TouchableOpacity
-            style={styles.card}
-            onPress={() => handleCardPress(item)}
-            activeOpacity={0.7}
-        >
-            <View style={styles.rankCircle}>
-                <Text style={styles.rankText}>{item.rank}</Text>
-            </View>
+    const renderItem = useCallback(
+        ({ item }: { item: CrewMember }) => {
+            const isCurrentUser = userId === item.id
 
-            <Image
-                source={item.profileUrl ? { uri: item.profileUrl } : ImagesAssets.userIcon}
-                style={styles.userImage}
-                contentFit="cover"
-            />
+            return (
+                <TouchableOpacity
+                    style={[styles.card, isCurrentUser && styles.currentUserCard]}
+                    onPress={() => handleCardPress(item)}
+                    activeOpacity={0.7}
+                >
+                    {/* Rank */}
+                    <View style={[styles.rankCircle, isCurrentUser && styles.currentUserRankCircle]}>
+                        <Text style={[styles.rankText, isCurrentUser && styles.currentUserRankText]}>
+                            {item.rank}
+                        </Text>
+                    </View>
 
-            <View style={styles.userInfo}>
-                <Text style={styles.userName} numberOfLines={1}>
-                    {item.fullName}
-                </Text>
-                <Text style={styles.userDesignation} numberOfLines={1}>
-                    {item.designation}
-                </Text>
-            </View>
+                    {/* Profile Image */}
+                    <Image
+                        source={
+                            item.profileUrl
+                                ? { uri: item.profileUrl }
+                                : ImagesAssets.userIcon
+                        }
+                        placeholder={ImagesAssets.userIcon}
+                        placeholderContentFit='cover'
+                        style={[
+                            styles.userImage,
+                            isCurrentUser && styles.currentUserImage,
+                        ]}
+                        contentFit="cover"
+                    />
 
-            <View style={styles.milesView}>
-                <Text style={styles.rewardText}>{item.rewardPoints}</Text>
-                <Text style={styles.milesText}>{t('miles')}</Text>
-            </View>
-        </TouchableOpacity>
-    ), [handleCardPress, t])
+                    {/* User Info */}
+                    <View style={styles.userInfo}>
+                        <Text
+                            style={[styles.userName, isCurrentUser && styles.currentUserName]}
+                            numberOfLines={1}
+                        >
+                            {item.fullName}
+                        </Text>
+                        <Text
+                            style={[
+                                styles.userDesignation,
+                                isCurrentUser && styles.currentUserDesignation,
+                            ]}
+                            numberOfLines={1}
+                        >
+                            {item.designation}
+                        </Text>
+                    </View>
+
+                    {/* Miles */}
+                    <View style={[styles.milesView, isCurrentUser && styles.currentUserMilesView]}>
+                        <Text
+                            style={[styles.rewardText, isCurrentUser && styles.currentUserRewardText]}
+                        >
+                            {item.rewardPoints}
+                        </Text>
+                        <Text
+                            style={[styles.milesText, isCurrentUser && styles.currentUserMilesText]}
+                        >
+                            {t('miles')}
+                        </Text>
+                    </View>
+                </TouchableOpacity>
+            )
+        },
+        [handleCardPress, t, userId]
+    )
 
     const handleEndReached = useCallback(() => {
         if (!loading && !loadingMore && hasMore && !hasTriggeredLoadMore && onLoadMore) {
@@ -88,7 +137,7 @@ const OverallCrewRankingCard: React.FC<OverallCrewRankingCardProps> = ({
         if (loadingMore) {
             return (
                 <View style={styles.footerLoader}>
-                    <CommonLoader/>
+                    <CommonLoader />
                     <Text style={styles.loadingText}>{t('loading')}</Text>
                 </View>
             )
@@ -96,28 +145,21 @@ const OverallCrewRankingCard: React.FC<OverallCrewRankingCardProps> = ({
         return null
     }, [loadingMore, t])
 
-    const keyExtractor = useCallback(
-        (item: CrewMember) => `crew-${item.id}-${item.rank}`,
-        []
-    )
-
     useEffect(() => {
         if (!loadingMore) {
             setHasTriggeredLoadMore(false)
         }
     }, [loadingMore])
 
-    // Show loader during initial load or filtering
     if (loading || (isFiltering && overallCrewList.length === 0)) {
         return (
             <View style={styles.loadingContainer}>
-                <CommonLoader fullScreen/>
+                <CommonLoader fullScreen />
                 <Text style={styles.loadingText}>{t('loading')}</Text>
             </View>
         )
     }
 
-    // Show empty state only when truly no data and not loading/filtering
     if (overallCrewList.length === 0) {
         return (
             <View style={styles.emptyContainer}>
@@ -130,19 +172,15 @@ const OverallCrewRankingCard: React.FC<OverallCrewRankingCardProps> = ({
         <FlatList
             ref={flatListRef}
             data={overallCrewList}
-            keyExtractor={keyExtractor}
+            keyExtractor={(item) => `crew-${item.id}-${item.rank}`}
             renderItem={renderItem}
-            showsVerticalScrollIndicator={true}
-            contentContainerStyle={styles.listContent}
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.7}
             ListFooterComponent={renderFooter}
-            scrollEnabled={true}
-            nestedScrollEnabled={true}
-            removeClippedSubviews={true}
-            maxToRenderPerBatch={10}
-            updateCellsBatchingPeriod={50}
+            contentContainerStyle={styles.listContent}
+            removeClippedSubviews
             initialNumToRender={10}
+            maxToRenderPerBatch={10}
             windowSize={10}
         />
     )
@@ -152,6 +190,7 @@ export default OverallCrewRankingCard
 
 const styles = StyleSheet.create({
     listContent: { paddingBottom: 20 },
+
     card: {
         backgroundColor: '#fff',
         height: 70,
@@ -162,101 +201,124 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         marginHorizontal: 16,
         gap: 8,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
         elevation: 1,
     },
-    rankCircle: {
-        justifyContent: 'center',
-        alignItems: 'center',
+
+    currentUserCard: {
         backgroundColor: Colors.lightGreen,
+    },
+
+    rankCircle: {
         height: 30,
         width: 30,
         borderRadius: 15,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: Colors.lightGreen,
     },
+
+    currentUserRankCircle: {
+        backgroundColor: Colors.white,
+    },
+
     rankText: {
         fontSize: 12,
+        color: '#fff',
         fontFamily: 'Poppins-Regular',
-        color: '#fff'
     },
+
+    currentUserRankText: {
+        color: '#06361F',
+    },
+
     userImage: {
         height: 45,
         width: 45,
         borderRadius: 22.5,
         borderWidth: 0.5,
         borderColor: '#B0B0B0',
-        backgroundColor: '#f0f0f0',
     },
+
+    currentUserImage: {
+        borderColor: Colors.white,
+    },
+
     userInfo: {
         flex: 1,
-        justifyContent: 'center',
-        paddingHorizontal: 4,
     },
+
     userName: {
         fontSize: 12,
         color: '#636363',
         fontFamily: 'Poppins-Medium',
-        lineHeight: 15
     },
+
+    currentUserName: {
+        color: Colors.white,
+    },
+
     userDesignation: {
         fontSize: 10,
         color: '#949494',
         fontFamily: 'Poppins-Regular',
-        lineHeight: 14
     },
+
+    currentUserDesignation: {
+        color: '#EAF5EF',
+    },
+
     milesView: {
-        padding: 10,
         height: 50,
         width: 50,
         borderRadius: 10,
+        backgroundColor: '#ededed',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#ededed',
     },
+
+    currentUserMilesView: {
+        backgroundColor: Colors.white,
+    },
+
     rewardText: {
         fontSize: 12,
         color: '#06361F',
-        fontFamily: 'Poppins-SemiBold'
+        fontFamily: 'Poppins-SemiBold',
     },
+
+    currentUserRewardText: {
+        color: '#06361F',
+    },
+
     milesText: {
         fontSize: 8,
         color: '#B7B7B7',
-        fontFamily: 'Poppins-Regular'
+        fontFamily: 'Poppins-Regular',
     },
-    loadingContainer: {
-        marginTop: 150,
-        alignItems: 'center',
-        justifyContent: 'center',
+
+    currentUserMilesText: {
+        color: '#6A8F7D',
     },
-    emptyContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: '20%',
-        paddingHorizontal: 20,
-    },
-    emptyText: {
-        textAlign: 'center',
-        color: '#454545',
-        fontSize: 14,
-        marginTop: 20,
-        fontFamily: 'Poppins-Regular'
-    },
-    nodatafoundImage: {
-        height: 150,
-        width: 150
-    },
+
     footerLoader: {
         paddingVertical: 20,
         alignItems: 'center',
-        justifyContent: 'center'
     },
+
+    loadingContainer: {
+        marginTop: 150,
+        alignItems: 'center',
+    },
+
+    emptyContainer: {
+        marginTop: '20%',
+        alignItems: 'center',
+    },
+
     loadingText: {
         marginTop: 8,
         fontSize: 12,
         color: '#06361F',
-        fontFamily: 'Poppins-Regular'
+        fontFamily: 'Poppins-Regular',
     },
 })

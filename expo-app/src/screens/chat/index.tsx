@@ -78,34 +78,34 @@ const ChatLoungeList = () => {
   const updateChatCount = async (data: any) => {
     console.log("data: ", data);
     const userId = await AsyncStorage.getItem('userId')
-    
+
 
     const preShipChatList = shipChatList.map((item: ChatRoom) =>
       item.id === data.chatRoomId ? {
         ...item,
-        lastMessage:data.data,
+        lastMessage: data.data,
         isUnReadMessage: true,
-        unReadMessages:  data?.participants?.find((p: any) => p.userId === userId)?.unReadMessages ?? 0,
+        unReadMessages: data?.participants?.find((p: any) => p.userId === userId)?.unReadMessages ?? 0,
       } : item
     )
 
     const preFleetChatList = fleetChatList.map((item: ChatRoom) =>
       item.id === data.chatRoomId ? {
         ...item,
-        lastMessage:data.data,
+        lastMessage: data.data,
         isUnReadMessage: true,
-        unReadMessages:  data?.participants?.find((p: any) => p.userId === userId)?.unReadMessages ?? 0,
+        unReadMessages: data?.participants?.find((p: any) => p.userId === userId)?.unReadMessages ?? 0,
       } : item
     )
 
     preShipChatList?.map((item: ChatRoom) => {
       console.log("item: ", item);
-        dispatch(updateOneShipChat(item))
-      })
-      preFleetChatList?.map((item: ChatRoom) => {
-        console.log("item: ", item);
-        dispatch(updateOneFleetChat(item))
-      })
+      dispatch(updateOneShipChat(item))
+    })
+    preFleetChatList?.map((item: ChatRoom) => {
+      console.log("item: ", item);
+      dispatch(updateOneFleetChat(item))
+    })
 
   }
 
@@ -210,20 +210,21 @@ const ChatLoungeList = () => {
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
       >
         <ChatHeader />
 
         {
-          shipChatList.length === 0 && fleetChatList.length === 0 && 
-        (loading ? (
-          <View style={{ alignItems: 'center',flex:1,justifyContent:'center' }}>
-            <CommonLoader fullScreen/>
-          </View>
-        ) : (
-          <View style={{ alignItems: 'center', marginTop: 50 }}>
-            <Text style={{ color: Colors.lightGreen }}>No messages yet</Text>
-          </View>
-        ))
+          shipChatList.length === 0 && fleetChatList.length === 0 &&
+          (loading ? (
+            <View style={{ alignItems: 'center', flex: 1, justifyContent: 'center' }}>
+              <CommonLoader fullScreen />
+            </View>
+          ) : (
+            <View style={{ alignItems: 'center', marginTop: 50 }}>
+              <Text style={{ color: Colors.lightGreen }}>No messages yet</Text>
+            </View>
+          ))
         }
 
         <View style={styles.chatListContainer}>
@@ -259,16 +260,15 @@ const ChatLoungeList = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#ededed" },
   contentContainer: {
-    paddingBottom: 150,
-    gap: 25,
+    gap: 20,
   },
   sectionContainer: {
     marginHorizontal: 10,
     marginBottom: 20,
     backgroundColor: "rgba(232, 232, 232, 1)",
     borderRadius: 15,
-    borderWidth:1,
-    borderColor:'#fff',
+    borderWidth: 1,
+    borderColor: '#fff',
     overflow: 'hidden',
   },
   chatListContainer: {

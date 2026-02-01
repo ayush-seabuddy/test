@@ -147,7 +147,7 @@ const WorkExperienceScreen = () => {
                                     onPress={() => handleEditExperience(item)}
                                     style={styles.actionButton}
                                 >
-                                    <Edit size={20} color="#000" />
+                                    <Edit size={21} color="#000" />
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     onPress={() => {
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 8,
         marginBottom: 10,
-        padding: 12,
+        paddingLeft: 12, paddingTop: 12, paddingBottom: 10,
         backgroundColor: 'rgba(255, 255, 255, 0.9)',
         borderWidth: 1,
         borderColor: '#e0e0e0',
@@ -250,7 +250,8 @@ const styles = StyleSheet.create({
     },
     actions: {
         flexDirection: 'row',
-        gap: 12,
+        marginRight: 3,
+
     },
     actionButton: {
         padding: 8,

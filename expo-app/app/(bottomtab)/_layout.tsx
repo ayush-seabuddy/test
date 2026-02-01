@@ -82,6 +82,8 @@ const BottomTabbarLayout = () => {
               <Image
                 source={iconSource}
                 cachePolicy="memory-disk"
+                placeholder={ImagesAssets.userIcon}
+                placeholderContentFit='cover'
                 style={[
                   styles.tabIcon,
                   {

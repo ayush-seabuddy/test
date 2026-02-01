@@ -15,6 +15,7 @@ import { formatDate, formatStatus } from '@/src/utils/helperFunctions';
 import CommonLoader from '@/src/components/CommonLoader';
 import EmptyComponent from '@/src/components/EmptyComponent';
 import { useNetwork } from '@/src/hooks/useNetworkStatusHook';
+import Colors from '@/src/utils/Colors';
 
 interface Complaint {
   id: string;
@@ -73,6 +74,15 @@ const ComplaintHistoryScreen = () => {
     }
   }, [loadingMore, page, totalPages]);
 
+  const getStatusStyle = (status: string) => {
+    const formattedStatus = formatStatus(status).toLowerCase();
+
+    if (formattedStatus === 'active' || formattedStatus === 'open') {
+      return styles.activeStatus;
+    }
+    return styles.closedStatus;
+  };
+
   const renderItem = useCallback(
     ({ item }: { item: Complaint }) => (
       <TouchableOpacity
@@ -92,12 +102,13 @@ const ComplaintHistoryScreen = () => {
           {item?.helpline?.helplineName}
         </Text>
 
-        <View style={styles.rowView}>
-          <Text style={styles.helplineStatus}>
+        <Text style={styles.dateText}>
+          {formatDate(item.createdAt)}
+        </Text>
+
+        <View style={[styles.statusContainer, getStatusStyle(item.status)]}>
+          <Text style={styles.statusText}>
             {formatStatus(item.status)}
-          </Text>
-          <Text style={styles.helplineStatus}>
-            {formatDate(item.createdAt)}
           </Text>
         </View>
       </TouchableOpacity>
@@ -114,10 +125,9 @@ const ComplaintHistoryScreen = () => {
     <View style={styles.main}>
       <GlobalHeader title={t('complaintHistory')} />
 
-      {/* Center Loader while initial loading */}
       {loading ? (
         <View style={styles.loaderView}>
-          <CommonLoader fullScreen/>
+          <CommonLoader fullScreen />
         </View>
       ) : complaintdata.length > 0 ? (
         <FlatList
@@ -150,11 +160,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+
   loaderView: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   complaintHistoryView: {
     marginHorizontal: 16,
     marginTop: 10,
@@ -162,20 +174,45 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#ededed',
   },
+
   helplineName: {
     fontSize: 15,
     fontFamily: 'WhyteInktrap-Bold',
     lineHeight: 20,
+    color: '#000',
   },
-  rowView: {
+
+  dateText: {
+    marginTop: 4,
+    fontFamily: 'Poppins-Regular',
+    fontSize: 12,
+    color: '#555',
+  },
+
+  statusContainer: {
     marginTop: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    borderRadius: 20,
+    width: 60,
+    height: 20,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  helplineStatus: {
-    fontFamily: 'Poppins-SemiBold',
+
+  activeStatus: {
+    backgroundColor: Colors.lightGreen,
   },
+
+  closedStatus: {
+    backgroundColor: '#D9534F',
+  },
+
+  statusText: {
+    fontFamily: 'Poppins-Regular',
+    fontSize: 12,
+    color: '#fff',
+    textAlign: 'center',
+  },
+
   nodatafoundView: {
     flex: 1,
     justifyContent: 'center',

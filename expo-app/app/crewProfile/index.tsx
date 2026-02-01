@@ -485,8 +485,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     backgroundColor: ProfileColors.rankingBg,
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+    gap: 5,
   },
   pillText: {
     fontSize: 12,
