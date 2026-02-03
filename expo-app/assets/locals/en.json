@@ -980,5 +980,6 @@
   "clicktoview":"Click to view",
   "reloadapp":"Reload App",
   "content":"Content",
-  "groupmembers":"Group Members"
+  "groupmembers":"Group Members",
+  "nochatroomfound":"No chat rooms available"
 }

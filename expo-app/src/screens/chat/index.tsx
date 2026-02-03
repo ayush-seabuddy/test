@@ -1,4 +1,3 @@
-
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Image } from 'expo-image'
 import React, { useCallback, useEffect, useState } from 'react'
@@ -10,8 +9,13 @@ import {
   View,
 } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+import { router, useFocusEffect } from 'expo-router'
+import { t } from 'i18next'
 
 import CommonLoader from '@/src/components/CommonLoader'
+import EmptyComponent from '@/src/components/EmptyComponent'
+import ChatHeader from './chatListHeader'
+
 import { saveChatRooms } from '@/src/database/chatRoomService'
 import { updateOneFleetChat, updateOneShipChat } from '@/src/redux/chatListSlice'
 import { RootState } from '@/src/redux/store'
@@ -20,16 +24,16 @@ import Colors from '@/src/utils/Colors'
 import { formatChatTime, viewUserProfile } from '@/src/utils/helperFunctions'
 import { ImagesAssets } from '@/src/utils/ImageAssets'
 import socketService from '@/src/utils/socketService'
-import { router, useFocusEffect } from 'expo-router'
-import { t } from 'i18next'
-import ChatHeader from './chatListHeader'
 
 const ChatLoungeList = () => {
   const dispatch = useDispatch()
-  const { shipChatList, fleetChatList } = useSelector((state: RootState) => state.chatList)
+  const { shipChatList, fleetChatList } = useSelector(
+    (state: RootState) => state.chatList
+  )
+
   const [loading, setLoading] = useState(true)
-  const [shipList, setShipList] = useState([])
-  const [fleetList, setFleetList] = useState([])
+  const [shipList, setShipList] = useState<ChatRoom[]>([])
+  const [fleetList, setFleetList] = useState<ChatRoom[]>([])
 
   const loungeSections = [
     {
@@ -57,96 +61,101 @@ const ChatLoungeList = () => {
     socketService.emit('getAllGroupChatRooms', { userId, employerId })
 
     socketService.on('groupChatRooms', (data) => {
-      data?.groupChatRooms?.map((item: ChatRoom) => {
-        dispatch(updateOneShipChat(item))
-      })
-      setShipList(data?.groupChatRooms || [])
-    }
-    )
+      const rooms = data?.groupChatRooms || []
+      rooms.forEach((item: ChatRoom) => dispatch(updateOneShipChat(item)))
+      setShipList(rooms)
+    })
+
     socketService.on('groupChatRoomsEmployer', (data) => {
-      data?.groupChatRooms?.map((item: ChatRoom) => {
-        dispatch(updateOneFleetChat(item))
-      })
-      setFleetList(data?.groupChatRooms)
-    }
-    )
+      const rooms = data?.groupChatRooms || []
+      rooms.forEach((item: ChatRoom) => dispatch(updateOneFleetChat(item)))
+      setFleetList(rooms)
+    })
   }
-
-
-
 
   const updateChatCount = async (data: any) => {
-    console.log("data: ", data);
     const userId = await AsyncStorage.getItem('userId')
 
-
-    const preShipChatList = shipChatList.map((item: ChatRoom) =>
-      item.id === data.chatRoomId ? {
-        ...item,
-        lastMessage: data.data,
-        isUnReadMessage: true,
-        unReadMessages: data?.participants?.find((p: any) => p.userId === userId)?.unReadMessages ?? 0,
-      } : item
-    )
-
-    const preFleetChatList = fleetChatList.map((item: ChatRoom) =>
-      item.id === data.chatRoomId ? {
-        ...item,
-        lastMessage: data.data,
-        isUnReadMessage: true,
-        unReadMessages: data?.participants?.find((p: any) => p.userId === userId)?.unReadMessages ?? 0,
-      } : item
-    )
-
-    preShipChatList?.map((item: ChatRoom) => {
-      console.log("item: ", item);
-      dispatch(updateOneShipChat(item))
-    })
-    preFleetChatList?.map((item: ChatRoom) => {
-      console.log("item: ", item);
-      dispatch(updateOneFleetChat(item))
+    shipChatList.forEach((item: ChatRoom) => {
+      if (item.id === data.chatRoomId) {
+        dispatch(
+          updateOneShipChat({
+            ...item,
+            lastMessage: data.data,
+            isUnReadMessage: true,
+            unReadMessages:
+              data?.participants?.find((p: any) => p.userId === userId)
+                ?.unReadMessages ?? 0,
+          })
+        )
+      }
     })
 
+    fleetChatList.forEach((item: ChatRoom) => {
+      if (item.id === data.chatRoomId) {
+        dispatch(
+          updateOneFleetChat({
+            ...item,
+            lastMessage: data.data,
+            isUnReadMessage: true,
+            unReadMessages:
+              data?.participants?.find((p: any) => p.userId === userId)
+                ?.unReadMessages ?? 0,
+          })
+        )
+      }
+    })
   }
-
-
-  useFocusEffect(useCallback(() => {
-    socketService.on("newMessage", updateChatCount);
-
-    return () => {
-      socketService.off("newMessage", updateChatCount);
-    }
-  }, [dispatch]))
-
 
   useFocusEffect(
     useCallback(() => {
+      socketService.on('newMessage', updateChatCount)
+      return () => socketService.off('newMessage', updateChatCount)
+    }, [dispatch, shipChatList, fleetChatList])
+  )
 
+  useFocusEffect(
+    useCallback(() => {
       setLoading(true)
-      const timer = setTimeout(() => {
-        setLoading(false)
-      }, 4000);
       fetchChatRooms()
+
+      const timer = setTimeout(() => setLoading(false), 4000)
+
       return () => {
         socketService.off('groupChatRooms')
         socketService.off('groupChatRoomsEmployer')
-        clearTimeout(timer);
+        clearTimeout(timer)
       }
     }, [dispatch])
-  );
+  )
+
+  useEffect(() => {
+    const chatList = [...shipList, ...fleetList]
+    if (chatList.length > 0) saveChatRooms(chatList)
+  }, [shipList, fleetList])
+
+  useEffect(() => {
+    viewUserProfile(dispatch)
+  }, [])
 
   const renderChatRow = (room: ChatRoom, index: number) => {
     const hasUnread = room.isUnReadMessage && room.unReadMessages > 0
     const lastMsg = room.lastMessage
-    const handChatListPress = (room: ChatRoom) => {
-      router.push({
-        pathname: `/chatroom/[chatRoomId]`,
-        params: { chatRoomId: room.id, chatRoomDetails: JSON.stringify(room) },
-      })
-    }
 
     return (
-      <TouchableOpacity key={index} style={styles.chatRow} onPress={() => handChatListPress(room)} >
+      <TouchableOpacity
+        key={index}
+        style={styles.chatRow}
+        onPress={() =>
+          router.push({
+            pathname: `/chatroom/[chatRoomId]`,
+            params: {
+              chatRoomId: room.id,
+              chatRoomDetails: JSON.stringify(room),
+            },
+          })
+        }
+      >
         <View style={styles.chatMiddle}>
           <Text
             style={[styles.groupName, hasUnread && styles.groupNameUnread]}
@@ -167,11 +176,11 @@ const ChatLoungeList = () => {
               : (lastMsg?.content || '')
                 .replace(/\n/g, ' ')
                 .trim()
-                .slice(0, 35) + (lastMsg?.content?.trim().length > 35 ? '...' : '')}
+                .slice(0, 35) +
+              (lastMsg?.content?.trim().length > 35 ? '...' : '')}
           </Text>
         </View>
 
-        {/* Right: Time + Unread Badge */}
         <View style={styles.chatRight}>
           {lastMsg && (
             <Text style={[styles.time, hasUnread && styles.timeHighlighted]}>
@@ -190,163 +199,173 @@ const ChatLoungeList = () => {
     )
   }
 
-  useEffect(() => {
-    let chatList = [...shipList, ...fleetList];
-
-    if (chatList.length > 0) {
-      saveChatRooms(chatList);
-    }
-
-
-  }, [shipList, fleetList])
-
-  useEffect(() => {
-    viewUserProfile(dispatch)
-  }, [])
+  const isEmpty =
+    !loading && shipChatList.length === 0 && fleetChatList.length === 0
 
   return (
     <View style={styles.container}>
-
       <ScrollView
         style={styles.container}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <ChatHeader />
 
-        {
-          shipChatList.length === 0 && fleetChatList.length === 0 &&
-          (loading ? (
-            <View style={{ alignItems: 'center', flex: 1, justifyContent: 'center' }}>
-              <CommonLoader fullScreen />
-            </View>
-          ) : (
-            <View style={{ alignItems: 'center', marginTop: 50 }}>
-              <Text style={{ color: Colors.lightGreen }}>No messages yet</Text>
-            </View>
-          ))
-        }
+        {loading && (
+          <View style={styles.centerContainer}>
+            <CommonLoader fullScreen />
+          </View>
+        )}
 
-        <View style={styles.chatListContainer}>
-          {loungeSections.map((section) => {
-            if (section.rooms.length === 0) return null
+        {isEmpty && (
+          <View style={styles.centerContainer}>
+            <EmptyComponent text={t('nochatroomfound')} />
+          </View>
+        )}
 
-            return (
-              <View key={section.title} style={styles.sectionContainer}>
-                <View style={styles.sectionHeader}>
-                  <Image
-                    source={section.icon}
-                    style={styles.sectionIcon}
-                    contentFit="cover"
-                    cachePolicy="memory-disk"
-                  />
-                  <View style={styles.headerText}>
-                    <Text style={styles.sectionTitle}>{section.title}</Text>
-                    <Text style={styles.sectionDescription}>{section.description}</Text>
+        {!loading && !isEmpty && (
+          <View style={styles.chatListContainer}>
+            {loungeSections.map((section) => {
+              if (section.rooms.length === 0) return null
+
+              return (
+                <View key={section.title} style={styles.sectionContainer}>
+                  <View style={styles.sectionHeader}>
+                    <Image
+                      source={section.icon}
+                      style={styles.sectionIcon}
+                      contentFit="cover"
+                      cachePolicy="memory-disk"
+                    />
+                    <View style={styles.headerText}>
+                      <Text style={styles.sectionTitle}>
+                        {section.title}
+                      </Text>
+                      <Text style={styles.sectionDescription}>
+                        {section.description}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.chatRowContainer}>
+                    {section.rooms.map(renderChatRow)}
                   </View>
                 </View>
-                <View style={styles.chatRowContainer}>
-                  {section.rooms.map(renderChatRow)}
-                </View>
-              </View>
-            )
-          })}
-        </View>
+              )
+            })}
+          </View>
+        )}
       </ScrollView>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#ededed" },
-  contentContainer: {
-    gap: 20,
+  container: { flex: 1, backgroundColor: '#ededed' },
+
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
   },
+
+  centerContainer: {
+    flex: 1,
+    minHeight: 400,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  chatListContainer: {
+    marginTop: 70,
+  },
+
   sectionContainer: {
     marginHorizontal: 10,
     marginBottom: 20,
-    backgroundColor: "rgba(232, 232, 232, 1)",
+    backgroundColor: 'rgba(232, 232, 232, 1)',
     borderRadius: 15,
     borderWidth: 1,
     borderColor: '#fff',
     overflow: 'hidden',
   },
-  chatListContainer: {
-    marginTop: 50,
-  },
+
   sectionHeader: {
     flexDirection: 'row',
     padding: 16,
     alignItems: 'center',
     gap: 10,
   },
+
   sectionIcon: { width: 50, height: 50 },
   headerText: { flex: 1 },
+
   sectionTitle: {
     fontSize: 20,
-    lineHeight: 25,
     fontFamily: 'WhyteInktrap-Bold',
     color: 'black',
   },
+
   sectionDescription: {
     fontSize: 12,
     fontFamily: 'Poppins-Regular',
     color: '#6f8406',
-    marginTop: 2,
   },
 
   chatRowContainer: {
-    flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
+
   chatRow: {
     flexDirection: 'row',
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderColor: '#e0e0e0',
   },
-  chatMiddle: { flex: 1, },
+
+  chatMiddle: { flex: 1 },
+
   groupName: {
     fontSize: 16,
-    lineHeight: 20,
-    fontFamily: 'WhyteInktrap-Bold',
-    color: '#052B19',
-    marginBottom: 4,
-  },
-  groupNameUnread: {
     fontFamily: 'WhyteInktrap-Bold',
     color: '#052B19',
   },
+
+  groupNameUnread: { color: '#052B19' },
+
   lastMessage: {
     fontSize: 13,
-    lineHeight: 20,
     fontFamily: 'Poppins-Regular',
     color: '#555',
   },
+
   lastMessageUnread: {
     fontFamily: 'Poppins-SemiBold',
     color: '#052B19',
   },
+
   chatRight: {
     alignItems: 'flex-end',
     justifyContent: 'center',
   },
+
   time: {
     fontSize: 11,
     fontFamily: 'Poppins-Regular',
     color: '#999',
     marginBottom: 6,
   },
+
   timeHighlighted: { color: Colors.lightGreen },
+
   unreadBadge: {
     backgroundColor: Colors.lightGreen,
     minWidth: 22,
     height: 22,
     borderRadius: 11,
-    paddingHorizontal: 5,
     justifyContent: 'center',
     alignItems: 'center',
   },
+
   unreadCount: {
     color: '#fff',
     fontSize: 11,

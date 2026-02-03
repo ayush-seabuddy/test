@@ -62,12 +62,12 @@ const ChatHeader = ({ }) => {
                 backgroundColor: Colors.lightGreen,
                 borderRadius: 50,
                 position: "absolute",
-                top: 5,
-                right: 5,
+                top: 8,
+                right: 10,
                 paddingHorizontal: 0,
                 paddingVertical: 0,
-                width: 10,
-                height: 10,
+                width: 7,
+                height: 7,
               }}
             >
             </View>

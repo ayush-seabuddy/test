@@ -114,6 +114,18 @@ const CreateYourBuddyUpEvent = () => {
     const mediaSheetRef = useRef<BottomSheetModal>(null)
     const participantsSheetRef = useRef<BottomSheetModal>(null)
     const hasFetchedEvents = useRef(false)
+    const [searchQuery, setSearchQuery] = useState('')
+
+    const filteredUsers = React.useMemo(() => {
+        if (!searchQuery.trim()) return availableUsers
+
+        const query = searchQuery.toLowerCase()
+
+        return availableUsers.filter((user: any) =>
+            user.fullName?.toLowerCase().includes(query) ||
+            user.email?.toLowerCase().includes(query)
+        )
+    }, [searchQuery, availableUsers])
 
     const LOCATION_LIST = React.useMemo(() => [
         { label: t('officers_smoke_room'), value: "Officer's smoke room" },
@@ -1085,7 +1097,7 @@ const CreateYourBuddyUpEvent = () => {
                     onClose={() => setCalendarModalVisible(false)}
                     onDateSelect={handleDateSelect}
                     prefillStartDate={isEditMode ? undefined : selectedStartDate}
-                    prefillEndDate={isEditMode ? undefined :  selectedEndDate}
+                    prefillEndDate={isEditMode ? undefined : selectedEndDate}
                     prefillStartTime={selectedStartTime?.toISOString() || undefined}
                     prefillEndTime={selectedEndTime?.toISOString() || undefined}
                 />
@@ -1132,14 +1144,20 @@ const CreateYourBuddyUpEvent = () => {
                 </BottomSheet>
 
                 {/* Participants Bottom Sheet */}
+                {/* Participants Bottom Sheet */}
                 <BottomSheet
                     ref={participantsSheetRef}
                     index={-1}
                     snapPoints={participantsSnapPoints}
                     enablePanDownToClose
                     backdropComponent={renderBackdrop}
-                    handleIndicatorStyle={{ height: 3, backgroundColor: '#ededed', width: 50 }}
+                    handleIndicatorStyle={{
+                        height: 3,
+                        backgroundColor: '#ededed',
+                        width: 50,
+                    }}
                 >
+                    {/* Header */}
                     <View style={styles.tagSheetHeader}>
                         <Text style={styles.sheetTitle}>{t('tagpeople')}</Text>
                         <TouchableOpacity
@@ -1154,21 +1172,39 @@ const CreateYourBuddyUpEvent = () => {
                         </TouchableOpacity>
                     </View>
 
-                    {availableUsers.length === 0 && !isFetchingUsers ? (
+                    {/* Search */}
+                    <View style={styles.searchContainer}>
+                        <TextInput
+                            value={searchQuery}
+                            onChangeText={setSearchQuery}
+                            placeholder={t('typetosearch')}
+                            placeholderTextColor="#999"
+                            style={styles.searchInput}
+                            autoCorrect={false}
+                            clearButtonMode="while-editing"
+                        />
+                    </View>
+
+                    {/* List */}
+                    {filteredUsers.length === 0 && !isFetchingUsers ? (
                         <View style={styles.loadingContainer}>
-                            <Text style={styles.loadingText}>{t('nousersboarded')}</Text>
+                            <Text style={styles.loadingText}>
+                                {searchQuery ? t('nousersfound') : t('nousersboarded')}
+                            </Text>
                         </View>
                     ) : (
                         <BottomSheetFlatList
-                            data={availableUsers}
+                            data={filteredUsers}
                             keyExtractor={(item: any) => item.id}
                             renderItem={renderUserItem}
                             contentContainerStyle={styles.flatListContent}
                             showsVerticalScrollIndicator={false}
                             removeClippedSubviews
+                            keyboardShouldPersistTaps="handled"
                         />
                     )}
                 </BottomSheet>
+
             </View>
         </KeyboardAvoidingView>
     )
@@ -1218,6 +1254,22 @@ const styles = StyleSheet.create({
     formView: {
         padding: 16,
     },
+    searchContainer: {
+        paddingHorizontal: 16,
+        paddingBottom: 10,
+    },
+
+    searchInput: {
+        height: 50,
+        paddingTop: 12,
+        borderRadius: 10,
+        paddingHorizontal: 14,
+        backgroundColor: '#f2f2f2',
+        fontFamily: 'Poppins-Regular',
+        fontSize: 14,
+        color: '#000',
+    },
+
     infoText: {
         fontFamily: 'Poppins-Regular',
         fontSize: 12,
