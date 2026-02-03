@@ -12,11 +12,11 @@ export default ({ config }) => {
     },
 
     updates: {
-      ...config.updates,
       enabled: isProduction || isStaging,
-      checkAutomatically: isProduction ? 'ON_LOAD' : 'ON_ERROR_RECOVERY',
+      checkAutomatically: 'ON_LOAD',
+      fallbackToCacheTimeout: 0,
+      url: 'https://u.expo.dev/130f7684-8e60-49eb-8e4c-746ee8b1ff0b',
     },
-
     ios: {
       ...config.ios,
       infoPlist: {
