@@ -16,6 +16,7 @@
     "ios:local": "APP_ENV=local expo start --ios",
     "ios:staging": "APP_ENV=staging expo start --ios",
     "ios:prod": "APP_ENV=production expo start --ios",
+    "ios:setup": "npm i --legacy-peer-deps && npm ci && cd ./ios && pod deintegrate && pod install || { echo 'iOS setup failed. Please check the error above.'; exit 1; }",
     "web": "expo start --web",
     "lint": "expo lint",
     "postinstall": "patch-package"

@@ -11,14 +11,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Keyboard,
-  KeyboardAvoidingView,
   Modal,
   Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { getallcomments, likecommentpost } from '../apis/apiService';
 import { ImagesAssets } from '../utils/ImageAssets';
@@ -174,7 +173,7 @@ const DeleteConfirmationModal: React.FC<{ visible: boolean; onClose: () => void;
   onConfirm,
   loading,
 }) => (
-  <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+  <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
     <View style={styles.modalOverlay}>
       <View style={[styles.modalContainer, { backgroundColor: ColorsLight.modalBackground }]}>
         <Text style={[styles.modalTitle, { color: ColorsLight.textPrimary }]}>{t('deletecomment')}</Text>
@@ -216,6 +215,7 @@ const CommentsSection: React.FC<{
   const { t } = useTranslation();
   const listRef = useRef<any>(null);
   const inputRef = useRef<any>(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentLoading, setCommentLoading] = useState(false);
@@ -267,6 +267,26 @@ const CommentsSection: React.FC<{
   useEffect(() => {
     if (visible) fetchComments();
   }, [visible, fetchComments]);
+
+  useEffect(() => {
+    const keyboardWillShow = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+      }
+    );
+    const keyboardWillHide = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setKeyboardHeight(0);
+      }
+    );
+
+    return () => {
+      keyboardWillShow.remove();
+      keyboardWillHide.remove();
+    };
+  }, []);
 
   const postComment = async () => {
     if (!commentText.trim() || sendingComment) return;
@@ -517,111 +537,132 @@ const CommentsSection: React.FC<{
   return (
     <>
       <BottomSheet visible={visible} onClose={handleClose} snapPoints={["60%", "80%"]}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }} keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}>
+        <View style={{ flex: 1 }}>
           <View style={styles.sheetHeader}>
             <Text style={[styles.sheetTitle, { color: ColorsLight.textPrimary }]}>{t('comments')}</Text>
           </View>
 
-          {commentLoading ? (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <CommonLoader fullScreen />
-            </View>
-          ) : (
-            <FlashList
-              ref={listRef}
-              data={comments}
-              keyExtractor={(item) => item.commentId}
-              renderItem={({ item }) => (
-                <CommentItem
-                  comment={item}
-                  currentUserId={currentUserId}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onProfilePress={(id) => onProfilePress?.(id)}
-                  onReply={handleReply}
-                  level={0}
-                />
-              )}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }}
-              ListEmptyComponent={
-                <View style={{ alignItems: 'center', marginTop: 50 }}>
-                  <Text style={{ color: ColorsLight.textTertiary, fontSize: 16 }}>{t('nocommentsyet')}</Text>
-                  <Text style={{ color: ColorsLight.textTertiary, fontSize: 14, marginTop: 8 }}>{t('bethefirsttocomment')}</Text>
-                </View>
-              }
-            />
-          )}
-
-          <View style={[styles.commentInputContainer, { backgroundColor: ColorsLight.cardBackground }]}>
-            {replyingTo && (
-              <View style={styles.replyingToBanner}>
-                <Text style={{ color: ColorsLight.textSecondary, fontSize: 13 }}>
-                  {t('replyingTo')}{' '}
-                  <Text style={{ fontWeight: '600', color: ColorsLight.likeColor }}>{replyingTo.userName}</Text>
-                </Text>
-                <TouchableOpacity onPress={() => { setReplyingTo(null); setCommentText(''); }}>
-                  <Text style={{ color: ColorsLight.deleteColor, marginLeft: 10 }}>{t('cancel')}</Text>
-                </TouchableOpacity>
+          <View style={{ flex: 1 }}>
+            {commentLoading ? (
+              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <CommonLoader fullScreen />
               </View>
-            )}
-
-            {editingComment && (
-              <View style={styles.replyingToBanner}>
-                <Text style={{ color: ColorsLight.textSecondary, fontSize: 13 }}>{t('editing')}</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    setEditingComment(null);
-                    setIsEditingReply(false);
-                    setParentCommentId(null);
-                    setEditingCommentRealId(null);
-                    setCommentText('');
-                  }}
-                >
-                  <Text style={{ color: ColorsLight.deleteColor, marginLeft: 10 }}>{t('cancel')}</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
-            <View style={{ flexDirection: 'row', alignItems: 'center', paddingBottom: 30 }}>
-              <TextInput
-                ref={inputRef}
-                style={[
-                  styles.commentInput,
-                  {
-                    backgroundColor: ColorsLight.inputBg,
-                    color: ColorsLight.inputText,
-                    borderColor: ColorsLight.inputBorder,
-                  },
-                ]}
-                placeholder={editingComment ? t('edityourcomment') : replyingTo ? t('writearreply') : t('writecomment')}
-                placeholderTextColor={ColorsLight.textTertiary}
-                value={commentText}
-                onChangeText={setCommentText}
-                multiline
-                textAlignVertical="center"
+            ) : (
+              <FlashList
+                ref={listRef}
+                data={comments}
+                keyExtractor={(item) => item.commentId}
+                renderItem={({ item }) => (
+                  <CommentItem
+                    comment={item}
+                    currentUserId={currentUserId}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onProfilePress={(id) => onProfilePress?.(id)}
+                    onReply={handleReply}
+                    level={0}
+                  />
+                )}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 10 }}
+                ListEmptyComponent={
+                  <View style={{ alignItems: 'center', marginTop: 50 }}>
+                    <Text style={{ color: ColorsLight.textTertiary, fontSize: 16 }}>{t('nocommentsyet')}</Text>
+                    <Text style={{ color: ColorsLight.textTertiary, fontSize: 14, marginTop: 8 }}>{t('bethefirsttocomment')}</Text>
+                  </View>
+                }
               />
-              <TouchableOpacity onPress={postComment} disabled={!commentText.trim() || sendingComment}>
-                {sendingComment ? (
-                  <CommonLoader />
-                ) : (
-                  <View
-                    style={{
-                      backgroundColor: commentText.trim() ? ColorsLight.likeColor : ColorsLight.textTertiary,
-                      padding: 10,
-                      borderRadius: 10,
+            )}
+
+            <View style={[styles.commentInputContainer, { backgroundColor: ColorsLight.cardBackground, marginBottom: Platform.OS === 'ios' ? keyboardHeight : 0 }]}>
+              {replyingTo && (
+                <View style={styles.replyingToBanner}>
+                  <Text style={{ color: ColorsLight.textSecondary, fontSize: 13 }}>
+                    {t('replyingTo')}{' '}
+                    <Text style={{ fontWeight: '600', color: ColorsLight.likeColor }}>{replyingTo.userName}</Text>
+                  </Text>
+                  <TouchableOpacity onPress={() => { setReplyingTo(null); setCommentText(''); }}>
+                    <Text style={{ color: ColorsLight.deleteColor, marginLeft: 10 }}>{t('cancel')}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {editingComment && (
+                <View style={styles.replyingToBanner}>
+                  <Text style={{ color: ColorsLight.textSecondary, fontSize: 13 }}>{t('editing')}</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setEditingComment(null);
+                      setIsEditingReply(false);
+                      setParentCommentId(null);
+                      setEditingCommentRealId(null);
+                      setCommentText('');
                     }}
                   >
-                    <SendHorizonal size={20} color={'white'} strokeWidth={1.5} />
-                  </View>
-                )}
-              </TouchableOpacity>
+                    <Text style={{ color: ColorsLight.deleteColor, marginLeft: 10 }}>{t('cancel')}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              <View style={{ flexDirection: 'row', alignItems: 'center', paddingBottom: 20, paddingTop: 10 }}>
+                <TextInput
+                  ref={inputRef}
+                  style={[
+                    styles.commentInput,
+                    {
+                      backgroundColor: ColorsLight.inputBg,
+                      color: ColorsLight.inputText,
+                      borderColor: ColorsLight.inputBorder,
+                    },
+                  ]}
+                  placeholder={editingComment ? t('edityourcomment') : replyingTo ? t('writearreply') : t('writecomment')}
+                  placeholderTextColor={ColorsLight.textTertiary}
+                  value={commentText}
+                  onChangeText={setCommentText}
+                  multiline
+                  textAlignVertical="center"
+                />
+                <TouchableOpacity onPress={postComment} disabled={!commentText.trim() || sendingComment}>
+                  {sendingComment ? (
+                    <CommonLoader />
+                  ) : (
+                    <View
+                      style={{
+                        backgroundColor: commentText.trim() ? ColorsLight.likeColor : ColorsLight.textTertiary,
+                        padding: 10,
+                        borderRadius: 10,
+                      }}
+                    >
+                      <SendHorizonal size={20} color={'white'} strokeWidth={1.5} />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </KeyboardAvoidingView>
-      </BottomSheet>
 
-      <DeleteConfirmationModal visible={deleteConfirmVisible} onClose={() => setDeleteConfirmVisible(false)} onConfirm={confirmDelete} loading={deleting} />
+          {deleteConfirmVisible && (
+            <View style={styles.deleteOverlay}>
+              <View style={[styles.modalContainer, { backgroundColor: ColorsLight.modalBackground }]}>
+                <Text style={[styles.modalTitle, { color: ColorsLight.textPrimary }]}>{t('deletecomment')}</Text>
+                <Text style={[styles.modalSubtitle, { color: ColorsLight.textSecondary }]}>{t('areyousure')}</Text>
+                <View style={styles.modalButtonContainer}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.modalButtonCancel, { backgroundColor: ColorsLight.inputBg, borderColor: ColorsLight.inputBorder }]}
+                    onPress={() => setDeleteConfirmVisible(false)}
+                    disabled={deleting}
+                  >
+                    <Text style={[styles.modalButtonTextCancel, { color: ColorsLight.textPrimary }]}>{t('no')}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.modalButton, styles.modalButtonConfirm, { backgroundColor: 'red' }]} onPress={confirmDelete} disabled={deleting}>
+                    {deleting ? <CommonLoader color="#FFFFFF" /> : <Text style={styles.modalButtonTextConfirm}>{t('yes')}</Text>}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          )}
+        </View>
+      </BottomSheet>
     </>
   );
 };
@@ -663,12 +704,22 @@ const styles = StyleSheet.create({
     marginTop: 10,
     gap: 16,
   },
-  commentInputContainer: {
+  deleteOverlay: {
     position: 'absolute',
-    bottom: 10,
+    top: -10,
     left: 0,
     right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  commentInputContainer: {
     marginHorizontal: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    paddingTop: 5,
   },
   replyingToBanner: {
     flexDirection: 'row',
