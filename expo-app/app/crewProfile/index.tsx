@@ -389,9 +389,9 @@ const Profile: React.FC = () => {
                     />
                   </View>
                 ) : null}
-                <View style={{ marginVertical: 10}}>
+                <View style={{ marginVertical: 10 }}>
                   <Text style={styles.socialTitle}>{t('posts')}</Text>
-                  <PostsOnCrewProfile userId={crewId}/>
+                  <PostsOnCrewProfile userId={crewId} />
                 </View>
               </View>
             </View>

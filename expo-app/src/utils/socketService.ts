@@ -45,7 +45,6 @@ class WSService {
       });
 
       this.socket.on('connect_error', (error) => {
-        showToast.error('Oops!', 'Socket Connection Error');
         console.log('Socket Connection Error:', error);
       });
     } catch (error) {
