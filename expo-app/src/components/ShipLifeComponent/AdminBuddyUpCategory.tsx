@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import { ImagesAssets } from '@/src/utils/ImageAssets';
 
 interface BuddyUpEvent {
   id: string;
@@ -60,7 +61,7 @@ const AdminBuddyUpCategory = ({ buddyupCategory }: { buddyupCategory: BuddyUpEve
             activeOpacity={0.8}
           >
             <View style={[styles.buddyupeventsView, { backgroundColor: bgColors[index % bgColors.length] }]}>
-              <Image source={{ uri: item.categoryImage }} style={styles.buddyupeventImage} />
+              <Image source={{ uri: item.categoryImage }} style={styles.buddyupeventImage} placeholder={ImagesAssets.categoryIcon} placeholderContentFit='cover' />
               <Text style={styles.buddyupeventName}>{item.categoryName}</Text>
             </View>
           </TouchableOpacity>

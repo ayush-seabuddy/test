@@ -128,15 +128,7 @@ const ShowContentCard = ({ data, keyId }: { data: any, keyId: any }) => {
                 horizontal={true}
                 showsHorizontalScrollIndicator={false}
                 ListEmptyComponent={
-                    <View style={styles.emptyContainer}>
-
-                        <Image
-                            style={{ height: 80, width: 80 }}
-                            contentFit='contain'
-                            source={ImagesAssets.NoContent}
-                        />
-                        <Text style={styles.emptyText}>{config.emptyMessage}</Text>
-                    </View>
+                    <EmptyComponent text={config.emptyMessage}/>
                 }
             />
         </View>
@@ -185,12 +177,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         paddingVertical: 30,
         width,
-    },
-    emptyText: {
-        fontSize: 14,
-        fontFamily: "Poppins-Regular",
-        color: "#000",
-        marginTop: 10,
     },
 });
 

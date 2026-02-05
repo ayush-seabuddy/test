@@ -557,6 +557,8 @@ const NewPostScreen = () => {
         >
           <Image
             source={item.profileUrl ? { uri: item.profileUrl } : ImagesAssets.userIcon}
+            placeholder={ImagesAssets.userIcon}
+            placeholderContentFit='cover'
             style={styles.userAvatar}
             contentFit="cover"
           />
@@ -648,6 +650,8 @@ const NewPostScreen = () => {
                     <Image
                       source={user.profileUrl ? { uri: user.profileUrl } : ImagesAssets.userIcon}
                       style={styles.taggedAvatar}
+                      placeholder={ImagesAssets.userIcon}
+                      placeholderContentFit='cover'
                       contentFit="cover"
                     />
                     <Text style={styles.taggedpeopleName}>

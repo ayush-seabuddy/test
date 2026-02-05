@@ -133,6 +133,7 @@ const UserItem: React.FC<{ user: User; onPress?: () => void }> = React.memo(({ u
     <TouchableOpacity style={styles.userItemContainer} onPress={onPress} activeOpacity={0.7}>
       <Image
         source={imageSource}
+        placeholder={ImagesAssets.userIcon}
         style={styles.userAvatar}
         contentFit="cover"
       />

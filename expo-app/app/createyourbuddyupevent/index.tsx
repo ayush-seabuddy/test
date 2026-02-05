@@ -695,6 +695,8 @@ const CreateYourBuddyUpEvent = () => {
                         source={item.profileUrl ? { uri: item.profileUrl } : ImagesAssets.userIcon}
                         style={styles.userAvatar}
                         contentFit="cover"
+                        placeholder={ImagesAssets.userIcon}
+                        placeholderContentFit='cover'
                     />
                     <View style={styles.userInfo}>
                         <Text style={styles.userName}>{item.fullName}</Text>
@@ -1026,6 +1028,8 @@ const CreateYourBuddyUpEvent = () => {
                                                             { marginLeft: index === 0 ? 0 : -14 }
                                                         ]}
                                                         contentFit="cover"
+                                                        placeholder={ImagesAssets.userIcon}
+                                                        placeholderContentFit='cover'
                                                     />
                                                 ))}
                                                 {selectedParticipants.length > 3 && (
@@ -1143,7 +1147,6 @@ const CreateYourBuddyUpEvent = () => {
                     </BottomSheetView>
                 </BottomSheet>
 
-                {/* Participants Bottom Sheet */}
                 {/* Participants Bottom Sheet */}
                 <BottomSheet
                     ref={participantsSheetRef}

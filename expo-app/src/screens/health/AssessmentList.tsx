@@ -245,6 +245,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   sectionTitle: {
+    lineHeight:25,
     fontSize: isProMax ? 22 : 18,
     color: Colors.darkGreen,
     fontFamily: 'WhyteInktrap-Medium',
@@ -308,7 +309,7 @@ const styles = StyleSheet.create({
   },
   cardDesc: {
     fontSize: 10,
-    color: '#444',
+    color: '#444444',
     fontFamily: 'Poppins-Regular',
   },
   warningTag: {
