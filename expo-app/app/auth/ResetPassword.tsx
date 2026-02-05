@@ -196,6 +196,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: "WhyteInktrap-Bold",
     fontSize: 20,
+    lineHeight:20,
     color: Colors.textPrimary,
     textAlign: "center",
     paddingTop: Platform.OS === "android" ? 0 : 10,

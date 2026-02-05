@@ -571,6 +571,7 @@ const styles = StyleSheet.create({
   },
   socialTitle: {
     fontSize: 18,
+    lineHeight:20,
     color: ProfileColors.textPrimary,
     fontFamily: 'WhyteInktrap-Bold',
     paddingTop: Platform.OS === 'ios' ? 20 : 0,

@@ -152,6 +152,7 @@ const styles = StyleSheet.create({
   },
   room: {
     fontFamily: "WhyteInktrap-Bold",
+    lineHeight:20,
   },
   chatroom: {
     fontSize: 24,

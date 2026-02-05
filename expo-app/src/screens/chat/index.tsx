@@ -300,6 +300,7 @@ const styles = StyleSheet.create({
   headerText: { flex: 1 },
 
   sectionTitle: {
+    lineHeight:20,
     fontSize: 20,
     fontFamily: 'WhyteInktrap-Bold',
     color: 'black',

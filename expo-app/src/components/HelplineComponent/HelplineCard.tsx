@@ -192,7 +192,7 @@ const HelplineAndAICards = () => {
             >
                 <View style={styles.card}>
                     <View style={styles.content}>
-                        <Image source={item.iconUrl} style={styles.icon} contentFit="contain" placeholder={ImagesAssets.helplineFormIcon} />
+                        <Image source={item.iconUrl} style={styles.icon} contentFit="contain" placeholder={ImagesAssets.helplineFormIcon} placeholderContentFit='cover'/>
                         <View style={styles.textContainer}>
                             <Text style={[styles.title, isSOS && styles.titleEmergency]}>
                                 {item.helplineName}

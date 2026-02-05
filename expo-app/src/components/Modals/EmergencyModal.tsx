@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     closeBtn: { justifyContent: 'space-between', flexDirection: 'row' },
 
     helloText: { fontSize: 16, fontFamily: "Poppins-SemiBold", color: '#333' },
-    name: { color: "#D32F2F", fontFamily: "WhyteInktrap-Bold" },
+    name: { color: "#D32F2F", fontFamily: "WhyteInktrap-Bold" ,lineHeight:20,},
     heading: { fontSize: 18, marginVertical: 5, fontFamily: "WhyteInktrap-Bold", lineHeight: 30 },
     noData: { textAlign: 'center', color: '#666', marginTop: 20 },
 

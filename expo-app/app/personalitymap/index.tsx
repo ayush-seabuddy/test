@@ -94,6 +94,7 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 18,
+        lineHeight:20,
         fontFamily: "WhyteInktrap-Bold",
         color: Colors.textPrimary,
     },

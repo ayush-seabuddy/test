@@ -479,6 +479,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#262626',
     marginBottom: 10,
+    lineHeight:20,
     fontFamily: 'WhyteInktrap-Bold',
   },
   description: {

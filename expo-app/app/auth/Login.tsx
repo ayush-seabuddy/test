@@ -264,6 +264,7 @@ const styles = StyleSheet.create({
   formContent: { paddingBottom: 20, paddingHorizontal: 16 },
   header: { alignItems: "center", marginBottom: 12 },
   title: {
+    lineHeight:20,
     fontFamily: "WhyteInktrap-Bold",
     fontSize: 20,
     paddingTop: Platform.OS === "android" ? 0 : 10,
