@@ -5,6 +5,7 @@ import {
 import { requestAllPermissions } from '@/Permission/Permissions';
 import ErrorBoundary from '@/src/components/ErrorBoundary';
 import { showToast } from '@/src/components/GlobalToast';
+import OTAUpdatePopup from '@/src/components/OTAUpdatePopup';
 import { initI18n } from '@/src/localization/i18n';
 import { store } from '@/src/redux/store';
 import Colors from '@/src/utils/Colors';
@@ -307,10 +308,12 @@ export default Sentry.wrap(function RootLayout() {
                 <PaperProvider>
                   <I18nextProvider i18n={i18n}>
                     <GestureHandlerRootView style={{ flex: 1 }}>
-                      <Stack screenOptions={{ headerShown: false }}>
-                        <Stack.Screen name='(bottomtab)' />
-                      </Stack>
-                      <Toast />
+                      <OTAUpdatePopup>
+                        <Stack screenOptions={{ headerShown: false }}>
+                          <Stack.Screen name='(bottomtab)' />
+                        </Stack>
+                        <Toast />
+                      </OTAUpdatePopup>
                     </GestureHandlerRootView>
                   </I18nextProvider>
                 </PaperProvider>

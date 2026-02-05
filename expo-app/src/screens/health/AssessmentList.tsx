@@ -245,6 +245,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   sectionTitle: {
+    marginTop:5,
     lineHeight:25,
     fontSize: isProMax ? 22 : 18,
     color: Colors.darkGreen,
