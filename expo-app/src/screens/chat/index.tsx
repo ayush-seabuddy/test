@@ -211,7 +211,7 @@ const ChatLoungeList = () => {
       >
         <ChatHeader />
 
-        {loading && (
+        {loading && isEmpty && (
           <View style={styles.centerContainer}>
             <CommonLoader fullScreen />
           </View>
@@ -223,7 +223,7 @@ const ChatLoungeList = () => {
           </View>
         )}
 
-        {!loading && !isEmpty && (
+        {!isEmpty && (
           <View style={styles.chatListContainer}>
             {loungeSections.map((section) => {
               if (section.rooms.length === 0) return null
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
   headerText: { flex: 1 },
 
   sectionTitle: {
-    lineHeight:20,
+    lineHeight: 30,
     fontSize: 20,
     fontFamily: 'WhyteInktrap-Bold',
     color: 'black',
@@ -326,6 +326,7 @@ const styles = StyleSheet.create({
   chatMiddle: { flex: 1 },
 
   groupName: {
+    lineHeight:20,
     fontSize: 16,
     fontFamily: 'WhyteInktrap-Bold',
     color: '#052B19',
