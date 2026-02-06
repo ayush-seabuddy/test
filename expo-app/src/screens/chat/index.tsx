@@ -27,6 +27,7 @@ import socketService from '@/src/utils/socketService'
 
 const ChatLoungeList = () => {
   const dispatch = useDispatch()
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const { shipChatList, fleetChatList } = useSelector(
     (state: RootState) => state.chatList
   )
@@ -56,6 +57,7 @@ const ChatLoungeList = () => {
       AsyncStorage.getItem('shipId'),
       AsyncStorage.getItem('employerId'),
     ])
+    setCurrentUserId(userId)
 
     socketService.emit('getAllGroupChatRooms', { userId, shipId })
     socketService.emit('getAllGroupChatRooms', { userId, employerId })
@@ -74,8 +76,8 @@ const ChatLoungeList = () => {
   }
 
   const updateChatCount = async (data: any) => {
-    const userId = await AsyncStorage.getItem('userId')
 
+    const userId = await AsyncStorage.getItem('userId')
     shipChatList.forEach((item: ChatRoom) => {
       if (item.id === data.chatRoomId) {
         dispatch(
@@ -83,9 +85,10 @@ const ChatLoungeList = () => {
             ...item,
             lastMessage: data.data,
             isUnReadMessage: true,
-            unReadMessages:
-              data?.participants?.find((p: any) => p.userId === userId)
-                ?.unReadMessages ?? 0,
+            participants: data?.participants ?? [],
+            unreadMessages:
+              data?.participants?.find((p: any) => String(p.userId) === userId)
+                ?.unreadMessages ?? 0,
           })
         )
       }
@@ -98,9 +101,10 @@ const ChatLoungeList = () => {
             ...item,
             lastMessage: data.data,
             isUnReadMessage: true,
-            unReadMessages:
-              data?.participants?.find((p: any) => p.userId === userId)
-                ?.unReadMessages ?? 0,
+            participants: data?.participants ?? [],
+            unreadMessages:
+              data?.participants?.find((p: any) => String(p.userId) === userId)
+                ?.unreadMessages ?? 0,
           })
         )
       }
@@ -139,7 +143,9 @@ const ChatLoungeList = () => {
   }, [])
 
   const renderChatRow = (room: ChatRoom, index: number) => {
-    const hasUnread = room.isUnReadMessage && room.unReadMessages > 0
+    const participantUser = room?.participants?.find(p => String(p.userId) == currentUserId)
+
+    const hasUnread = participantUser && participantUser?.unreadMessages > 0
     const lastMsg = room.lastMessage
 
     return (
@@ -190,7 +196,7 @@ const ChatLoungeList = () => {
           {hasUnread && (
             <View style={styles.unreadBadge}>
               <Text style={styles.unreadCount}>
-                {room.unReadMessages > 9 ? '9+' : room.unReadMessages}
+                {participantUser?.unreadMessages > 9 ? '9+' : participantUser?.unreadMessages}
               </Text>
             </View>
           )}
@@ -264,7 +270,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ededed' },
 
   scrollContent: {
-    flexGrow: 1,
     paddingBottom: 20,
   },
 
@@ -326,7 +331,7 @@ const styles = StyleSheet.create({
   chatMiddle: { flex: 1 },
 
   groupName: {
-    lineHeight:20,
+    lineHeight: 20,
     fontSize: 16,
     fontFamily: 'WhyteInktrap-Bold',
     color: '#052B19',

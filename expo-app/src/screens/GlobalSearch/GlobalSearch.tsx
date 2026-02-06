@@ -22,6 +22,7 @@ import { FlatList, ScrollView } from 'react-native-gesture-handler';
 import { PostInterface } from '../ContentDetails/type';
 import MusicCard from '../companyLibrary/MusicCard';
 import EmptyComponent from '@/src/components/EmptyComponent';
+import { ImagesAssets } from '@/src/utils/ImageAssets';
 
 const GlobalSearch = () => {
   const [searchText, setSearchText] = useState('');
@@ -186,11 +187,9 @@ const GlobalSearch = () => {
       }
     >
       <Image
-        source={{
-          uri:
-            item.profileUrl ||
-            "https://as1.ftcdn.net/v2/jpg/03/46/83/96/1000_F_346839683_6nAPzbhpSkIpb8pmAwufkC7c5eD7wYws.jpg",
-        }}
+        source={item.profileUrl}
+        placeholder={ImagesAssets.userIcon}
+        placeholderContentFit='cover'
         style={styles.image}
       />
       <View>
@@ -336,6 +335,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(183, 183, 183, 0.1)',
     paddingHorizontal: 14,
+    paddingVertical: Platform.OS === 'ios' ? 10 : 0,
     borderRadius: 25,
     marginHorizontal: 10,
   },

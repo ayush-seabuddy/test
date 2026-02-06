@@ -6,7 +6,7 @@ export interface ChatParticipant {
   userRole: string
   lastOnline: string | null
   isRead: boolean
-  unReadMessages: number
+  unreadMessages: number
   lastReadAt: string | null
 }
 
@@ -46,7 +46,7 @@ export interface ChatRoom {
   updatedAt: string
   lastMessage: LastMessage | null
   isUnReadMessage: boolean
-  unReadMessages: number
+  unreadMessages: number
   participantIds: ParticipantSummary[]
 }
 

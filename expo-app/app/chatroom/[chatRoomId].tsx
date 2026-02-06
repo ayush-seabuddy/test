@@ -88,7 +88,7 @@ const ChatRoomScreen = () => {
   const [hederDetails, setHeaderDetails] = useState({
     navigation: () => router.back(),
     data: chatRoomDetails,
-    participant: chatRoomDetails?.participants?.length,
+    participant: 0,
     GroupName: chatRoomDetails?.groupName,
     setSearchValue: onSearch,
     participantIds: participant

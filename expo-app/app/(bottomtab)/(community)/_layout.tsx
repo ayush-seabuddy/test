@@ -2,6 +2,7 @@ import { getUnreadMessageCount } from "@/src/apis/apiService";
 import { updateUnreadMessageCount, updateUnreadNotificationCount } from "@/src/redux/chatListSlice";
 import { RootState } from "@/src/redux/store";
 import Colors from "@/src/utils/Colors";
+import socketService from "@/src/utils/socketService";
 import { router, Tabs, useFocusEffect, usePathname } from "expo-router";
 import React, { useCallback } from "react";
 import { useTranslation } from "react-i18next";
@@ -25,6 +26,18 @@ export default function CommunityLayout() {
       dispatch(updateUnreadNotificationCount(response.data.unSeenCount));
     }
   }
+
+  useFocusEffect(
+    useCallback(() => {
+      socketService.on("totalUnreadMessage", (data) => {
+        dispatch(updateUnreadMessageCount(data.unReadCount));
+      });
+
+      return () => {
+        socketService.off("totalUnreadMessage");
+      };
+    }, [])
+  );
 
 
   useFocusEffect(

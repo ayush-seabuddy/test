@@ -3,10 +3,11 @@ import { updateUnreadMessageCount, updateUnreadNotificationCount } from "@/src/r
 import { RootState } from "@/src/redux/store";
 import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
+import socketService from "@/src/utils/socketService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
-import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
     Dimensions,
@@ -59,6 +60,18 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
             dispatch(updateUnreadNotificationCount(response.data.unSeenCount));
         }
     }
+
+    useFocusEffect(
+    useCallback(() => {
+      socketService.on("totalUnreadMessage", (data) => {
+        dispatch(updateUnreadMessageCount(data.unReadCount));
+      });
+
+      return () => {
+        socketService.off("totalUnreadMessage");
+      };
+    }, [])
+  );
 
     useEffect(() => {
         fetchUserDetails();

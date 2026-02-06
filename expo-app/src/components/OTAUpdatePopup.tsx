@@ -19,17 +19,10 @@ export default function OTAUpdatePopup({ children }: Props) {
 
   const progress = useRef(new Animated.Value(0)).current;
   const hasCheckedRef = useRef(false);
+  const startTimeRef = useRef<number>(0);
 
   useEffect(() => {
-    if (__DEV__) {
-      console.log('[OTA] Skipped (development mode)');
-      return;
-    }
-
-    if (!Updates.isEnabled) {
-      console.log('[OTA] Skipped (updates disabled)');
-      return;
-    }
+    if (__DEV__ || !Updates.isEnabled) return;
 
     if (hasCheckedRef.current) return;
     hasCheckedRef.current = true;
@@ -37,43 +30,48 @@ export default function OTAUpdatePopup({ children }: Props) {
     checkForOTA();
   }, []);
 
-  const animateProgress = (toValue: number, duration: number) => {
-    Animated.timing(progress, {
+  const animateTo = (toValue: number, duration: number) => {
+    return Animated.timing(progress, {
       toValue,
       duration,
-      easing: Easing.linear,
+      easing: Easing.inOut(Easing.ease),
       useNativeDriver: false,
-    }).start();
+    });
   };
 
   const checkForOTA = async () => {
     try {
       const update = await Updates.checkForUpdateAsync();
+      if (!update.isAvailable) return;
 
-      if (!update.isAvailable) {
-        console.log('[OTA] No update available');
-        return;
-      }
-
-      console.log('[OTA] Update available');
-
+      startTimeRef.current = Date.now();
       setIsUpdating(true);
-      setStatusText('Updating app…');
+      setStatusText('Downloading update…');
 
-      // Fake progress → 90%
-      animateProgress(90, 4000);
+      // Stage 1: slow start
+      Animated.sequence([
+        animateTo(60, 3500),
+        animateTo(90, 3000),
+      ]).start();
 
       await Updates.fetchUpdateAsync();
 
       setStatusText('Finalizing update…');
 
-      // Complete progress → 100%
-      animateProgress(100, 500);
+      // Ensure loader shows at least 6 seconds
+      const elapsed = Date.now() - startTimeRef.current;
+      const remaining = Math.max(0, 6000 - elapsed);
 
-      // Smooth UX delay before reload
       setTimeout(() => {
-        Updates.reloadAsync();
-      }, 300);
+        Animated.timing(progress, {
+          toValue: 100,
+          duration: 1200,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: false,
+        }).start(() => {
+          setTimeout(() => Updates.reloadAsync(), 400);
+        });
+      }, remaining);
     } catch (error) {
       console.error('[OTA] Update failed:', error);
       setIsUpdating(false);
@@ -89,7 +87,7 @@ export default function OTAUpdatePopup({ children }: Props) {
     <>
       {children}
 
-      <Modal visible={isUpdating} transparent animationType='fade'>
+      <Modal visible={isUpdating} animationType="fade">
         <View style={styles.overlay}>
           <Text style={styles.title}>Updating App</Text>
           <Text style={styles.subtitle}>
