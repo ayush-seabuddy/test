@@ -11,18 +11,16 @@ import { store } from '@/src/redux/store';
 import Colors from '@/src/utils/Colors';
 import { clearCrashCount, safeReload } from '@/src/utils/crashRecovery';
 import socketService from '@/src/utils/socketService';
-import * as Clarity from '@microsoft/react-native-clarity';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
 } from '@react-navigation/native';
-import * as Sentry from '@sentry/react-native';
 import { useFonts } from 'expo-font';
 import * as NavigationBar from 'expo-navigation-bar';
 import * as Notifications from 'expo-notifications';
-import { Stack, router, usePathname, useSegments } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import * as TaskManager from 'expo-task-manager';
 import i18n from 'i18next';
@@ -41,27 +39,6 @@ import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 import { Provider } from 'react-redux';
-
-Sentry.init({
-  dsn: 'https://6b5703e56775c084752511e95c27a728@o4510693087117312.ingest.us.sentry.io/4510693088428032',
-  sendDefaultPii: true,
-  enableLogs: true,
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1,
-  integrations: [
-    Sentry.mobileReplayIntegration(),
-    Sentry.feedbackIntegration(),
-  ],
-});
-
-ErrorUtils.setGlobalHandler((error, isFatal) => {
-  console.error('🔥 Global JS Error:', error);
-  Sentry.captureException(error);
-
-  if (isFatal) {
-    safeReload();
-  }
-});
 
 Appearance.setColorScheme('light');
 
@@ -89,7 +66,7 @@ TaskManager.defineTask(
   },
 );
 
-Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK).catch(() => { });
+Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK).catch(() => {});
 
 const NotificationHandler = () => {
   const { expoPushToken } = useNotification();
@@ -188,12 +165,13 @@ const NotificationHandler = () => {
   return null;
 };
 
-export default Sentry.wrap(function RootLayout() {
+export default function RootLayout() {
   const visibility = NavigationBar.useVisibility();
   const colorScheme = useColorScheme();
   const { t } = useTranslation();
   const [appReady, setAppReady] = useState(false);
   const [localizationReady, setLocalizationReady] = useState(false);
+
   const [fontsLoaded] = useFonts({
     'Poppins-Regular': require('../assets/fonts/Poppins-Regular.ttf'),
     'Poppins-Medium': require('../assets/fonts/Poppins-Medium.ttf'),
@@ -204,10 +182,6 @@ export default Sentry.wrap(function RootLayout() {
     'WhyteInktrap-Medium': require('../assets/fonts/WhyteInktrap-Medium.ttf'),
   });
 
-  const pathname = usePathname();
-  const segments = useSegments();
-
-  // Request permissions only after localization is ready
   useEffect(() => {
     if (!localizationReady) return;
 
@@ -237,47 +211,17 @@ export default Sentry.wrap(function RootLayout() {
   }, [visibility]);
 
   useEffect(() => {
-    let screenName = '/';
-
-    if (segments.length > 0) {
-      screenName =
-        segments
-          .filter((s) => !s.startsWith('('))
-          .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-          .join(' / ') || 'Home';
-    }
-
-    if (pathname === '/') screenName = 'Home';
-
-    try {
-      Clarity.setCurrentScreenName(screenName);
-      if (__DEV__) {
-        console.log(`[Clarity] Screen changed → ${screenName}`);
-      }
-    } catch (err) {
-      console.warn('[Clarity] setCurrentScreenName failed:', err);
-    }
-  }, [pathname, segments]);
-
-  useEffect(() => {
     if (!fontsLoaded) return;
 
     const initApp = async () => {
       try {
         await initI18n();
         setLocalizationReady(true);
-
         socketService.initializeSocket();
-        Clarity.initialize('t9oq6u2hhw', {
-          logLevel: __DEV__ ? Clarity.LogLevel.Verbose : Clarity.LogLevel.None,
-        });
-
-        await clearCrashCount(); // ✅ app is stable
-
+        await clearCrashCount();
         setAppReady(true);
       } catch (e) {
         console.warn('Init error:', e);
-        Sentry.captureException(e);
       } finally {
         await SplashScreen.hideAsync();
       }
@@ -294,23 +238,18 @@ export default Sentry.wrap(function RootLayout() {
         <NotificationHandler />
         <Provider store={store}>
           <SafeAreaProvider>
-            <SafeAreaView
-              style={styles.container}
-              edges={['top', 'left', 'right']}>
+            <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
               <StatusBar
-                barStyle={
-                  colorScheme === 'dark' ? 'light-content' : 'dark-content'
-                }
-                backgroundColor='#000'
+                barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'}
+                backgroundColor="#000"
               />
-              <ThemeProvider
-                value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+              <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
                 <PaperProvider>
                   <I18nextProvider i18n={i18n}>
                     <GestureHandlerRootView style={{ flex: 1 }}>
                       <OTAUpdatePopup>
                         <Stack screenOptions={{ headerShown: false }}>
-                          <Stack.Screen name='(bottomtab)' />
+                          <Stack.Screen name="(bottomtab)" />
                         </Stack>
                         <Toast />
                       </OTAUpdatePopup>
@@ -324,7 +263,7 @@ export default Sentry.wrap(function RootLayout() {
       </NotificationProvider>
     </ErrorBoundary>
   );
-});
+}
 
 const styles = StyleSheet.create({
   container: {

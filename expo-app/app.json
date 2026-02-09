@@ -17,12 +17,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "updates": {
-      "enabled": true,
-      "checkAutomatically": "ON_LOAD",
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/130f7684-8e60-49eb-8e4c-746ee8b1ff0b"
-    },
+
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.seekware.seabuddy",
@@ -33,9 +28,6 @@
         "UIBackgroundModes": [
           "audio",
           "fetch",
-          "remote-notification",
-          "audio",
-          "fetch",
           "remote-notification"
         ],
         "NSCameraUsageDescription": "SeaBuddy needs access to your camera to upload photos and videos.",
@@ -44,17 +36,13 @@
         "NSLocationWhenInUseUsageDescription": "SeaBuddy uses your location to enhance your experience."
       }
     },
+
     "android": {
       "package": "co.seabuddy.platform",
       "versionCode": 1,
       "googleServicesFile": "./google-services.json",
       "allowBackup": false,
       "permissions": [
-        "INTERNET",
-        "CAMERA",
-        "RECORD_AUDIO",
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION",
         "INTERNET",
         "CAMERA",
         "RECORD_AUDIO",
@@ -66,31 +54,26 @@
         "backgroundColor": "#E6F4FE"
       }
     },
+
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
+
     "extra": {
       "router": {},
       "eas": {
         "projectId": "130f7684-8e60-49eb-8e4c-746ee8b1ff0b"
       }
     },
+
     "owner": "seabuddyco1",
-    "plugins": [
-      [
-        "@sentry/react-native/expo",
-        {
-          "url": "https://sentry.io/",
-          "project": "seabuddy",
-          "organization": "seekware-technology-private-li"
-        }
-      ]
-    ],
+
     "runtimeVersion": {
       "policy": "appVersion"
     }

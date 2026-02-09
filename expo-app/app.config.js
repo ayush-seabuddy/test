@@ -17,6 +17,7 @@ export default ({ config }) => {
       fallbackToCacheTimeout: 0,
       url: 'https://u.expo.dev/130f7684-8e60-49eb-8e4c-746ee8b1ff0b',
     },
+
     ios: {
       ...config.ios,
       infoPlist: {
@@ -81,6 +82,7 @@ export default ({ config }) => {
           },
         },
       ],
+
       [
         'expo-navigation-bar',
         {
@@ -92,19 +94,12 @@ export default ({ config }) => {
           position: 'relative',
         },
       ],
+
       [
         'expo-sqlite',
         {
           enableFTS: true,
           useSQLCipher: true,
-        },
-      ],
-
-      [
-        '@sentry/react-native/expo',
-        {
-          organization: process.env.EXPO_PUBLIC_SENTRY_ORG,
-          project: process.env.EXPO_PUBLIC_SENTRY_PROJECT,
         },
       ],
     ],
