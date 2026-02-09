@@ -1,3 +1,4 @@
+import { PostHogProvider } from 'posthog-react-native'
 import {
   NotificationProvider,
   useNotification,
@@ -235,31 +236,40 @@ export default function RootLayout() {
   return (
     <ErrorBoundary>
       <NotificationProvider>
-        <NotificationHandler />
-        <Provider store={store}>
-          <SafeAreaProvider>
-            <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-              <StatusBar
-                barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'}
-                backgroundColor="#000"
-              />
-              <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-                <PaperProvider>
-                  <I18nextProvider i18n={i18n}>
-                    <GestureHandlerRootView style={{ flex: 1 }}>
-                      <OTAUpdatePopup>
-                        <Stack screenOptions={{ headerShown: false }}>
-                          <Stack.Screen name="(bottomtab)" />
-                        </Stack>
-                        <Toast />
-                      </OTAUpdatePopup>
-                    </GestureHandlerRootView>
-                  </I18nextProvider>
-                </PaperProvider>
-              </ThemeProvider>
-            </SafeAreaView>
-          </SafeAreaProvider>
-        </Provider>
+        <PostHogProvider
+          apiKey="phc_s4cqE6KuX16Or60SKs9Tz2qkTU1sGFQNHplbJKz3YSO"
+          options={{
+            host: 'https://us.i.posthog.com',
+            enableSessionReplay: true,
+          }}
+          autocapture
+        >
+          <NotificationHandler />
+          <Provider store={store}>
+            <SafeAreaProvider>
+              <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+                <StatusBar
+                  barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'}
+                  backgroundColor="#000"
+                />
+                <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                  <PaperProvider>
+                    <I18nextProvider i18n={i18n}>
+                      <GestureHandlerRootView style={{ flex: 1 }}>
+                        <OTAUpdatePopup>
+                          <Stack screenOptions={{ headerShown: false }}>
+                            <Stack.Screen name="(bottomtab)" />
+                          </Stack>
+                          <Toast />
+                        </OTAUpdatePopup>
+                      </GestureHandlerRootView>
+                    </I18nextProvider>
+                  </PaperProvider>
+                </ThemeProvider>
+              </SafeAreaView>
+            </SafeAreaProvider>
+          </Provider>
+        </PostHogProvider>
       </NotificationProvider>
     </ErrorBoundary>
   );
