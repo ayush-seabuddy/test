@@ -20,6 +20,7 @@ import {
   View,
 } from "react-native";
 import { login } from "../../src/apis/apiService";
+import { usePostHog } from "posthog-react-native";
 
 const { height } = Dimensions.get("window");
 
@@ -30,7 +31,7 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
   const { t } = useTranslation();
-
+  const posthog = usePostHog();
   const logoTranslateY = useRef(new Animated.Value(height)).current;
 
   useEffect(() => {
@@ -78,7 +79,7 @@ const LoginScreen = () => {
 
         await AsyncStorage.setItem(
           "userDetails",
-          JSON.stringify(apiResponse.data)
+          JSON.stringify(apiResponse.data),
         );
 
         apiResponse?.data.authToken &&
@@ -90,16 +91,23 @@ const LoginScreen = () => {
         apiResponse?.data.employerId &&
           (await AsyncStorage.setItem(
             "employerId",
-            apiResponse.data.employerId
+            apiResponse.data.employerId,
           ));
 
         const storedData = await AsyncStorage.getItem("userDetails");
         const user = JSON.parse(storedData ?? "{}");
 
+        if (user?.email) {
+          posthog.identify(user.email, {
+            email: user.email,
+            name: user.name,
+            userId: user.id,
+          });
+        }
+
         if (
           user.isProfileCompleted &&
-          (user.department === "Shore_Staff" ||
-            user.isPersonalityTestCompleted)
+          (user.department === "Shore_Staff" || user.isPersonalityTestCompleted)
         ) {
           router.replace("/home");
         } else if (user.isProfileCompleted) {
@@ -119,7 +127,7 @@ const LoginScreen = () => {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : 'padding'}
+      behavior={Platform.OS === "ios" ? "padding" : "padding"}
     >
       <View style={{ flex: 1, backgroundColor: Colors.background }}>
         <View style={styles.wrapper}>
@@ -143,9 +151,7 @@ const LoginScreen = () => {
               <View style={styles.formContent}>
                 <View style={styles.header}>
                   <Text style={styles.title}>{t("welcome")}</Text>
-                  <Text style={styles.subtitle}>
-                    {t("logintoyouraccount")}
-                  </Text>
+                  <Text style={styles.subtitle}>{t("logintoyouraccount")}</Text>
                 </View>
 
                 <GlobalTextInput
@@ -264,7 +270,7 @@ const styles = StyleSheet.create({
   formContent: { paddingBottom: 20, paddingHorizontal: 16 },
   header: { alignItems: "center", marginBottom: 12 },
   title: {
-    lineHeight:20,
+    lineHeight: 20,
     fontFamily: "WhyteInktrap-Bold",
     fontSize: 20,
     paddingTop: Platform.OS === "android" ? 0 : 10,
@@ -300,18 +306,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textMuted,
     fontFamily: "Poppins-Regular",
-  }, loginButton: {
-    width: '100%'
+  },
+  loginButton: {
+    width: "100%",
   },
   checkbox: {
     width: 20,
     height: 20,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     marginRight: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   checkboxChecked: {
     backgroundColor: Colors.lightGreen,

@@ -17,9 +17,11 @@ import {
   View,
 } from "react-native";
 import { useDispatch } from "react-redux";
+import { usePostHog } from "posthog-react-native";
 
 const Settings = () => {
   const { t } = useTranslation();
+  const posthog = usePostHog();
   const dispatch = useDispatch();
   const [modalVisible, setModalVisible] = useState(false);
   const handleLogout = async () => {
@@ -38,18 +40,21 @@ const Settings = () => {
         await logout(payload);
       }
 
-      // 3️⃣ Clear ALL AsyncStorage
+      // 3️⃣ RESET POSTHOG USER
+      posthog.reset();
+
+      // 4️⃣ Clear ALL AsyncStorage
       await AsyncStorage.clear();
 
-      // 4️⃣ Set token again (important)
+      // 5️⃣ Set token again (important)
       if (expoPushToken) {
         await AsyncStorage.setItem("ExpoPushToken", expoPushToken);
       }
 
-      // 5️⃣ Clear redux data
+      // 6️⃣ Clear redux data
       dispatch(clearAllChatLists());
 
-      // 6️⃣ Navigate to login
+      // 7️⃣ Navigate to login
       router.replace("/auth/Login");
     } catch (error) {
       console.error("Error during logout:", error);

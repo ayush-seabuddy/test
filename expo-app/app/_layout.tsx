@@ -237,7 +237,7 @@ export default function RootLayout() {
     <ErrorBoundary>
       <NotificationProvider>
         <PostHogProvider
-          apiKey="phc_s4cqE6KuX16Or60SKs9Tz2qkTU1sGFQNHplbJKz3YSO"
+          apiKey="phc_LYxVgQmPQSyrXAv134auG5e5khoPh9GgCDQvmvdjhVH"
           options={{
             host: 'https://us.i.posthog.com',
             enableSessionReplay: true,
