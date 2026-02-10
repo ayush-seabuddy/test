@@ -25,7 +25,6 @@ import BottomSheet from './BottomSheet';
 import CommonLoader from './CommonLoader';
 import { showToast } from './GlobalToast';
 
-// Fixed Light Mode Colors
 const ColorsLight = {
   textPrimary: '#1F2937',
   textSecondary: '#374151',
@@ -165,35 +164,6 @@ const CommentItem = React.memo(function CommentItem({
 });
 
 CommentItem.displayName = 'CommentItem';
-
-
-const DeleteConfirmationModal: React.FC<{ visible: boolean; onClose: () => void; onConfirm: () => void; loading: boolean }> = ({
-  visible,
-  onClose,
-  onConfirm,
-  loading,
-}) => (
-  <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
-    <View style={styles.modalOverlay}>
-      <View style={[styles.modalContainer, { backgroundColor: ColorsLight.modalBackground }]}>
-        <Text style={[styles.modalTitle, { color: ColorsLight.textPrimary }]}>{t('deletecomment')}</Text>
-        <Text style={[styles.modalSubtitle, { color: ColorsLight.textSecondary }]}>{t('areyousure')}</Text>
-        <View style={styles.modalButtonContainer}>
-          <TouchableOpacity
-            style={[styles.modalButton, styles.modalButtonCancel, { backgroundColor: ColorsLight.inputBg, borderColor: ColorsLight.inputBorder }]}
-            onPress={onClose}
-            disabled={loading}
-          >
-            <Text style={[styles.modalButtonTextCancel, { color: ColorsLight.textPrimary }]}>{t('no')}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.modalButton, styles.modalButtonConfirm, { backgroundColor: 'red' }]} onPress={onConfirm} disabled={loading}>
-            {loading ? <CommonLoader color="#FFFFFF" /> : <Text style={styles.modalButtonTextConfirm}>{t('yes')}</Text>}
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  </Modal>
-);
 
 const CommentsSection: React.FC<{
   visible: boolean;
