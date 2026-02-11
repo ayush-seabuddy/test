@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   Keyboard,
   KeyboardAvoidingView,
   Modal,
+  PanResponder,
   Platform,
   Pressable,
   StyleSheet,
@@ -26,6 +27,31 @@ const BottomSheet: React.FC<Props> = ({
   snapPoints = ["60%", "80%"],
 }) => {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const panResponderRef = useRef<any>(null);
+  const initialYRef = useRef(0);
+
+  // Setup PanResponder for drag to close functionality
+  useEffect(() => {
+    panResponderRef.current = PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (evt) => {
+        // Only respond if dragging vertically (not horizontally)
+        return Math.abs(evt.nativeEvent.dy) > 5;
+      },
+      onPanResponderGrant: (evt) => {
+        initialYRef.current = evt.nativeEvent.pageY;
+      },
+      onPanResponderRelease: (evt) => {
+        const finalY = evt.nativeEvent.pageY;
+        const dragDistance = finalY - initialYRef.current;
+
+        // If dragged down significantly (more than 50px), dismiss keyboard only
+        if (dragDistance > 50) {
+          Keyboard.dismiss();
+        }
+      },
+    });
+  }, [onClose]);
 
   useEffect(() => {
     const keyboardDidShow = Keyboard.addListener("keyboardDidShow", (e) => {
@@ -55,13 +81,12 @@ const BottomSheet: React.FC<Props> = ({
   };
 
   const sheetHeight = getHeight(snapPoints[0]);
-
-  const dynamicBehavior =
-    keyboardHeight > 0
-      ? Platform.OS === "ios"
-        ? "padding"
-        : "height"
-      : undefined;
+  // When keyboard is open, calculate sheet height from top 10% to keyboard
+  // Available height = 90% of screen - keyboard height
+  const dynamicSheetHeight =
+    keyboardHeight > 0 
+      ? SCREEN_HEIGHT * 0.9 - keyboardHeight
+      : sheetHeight;
 
   return (
     <Modal
@@ -78,9 +103,34 @@ const BottomSheet: React.FC<Props> = ({
         }}
       />
 
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={dynamicBehavior}>
-        <View style={[styles.sheet, { height: sheetHeight }]}>
-          <View style={styles.handleContainer}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+      >
+        <View
+          style={[
+            styles.sheet,
+            {
+              height: dynamicSheetHeight,
+              ...(keyboardHeight > 0
+                ? {
+                  top: SCREEN_HEIGHT * 0.1,
+                  bottom: keyboardHeight,
+                }
+                : {
+                  bottom: 0,
+                  top: undefined
+                }
+              ),
+            }
+          ]}
+          {...panResponderRef.current?.panHandlers}
+        >
+          <View
+            style={styles.handleContainer}
+            {...panResponderRef.current?.panHandlers}
+          >
             <View style={styles.handle} />
           </View>
 
@@ -112,13 +162,15 @@ const styles = StyleSheet.create({
   },
   handleContainer: {
     alignItems: "center",
-    paddingTop: 5,
+    paddingTop: 8,
+    paddingBottom: 8,
+    backgroundColor: "#fff",
   },
   handle: {
     width: 40,
-    height: 3,
+    height: 4,
     borderRadius: 2,
-    backgroundColor: "#ccc",
+    backgroundColor: "#d0d0d0",
   },
 });
 

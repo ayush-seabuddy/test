@@ -1,19 +1,16 @@
 import { FlashList } from "@shopify/flash-list";
 import { Image } from "expo-image";
-import { t } from "i18next";
 import { PencilIcon, Reply, SendHorizonal, Trash } from "lucide-react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  Keyboard,
-  Modal,
   Platform,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { getallcomments, likecommentpost } from "../apis/apiService";
 import { ImagesAssets } from "../utils/ImageAssets";
@@ -202,7 +199,6 @@ const CommentsSection: React.FC<{
   const { t } = useTranslation();
   const listRef = useRef<any>(null);
   const inputRef = useRef<any>(null);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentLoading, setCommentLoading] = useState(false);
@@ -263,26 +259,6 @@ const CommentsSection: React.FC<{
   useEffect(() => {
     if (visible) fetchComments();
   }, [visible, fetchComments]);
-
-  useEffect(() => {
-    const keyboardWillShow = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
-      (e) => {
-        setKeyboardHeight(e.endCoordinates.height);
-      },
-    );
-    const keyboardWillHide = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
-      () => {
-        setKeyboardHeight(0);
-      },
-    );
-
-    return () => {
-      keyboardWillShow.remove();
-      keyboardWillHide.remove();
-    };
-  }, []);
 
   const postComment = async () => {
     if (!commentText.trim() || sendingComment) return;
@@ -638,7 +614,6 @@ const CommentsSection: React.FC<{
                 styles.commentInputContainer,
                 {
                   backgroundColor: ColorsLight.cardBackground,
-                  marginBottom: Platform.OS === "ios" ? keyboardHeight : 0,
                 },
               ]}
             >
