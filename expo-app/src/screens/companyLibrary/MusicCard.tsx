@@ -25,7 +25,7 @@ interface MusicCardProps {
 const MusicCard: React.FC<MusicCardProps> = ({ data }) => {
   const listData: MusicItem[] = Array.isArray(data)
     ? data
-    : data?.allContents ?? [];
+    : (data?.allContents ?? []);
 
   const slicedData = listData.slice(0, 3);
 
@@ -85,6 +85,7 @@ const styles = StyleSheet.create({
     width: "95%",
     alignSelf: "center",
     padding: 8,
+    marginBottom: 10,
   },
   cardContent: {
     flexDirection: "row",

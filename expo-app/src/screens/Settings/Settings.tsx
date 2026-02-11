@@ -85,23 +85,23 @@ const Settings = () => {
               router.push("/profilePhoto");
             })}
             {renderSettingItem("shipboard_experience", () => {
-              router.push("/WorkExperience");
+              router.push("/workexperience");
             })}
             {renderSettingItem("social_media", () => {
-              router.push("/SocialMediaLinks");
+              router.push("/socialmedialinks");
             })}
             {renderSettingItem("certifications", () => {
-              router.push("/Certifications");
+              router.push("/certifications");
             })}
             {renderSettingItem("change_language", () => {
-              router.push("/ChangeLanguage");
+              router.push("/changelanguage");
             })}
           </View>
 
           <Text style={styles.sectionTitle}>{t("account")}</Text>
           <View style={styles.section1}>
             {renderSettingItem("change_password", () => {
-              router.push("/ChangePassword");
+              router.push("/changepassword");
             })}
 
             {renderSettingItem("log_out", () => setModalVisible(true))}

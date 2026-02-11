@@ -1,6 +1,5 @@
 import Constants from 'expo-constants';
 import { io, Socket } from 'socket.io-client';
-import { showToast } from '../components/GlobalToast';
 
 // Type-safe extra config
 type ExtraConfig = {

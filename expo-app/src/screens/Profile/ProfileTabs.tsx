@@ -1,17 +1,15 @@
-import Colors from '@/src/utils/Colors';
-import React from 'react';
-import { useTranslation } from 'react-i18next';
+import Colors from "@/src/utils/Colors";
+import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dimensions,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
+} from "react-native";
 
-const { width } = Dimensions.get('window');
-
-const tabs = ['about', 'posts', 'buddyuponprofile', 'assessments'] as const;
+const tabs = ["about", "posts", "buddyuponprofile", "assessments"] as const;
 type TabKey = (typeof tabs)[number];
 
 interface ProfileTabsProps {
@@ -35,12 +33,10 @@ const ProfileTabs: React.FC<ProfileTabsProps> = ({
               key={tabKey}
               activeOpacity={0.8}
               onPress={() => setActiveTab(tabKey)}
-              style={styles.tab}>
+              style={styles.tab}
+            >
               <Text
-                style={[
-                  styles.tabText,
-                  isActive && styles.activeTabText,
-                ]}
+                style={[styles.tabText, isActive && styles.activeTabText]}
                 numberOfLines={1}
               >
                 {t(tabKey)}
@@ -59,35 +55,35 @@ export default ProfileTabs;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
 
   tabsWrapper: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 10,
   },
 
   tab: {
     flex: 1,
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   tabText: {
     fontSize: 12,
-    fontFamily: 'Poppins-SemiBold',
-    color: '#8a8a8a',
+    fontFamily: "Poppins-SemiBold",
+    color: "#8a8a8a",
   },
 
   activeTabText: {
-    color: '#000',
-    fontFamily: 'Poppins-SemiBold',
+    color: "#000",
+    fontFamily: "Poppins-SemiBold",
   },
 
   activeIndicator: {
     height: 2,
-    width: '80%',
+    width: "80%",
     borderRadius: 2,
     marginTop: 5,
-    backgroundColor: Colors.lightGreen || '#000',
+    backgroundColor: Colors.lightGreen || "#000",
   },
 });

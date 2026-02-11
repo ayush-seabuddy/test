@@ -4,11 +4,7 @@ import EmptyComponent from "@/src/components/EmptyComponent";
 import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  FlatList,
-  StyleSheet,
-  View
-} from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
 import WellnessOfficerCard, {
   type WellnessOfficer,
 } from "../WellnessOfficerList/WellnessOfficerCard";
@@ -37,9 +33,7 @@ const AppointmentHistory = () => {
 
       if (newData.length < 20) setHasMore(false);
 
-      setData(prev =>
-        pageNumber === 1 ? newData : [...prev, ...newData]
-      );
+      setData((prev) => (pageNumber === 1 ? newData : [...prev, ...newData]));
     } catch (error) {
       console.log(error);
     } finally {
@@ -75,7 +69,7 @@ const AppointmentHistory = () => {
           data={wellnessOfficerData}
           onPress={() => {
             router.push({
-              pathname: "/wellnessOfficerProfile",
+              pathname: "/wellnessofficerprofile",
               params: { item: JSON.stringify(item) },
             });
           }}
@@ -83,7 +77,6 @@ const AppointmentHistory = () => {
       </View>
     );
   };
-
 
   const ListEmptyComponent = () =>
     !loading ? (
@@ -121,7 +114,7 @@ const AppointmentHistory = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: "#fff" },
 
   flatListContent: {
     paddingHorizontal: 16,

@@ -23,18 +23,23 @@ const WellnessCard = () => {
     {
       title: t("moodTracker"),
       image: <Smile size={20} color={Colors.white} />,
-      page: "moodTracker",
+      page: "moodtracker",
     },
     {
       title: t("analytics"),
       image: <ChartNoAxesCombined size={20} color={Colors.white} />,
-      page: "Analytics",
+      page: "analytics",
     },
   ];
 
   return (
     <View style={styles.main}>
-      <TouchableOpacity style={styles.container} onPress={() => { router.push("/wellnessOfficerList") }}>
+      <TouchableOpacity
+        style={styles.container}
+        onPress={() => {
+          router.push("/wellnessofficerlist");
+        }}
+      >
         <View style={styles.leftColumn}>
           <Text style={styles.title}>{t("speaktowellnessofficer")}</Text>
           <Text style={styles.description}>
@@ -54,7 +59,11 @@ const WellnessCard = () => {
       {/* Health Tracker Cards */}
       <View style={styles.healthRow}>
         {healthTrackerArray.map((item, index) => (
-          <TouchableOpacity key={index} style={styles.healthCard} onPress={() => router.push(item.page as any)}>
+          <TouchableOpacity
+            key={index}
+            style={styles.healthCard}
+            onPress={() => router.push(item.page as any)}
+          >
             {item.image}
             <Text style={styles.healthCardText}>{item.title}</Text>
           </TouchableOpacity>

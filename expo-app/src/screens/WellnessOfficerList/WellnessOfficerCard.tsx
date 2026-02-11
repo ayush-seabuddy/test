@@ -26,7 +26,7 @@ const WellnessOfficerCard: React.FC<Props> = ({ data, onPress }) => {
     }
 
     router.push({
-      pathname: "/wellnessOfficerProfile",
+      pathname: "/wellnessofficerprofile",
       params: { item: JSON.stringify(data) },
     });
   };

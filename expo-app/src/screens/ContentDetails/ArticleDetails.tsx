@@ -1,9 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   AppState,
   Dimensions,
@@ -22,7 +17,7 @@ import GlobalHeader from "@/src/components/GlobalHeader";
 import MediaPreviewModal from "@/src/components/Modals/MediaPreviewModal";
 import PDFModal from "@/src/components/Modals/PDFModal";
 import Colors from "@/src/utils/Colors";
-import HTMLView from 'react-native-htmlview';
+import HTMLView from "react-native-htmlview";
 import CommonLoader from "@/src/components/CommonLoader";
 
 import { useWindowDimensions } from "react-native";
@@ -63,7 +58,7 @@ export default function ArticleDetails({
   const [mediaUri, setMediaUri] = useState("");
 
   const [isAcknowledged, setIsAcknowledged] = useState(
-    fullDetails?.contentAcknowledge?.length > 0
+    fullDetails?.contentAcknowledge?.length > 0,
   );
   const [isAcknowledging, setIsAcknowledging] = useState(false);
 
@@ -75,23 +70,19 @@ export default function ArticleDetails({
   const displayedDescription = isExpanded
     ? fullDetails?.description
     : fullDetails?.description &&
-      fullDetails.description.length > DESCRIPTION_LIMIT
+        fullDetails.description.length > DESCRIPTION_LIMIT
       ? `${fullDetails.description.slice(0, DESCRIPTION_LIMIT)}...`
       : fullDetails?.description;
-
 
   useEffect(() => {
     const subscription = AppState.addEventListener(
       "change",
       async (nextAppState) => {
-        if (
-          appState.current === "active" &&
-          nextAppState !== "active"
-        ) {
+        if (appState.current === "active" && nextAppState !== "active") {
           await videoRef.current?.pauseAsync();
         }
         appState.current = nextAppState;
-      }
+      },
     );
 
     return () => {
@@ -123,7 +114,7 @@ export default function ArticleDetails({
     const now = new Date();
     const commentDate = new Date(dateString);
     const diffInSeconds = Math.floor(
-      (now.getTime() - commentDate.getTime()) / 1000
+      (now.getTime() - commentDate.getTime()) / 1000,
     );
 
     if (diffInSeconds < 60) return "Just now";
@@ -202,9 +193,7 @@ export default function ArticleDetails({
           <View style={styles.frameContainer}>
             <BlurView intensity={40} style={StyleSheet.absoluteFill} />
             <View>
-              <Text style={styles.title}>
-                {fullDetails?.contentTitle}
-              </Text>
+              <Text style={styles.title}>{fullDetails?.contentTitle}</Text>
 
               <HTMLView
                 value={displayedDescription}
@@ -221,7 +210,6 @@ export default function ArticleDetails({
                 }}
               />
 
-
               {isLongDescription && (
                 <TouchableOpacity
                   onPress={() => setIsExpanded((prev) => !prev)}
@@ -234,8 +222,7 @@ export default function ArticleDetails({
               )}
 
               <Text style={styles.postedOn}>
-                {t("postedon")}{" "}
-                {getRelativeTime(fullDetails?.createdAt)}
+                {t("postedon")} {getRelativeTime(fullDetails?.createdAt)}
               </Text>
             </View>
           </View>
@@ -246,23 +233,19 @@ export default function ArticleDetails({
             <Text style={styles.title}>{t("Contents")}</Text>
 
             <View style={styles.frameParent}>
-              {fullDetails?.contentUrl?.map(
-                (item: string, index: number) => (
-                  <TouchableOpacity
-                    key={`${item}-${index}`}
-                    style={styles.pdfButton}
-                    onPress={() => handleContentToggle(item)}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.pdfButtonText}>
-                      {t("clicktoview")}{" "}
-                      {item.toLowerCase().endsWith(".pdf")
-                        ? "PDF"
-                        : "Image"}
-                    </Text>
-                  </TouchableOpacity>
-                )
-              )}
+              {fullDetails?.contentUrl?.map((item: string, index: number) => (
+                <TouchableOpacity
+                  key={`${item}-${index}`}
+                  style={styles.pdfButton}
+                  onPress={() => handleContentToggle(item)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.pdfButtonText}>
+                    {t("clicktoview")}{" "}
+                    {item.toLowerCase().endsWith(".pdf") ? "PDF" : "Image"}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
         </View>
@@ -310,14 +293,10 @@ export default function ArticleDetails({
 
       <Modal
         visible={notificationDetailModalVisible}
-        onDismiss={() =>
-          setNotificationDetailModalVisible(false)
-        }
+        onDismiss={() => setNotificationDetailModalVisible(false)}
       >
         <View style={styles.modalBox}>
-          <Text style={styles.modalTitle}>
-            {selectedNotification?.title}
-          </Text>
+          <Text style={styles.modalTitle}>{selectedNotification?.title}</Text>
           <Text style={styles.modalContent}>
             {selectedNotification?.content}
           </Text>
@@ -383,7 +362,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 14,
-    fontFamily: 'Poppins-SemiBold',
+    fontFamily: "Poppins-SemiBold",
     color: "#222",
     marginBottom: 10,
   },
@@ -393,7 +372,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontFamily: "Poppins-SemiBold",
     color: Colors.darkGreen,
-    textDecorationLine: 'underline',
+    textDecorationLine: "underline",
   },
 
   postedOn: {
