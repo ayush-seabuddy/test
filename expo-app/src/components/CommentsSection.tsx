@@ -4,6 +4,7 @@ import { PencilIcon, Reply, SendHorizonal, Trash } from "lucide-react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  Keyboard,
   Platform,
   Pressable,
   StyleSheet,
