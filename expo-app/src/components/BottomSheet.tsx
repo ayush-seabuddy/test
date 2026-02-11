@@ -44,36 +44,42 @@ const BottomSheet: React.FC<Props> = ({
 
   const getHeight = (point: string | number): number => {
     if (typeof point === "number") return point;
-    
+
     // Parse percentage strings
     if (typeof point === "string" && point.endsWith("%")) {
       const percentage = parseFloat(point) / 100;
       return SCREEN_HEIGHT * percentage;
     }
-    
+
     return SCREEN_HEIGHT * 0.2; // Default fallback
   };
 
   const sheetHeight = getHeight(snapPoints[0]);
 
-  const dynamicBehavior = keyboardHeight > 0
-    ? (Platform.OS === "ios" ? "padding" : "height")
-    : undefined;
+  const dynamicBehavior =
+    keyboardHeight > 0
+      ? Platform.OS === "ios"
+        ? "padding"
+        : "height"
+      : undefined;
 
   return (
-    <Modal transparent visible={visible} animationType="fade" statusBarTranslucent>
-      <Pressable style={styles.backdrop} onPress={onClose} />
+    <Modal
+      transparent
+      visible={visible}
+      animationType="fade"
+      statusBarTranslucent
+    >
+      <Pressable
+        style={styles.backdrop}
+        onPress={() => {
+          Keyboard.dismiss();
+          onClose();
+        }}
+      />
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={dynamicBehavior}
-      >
-        <View
-          style={[
-            styles.sheet,
-            { height: sheetHeight },
-          ]}
-        >
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={dynamicBehavior}>
+        <View style={[styles.sheet, { height: sheetHeight }]}>
           <View style={styles.handleContainer}>
             <View style={styles.handle} />
           </View>
@@ -84,7 +90,6 @@ const BottomSheet: React.FC<Props> = ({
     </Modal>
   );
 };
-
 
 const styles = StyleSheet.create({
   backdrop: {

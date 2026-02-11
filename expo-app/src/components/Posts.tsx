@@ -1,19 +1,14 @@
-import { Image } from 'expo-image';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import {
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  View,
-} from 'react-native';
-import { getallposts } from '../apis/apiService';
-import Colors from '../utils/Colors';
-import CommonLoader from './CommonLoader';
-import { showToast } from './GlobalToast';
-import PostScreen from './PostScreen';
-import EmptyComponent from './EmptyComponent';
-import { useNetwork } from '../hooks/useNetworkStatusHook';
+import { Image } from "expo-image";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
+import { getallposts } from "../apis/apiService";
+import Colors from "../utils/Colors";
+import CommonLoader from "./CommonLoader";
+import { showToast } from "./GlobalToast";
+import PostScreen from "./PostScreen";
+import EmptyComponent from "./EmptyComponent";
+import { useNetwork } from "../hooks/useNetworkStatusHook";
 
 export interface Post {
   id: string | number;
@@ -61,11 +56,11 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
   const limit = 10;
 
   const handlePostDeleted = useCallback((deletedId: string | number) => {
-    setPosts(prev => prev.filter(p => p.id !== deletedId));
+    setPosts((prev) => prev.filter((p) => p.id !== deletedId));
   }, []);
 
   const handlePostReported = useCallback((deletedId: string | number) => {
-    setPosts(prev => prev.filter(p => p.id !== deletedId));
+    setPosts((prev) => prev.filter((p) => p.id !== deletedId));
   }, []);
 
   const fetchPosts = useCallback(
@@ -97,22 +92,25 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
         if (response.success) {
           const newPosts: Post[] = response.data.hangoutsList || [];
 
-          setPosts(prev => {
+          setPosts((prev) => {
             if (isRefresh || pageNum === 1) return newPosts;
 
-            const existingIds = new Set(prev.map(p => p.id));
-            const filtered = newPosts.filter(p => !existingIds.has(p.id));
+            const existingIds = new Set(prev.map((p) => p.id));
+            const filtered = newPosts.filter((p) => !existingIds.has(p.id));
             return [...prev, ...filtered];
           });
 
           setHasMore(newPosts.length === limit);
           setPage(pageNum);
         } else {
-          showToast.error(t('oops'), response.message || t('somethingwentwrong'));
+          showToast.error(
+            t("oops"),
+            response.message || t("somethingwentwrong"),
+          );
         }
       } catch (error) {
-        console.error('Error fetching posts:', error);
-        showToast.error(t('oops'), t('somethingwentwrong'));
+        console.error("Error fetching posts:", error);
+        showToast.error(t("oops"), t("somethingwentwrong"));
       } finally {
         setInitialLoading(false);
         setLoadingMore(false);
@@ -120,7 +118,7 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
         isFetchingMore.current = false;
       }
     },
-    [hasMore, isOnline, limit, t]
+    [hasMore, isOnline, limit, t],
   );
 
   useEffect(() => {
@@ -157,7 +155,7 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
         />
       );
     },
-    [handlePostDeleted, handlePostReported]
+    [handlePostDeleted, handlePostReported],
   );
 
   const ListFooter = () => {
@@ -177,9 +175,7 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
       <View style={styles.emptyState}>
         <EmptyComponent
           text={
-            !isOnline
-              ? t('nointernetconnection')
-              : t('youarenotpostedanything')
+            !isOnline ? t("nointernetconnection") : t("youarenotpostedanything")
           }
         />
       </View>
@@ -199,7 +195,7 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
       ListHeaderComponent={ListHeaderComponent}
       data={posts}
       renderItem={renderItem}
-      keyExtractor={item => item.id.toString()}
+      keyExtractor={(item) => item.id.toString()}
       onEndReached={loadMore}
       onEndReachedThreshold={0.3}
       ListFooterComponent={ListFooter}
@@ -219,6 +215,7 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
       initialNumToRender={5}
       maxToRenderPerBatch={5}
       updateCellsBatchingPeriod={50}
+      keyboardShouldPersistTaps="always"
       contentContainerStyle={
         posts.length === 0 ? styles.emptyContainer : undefined
       }
@@ -229,21 +226,21 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
 const styles = StyleSheet.create({
   centerLoader: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
   },
   footerLoader: {
     paddingVertical: 30,
-    alignItems: 'center',
+    alignItems: "center",
   },
   emptyContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   emptyState: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingTop: 100,
     gap: 20,
   },

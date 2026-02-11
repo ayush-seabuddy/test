@@ -1,41 +1,37 @@
-import { FlashList } from '@shopify/flash-list';
-import { Image } from 'expo-image';
-import { t } from 'i18next';
-import {
-  PencilIcon,
-  Reply,
-  SendHorizonal,
-  Trash,
-} from 'lucide-react-native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { FlashList } from "@shopify/flash-list";
+import { Image } from "expo-image";
+import { t } from "i18next";
+import { PencilIcon, Reply, SendHorizonal, Trash } from "lucide-react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Keyboard,
   Modal,
   Platform,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View
-} from 'react-native';
-import { getallcomments, likecommentpost } from '../apis/apiService';
-import { ImagesAssets } from '../utils/ImageAssets';
-import BottomSheet from './BottomSheet';
-import CommonLoader from './CommonLoader';
-import { showToast } from './GlobalToast';
+  View,
+} from "react-native";
+import { getallcomments, likecommentpost } from "../apis/apiService";
+import { ImagesAssets } from "../utils/ImageAssets";
+import BottomSheet from "./BottomSheet";
+import CommonLoader from "./CommonLoader";
+import { showToast } from "./GlobalToast";
 
 const ColorsLight = {
-  textPrimary: '#1F2937',
-  textSecondary: '#374151',
-  textTertiary: '#6B7280',
-  likeColor: '#8DAF02',
-  deleteColor: '#EF4444',
-  cardBackground: '#FFFFFF',
-  inputBg: '#F3F4F6',
-  inputText: '#1F2937',
-  inputBorder: '#D1D5DB',
-  modalBackground: '#FFFFFF',
+  textPrimary: "#1F2937",
+  textSecondary: "#374151",
+  textTertiary: "#6B7280",
+  likeColor: "#8DAF02",
+  deleteColor: "#EF4444",
+  cardBackground: "#FFFFFF",
+  inputBg: "#F3F4F6",
+  inputText: "#1F2937",
+  inputBorder: "#D1D5DB",
+  modalBackground: "#FFFFFF",
 };
 
 type User = {
@@ -103,39 +99,60 @@ const CommentItem = React.memo(function CommentItem({
         <View style={{ flex: 1, marginLeft: 10 }}>
           <View>
             <TouchableOpacity onPress={() => onProfilePress(user.id)}>
-              <Text style={[styles.commentUserName, { color: ColorsLight.textPrimary, fontWeight: '600' }]}>
-                {user.fullName || 'Unknown'}
+              <Text
+                style={[
+                  styles.commentUserName,
+                  { color: ColorsLight.textPrimary, fontWeight: "600" },
+                ]}
+              >
+                {user.fullName || "Unknown"}
               </Text>
             </TouchableOpacity>
-            <Text style={[styles.commentText, { color: ColorsLight.textPrimary }]}>{comment.comment}</Text>
+            <Text
+              style={[styles.commentText, { color: ColorsLight.textPrimary }]}
+            >
+              {comment.comment}
+            </Text>
           </View>
 
           <View style={styles.commentActions}>
             {!isOwnComment && (
               <TouchableOpacity
                 onPress={() => onReply(comment)}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
+                style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
               >
                 <Reply size={14} color={ColorsLight.textSecondary} />
-                <Text style={{ fontSize: 12, color: ColorsLight.textSecondary }}>{t('reply')}</Text>
+                <Text
+                  style={{ fontSize: 12, color: ColorsLight.textSecondary }}
+                >
+                  {t("reply")}
+                </Text>
               </TouchableOpacity>
             )}
 
             {isOwnComment && (
-              <View style={{ flexDirection: 'row', gap: 16 }}>
+              <View style={{ flexDirection: "row", gap: 16 }}>
                 <TouchableOpacity
                   onPress={() => onEdit(comment, level > 0)}
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
+                  style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
                 >
                   <PencilIcon size={12} color={ColorsLight.textSecondary} />
-                  <Text style={{ fontSize: 12, color: ColorsLight.textSecondary }}>{t('edit')}</Text>
+                  <Text
+                    style={{ fontSize: 12, color: ColorsLight.textSecondary }}
+                  >
+                    {t("edit")}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => onDelete(comment, level > 0)}
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
+                  style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
                 >
                   <Trash size={11} color={ColorsLight.deleteColor} />
-                  <Text style={{ fontSize: 12, color: ColorsLight.deleteColor }}>{t('delete')}</Text>
+                  <Text
+                    style={{ fontSize: 12, color: ColorsLight.deleteColor }}
+                  >
+                    {t("delete")}
+                  </Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -163,7 +180,7 @@ const CommentItem = React.memo(function CommentItem({
   );
 });
 
-CommentItem.displayName = 'CommentItem';
+CommentItem.displayName = "CommentItem";
 
 const CommentsSection: React.FC<{
   visible: boolean;
@@ -189,14 +206,23 @@ const CommentsSection: React.FC<{
 
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentLoading, setCommentLoading] = useState(false);
-  const [commentText, setCommentText] = useState('');
+  const [commentText, setCommentText] = useState("");
   const [sendingComment, setSendingComment] = useState(false);
-  const [replyingTo, setReplyingTo] = useState<{ commentId: string; userName: string } | null>(null);
+  const [replyingTo, setReplyingTo] = useState<{
+    commentId: string;
+    userName: string;
+  } | null>(null);
   const [editingComment, setEditingComment] = useState<Comment | null>(null);
   const [isEditingReply, setIsEditingReply] = useState(false);
   const [parentCommentId, setParentCommentId] = useState<string | null>(null);
-  const [editingCommentRealId, setEditingCommentRealId] = useState<string | null>(null);
-  const [commentToDelete, setCommentToDelete] = useState<null | { comment: Comment; isReply: boolean; parentCommentId?: string | null }>(null);
+  const [editingCommentRealId, setEditingCommentRealId] = useState<
+    string | null
+  >(null);
+  const [commentToDelete, setCommentToDelete] = useState<null | {
+    comment: Comment;
+    isReply: boolean;
+    parentCommentId?: string | null;
+  }>(null);
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -227,8 +253,8 @@ const CommentsSection: React.FC<{
         setComments(formatted);
       }
     } catch (err) {
-      console.log('Error', err);
-      showToast.error(t('error'), t('somethingwentwrong'));
+      console.log("Error", err);
+      showToast.error(t("error"), t("somethingwentwrong"));
     } finally {
       setCommentLoading(false);
     }
@@ -240,16 +266,16 @@ const CommentsSection: React.FC<{
 
   useEffect(() => {
     const keyboardWillShow = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
       (e) => {
         setKeyboardHeight(e.endCoordinates.height);
-      }
+      },
     );
     const keyboardWillHide = Keyboard.addListener(
-      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
       () => {
         setKeyboardHeight(0);
-      }
+      },
     );
 
     return () => {
@@ -275,11 +301,17 @@ const CommentsSection: React.FC<{
           if (isEditingReply) {
             return {
               ...c,
-              reply: c.reply.map((r) => (r.commentId === editingComment.commentId ? { ...r, comment: text } : r)),
+              reply: c.reply.map((r) =>
+                r.commentId === editingComment.commentId
+                  ? { ...r, comment: text }
+                  : r,
+              ),
             };
           }
-          return c.commentId === editingComment.commentId ? { ...c, comment: text } : c;
-        })
+          return c.commentId === editingComment.commentId
+            ? { ...c, comment: text }
+            : c;
+        }),
       );
 
       try {
@@ -292,11 +324,11 @@ const CommentsSection: React.FC<{
                 ? {
                     replyCommentId: editingCommentRealId,
                     commentId: parentCommentId,
-                    type: 'EDITREPLY',
+                    type: "EDITREPLY",
                   }
                 : {
                     commentId: editingCommentRealId,
-                    type: 'UPDATE',
+                    type: "UPDATE",
                   }),
             },
           ],
@@ -304,7 +336,7 @@ const CommentsSection: React.FC<{
 
         await likecommentpost(payload);
 
-        setCommentText('');
+        setCommentText("");
         setEditingComment(null);
         setIsEditingReply(false);
         setParentCommentId(null);
@@ -312,9 +344,9 @@ const CommentsSection: React.FC<{
         setReplyingTo(null);
         Keyboard.dismiss();
       } catch (err) {
-        console.log('Error', err);
+        console.log("Error", err);
         setComments(previousComments);
-        showToast.error(t('error'), t('somethingwentwrong'));
+        showToast.error(t("error"), t("somethingwentwrong"));
       } finally {
         setSendingComment(false);
       }
@@ -331,7 +363,7 @@ const CommentsSection: React.FC<{
       commentedAt: new Date().toISOString(),
       commentUser: {
         id: currentUser?.id,
-        fullName: currentUser?.fullName || 'You',
+        fullName: currentUser?.fullName || "You",
         profileUrl: currentUser?.profileUrl,
       },
       reply: [],
@@ -342,7 +374,11 @@ const CommentsSection: React.FC<{
 
     if (isReply && replyingTo) {
       setComments((prev) =>
-        prev.map((c) => (c.commentId === replyingTo.commentId ? { ...c, reply: [...c.reply, tempComment] } : c))
+        prev.map((c) =>
+          c.commentId === replyingTo.commentId
+            ? { ...c, reply: [...c.reply, tempComment] }
+            : c,
+        ),
       );
     } else {
       setComments((prev) => [tempComment, ...prev]);
@@ -355,16 +391,18 @@ const CommentsSection: React.FC<{
           {
             hangoutId: postId,
             comment: text,
-            ...(isReply && { commentId: replyingTo?.commentId, type: 'REPLY' }),
+            ...(isReply && { commentId: replyingTo?.commentId, type: "REPLY" }),
           },
         ],
       };
 
-  const res = await likecommentpost(payload);
-  // response shape varies; use any to safely read dynamic fields
-  const anyRes = res as any;
-  const realReplyId = anyRes?.data?.replyCommentId || anyRes?.replyCommentId;
-  const realCommentId = anyRes?.data?.commentId || anyRes?.commentId || realReplyId;
+      const res = await likecommentpost(payload);
+      // response shape varies; use any to safely read dynamic fields
+      const anyRes = res as any;
+      const realReplyId =
+        anyRes?.data?.replyCommentId || anyRes?.replyCommentId;
+      const realCommentId =
+        anyRes?.data?.commentId || anyRes?.commentId || realReplyId;
 
       setComments((prev) =>
         prev.map((c) => {
@@ -385,20 +423,23 @@ const CommentsSection: React.FC<{
                     commentId: realReplyId || tempId,
                     _realReplyId: realReplyId || tempId,
                   }
-                : r
+                : r,
             ),
           };
-        })
+        }),
       );
 
-      setCommentText('');
+      setCommentText("");
       setReplyingTo(null);
-      setTimeout(() => listRef.current?.scrollToOffset({ offset: 0, animated: true }), 400);
+      setTimeout(
+        () => listRef.current?.scrollToOffset({ offset: 0, animated: true }),
+        400,
+      );
     } catch (err) {
-      console.log('Error', err);
+      console.log("Error", err);
       setComments(previousComments);
       if (!isReply) onCommentCountChange?.(-1);
-      showToast.error(t('error'), t('somethingwentwrong'));
+      showToast.error(t("error"), t("somethingwentwrong"));
     } finally {
       setSendingComment(false);
     }
@@ -410,7 +451,9 @@ const CommentsSection: React.FC<{
       let parentId: string | null = null;
 
       if (isReply) {
-        const parent = comments.find((c) => c.reply.some((r) => r.commentId === comment.commentId));
+        const parent = comments.find((c) =>
+          c.reply.some((r) => r.commentId === comment.commentId),
+        );
         parentId = parent?.commentId || null;
         realCommentId = (comment as any)._realReplyId || comment.commentId;
       } else {
@@ -425,21 +468,23 @@ const CommentsSection: React.FC<{
       setReplyingTo(null);
       setTimeout(() => inputRef.current?.focus(), 300);
     },
-    [comments]
+    [comments],
   );
 
   const handleDelete = useCallback(
     (comment: Comment, isReply = false) => {
       let parentId: string | null = null;
       if (isReply) {
-        const parent = comments.find((c) => c.reply.some((r) => r.commentId === comment.commentId));
+        const parent = comments.find((c) =>
+          c.reply.some((r) => r.commentId === comment.commentId),
+        );
         parentId = parent?.commentId || null;
       }
 
       setCommentToDelete({ comment, isReply, parentCommentId: parentId });
       setDeleteConfirmVisible(true);
     },
-    [comments]
+    [comments],
   );
 
   const confirmDelete = async () => {
@@ -447,14 +492,23 @@ const CommentsSection: React.FC<{
     setDeleting(true);
     const { comment, isReply, parentCommentId } = commentToDelete;
 
-    const realCommentId = isReply ? (comment._realReplyId || comment.commentId) : (comment._realCommentId || comment.commentId);
+    const realCommentId = isReply
+      ? comment._realReplyId || comment.commentId
+      : comment._realCommentId || comment.commentId;
 
     const previousComments = [...comments];
 
     if (isReply) {
-      setComments((prev) => prev.map((c) => ({ ...c, reply: c.reply.filter((r) => r.commentId !== comment.commentId) })));
+      setComments((prev) =>
+        prev.map((c) => ({
+          ...c,
+          reply: c.reply.filter((r) => r.commentId !== comment.commentId),
+        })),
+      );
     } else {
-      setComments((prev) => prev.filter((c) => c.commentId !== comment.commentId));
+      setComments((prev) =>
+        prev.filter((c) => c.commentId !== comment.commentId),
+      );
       onCommentCountChange?.(-1);
     }
 
@@ -463,20 +517,22 @@ const CommentsSection: React.FC<{
         likeComments: [
           {
             hangoutId: postId,
-            comment: 'true',
-            [isReply ? 'replyCommentId' : 'commentId']: realCommentId,
-            ...(isReply && parentCommentId ? { commentId: parentCommentId } : {}),
-            type: isReply ? 'DELETEREPLY' : 'DELETE',
+            comment: "true",
+            [isReply ? "replyCommentId" : "commentId"]: realCommentId,
+            ...(isReply && parentCommentId
+              ? { commentId: parentCommentId }
+              : {}),
+            type: isReply ? "DELETEREPLY" : "DELETE",
           },
         ],
       };
 
       await likecommentpost(payload);
     } catch (err) {
-      console.log('Error', err);
+      console.log("Error", err);
       setComments(previousComments);
       if (!isReply) onCommentCountChange?.(1);
-      showToast.error(t('error'), t('somethingwentwrong'));
+      showToast.error(t("error"), t("somethingwentwrong"));
     } finally {
       setDeleting(false);
       setDeleteConfirmVisible(false);
@@ -485,8 +541,11 @@ const CommentsSection: React.FC<{
   };
 
   const handleReply = useCallback((comment: Comment) => {
-    setReplyingTo({ commentId: comment.commentId, userName: comment.commentUser?.fullName || 'User' });
-    setCommentText('');
+    setReplyingTo({
+      commentId: comment.commentId,
+      userName: comment.commentUser?.fullName || "User",
+    });
+    setCommentText("");
     setEditingComment(null);
     setIsEditingReply(false);
     setParentCommentId(null);
@@ -495,7 +554,7 @@ const CommentsSection: React.FC<{
   }, []);
 
   const handleClose = useCallback(() => {
-    setCommentText('');
+    setCommentText("");
     setReplyingTo(null);
     setEditingComment(null);
     setIsEditingReply(false);
@@ -506,15 +565,29 @@ const CommentsSection: React.FC<{
 
   return (
     <>
-      <BottomSheet visible={visible} onClose={handleClose} snapPoints={["60%", "80%"]}>
+      <BottomSheet
+        visible={visible}
+        onClose={handleClose}
+        snapPoints={["60%", "80%"]}
+      >
         <View style={{ flex: 1 }}>
           <View style={styles.sheetHeader}>
-            <Text style={[styles.sheetTitle, { color: ColorsLight.textPrimary }]}>{t('comments')}</Text>
+            <Text
+              style={[styles.sheetTitle, { color: ColorsLight.textPrimary }]}
+            >
+              {t("comments")}
+            </Text>
           </View>
 
           <View style={{ flex: 1 }}>
             {commentLoading ? (
-              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
                 <CommonLoader fullScreen />
               </View>
             ) : (
@@ -534,47 +607,104 @@ const CommentsSection: React.FC<{
                   />
                 )}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 10 }}
+                keyboardShouldPersistTaps="always"
+                contentContainerStyle={{
+                  paddingHorizontal: 16,
+                  paddingBottom: 10,
+                }}
                 ListEmptyComponent={
-                  <View style={{ alignItems: 'center', marginTop: 50 }}>
-                    <Text style={{ color: ColorsLight.textTertiary, fontSize: 16 }}>{t('nocommentsyet')}</Text>
-                    <Text style={{ color: ColorsLight.textTertiary, fontSize: 14, marginTop: 8 }}>{t('bethefirsttocomment')}</Text>
+                  <View style={{ alignItems: "center", marginTop: 50 }}>
+                    <Text
+                      style={{ color: ColorsLight.textTertiary, fontSize: 16 }}
+                    >
+                      {t("nocommentsyet")}
+                    </Text>
+                    <Text
+                      style={{
+                        color: ColorsLight.textTertiary,
+                        fontSize: 14,
+                        marginTop: 8,
+                      }}
+                    >
+                      {t("bethefirsttocomment")}
+                    </Text>
                   </View>
                 }
               />
             )}
 
-            <View style={[styles.commentInputContainer, { backgroundColor: ColorsLight.cardBackground, marginBottom: Platform.OS === 'ios' ? keyboardHeight : 0 }]}>
+            <View
+              style={[
+                styles.commentInputContainer,
+                {
+                  backgroundColor: ColorsLight.cardBackground,
+                  marginBottom: Platform.OS === "ios" ? keyboardHeight : 0,
+                },
+              ]}
+            >
               {replyingTo && (
                 <View style={styles.replyingToBanner}>
-                  <Text style={{ color: ColorsLight.textSecondary, fontSize: 13 }}>
-                    {t('replyingTo')}{' '}
-                    <Text style={{ fontWeight: '600', color: ColorsLight.likeColor }}>{replyingTo.userName}</Text>
+                  <Text
+                    style={{ color: ColorsLight.textSecondary, fontSize: 13 }}
+                  >
+                    {t("replyingTo")}{" "}
+                    <Text
+                      style={{
+                        fontWeight: "600",
+                        color: ColorsLight.likeColor,
+                      }}
+                    >
+                      {replyingTo.userName}
+                    </Text>
                   </Text>
-                  <TouchableOpacity onPress={() => { setReplyingTo(null); setCommentText(''); }}>
-                    <Text style={{ color: ColorsLight.deleteColor, marginLeft: 10 }}>{t('cancel')}</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setReplyingTo(null);
+                      setCommentText("");
+                    }}
+                  >
+                    <Text
+                      style={{ color: ColorsLight.deleteColor, marginLeft: 10 }}
+                    >
+                      {t("cancel")}
+                    </Text>
                   </TouchableOpacity>
                 </View>
               )}
 
               {editingComment && (
                 <View style={styles.replyingToBanner}>
-                  <Text style={{ color: ColorsLight.textSecondary, fontSize: 13 }}>{t('editing')}</Text>
+                  <Text
+                    style={{ color: ColorsLight.textSecondary, fontSize: 13 }}
+                  >
+                    {t("editing")}
+                  </Text>
                   <TouchableOpacity
                     onPress={() => {
                       setEditingComment(null);
                       setIsEditingReply(false);
                       setParentCommentId(null);
                       setEditingCommentRealId(null);
-                      setCommentText('');
+                      setCommentText("");
                     }}
                   >
-                    <Text style={{ color: ColorsLight.deleteColor, marginLeft: 10 }}>{t('cancel')}</Text>
+                    <Text
+                      style={{ color: ColorsLight.deleteColor, marginLeft: 10 }}
+                    >
+                      {t("cancel")}
+                    </Text>
                   </TouchableOpacity>
                 </View>
               )}
 
-              <View style={{ flexDirection: 'row', alignItems: 'center', paddingBottom: 20, paddingTop: 10 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingBottom: 20,
+                  paddingTop: 10,
+                }}
+              >
                 <TextInput
                   ref={inputRef}
                   style={[
@@ -585,47 +715,109 @@ const CommentsSection: React.FC<{
                       borderColor: ColorsLight.inputBorder,
                     },
                   ]}
-                  placeholder={editingComment ? t('edityourcomment') : replyingTo ? t('writearreply') : t('writecomment')}
+                  placeholder={
+                    editingComment
+                      ? t("edityourcomment")
+                      : replyingTo
+                        ? t("writearreply")
+                        : t("writecomment")
+                  }
                   placeholderTextColor={ColorsLight.textTertiary}
                   value={commentText}
                   onChangeText={setCommentText}
                   multiline
                   textAlignVertical="center"
                 />
-                <TouchableOpacity onPress={postComment} disabled={!commentText.trim() || sendingComment}>
+                <Pressable
+                  onPress={postComment}
+                  disabled={!commentText.trim() || sendingComment}
+                >
                   {sendingComment ? (
                     <CommonLoader />
                   ) : (
                     <View
                       style={{
-                        backgroundColor: commentText.trim() ? ColorsLight.likeColor : ColorsLight.textTertiary,
+                        backgroundColor: commentText.trim()
+                          ? ColorsLight.likeColor
+                          : ColorsLight.textTertiary,
                         padding: 10,
                         borderRadius: 10,
                       }}
                     >
-                      <SendHorizonal size={20} color={'white'} strokeWidth={1.5} />
+                      <SendHorizonal
+                        size={20}
+                        color={"white"}
+                        strokeWidth={1.5}
+                      />
                     </View>
                   )}
-                </TouchableOpacity>
+                </Pressable>
               </View>
             </View>
           </View>
 
           {deleteConfirmVisible && (
             <View style={styles.deleteOverlay}>
-              <View style={[styles.modalContainer, { backgroundColor: ColorsLight.modalBackground }]}>
-                <Text style={[styles.modalTitle, { color: ColorsLight.textPrimary }]}>{t('deletecomment')}</Text>
-                <Text style={[styles.modalSubtitle, { color: ColorsLight.textSecondary }]}>{t('areyousure')}</Text>
+              <View
+                style={[
+                  styles.modalContainer,
+                  { backgroundColor: ColorsLight.modalBackground },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.modalTitle,
+                    { color: ColorsLight.textPrimary },
+                  ]}
+                >
+                  {t("deletecomment")}
+                </Text>
+                <Text
+                  style={[
+                    styles.modalSubtitle,
+                    { color: ColorsLight.textSecondary },
+                  ]}
+                >
+                  {t("areyousure")}
+                </Text>
                 <View style={styles.modalButtonContainer}>
                   <TouchableOpacity
-                    style={[styles.modalButton, styles.modalButtonCancel, { backgroundColor: ColorsLight.inputBg, borderColor: ColorsLight.inputBorder }]}
+                    style={[
+                      styles.modalButton,
+                      styles.modalButtonCancel,
+                      {
+                        backgroundColor: ColorsLight.inputBg,
+                        borderColor: ColorsLight.inputBorder,
+                      },
+                    ]}
                     onPress={() => setDeleteConfirmVisible(false)}
                     disabled={deleting}
                   >
-                    <Text style={[styles.modalButtonTextCancel, { color: ColorsLight.textPrimary }]}>{t('no')}</Text>
+                    <Text
+                      style={[
+                        styles.modalButtonTextCancel,
+                        { color: ColorsLight.textPrimary },
+                      ]}
+                    >
+                      {t("no")}
+                    </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={[styles.modalButton, styles.modalButtonConfirm, { backgroundColor: 'red' }]} onPress={confirmDelete} disabled={deleting}>
-                    {deleting ? <CommonLoader color="#FFFFFF" /> : <Text style={styles.modalButtonTextConfirm}>{t('yes')}</Text>}
+                  <TouchableOpacity
+                    style={[
+                      styles.modalButton,
+                      styles.modalButtonConfirm,
+                      { backgroundColor: "red" },
+                    ]}
+                    onPress={confirmDelete}
+                    disabled={deleting}
+                  >
+                    {deleting ? (
+                      <CommonLoader color="#FFFFFF" />
+                    ) : (
+                      <Text style={styles.modalButtonTextConfirm}>
+                        {t("yes")}
+                      </Text>
+                    )}
                   </TouchableOpacity>
                 </View>
               </View>
@@ -639,21 +831,21 @@ const CommentsSection: React.FC<{
 
 const styles = StyleSheet.create({
   sheetHeader: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 13,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: "#eee",
   },
   sheetTitle: {
     fontSize: 15,
-    fontFamily: 'Poppins-SemiBold',
+    fontFamily: "Poppins-SemiBold",
   },
   commentContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginVertical: 8,
     padding: 10,
     borderRadius: 12,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: "#f0f0f0",
   },
   commentAvatar: {
     width: 36,
@@ -662,7 +854,7 @@ const styles = StyleSheet.create({
   },
   commentUserName: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   commentText: {
     fontSize: 14,
@@ -670,32 +862,32 @@ const styles = StyleSheet.create({
     lineHeight: 19,
   },
   commentActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginTop: 10,
     gap: 16,
   },
   deleteOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: -10,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
     zIndex: 1000,
   },
   commentInputContainer: {
     marginHorizontal: 10,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: "#eee",
     paddingTop: 5,
   },
   replyingToBanner: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     padding: 10,
-    backgroundColor: '#ededed',
+    backgroundColor: "#ededed",
     borderRadius: 8,
     marginBottom: 5,
     marginTop: 10,
@@ -704,26 +896,26 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 46,
     maxHeight: 114,
-    paddingTop: Platform.OS === 'ios' ? 13 : 10,
+    paddingTop: Platform.OS === "ios" ? 13 : 10,
     paddingHorizontal: 16,
     borderRadius: 10,
     marginRight: 10,
     fontSize: 13,
-    fontFamily: 'Poppins-Regular',
+    fontFamily: "Poppins-Regular",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContainer: {
     borderRadius: 16,
     padding: 24,
     marginHorizontal: 20,
-    width: '85%',
+    width: "85%",
     maxWidth: 400,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
@@ -732,27 +924,27 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 16,
     marginBottom: 8,
-    fontFamily: 'Poppins-SemiBold',
-    textAlign: 'center',
+    fontFamily: "Poppins-SemiBold",
+    textAlign: "center",
   },
   modalSubtitle: {
     fontSize: 14,
     marginBottom: 20,
-    fontFamily: 'Poppins-Regular',
-    textAlign: 'center',
+    fontFamily: "Poppins-Regular",
+    textAlign: "center",
     lineHeight: 20,
   },
   modalButtonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     gap: 12,
   },
   modalButton: {
     flex: 1,
     paddingVertical: 12,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     minHeight: 44,
   },
   modalButtonCancel: {
@@ -761,14 +953,14 @@ const styles = StyleSheet.create({
   modalButtonConfirm: {},
   modalButtonTextCancel: {
     fontSize: 14,
-    fontWeight: '600',
-    fontFamily: 'Poppins-SemiBold',
+    fontWeight: "600",
+    fontFamily: "Poppins-SemiBold",
   },
   modalButtonTextConfirm: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    fontFamily: 'Poppins-SemiBold',
+    fontWeight: "600",
+    color: "#FFFFFF",
+    fontFamily: "Poppins-SemiBold",
   },
 });
 
