@@ -28,7 +28,7 @@ const Home = () => {
 
   const [exitModalVisible, setExitModalVisible] = useState(false);
   const [companyLogo, setCompanyLogo] = useState("");
-  const [companyLogoSize ,setCompanyLogoSize] = useState({
+  const [companyLogoSize, setCompanyLogoSize] = useState({
     width: 60,
     height: 60,
   });
@@ -36,7 +36,7 @@ const Home = () => {
   const [pdfState, setPdfState] = useState({
     visible: false,
     url: "",
-    title: t('app_guide')
+    title: t("app_guide"),
   });
 
   const getLogo = useCallback(async () => {
@@ -48,7 +48,6 @@ const Home = () => {
       if (userDetails?.companyLogo) {
         setCompanyLogo(userDetails.companyLogo);
       }
-    
     } catch (error) {
       console.error("Error fetching logo:", error);
     }
@@ -66,20 +65,19 @@ const Home = () => {
       if (result?.data?.companyLogo) {
         setCompanyLogo(result?.data.companyLogo);
       }
-    
-      if(result?.data?.companyLogoWidth && result?.data?.companyLogoHeight){
+
+      if (result?.data?.companyLogoWidth && result?.data?.companyLogoHeight) {
         setCompanyLogoSize({
           width: result?.data.companyLogoWidth,
-          height: result?.data.companyLogoHeight
+          height: result?.data.companyLogoHeight,
         });
       }
-      if(result?.data?.imageLimit && result?.data?.videoLimit){
+      if (result?.data?.imageLimit && result?.data?.videoLimit) {
         const imageLimit = result?.data.imageLimit || 100;
-        const videoLimit = result?.data.videoLimit||200;
+        const videoLimit = result?.data.videoLimit || 200;
         await AsyncStorage.setItem("imageLimit", JSON.stringify(imageLimit));
         await AsyncStorage.setItem("videoLimit", JSON.stringify(videoLimit));
-
-      } 
+      }
       Object.entries(result.data).forEach(([key, value]) => {
         dispatch(updateUserField({ key, value }));
       });
@@ -111,17 +109,21 @@ const Home = () => {
     setPdfState({
       visible: false,
       url: "",
-      title: t('app_guide'),
+      title: t("app_guide"),
     });
   }, []);
 
   return (
     <View style={styles.container}>
-      <HeaderBanner companyLogo={companyLogo} isProMax={isProMax} companyLogoSize={companyLogoSize} />
+      <HeaderBanner
+        companyLogo={companyLogo}
+        isProMax={isProMax}
+        companyLogoSize={companyLogoSize}
+      />
 
       <View style={styles.contentContainer}>
         <View style={styles.backgroundOverlay}>
-          <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
+          <CustomLottie isBlurView={Platform.OS === "ios" ? true : false} />
         </View>
 
         <ExitAppModal

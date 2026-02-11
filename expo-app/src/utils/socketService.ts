@@ -11,8 +11,10 @@ type ExtraConfig = {
 // Safely access extra with fallback
 const extra = Constants.expoConfig?.extra as ExtraConfig | undefined;
 
-const SOCKET_URL =
-  extra?.EXPO_PUBLIC_SOCKET_URL || 'https://api-canary.seabuddy.co';
+// const SOCKET_URL =
+//   extra?.EXPO_PUBLIC_SOCKET_URL || 'https://api-canary.seabuddy.co';
+
+const SOCKET_URL = 'https://api.seabuddy.co';
 
 type SocketEvent = string;
 type SocketData = any;

@@ -68,11 +68,7 @@ const CustomLottie: React.FC<CustomLottieProps> = ({
       />
 
       {isBlurView && (
-        <BlurView
-          style={styles.blurView}
-          tint="light"
-          intensity={100}
-        />
+        <BlurView style={styles.blurView} tint="light" intensity={100} />
       )}
     </View>
   );

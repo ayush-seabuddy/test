@@ -1,32 +1,32 @@
-import { PostHogProvider } from 'posthog-react-native'
+import { PostHogProvider } from "posthog-react-native";
 import {
   NotificationProvider,
   useNotification,
-} from '@/Context/NotificationContext';
-import { requestAllPermissions } from '@/Permission/Permissions';
-import ErrorBoundary from '@/src/components/ErrorBoundary';
-import { showToast } from '@/src/components/GlobalToast';
-import OTAUpdatePopup from '@/src/components/OTAUpdatePopup';
-import { initI18n } from '@/src/localization/i18n';
-import { store } from '@/src/redux/store';
-import Colors from '@/src/utils/Colors';
-import { clearCrashCount, safeReload } from '@/src/utils/crashRecovery';
-import socketService from '@/src/utils/socketService';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+} from "@/Context/NotificationContext";
+import { requestAllPermissions } from "@/Permission/Permissions";
+import ErrorBoundary from "@/src/components/ErrorBoundary";
+import { showToast } from "@/src/components/GlobalToast";
+import OTAUpdatePopup from "@/src/components/OTAUpdatePopup";
+import { initI18n } from "@/src/localization/i18n";
+import { store } from "@/src/redux/store";
+import Colors from "@/src/utils/Colors";
+import { clearCrashCount, safeReload } from "@/src/utils/crashRecovery";
+import socketService from "@/src/utils/socketService";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
-} from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import * as NavigationBar from 'expo-navigation-bar';
-import * as Notifications from 'expo-notifications';
-import { Stack, router } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import * as TaskManager from 'expo-task-manager';
-import i18n from 'i18next';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { I18nextProvider, useTranslation } from 'react-i18next';
+} from "@react-navigation/native";
+import { useFonts } from "expo-font";
+import * as NavigationBar from "expo-navigation-bar";
+import * as Notifications from "expo-notifications";
+import { Stack, router } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import * as TaskManager from "expo-task-manager";
+import i18n from "i18next";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { I18nextProvider, useTranslation } from "react-i18next";
 import {
   Appearance,
   Linking,
@@ -34,14 +34,14 @@ import {
   StatusBar,
   StyleSheet,
   useColorScheme,
-} from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { PaperProvider } from 'react-native-paper';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
-import { Provider } from 'react-redux';
+} from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { PaperProvider } from "react-native-paper";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
+import { Provider } from "react-redux";
 
-Appearance.setColorScheme('light');
+Appearance.setColorScheme("light");
 
 SplashScreen.preventAutoHideAsync();
 
@@ -54,16 +54,16 @@ Notifications.setNotificationHandler({
   }),
 });
 
-const BACKGROUND_NOTIFICATION_TASK = 'background-notification-task';
+const BACKGROUND_NOTIFICATION_TASK = "background-notification-task";
 
 TaskManager.defineTask(
   BACKGROUND_NOTIFICATION_TASK,
   async ({ data, error }) => {
     if (error) {
-      console.error('Background notification error:', error);
+      console.error("Background notification error:", error);
       return;
     }
-    console.log('Background notification received:', data);
+    console.log("Background notification received:", data);
   },
 );
 
@@ -76,8 +76,8 @@ const NotificationHandler = () => {
 
   useEffect(() => {
     if (expoPushToken) {
-      console.log('🔔 Expo Push Token:', expoPushToken);
-      AsyncStorage.setItem('ExpoPushToken', expoPushToken).catch(console.error);
+      console.log("🔔 Expo Push Token:", expoPushToken);
+      AsyncStorage.setItem("ExpoPushToken", expoPushToken).catch(console.error);
     }
   }, [expoPushToken]);
 
@@ -93,9 +93,9 @@ const NotificationHandler = () => {
       const { id, page, type, androidUrl, iosUrl } = data;
 
       try {
-        if (page === 'UPDATE' && type === 'UPDATE') {
-          const url = Platform.OS === 'ios' ? iosUrl : androidUrl;
-          if (url && typeof url === 'string') await Linking.openURL(url);
+        if (page === "UPDATE" && type === "UPDATE") {
+          const url = Platform.OS === "ios" ? iosUrl : androidUrl;
+          if (url && typeof url === "string") await Linking.openURL(url);
           return;
         }
 
@@ -104,50 +104,50 @@ const NotificationHandler = () => {
           : router.replace.bind(router);
 
         switch (page) {
-          case 'CHAT':
-            if (id && typeof id === 'string') {
+          case "CHAT":
+            if (id && typeof id === "string") {
               navigate({
-                pathname: '/chatroom/[chatRoomId]',
+                pathname: "/chatroom/[chatRoomId]",
                 params: { chatRoomId: id },
               });
             }
             break;
 
-          case 'GROUP_ACTIVITY':
-            if (id && typeof id === 'string') {
+          case "GROUP_ACTIVITY":
+            if (id && typeof id === "string") {
               navigate({
-                pathname: '/buddyupeventdescription',
+                pathname: "/buddyupeventdescription",
                 params: { eventId: id },
               });
             }
             break;
 
-          case 'CONTENT':
-            if (id && typeof id === 'string') {
+          case "CONTENT":
+            if (id && typeof id === "string") {
               navigate({
-                pathname: '/contentDetails/[contentId]',
+                pathname: "/contentDetails/[contentId]",
                 params: { contentId: id },
               });
             }
             break;
 
-          case 'HANGOUT':
-            if (id && typeof id === 'string') {
-              navigate({ pathname: '/singlepost', params: { postId: id } });
+          case "HANGOUT":
+            if (id && typeof id === "string") {
+              navigate({ pathname: "/singlepost", params: { postId: id } });
             }
             break;
 
-          case 'HAPPINESS':
-            navigate('/monthlyhappinessindex');
+          case "HAPPINESS":
+            navigate("/monthlyhappinessindex");
             break;
 
-          case 'POMS':
-            navigate('/monthlywellbeingpulse');
+          case "POMS":
+            navigate("/monthlywellbeingpulse");
             break;
         }
       } catch (err) {
-        console.error('Navigation error:', err);
-        showToast.error('oops', t('somethingwentwrong'));
+        console.error("Navigation error:", err);
+        showToast.error("oops", t("somethingwentwrong"));
       }
     },
     [t],
@@ -174,13 +174,13 @@ export default function RootLayout() {
   const [localizationReady, setLocalizationReady] = useState(false);
 
   const [fontsLoaded] = useFonts({
-    'Poppins-Regular': require('../assets/fonts/Poppins-Regular.ttf'),
-    'Poppins-Medium': require('../assets/fonts/Poppins-Medium.ttf'),
-    'Poppins-SemiBold': require('../assets/fonts/Poppins-SemiBold.ttf'),
-    'Whyte-Inktrap-Regular': require('../assets/fonts/Whyte-Inktrap-Regular.otf'),
-    'WhyteInktrap-Bold': require('../assets/fonts/WhyteInktrap-Bold.ttf'),
-    'WhyteInktrap-Heavy': require('../assets/fonts/WhyteInktrap-Heavy.ttf'),
-    'WhyteInktrap-Medium': require('../assets/fonts/WhyteInktrap-Medium.ttf'),
+    "Poppins-Regular": require("../assets/fonts/Poppins-Regular.ttf"),
+    "Poppins-Medium": require("../assets/fonts/Poppins-Medium.ttf"),
+    "Poppins-SemiBold": require("../assets/fonts/Poppins-SemiBold.ttf"),
+    "Whyte-Inktrap-Regular": require("../assets/fonts/Whyte-Inktrap-Regular.otf"),
+    "WhyteInktrap-Bold": require("../assets/fonts/WhyteInktrap-Bold.ttf"),
+    "WhyteInktrap-Heavy": require("../assets/fonts/WhyteInktrap-Heavy.ttf"),
+    "WhyteInktrap-Medium": require("../assets/fonts/WhyteInktrap-Medium.ttf"),
   });
 
   useEffect(() => {
@@ -190,7 +190,7 @@ export default function RootLayout() {
       try {
         await requestAllPermissions(t);
       } catch (err) {
-        console.error('Permission request error:', err);
+        console.error("Permission request error:", err);
       }
     };
 
@@ -198,15 +198,15 @@ export default function RootLayout() {
   }, [localizationReady, t]);
 
   useEffect(() => {
-    if (Platform.OS !== 'android') return;
+    if (Platform.OS !== "android") return;
 
     (async () => {
       try {
-        await NavigationBar.setBackgroundColorAsync('#00000000');
-        await NavigationBar.setButtonStyleAsync('light');
-        await NavigationBar.setVisibilityAsync('visible');
+        await NavigationBar.setBackgroundColorAsync("#00000000");
+        await NavigationBar.setButtonStyleAsync("light");
+        await NavigationBar.setVisibilityAsync("visible");
       } catch (e) {
-        console.warn('[NavigationBar] setup failed', e);
+        console.warn("[NavigationBar] setup failed", e);
       }
     })();
   }, [visibility]);
@@ -222,7 +222,7 @@ export default function RootLayout() {
         await clearCrashCount();
         setAppReady(true);
       } catch (e) {
-        console.warn('Init error:', e);
+        console.warn("Init error:", e);
       } finally {
         await SplashScreen.hideAsync();
       }
@@ -239,7 +239,7 @@ export default function RootLayout() {
         <PostHogProvider
           apiKey="phc_LYxVgQmPQSyrXAv134auG5e5khoPh9GgCDQvmvdjhVH"
           options={{
-            host: 'https://us.i.posthog.com',
+            host: "https://us.i.posthog.com",
             enableSessionReplay: true,
           }}
           autocapture
@@ -247,12 +247,19 @@ export default function RootLayout() {
           <NotificationHandler />
           <Provider store={store}>
             <SafeAreaProvider>
-              <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+              <SafeAreaView
+                style={styles.container}
+                edges={["top", "left", "right"]}
+              >
                 <StatusBar
-                  barStyle={colorScheme === 'dark' ? 'light-content' : 'dark-content'}
+                  barStyle={
+                    colorScheme === "dark" ? "light-content" : "dark-content"
+                  }
                   backgroundColor="#000"
                 />
-                <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                <ThemeProvider
+                  value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+                >
                   <PaperProvider>
                     <I18nextProvider i18n={i18n}>
                       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -278,6 +285,6 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.white ?? '#fff',
+    backgroundColor: Colors.white ?? "#fff",
   },
 });

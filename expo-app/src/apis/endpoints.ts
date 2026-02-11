@@ -9,8 +9,10 @@ type ExtraConfig = {
 // Safely access extra with fallback
 const extra = Constants.expoConfig?.extra as ExtraConfig | undefined;
 
-export const BASE_URL =
-  extra?.EXPO_PUBLIC_API_URL || 'https://api-canary.seabuddy.co/api/v1';
+// export const BASE_URL =
+//   extra?.EXPO_PUBLIC_API_URL || 'https://api-canary.seabuddy.co/api/v1';
+
+export const BASE_URL = 'https://api.seabuddy.co/api/v1';
 
 
 // Define endpoints
