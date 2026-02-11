@@ -29,14 +29,15 @@ const BottomSheet: React.FC<Props> = ({
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const panResponderRef = useRef<any>(null);
   const initialYRef = useRef(0);
+  const keyboardHeightRef = useRef(0);
 
   // Setup PanResponder for drag to close functionality
   useEffect(() => {
     panResponderRef.current = PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (evt) => {
+      onMoveShouldSetPanResponder: (_, gestureState) => {
         // Only respond if dragging vertically (not horizontally)
-        return Math.abs(evt.nativeEvent.dy) > 5;
+        return Math.abs(gestureState.dy) > 5;
       },
       onPanResponderGrant: (evt) => {
         initialYRef.current = evt.nativeEvent.pageY;
@@ -55,10 +56,13 @@ const BottomSheet: React.FC<Props> = ({
 
   useEffect(() => {
     const keyboardDidShow = Keyboard.addListener("keyboardDidShow", (e) => {
+      keyboardHeightRef.current = e.endCoordinates.height;
       setKeyboardHeight(e.endCoordinates.height);
     });
 
     const keyboardDidHide = Keyboard.addListener("keyboardDidHide", () => {
+      keyboardHeightRef.current = 0;
+      // Force immediate state update for Android
       setKeyboardHeight(0);
     });
 
@@ -84,9 +88,7 @@ const BottomSheet: React.FC<Props> = ({
   // When keyboard is open, calculate sheet height from top 10% to keyboard
   // Available height = 90% of screen - keyboard height
   const dynamicSheetHeight =
-    keyboardHeight > 0 
-      ? SCREEN_HEIGHT * 0.9 - keyboardHeight
-      : sheetHeight;
+    keyboardHeight > 0 ? SCREEN_HEIGHT * 0.9 - keyboardHeight : sheetHeight;
 
   return (
     <Modal
@@ -103,40 +105,81 @@ const BottomSheet: React.FC<Props> = ({
         }}
       />
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
-      >
-        <View
-          style={[
-            styles.sheet,
-            {
-              height: dynamicSheetHeight,
-              ...(keyboardHeight > 0
-                ? {
-                  top: SCREEN_HEIGHT * 0.1,
-                  bottom: keyboardHeight,
-                }
-                : {
-                  bottom: 0,
-                  top: undefined
-                }
-              ),
-            }
-          ]}
-          {...panResponderRef.current?.panHandlers}
+      {Platform.OS === "ios" ? (
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior="padding"
+          keyboardVerticalOffset={0}
         >
           <View
-            style={styles.handleContainer}
+            style={[
+              styles.sheet,
+              {
+                height: dynamicSheetHeight,
+                position: "absolute",
+                ...(keyboardHeight > 0
+                  ? {
+                      top: SCREEN_HEIGHT * 0.1,
+                      bottom: keyboardHeight,
+                      left: 0,
+                      right: 0,
+                    }
+                  : {
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      top: undefined,
+                    }),
+              },
+            ]}
             {...panResponderRef.current?.panHandlers}
           >
-            <View style={styles.handle} />
-          </View>
+            <View
+              style={styles.handleContainer}
+              {...panResponderRef.current?.panHandlers}
+            >
+              <View style={styles.handle} />
+            </View>
 
-          <View style={{ flex: 1 }}>{children}</View>
+            <View style={{ flex: 1 }}>{children}</View>
+          </View>
+        </KeyboardAvoidingView>
+      ) : (
+        <View style={{ flex: 1 }}>
+          <View
+            style={[
+              styles.sheet,
+              {
+                height: dynamicSheetHeight,
+                position: "absolute",
+                ...(keyboardHeight > 0
+                  ? {
+                      top: SCREEN_HEIGHT * 0.1,
+                      bottom: keyboardHeight,
+                      left: 0,
+                      right: 0,
+                    }
+                  : {
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      top: undefined,
+                    }),
+              },
+            ]}
+            {...panResponderRef.current?.panHandlers}
+          >
+            <View
+              style={styles.handleContainer}
+              {...panResponderRef.current?.panHandlers}
+            >
+              <View style={styles.handle} />
+            </View>
+
+            <View style={{ flex: 1 }}>{children}</View>
+          </View>
         </View>
-      </KeyboardAvoidingView>
+      )}
     </Modal>
   );
 };
@@ -151,8 +194,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   sheet: {
-    position: "absolute",
-    bottom: 0,
     left: 0,
     right: 0,
     backgroundColor: "#fff",
