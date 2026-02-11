@@ -93,9 +93,9 @@ const Settings = () => {
             {renderSettingItem("certifications", () => {
               router.push("/certifications");
             })}
-            {renderSettingItem("change_language", () => {
+            {/* {renderSettingItem("change_language", () => {
               router.push("/changelanguage");
-            })}
+            })} */}
           </View>
 
           <Text style={styles.sectionTitle}>{t("account")}</Text>

@@ -1,83 +1,85 @@
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { Image } from 'expo-image'
-import React, { useCallback, useEffect, useState } from 'react'
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Image } from "expo-image";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-} from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
-import { router, useFocusEffect } from 'expo-router'
-import { t } from 'i18next'
+} from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { router, useFocusEffect } from "expo-router";
+import { t } from "i18next";
 
-import CommonLoader from '@/src/components/CommonLoader'
-import EmptyComponent from '@/src/components/EmptyComponent'
-import ChatHeader from './chatListHeader'
+import CommonLoader from "@/src/components/CommonLoader";
+import EmptyComponent from "@/src/components/EmptyComponent";
+import ChatHeader from "./chatListHeader";
 
-import { saveChatRooms } from '@/src/database/chatRoomService'
-import { updateOneFleetChat, updateOneShipChat } from '@/src/redux/chatListSlice'
-import { RootState } from '@/src/redux/store'
-import { ChatRoom } from '@/src/screens/chat/types/chatRoom'
-import Colors from '@/src/utils/Colors'
-import { formatChatTime, viewUserProfile } from '@/src/utils/helperFunctions'
-import { ImagesAssets } from '@/src/utils/ImageAssets'
-import socketService from '@/src/utils/socketService'
+import { saveChatRooms } from "@/src/database/chatRoomService";
+import {
+  updateOneFleetChat,
+  updateOneShipChat,
+} from "@/src/redux/chatListSlice";
+import { RootState } from "@/src/redux/store";
+import { ChatRoom } from "@/src/screens/chat/types/chatRoom";
+import Colors from "@/src/utils/Colors";
+import { formatChatTime, viewUserProfile } from "@/src/utils/helperFunctions";
+import { ImagesAssets } from "@/src/utils/ImageAssets";
+import socketService from "@/src/utils/socketService";
 
 const ChatLoungeList = () => {
-  const dispatch = useDispatch()
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const dispatch = useDispatch();
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { shipChatList, fleetChatList } = useSelector(
-    (state: RootState) => state.chatList
-  )
+    (state: RootState) => state.chatList,
+  );
 
-  const [loading, setLoading] = useState(true)
-  const [shipList, setShipList] = useState<ChatRoom[]>([])
-  const [fleetList, setFleetList] = useState<ChatRoom[]>([])
+  const [loading, setLoading] = useState(true);
+  const [shipList, setShipList] = useState<ChatRoom[]>([]);
+  const [fleetList, setFleetList] = useState<ChatRoom[]>([]);
 
   const loungeSections = [
     {
-      title: t('shiplounge'),
-      description: t('shiplounge_description'),
+      title: t("shiplounge"),
+      description: t("shiplounge_description"),
       icon: ImagesAssets.shipIcon,
       rooms: shipChatList,
     },
     {
-      title: t('fleetlounge'),
-      description: t('fleetlounge_description'),
+      title: t("fleetlounge"),
+      description: t("fleetlounge_description"),
       icon: ImagesAssets.fleetIcon,
       rooms: fleetChatList,
     },
-  ]
+  ];
 
   const fetchChatRooms = async () => {
     const [userId, shipId, employerId] = await Promise.all([
-      AsyncStorage.getItem('userId'),
-      AsyncStorage.getItem('shipId'),
-      AsyncStorage.getItem('employerId'),
-    ])
-    setCurrentUserId(userId)
+      AsyncStorage.getItem("userId"),
+      AsyncStorage.getItem("shipId"),
+      AsyncStorage.getItem("employerId"),
+    ]);
+    setCurrentUserId(userId);
 
-    socketService.emit('getAllGroupChatRooms', { userId, shipId })
-    socketService.emit('getAllGroupChatRooms', { userId, employerId })
+    socketService.emit("getAllGroupChatRooms", { userId, shipId });
+    socketService.emit("getAllGroupChatRooms", { userId, employerId });
 
-    socketService.on('groupChatRooms', (data) => {
-      const rooms = data?.groupChatRooms || []
-      rooms.forEach((item: ChatRoom) => dispatch(updateOneShipChat(item)))
-      setShipList(rooms)
-    })
+    socketService.on("groupChatRooms", (data) => {
+      const rooms = data?.groupChatRooms || [];
+      rooms.forEach((item: ChatRoom) => dispatch(updateOneShipChat(item)));
+      setShipList(rooms);
+    });
 
-    socketService.on('groupChatRoomsEmployer', (data) => {
-      const rooms = data?.groupChatRooms || []
-      rooms.forEach((item: ChatRoom) => dispatch(updateOneFleetChat(item)))
-      setFleetList(rooms)
-    })
-  }
+    socketService.on("groupChatRoomsEmployer", (data) => {
+      const rooms = data?.groupChatRooms || [];
+      rooms.forEach((item: ChatRoom) => dispatch(updateOneFleetChat(item)));
+      setFleetList(rooms);
+    });
+  };
 
   const updateChatCount = async (data: any) => {
-
-    const userId = await AsyncStorage.getItem('userId')
+    const userId = await AsyncStorage.getItem("userId");
     shipChatList.forEach((item: ChatRoom) => {
       if (item.id === data.chatRoomId) {
         dispatch(
@@ -89,10 +91,10 @@ const ChatLoungeList = () => {
             unreadMessages:
               data?.participants?.find((p: any) => String(p.userId) === userId)
                 ?.unreadMessages ?? 0,
-          })
-        )
+          }),
+        );
       }
-    })
+    });
 
     fleetChatList.forEach((item: ChatRoom) => {
       if (item.id === data.chatRoomId) {
@@ -105,48 +107,50 @@ const ChatLoungeList = () => {
             unreadMessages:
               data?.participants?.find((p: any) => String(p.userId) === userId)
                 ?.unreadMessages ?? 0,
-          })
-        )
+          }),
+        );
       }
-    })
-  }
+    });
+  };
 
   useFocusEffect(
     useCallback(() => {
-      socketService.on('newMessage', updateChatCount)
-      return () => socketService.off('newMessage', updateChatCount)
-    }, [dispatch, shipChatList, fleetChatList])
-  )
+      socketService.on("newMessage", updateChatCount);
+      return () => socketService.off("newMessage", updateChatCount);
+    }, [dispatch, shipChatList, fleetChatList]),
+  );
 
   useFocusEffect(
     useCallback(() => {
-      setLoading(true)
-      fetchChatRooms()
+      setLoading(true);
+      fetchChatRooms();
 
-      const timer = setTimeout(() => setLoading(false), 4000)
+      const timer = setTimeout(() => setLoading(false), 4000);
 
       return () => {
-        socketService.off('groupChatRooms')
-        socketService.off('groupChatRoomsEmployer')
-        clearTimeout(timer)
-      }
-    }, [dispatch])
-  )
+        socketService.off("groupChatRooms");
+        socketService.off("groupChatRoomsEmployer");
+        clearTimeout(timer);
+      };
+    }, [dispatch]),
+  );
 
   useEffect(() => {
-    const chatList = [...shipList, ...fleetList]
-    if (chatList.length > 0) saveChatRooms(chatList)
-  }, [shipList, fleetList])
+    const chatList = [...shipList, ...fleetList];
+    if (chatList.length > 0) saveChatRooms(chatList);
+  }, [shipList, fleetList]);
 
   useEffect(() => {
-    viewUserProfile(dispatch)
-  }, [])
+    viewUserProfile(dispatch);
+  }, []);
 
   const renderChatRow = (room: ChatRoom, index: number) => {
-    const participantUser = room?.participants?.find(p => String(p.userId) == currentUserId)
+    const participantUser = room?.participants?.find(
+      (p) => String(p.userId) == currentUserId,
+    );
 
-    const hasUnread = participantUser && participantUser?.unreadMessages > 0
-    const lastMsg = room.lastMessage
+    const hasUnread = participantUser && participantUser?.unreadMessages > 0;
+    const lastMsg = room.lastMessage;
 
     return (
       <TouchableOpacity
@@ -175,15 +179,15 @@ const ChatLoungeList = () => {
             numberOfLines={1}
           >
             {lastMsg?.messageUser?.fullName
-              ? `${lastMsg.messageUser.fullName.split(' ')[0]}: `
-              : ''}
-            {lastMsg?.messageType !== 'MESSAGE'
+              ? `${lastMsg.messageUser.fullName.split(" ")[0]}: `
+              : ""}
+            {lastMsg?.messageType !== "MESSAGE"
               ? lastMsg?.messageType
-              : (lastMsg?.content || '')
-                .replace(/\n/g, ' ')
-                .trim()
-                .slice(0, 35) +
-              (lastMsg?.content?.trim().length > 35 ? '...' : '')}
+              : (lastMsg?.content || "")
+                  .replace(/\n/g, " ")
+                  .trim()
+                  .slice(0, 35) +
+                (lastMsg?.content?.trim().length > 35 ? "..." : "")}
           </Text>
         </View>
 
@@ -196,43 +200,46 @@ const ChatLoungeList = () => {
           {hasUnread && (
             <View style={styles.unreadBadge}>
               <Text style={styles.unreadCount}>
-                {participantUser?.unreadMessages > 9 ? '9+' : participantUser?.unreadMessages}
+                {participantUser?.unreadMessages > 9
+                  ? "9+"
+                  : participantUser?.unreadMessages}
               </Text>
             </View>
           )}
         </View>
       </TouchableOpacity>
-    )
-  }
+    );
+  };
 
   const isEmpty =
-    !loading && shipChatList.length === 0 && fleetChatList.length === 0
+    !loading && shipChatList.length === 0 && fleetChatList.length === 0;
 
   return (
     <View style={styles.container}>
-      <ScrollView
+      {/* <ScrollView
         style={styles.container}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-      >
-        <ChatHeader />
+      > */}
+      <ChatHeader />
 
-        {loading && isEmpty && (
-          <View style={styles.centerContainer}>
-            <CommonLoader fullScreen />
-          </View>
-        )}
+      {loading && isEmpty && (
+        <View style={styles.centerContainer}>
+          <CommonLoader fullScreen />
+        </View>
+      )}
 
-        {isEmpty && (
-          <View style={styles.centerContainer}>
-            <EmptyComponent text={t('nochatroomfound')} />
-          </View>
-        )}
+      {isEmpty && (
+        <View style={styles.centerContainer}>
+          <EmptyComponent text={t("nochatroomfound")} />
+        </View>
+      )}
 
-        {!isEmpty && (
+      {!isEmpty && (
+        <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.chatListContainer}>
             {loungeSections.map((section) => {
-              if (section.rooms.length === 0) return null
+              if (section.rooms.length === 0) return null;
 
               return (
                 <View key={section.title} style={styles.sectionContainer}>
@@ -244,9 +251,7 @@ const ChatLoungeList = () => {
                       cachePolicy="memory-disk"
                     />
                     <View style={styles.headerText}>
-                      <Text style={styles.sectionTitle}>
-                        {section.title}
-                      </Text>
+                      <Text style={styles.sectionTitle}>{section.title}</Text>
                       <Text style={styles.sectionDescription}>
                         {section.description}
                       </Text>
@@ -257,17 +262,18 @@ const ChatLoungeList = () => {
                     {section.rooms.map(renderChatRow)}
                   </View>
                 </View>
-              )
+              );
             })}
           </View>
-        )}
-      </ScrollView>
+        </ScrollView>
+      )}
+      {/* </ScrollView> */}
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#ededed' },
+  container: { flex: 1, backgroundColor: "#ededed" },
 
   scrollContent: {
     paddingBottom: 20,
@@ -276,28 +282,29 @@ const styles = StyleSheet.create({
   centerContainer: {
     flex: 1,
     minHeight: 400,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   chatListContainer: {
     marginTop: 70,
+    marginBottom: 100,
   },
 
   sectionContainer: {
     marginHorizontal: 10,
     marginBottom: 20,
-    backgroundColor: 'rgba(232, 232, 232, 1)',
+    backgroundColor: "rgba(232, 232, 232, 1)",
     borderRadius: 15,
     borderWidth: 1,
-    borderColor: '#fff',
-    overflow: 'hidden',
+    borderColor: "#fff",
+    overflow: "hidden",
   },
 
   sectionHeader: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
-    alignItems: 'center',
+    alignItems: "center",
     gap: 10,
   },
 
@@ -307,25 +314,25 @@ const styles = StyleSheet.create({
   sectionTitle: {
     lineHeight: 30,
     fontSize: 20,
-    fontFamily: 'WhyteInktrap-Bold',
-    color: 'black',
+    fontFamily: "WhyteInktrap-Bold",
+    color: "black",
   },
 
   sectionDescription: {
     fontSize: 12,
-    fontFamily: 'Poppins-Regular',
-    color: '#6f8406',
+    fontFamily: "Poppins-Regular",
+    color: "#6f8406",
   },
 
   chatRowContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
 
   chatRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingVertical: 12,
     paddingHorizontal: 16,
-    borderColor: '#e0e0e0',
+    borderColor: "#e0e0e0",
   },
 
   chatMiddle: { flex: 1 },
@@ -333,32 +340,32 @@ const styles = StyleSheet.create({
   groupName: {
     lineHeight: 20,
     fontSize: 16,
-    fontFamily: 'WhyteInktrap-Bold',
-    color: '#052B19',
+    fontFamily: "WhyteInktrap-Bold",
+    color: "#052B19",
   },
 
-  groupNameUnread: { color: '#052B19' },
+  groupNameUnread: { color: "#052B19" },
 
   lastMessage: {
     fontSize: 13,
-    fontFamily: 'Poppins-Regular',
-    color: '#555',
+    fontFamily: "Poppins-Regular",
+    color: "#555",
   },
 
   lastMessageUnread: {
-    fontFamily: 'Poppins-SemiBold',
-    color: '#052B19',
+    fontFamily: "Poppins-SemiBold",
+    color: "#052B19",
   },
 
   chatRight: {
-    alignItems: 'flex-end',
-    justifyContent: 'center',
+    alignItems: "flex-end",
+    justifyContent: "center",
   },
 
   time: {
     fontSize: 11,
-    fontFamily: 'Poppins-Regular',
-    color: '#999',
+    fontFamily: "Poppins-Regular",
+    color: "#999",
     marginBottom: 6,
   },
 
@@ -369,15 +376,15 @@ const styles = StyleSheet.create({
     minWidth: 22,
     height: 22,
     borderRadius: 11,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   unreadCount: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 11,
-    fontFamily: 'Poppins-SemiBold',
+    fontFamily: "Poppins-SemiBold",
   },
-})
+});
 
-export default ChatLoungeList
+export default ChatLoungeList;

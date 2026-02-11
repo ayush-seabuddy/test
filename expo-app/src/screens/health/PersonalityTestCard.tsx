@@ -1,5 +1,12 @@
 import * as React from "react";
-import { Dimensions, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Dimensions,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { ArrowUpRight } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { router } from "expo-router";
@@ -117,7 +124,7 @@ const styles = StyleSheet.create({
 
   badgeWrapper: {
     marginTop: 5,
-    width: "55%",
+    width: "70%",
   },
 
   badge: {
