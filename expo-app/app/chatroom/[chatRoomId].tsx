@@ -21,6 +21,8 @@ import { router, useFocusEffect } from "expo-router";
 import {
   Camera,
   Check,
+  ChevronDown,
+  ChevronUp,
   Edit,
   Paperclip,
   RefreshCw,
@@ -47,6 +49,7 @@ import {
 import { FlatList } from "react-native-gesture-handler";
 import RBSheet from "react-native-raw-bottom-sheet";
 import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 
 type ChatRoomScreenParams = {
   chatRoomDetails: ChatRoom;
@@ -56,7 +59,7 @@ type ChatRoomRouteProp = RouteProp<
   { ChatRoom: ChatRoomScreenParams },
   "ChatRoom"
 >;
-const { width, height } = Dimensions.get("screen");
+const { height } = Dimensions.get("screen");
 const ChatRoomScreen = () => {
   const route = useRoute<ChatRoomRouteProp>();
   const chatRoomDetails =
@@ -69,7 +72,6 @@ const ChatRoomScreen = () => {
   );
 
   const dispatch = useDispatch();
-  // const { chatList, typingStatus } = useSelector(selectChat);
   const [loading, setLoading] = useState(true);
   const [imageUploading, setImageUploading] = useState(false);
   const [chatLoading, setChatLoading] = useState(true);
@@ -94,6 +96,7 @@ const ChatRoomScreen = () => {
   const [editingMessage, setEditingMessage] = useState<ChatMessage | null>(
     null,
   );
+  const { t } = useTranslation();
   const [editingMessageId, setEditingMessageId] = useState<string>("");
   const [inputHeight, setInputHeight] = useState(55);
   const [editModal, setEditModal] = useState(false);
@@ -110,7 +113,8 @@ const ChatRoomScreen = () => {
 
   const onSearch = (searchValue: string) => {
     setSearchQuery(searchValue);
-    if (!searchValue || !chatListState || chatListState.length === 0) {
+
+    if (!searchValue.trim()) {
       setSearchResults([]);
       setCurrentSearchIndex(-1);
       return;
@@ -119,11 +123,11 @@ const ChatRoomScreen = () => {
     const filtered = chatListState
       .map((item, index) => ({ ...item, originalIndex: index }))
       .filter((item) =>
-        item.content.toLowerCase().includes(searchValue.toLowerCase()),
+        item.content?.toLowerCase().includes(searchValue.toLowerCase()),
       );
 
     setSearchResults(filtered);
-    setCurrentSearchIndex(filtered.length > 0 ? 0 : -1);
+    setCurrentSearchIndex(filtered.length ? 0 : -1);
 
     if (filtered.length > 0) {
       flatListRef?.current?.scrollToIndex({
@@ -132,6 +136,7 @@ const ChatRoomScreen = () => {
       });
     }
   };
+
   const [hederDetails, setHeaderDetails] = useState({
     navigation: () => router.back(),
     data: chatRoomDetails,
@@ -155,6 +160,32 @@ const ChatRoomScreen = () => {
         dispatch(updateUserField({ key: property, value: object[property] }));
       }
     }
+  };
+
+  const goToSearchResult = (index: number) => {
+    if (!searchResults.length) return;
+
+    const safeIndex =
+      index < 0
+        ? searchResults.length - 1
+        : index >= searchResults.length
+          ? 0
+          : index;
+
+    setCurrentSearchIndex(safeIndex);
+
+    flatListRef?.current?.scrollToIndex({
+      index: searchResults[safeIndex].originalIndex,
+      animated: true,
+    });
+  };
+
+  const goToNextResult = () => {
+    goToSearchResult(currentSearchIndex + 1);
+  };
+
+  const goToPreviousResult = () => {
+    goToSearchResult(currentSearchIndex - 1);
   };
 
   interface ReactionData {
@@ -312,9 +343,9 @@ const ChatRoomScreen = () => {
         setEditingMessageId("");
       } else {
         const createdAt = new Date().toUTCString();
-        const createdAtId = Date.now().toString(); // must be string for ChatMessage
+        const createdAtId = Date.now().toString();
         const chat_payload: Partial<ChatMessage> = {
-          id: createdAtId, // temp id until server returns real one
+          id: createdAtId,
           senderId,
           chatRoomId,
           content,
@@ -548,7 +579,6 @@ const ChatRoomScreen = () => {
 
   const retryFetch = () => {
     setLoading(true);
-    // fetchChatRooms()
     const payload = {
       userId: senderId,
       chatRoomId: chatRoomId,
@@ -558,7 +588,6 @@ const ChatRoomScreen = () => {
     setLastPageDataWaiting(1);
 
     socketService.emit("joinChatRoom", payload);
-    // optional safety timeout
     setTimeout(() => {
       setLoading(false);
     }, 4000);
@@ -699,7 +728,6 @@ const ChatRoomScreen = () => {
     } catch (error: any) {
       setLoading(false);
 
-      // Same silent cancel behavior as Expo
       if (error?.code === "E_PICKER_CANCELLED") {
         return;
       }
@@ -765,16 +793,13 @@ const ChatRoomScreen = () => {
 
     if (isSearchResult && searchQuery) {
       const regex = new RegExp(`(${searchQuery})`, "gi");
+
       return content.split(regex).map((part, index) =>
-        regex.test(part.toLowerCase()) ? (
+        regex.test(part) ? (
           <Text
             key={index}
             style={{
-              backgroundColor:
-                item.senderId === senderId
-                  ? Colors.lightGreen
-                  : Colors.lightGreen,
-              color: senderId === item.senderId ? "#fff" : "#000",
+              backgroundColor: "#000",
             }}
           >
             {part}
@@ -811,7 +836,7 @@ const ChatRoomScreen = () => {
           <CommonLoader fullScreen />
         ) : (
           <View style={{ alignItems: "center" }}>
-            <Text style={{ color: Colors.lightGreen }}>No messages yet</Text>
+            <Text style={{ color: Colors.lightGreen }}>{t("noMessages")}</Text>
             <TouchableOpacity
               onPress={retryFetch}
               style={{
@@ -821,7 +846,7 @@ const ChatRoomScreen = () => {
                 alignItems: "center",
               }}
             >
-              <Text style={{ color: Colors.lightGreen }}>Refresh</Text>
+              <Text style={{ color: Colors.lightGreen }}>{t("refresh")}</Text>
               <RefreshCw size={15} color={Colors.lightGreen} />
             </TouchableOpacity>
           </View>
@@ -837,6 +862,24 @@ const ChatRoomScreen = () => {
     >
       <View style={styles.container}>
         <ChatRoomHeader {...hederDetails} />
+        {searchQuery.length > 0 && searchResults.length > 0 && (
+          <View style={styles.searchNavContainer}>
+            <Text style={styles.searchCount}>
+              {currentSearchIndex + 1} / {searchResults.length}
+            </Text>
+
+            <View style={styles.searchNavButtons}>
+              <TouchableOpacity onPress={goToPreviousResult}>
+                <ChevronUp size={22} color="black" />
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={goToNextResult}>
+                <ChevronDown size={22} color="black" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
         <FlatList
           ref={flatListRef}
           data={getGroupedChatList()}
@@ -846,11 +889,14 @@ const ChatRoomScreen = () => {
             <Chats
               item={item}
               index={index}
+              isSearchResult={
+                searchResults[currentSearchIndex]?.id === item?.id
+              }
+              searchQuery={searchQuery}
               handleReplyMessage={handleReplyMessage}
               imageLoading={imageLoading}
               renderMessageContent={renderMessageContent}
               senderId={senderId}
-              searchQuery={searchQuery}
               searchResults={searchResults}
               setEditModal={setEditModal}
               setEditingMessage={setEditingMessage}
@@ -882,7 +928,7 @@ const ChatRoomScreen = () => {
         {replyingTo && (
           <View style={styles.replyContainer}>
             <Text style={styles.replyText}>
-              Replying to {replyingTo.messageUser?.fullName || "Unknown"}
+              {t("replyingTo")} {replyingTo.messageUser?.fullName || "Unknown"}
             </Text>
             <TouchableOpacity
               onPress={() => setReplyingTo(null)}
@@ -910,9 +956,7 @@ const ChatRoomScreen = () => {
                   minHeight: Platform.OS == "ios" ? 27 : 40,
                 }}
                 placeholder={
-                  editingMessageId
-                    ? "Edit your message..."
-                    : "Type something..."
+                  editingMessageId ? t("editYourMessage") : t("typeSomething")
                 }
                 placeholderTextColor="gray"
                 value={content}
@@ -984,7 +1028,7 @@ const ChatRoomScreen = () => {
         >
           <View style={styles.sheetContent}>
             <Text style={styles.sheetTitle}>
-              {reactionCountList?.length} Reactions
+              {reactionCountList?.length} {t("reactions")}
             </Text>
             <ScrollView contentContainerStyle={{ paddingBottom: 50 }}>
               {reactionCountList.length > 0 ? (
@@ -992,10 +1036,6 @@ const ChatRoomScreen = () => {
                   <View key={user.id}>
                     <View style={styles.userItemContainer}>
                       <View style={{ position: "relative" }}>
-                        {/* <Image
-                        source={require("../assets/images/AnotherImage/Man.png")}
-                        style={[styles.userImage, { position: "absolute" }]}
-                      /> */}
                         <Image
                           style={styles.userImage}
                           source={
@@ -1017,12 +1057,20 @@ const ChatRoomScreen = () => {
                           cachePolicy={"memory-disk"}
                         />
                       </View>
-                      <View
+                      <TouchableOpacity
                         style={{
                           flexDirection: "row",
                           justifyContent: "space-between",
                           alignItems: "center",
                           flex: 1,
+                        }}
+                        onPress={() => {
+                          handleDeleteReaction(user.messageId, user.reaction);
+                          setReactionCountList((prev) =>
+                            prev.filter(
+                              (item) => String(item.userId) != senderId,
+                            ),
+                          );
                         }}
                       >
                         {user?.userId == senderId ? (
@@ -1043,17 +1091,16 @@ const ChatRoomScreen = () => {
                             <Text
                               style={[styles.userItem, { paddingVertical: 2 }]}
                             >
-                              You
+                              {t("you")}
                             </Text>
                             <Text style={{ fontSize: 12, color: "gray" }}>
-                              Tap to remove
+                              {t("tapToRemove")}
                             </Text>
                           </TouchableOpacity>
                         ) : (
                           <Text
                             style={styles.userItem}
                             onPress={() => {
-                              // closeSheet();
                               router.push({
                                 pathname: "/crewProfile",
                                 params: {
@@ -1066,12 +1113,12 @@ const ChatRoomScreen = () => {
                           </Text>
                         )}
                         <Text style={{ fontSize: 18 }}>{user?.reaction}</Text>
-                      </View>
+                      </TouchableOpacity>
                     </View>
                   </View>
                 ))
               ) : (
-                <Text style={styles.noLikesText}>{"No Reaction found"}</Text>
+                <Text style={styles.noLikesText}>{t("noReactionFound")}</Text>
               )}
             </ScrollView>
           </View>
@@ -1108,7 +1155,7 @@ const ChatRoomScreen = () => {
             <View style={styles.modalContainerForEdit}>
               <View style={styles.modalContentForEdit}>
                 <Text style={styles.modalMessage}>
-                  This action is for your chat message
+                  {t("thisActionIsForYourChatMessage")}
                 </Text>
                 {senderId === editingMessage?.senderId &&
                   editingMessage?.messageType !== "IMAGE" && (
@@ -1130,7 +1177,7 @@ const ChatRoomScreen = () => {
                           { color: "#82934b" },
                         ]}
                       >
-                        Edit
+                        {t("edit")}
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -1156,7 +1203,7 @@ const ChatRoomScreen = () => {
                         { color: "#FF4D4D" },
                       ]}
                     >
-                      Delete
+                      {t("delete")}
                     </Text>
                   </TouchableOpacity>
                 )}
@@ -1173,7 +1220,7 @@ const ChatRoomScreen = () => {
                       { color: "#82934b" },
                     ]}
                   >
-                    Reply
+                    {t("reply")}
                   </Text>
                 </TouchableOpacity>
                 <FlatList
@@ -1218,7 +1265,7 @@ const ChatRoomScreen = () => {
                       { color: "#808080" },
                     ]}
                   >
-                    Cancel
+                    {t("cancel")}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -1406,7 +1453,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f0f0f0",
     borderRadius: 10,
     marginHorizontal: 10,
-    marginTop: 5,
+    marginVertical: 10,
   },
   searchCount: {
     fontSize: 14,

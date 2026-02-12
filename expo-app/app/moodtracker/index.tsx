@@ -556,7 +556,11 @@ const MoodTracker: React.FC = () => {
                 (isTodayChecked || moodTrackerData.isTodayFill) &&
                   styles.checkInDisabled,
               ]}
-              onPress={() => setModalVisible(true)}
+              onPress={() =>
+                isTodayChecked || moodTrackerData.isTodayFill
+                  ? null
+                  : setModalVisible(true)
+              }
               disabled={isTodayChecked && !moodTrackerData.isTodayFill}
             >
               <Text style={styles.checkInText}>

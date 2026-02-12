@@ -47,7 +47,7 @@ function getShipChatRooms(): ChatRoom[] {
       userRole: p.userRole,
       lastOnline: p.lastOnline,
       isRead: !!p.isRead,
-      unreadMessages: p.unreadMessages || 0,
+      unReadMessages: p.unReadMessages || 0,
       lastReadAt: p.lastReadAt,
     });
     participantsMap.set(p.chatRoomId, arr);
@@ -118,7 +118,7 @@ function getShipChatRooms(): ChatRoom[] {
       createdAt: room.createdAt,
       updatedAt: room.updatedAt,
       isUnReadMessage: !!room.isUnReadMessage,
-      unreadMessages: room.unreadMessages || 0,
+      unReadMessages: room.unReadMessages || 0,
 
       participants,
       lastMessage,
@@ -164,7 +164,7 @@ function getFleetChatRooms(): ChatRoom[] {
       userRole: p.userRole,
       lastOnline: p.lastOnline,
       isRead: !!p.isRead,
-      unreadMessages: p.unreadMessages || 0,
+      unReadMessages: p.unReadMessages || 0,
       lastReadAt: p.lastReadAt,
     });
     participantsMap.set(p.chatRoomId, arr);
@@ -224,7 +224,7 @@ function getFleetChatRooms(): ChatRoom[] {
       createdAt: room.createdAt,
       updatedAt: room.updatedAt,
       isUnReadMessage: !!room.isUnReadMessage,
-      unreadMessages: room.unreadMessages || 0,
+      unReadMessages: room.unReadMessages || 0,
 
       participants,
       lastMessage,

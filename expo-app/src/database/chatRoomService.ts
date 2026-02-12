@@ -11,7 +11,7 @@ export function saveChatRooms(chatRooms: ChatRoom[]) {
 
       db.runSync(
         `REPLACE INTO chat_rooms 
-        (id, shipId, employerId, chatRoomType, roomType, companyDetails, groupName, description, profileUrl, groupCreatedBy, isDefault, status, createdAt, updatedAt, isUnReadMessage, unreadMessages)
+        (id, shipId, employerId, chatRoomType, roomType, companyDetails, groupName, description, profileUrl, groupCreatedBy, isDefault, status, createdAt, updatedAt, isUnReadMessage, unReadMessages)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           room.id,
@@ -29,7 +29,7 @@ export function saveChatRooms(chatRooms: ChatRoom[]) {
           room.createdAt,
           room.updatedAt,
           room.isUnReadMessage ? 1 : 0,
-          room.unreadMessages
+          room.unReadMessages
         ]
       );
 
@@ -37,7 +37,7 @@ export function saveChatRooms(chatRooms: ChatRoom[]) {
       room.participants.forEach((p) => {
         db.runSync(
           `INSERT INTO chat_participants 
-          (chatRoomId, userId, socketId, isTyping, isOnline, userRole, lastOnline, isRead, unreadMessages, lastReadAt)
+          (chatRoomId, userId, socketId, isTyping, isOnline, userRole, lastOnline, isRead, unReadMessages, lastReadAt)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             room.id,
@@ -48,7 +48,7 @@ export function saveChatRooms(chatRooms: ChatRoom[]) {
             p.userRole,
             p.lastOnline,
             p.isRead ? 1 : 0,
-            p.unreadMessages,
+            p.unReadMessages,
             p.lastReadAt
           ]
         );

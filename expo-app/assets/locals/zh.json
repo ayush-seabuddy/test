@@ -972,5 +972,16 @@
   "reloadapp": "重新加载应用程序",
   "content": "内容",
   "groupmembers": "团体成员",
-  "nochatroomfound": "没有可用的聊天室"
+  "nochatroomfound": "没有可用的聊天室",
+  "searchmessages": "搜索消息...",
+  "member": "成员",
+  "members": "会员",
+  "noMessages": "还没有消息",
+  "typeSomething": "输入一些东西...",
+  "editYourMessage": "编辑您的消息...",
+  "reactions": "反应",
+  "tapToRemove": "点击删除",
+  "noReactionFound": "没有找到反应",
+  "thisActionIsForYourChatMessage": "This action is for your chat message",
+  "thisMessageHasBeenDeleted": "This message has been deleted"
 }

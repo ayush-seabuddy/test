@@ -1,21 +1,20 @@
 import { ArrowLeft, Search } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
-import {
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View
-} from "react-native";
+import { useTranslation } from "react-i18next";
+import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 
 type ChatSearchComponentProps = {
   setSearchValue: (value: string) => void;
   close: () => void;
 };
 
-const ChatSearchComponent: React.FC<ChatSearchComponentProps> = ({ setSearchValue, close }) => {
+const ChatSearchComponent: React.FC<ChatSearchComponentProps> = ({
+  setSearchValue,
+  close,
+}) => {
   const [searchText, setSearchText] = useState("");
   const inputRef = useRef<TextInput>(null);
-
+  const { t } = useTranslation();
   useEffect(() => {
     const timer = setTimeout(() => inputRef.current?.focus(), 300);
     return () => clearTimeout(timer);
@@ -35,14 +34,13 @@ const ChatSearchComponent: React.FC<ChatSearchComponentProps> = ({ setSearchValu
 
       <View style={styles.searchContainer}>
         <View style={{ marginRight: 10 }}>
-          <Search color="black" size={24} />
-
+          <Search color="grey" size={20} />
         </View>
 
         <TextInput
           ref={inputRef}
           style={styles.input}
-          placeholder="Search messages..."
+          placeholder={t("searchmessages")}
           placeholderTextColor="#B7B7B7"
           value={searchText}
           onChangeText={handleTextChange}
@@ -99,7 +97,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     color: "#000",
     paddingVertical: 10,
     fontFamily: "Poppins-Regular",

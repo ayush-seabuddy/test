@@ -18,7 +18,7 @@ export function createTables() {
       createdAt TEXT,
       updatedAt TEXT,
       isUnReadMessage INTEGER,
-      unreadMessages INTEGER
+      unReadMessages INTEGER
     );
   `);
 
@@ -43,7 +43,7 @@ export function createTables() {
       userRole TEXT,
       lastOnline TEXT,
       isRead INTEGER,
-      unreadMessages INTEGER,
+      unReadMessages INTEGER,
       lastReadAt TEXT
     );
   `);

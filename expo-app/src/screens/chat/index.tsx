@@ -88,9 +88,9 @@ const ChatLoungeList = () => {
             lastMessage: data.data,
             isUnReadMessage: true,
             participants: data?.participants ?? [],
-            unreadMessages:
+            unReadMessages:
               data?.participants?.find((p: any) => String(p.userId) === userId)
-                ?.unreadMessages ?? 0,
+                ?.unReadMessages ?? 0,
           }),
         );
       }
@@ -104,9 +104,9 @@ const ChatLoungeList = () => {
             lastMessage: data.data,
             isUnReadMessage: true,
             participants: data?.participants ?? [],
-            unreadMessages:
+            unReadMessages:
               data?.participants?.find((p: any) => String(p.userId) === userId)
-                ?.unreadMessages ?? 0,
+                ?.unReadMessages ?? 0,
           }),
         );
       }
@@ -149,7 +149,7 @@ const ChatLoungeList = () => {
       (p) => String(p.userId) == currentUserId,
     );
 
-    const hasUnread = participantUser && participantUser?.unreadMessages > 0;
+    const hasUnread = participantUser && participantUser?.unReadMessages > 0;
     const lastMsg = room.lastMessage;
 
     return (
@@ -200,9 +200,9 @@ const ChatLoungeList = () => {
           {hasUnread && (
             <View style={styles.unreadBadge}>
               <Text style={styles.unreadCount}>
-                {participantUser?.unreadMessages > 9
+                {participantUser?.unReadMessages > 9
                   ? "9+"
-                  : participantUser?.unreadMessages}
+                  : participantUser?.unReadMessages}
               </Text>
             </View>
           )}
@@ -216,13 +216,7 @@ const ChatLoungeList = () => {
 
   return (
     <View style={styles.container}>
-      {/* <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      > */}
       <ChatHeader />
-
       {loading && isEmpty && (
         <View style={styles.centerContainer}>
           <CommonLoader fullScreen />
@@ -267,7 +261,6 @@ const ChatLoungeList = () => {
           </View>
         </ScrollView>
       )}
-      {/* </ScrollView> */}
     </View>
   );
 };

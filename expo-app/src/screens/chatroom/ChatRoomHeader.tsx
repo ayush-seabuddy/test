@@ -18,14 +18,14 @@ import ChatSearchComponent from "./ChatSearchComponent";
 import { Image } from "expo-image";
 import { t } from "i18next";
 import EmptyComponent from "@/src/components/EmptyComponent";
+import { useTranslation } from "react-i18next";
 
 const { height } = Dimensions.get("screen");
-
 
 const UserItem = React.memo(
   ({ item, onPress }: { item: any; onPress: (user: any) => void }) => {
     const isBoarded = item?.ship?.crewMembers?.find(
-      (member: any) => member.userId === item?.id
+      (member: any) => member.userId === item?.id,
     )?.isBoarded;
 
     return (
@@ -40,9 +40,7 @@ const UserItem = React.memo(
             placeholder={ImagesAssets.userIcon}
             placeholderContentFit="cover"
             source={
-              item.profileUrl
-                ? { uri: item.profileUrl }
-                : ImagesAssets.userIcon
+              item.profileUrl ? { uri: item.profileUrl } : ImagesAssets.userIcon
             }
             cachePolicy="memory-disk"
           />
@@ -75,7 +73,7 @@ const UserItem = React.memo(
                     { color: isBoarded ? "green" : "#f43d3d" },
                   ]}
                 >
-                  ({isBoarded ? "Onboard" : "Onleave"})
+                  ({isBoarded ? t("onboard") : t("onleave")})
                 </Text>
               </View>
             )}
@@ -83,11 +81,10 @@ const UserItem = React.memo(
         </View>
       </TouchableOpacity>
     );
-  }
+  },
 );
 
 UserItem.displayName = "ChatRoomUserItem";
-
 
 type ChatRoomHeaderProps = {
   navigation: any;
@@ -97,7 +94,6 @@ type ChatRoomHeaderProps = {
   setSearchValue: (value: string) => void;
   participantIds?: any[];
 };
-
 
 const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
   navigation,
@@ -115,14 +111,13 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
   const [isSearchOpen, setSearchOpen] = useState(false);
   const [renderList, setRenderList] = useState(false);
   const [memberSearch, setMemberSearch] = useState("");
-
+  const { t } = useTranslation();
   const bottomSheetRef = useRef<RBSheetRef>(null);
 
   const dummyUsers = useMemo(
     () => participantIds || data?.participantIds || [],
-    [participantIds, data]
+    [participantIds, data],
   );
-
 
   const filteredMembers = useMemo(() => {
     if (!memberSearch.trim()) return dummyUsers;
@@ -130,7 +125,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
     const text = memberSearch.toLowerCase();
 
     return dummyUsers.filter((user: any) =>
-      user?.fullName?.toLowerCase().includes(text)
+      user?.fullName?.toLowerCase().includes(text),
     );
   }, [memberSearch, dummyUsers]);
 
@@ -153,7 +148,6 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
     });
   };
 
-
   useEffect(() => {
     const backAction = () => {
       router.back();
@@ -162,7 +156,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
 
     const backHandler = BackHandler.addEventListener(
       "hardwareBackPress",
-      backAction
+      backAction,
     );
 
     return () => backHandler.remove();
@@ -191,12 +185,11 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
           </TouchableOpacity>
 
           <View style={styles.textContainer}>
-            <Text style={styles.name}>{GroupName || "Group Name"}</Text>
+            <Text style={styles.name}>{GroupName || "Group"}</Text>
             <TouchableOpacity onPress={openSheet}>
               <Text style={styles.role}>
                 {participant
-                  ? `${participant} ${participant === 1 ? "Member" : "Members"
-                  }`
+                  ? `${participant} ${participant === 1 ? t("member") : t("members")}`
                   : ""}
               </Text>
             </TouchableOpacity>
@@ -262,8 +255,8 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
               windowSize={10}
               removeClippedSubviews
               ListEmptyComponent={
-                <View style={{ marginTop: '30%' }}>
-                  <EmptyComponent text={t('nocrewfound')} />
+                <View style={{ marginTop: "30%" }}>
+                  <EmptyComponent text={t("nocrewfound")} />
                 </View>
               }
             />
