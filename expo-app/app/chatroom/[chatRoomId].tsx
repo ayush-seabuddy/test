@@ -32,7 +32,7 @@ import {
   X,
 } from "lucide-react-native";
 import moment from "moment-timezone";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { TextInput as RNTextInput } from "react-native";
 import {
   Dimensions,
@@ -78,6 +78,7 @@ const ChatRoomScreen = () => {
   const [content, setContent] = useState("");
   const [contentImage, setContentImage] = useState("");
   const [chatListState, setChatList] = useState<ChatMessage[]>([]);
+
   const flatListRef = useRef<FlatList>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPageDataWaiting, setLastPageDataWaiting] = useState(0);
@@ -111,31 +112,40 @@ const ChatRoomScreen = () => {
   const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const onSearch = (searchValue: string) => {
-    setSearchQuery(searchValue);
+  const onSearch = useCallback(
+    (searchValue: string) => {
+      setSearchQuery(searchValue);
+      if (!searchValue.trim()) {
+        setSearchResults([]);
+        setCurrentSearchIndex(-1);
+        return;
+      }
 
-    if (!searchValue.trim()) {
-      setSearchResults([]);
-      setCurrentSearchIndex(-1);
-      return;
-    }
+      const lowerSearch = searchValue.toLowerCase();
 
-    const filtered = chatListState
-      .map((item, index) => ({ ...item, originalIndex: index }))
-      .filter((item) =>
-        item.content?.toLowerCase().includes(searchValue.toLowerCase()),
-      );
+      const filtered = getGroupedChatList()
+        .map((item, index) => ({ ...item, originalIndex: index }))
+        .filter((item) =>
+          (item.content ?? "").toLowerCase().includes(lowerSearch),
+        );
 
-    setSearchResults(filtered);
-    setCurrentSearchIndex(filtered.length ? 0 : -1);
+      setSearchResults(filtered);
+      setCurrentSearchIndex(filtered.length ? 0 : -1);
 
-    if (filtered.length > 0) {
-      flatListRef?.current?.scrollToIndex({
-        index: filtered[0].originalIndex,
-        animated: true,
-      });
-    }
-  };
+      if (filtered.length > 0 && flatListRef.current) {
+        try {
+          flatListRef.current.scrollToIndex({
+            index: filtered[0].originalIndex,
+            animated: true,
+            viewPosition: 0,
+          });
+        } catch (err) {
+          console.warn("scrollToIndex failed:", err);
+        }
+      }
+    },
+    [chatListState],
+  );
 
   const [hederDetails, setHeaderDetails] = useState({
     navigation: () => router.back(),
@@ -569,6 +579,15 @@ const ChatRoomScreen = () => {
     }, [currentPage, senderId]),
   );
 
+  useEffect(() => {
+    setHeaderDetails((prev) => {
+      return {
+        ...prev,
+        setSearchValue: onSearch,
+      };
+    });
+  }, [chatListState]);
+
   const handleLoadMore = () => {
     console.log("Load more triggered", currentPage, totalPage);
 
@@ -735,8 +754,10 @@ const ChatRoomScreen = () => {
       console.log("Error", error);
     }
   };
-
-  const getGroupedChatList = () => {
+  type ChatListItem =
+    | ChatMessage
+    | { type: string; date: Date; id: string; content?: string | undefined };
+  const getGroupedChatList = (): ChatListItem[] => {
     const groupedMessages: (
       | ChatMessage
       | { type: string; date: Date; id: string }
@@ -800,6 +821,7 @@ const ChatRoomScreen = () => {
             key={index}
             style={{
               backgroundColor: "#000",
+              color: "#fff",
             }}
           >
             {part}

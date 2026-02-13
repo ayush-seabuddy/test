@@ -1,10 +1,11 @@
 import Colors from "@/src/utils/Colors";
+import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { Image } from "expo-image";
 import { router } from "expo-router";
 import { ArrowUpRight } from "lucide-react-native";
 import React from "react";
 import {
   FlatList,
-  Image,
   ListRenderItem,
   StyleSheet,
   Text,
@@ -49,7 +50,9 @@ const MusicCard: React.FC<MusicCardProps> = ({ data }) => {
         <Image
           source={{ uri: item.thumbnail }}
           style={styles.imageBackground}
-          resizeMode="cover"
+          contentFit="cover"
+          placeholder={ImagesAssets.PlaceholderImage}
+          placeholderContentFit="cover"
         />
 
         <View style={styles.centerRow}>

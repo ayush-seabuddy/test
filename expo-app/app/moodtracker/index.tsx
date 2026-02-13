@@ -550,25 +550,20 @@ const MoodTracker: React.FC = () => {
               ))}
             </ScrollView>
 
-            <TouchableOpacity
-              style={[
-                styles.checkInButton,
-                (isTodayChecked || moodTrackerData.isTodayFill) &&
-                  styles.checkInDisabled,
-              ]}
-              onPress={() =>
-                isTodayChecked || moodTrackerData.isTodayFill
-                  ? null
-                  : setModalVisible(true)
-              }
-              disabled={isTodayChecked && !moodTrackerData.isTodayFill}
-            >
-              <Text style={styles.checkInText}>
-                {isTodayChecked || moodTrackerData.isTodayFill
-                  ? t("alreadycheckedintoday")
-                  : t("checkintoday")}
-              </Text>
-            </TouchableOpacity>
+            {isTodayChecked || moodTrackerData.isTodayFill ? (
+              <View style={[styles.checkInButton, styles.checkInDisabled]}>
+                <Text style={styles.checkInText}>
+                  {t("alreadycheckedintoday")}
+                </Text>
+              </View>
+            ) : (
+              <TouchableOpacity
+                style={styles.checkInButton}
+                onPress={() => setModalVisible(true)}
+              >
+                <Text style={styles.checkInText}>{t("checkintoday")}</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           <View style={styles.chartCard}>

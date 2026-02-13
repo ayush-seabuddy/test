@@ -121,4 +121,5 @@ export interface ChatMessage {
   parentMessage?: ParentMessage | null;
   chatReactionDetails: MessageReaction[];
   participants: ChatParticipant[];
+  type?: 'message';
 }
