@@ -78,6 +78,7 @@ const ChatRoomScreen = () => {
   const [content, setContent] = useState("");
   const [contentImage, setContentImage] = useState("");
   const [chatListState, setChatList] = useState<ChatMessage[]>([]);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -111,7 +112,12 @@ const ChatRoomScreen = () => {
   const [searchResults, setSearchResults] = useState<any>([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
   const [searchQuery, setSearchQuery] = useState("");
-
+  const handleCloseSearch = () => {
+    setIsSearchOpen(false);
+    setSearchQuery("");
+    setSearchResults([]);
+    setCurrentSearchIndex(-1);
+  };
   const onSearch = useCallback(
     (searchValue: string) => {
       setSearchQuery(searchValue);
@@ -146,7 +152,6 @@ const ChatRoomScreen = () => {
     },
     [chatListState],
   );
-
   const [hederDetails, setHeaderDetails] = useState({
     navigation: () => router.back(),
     data: chatRoomDetails,
@@ -154,6 +159,9 @@ const ChatRoomScreen = () => {
     GroupName: chatRoomDetails?.groupName,
     setSearchValue: onSearch,
     participantIds: participant,
+    isSearchOpen,
+    setIsSearchOpen,
+    onCloseSearch: handleCloseSearch,
   });
 
   const emojis = ["👍", "😊", "❤️", "😂", "😮", "😢"];
@@ -578,15 +586,15 @@ const ChatRoomScreen = () => {
       };
     }, [currentPage, senderId]),
   );
-
   useEffect(() => {
-    setHeaderDetails((prev) => {
-      return {
-        ...prev,
-        setSearchValue: onSearch,
-      };
-    });
-  }, [chatListState]);
+    setHeaderDetails((prev) => ({
+      ...prev,
+      isSearchOpen,
+      setIsSearchOpen,
+      onCloseSearch: handleCloseSearch,
+      setSearchValue: onSearch,
+    }));
+  }, [isSearchOpen, chatListState]);
 
   const handleLoadMore = () => {
     console.log("Load more triggered", currentPage, totalPage);
@@ -884,7 +892,7 @@ const ChatRoomScreen = () => {
     >
       <View style={styles.container}>
         <ChatRoomHeader {...hederDetails} />
-        {searchQuery.length > 0 && searchResults.length > 0 && (
+        {isSearchOpen && searchQuery.length > 0 && searchResults.length > 0 && (
           <View style={styles.searchNavContainer}>
             <Text style={styles.searchCount}>
               {currentSearchIndex + 1} / {searchResults.length}

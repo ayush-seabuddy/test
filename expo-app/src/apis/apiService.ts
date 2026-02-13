@@ -473,7 +473,6 @@ export const uploadfile = async (payload: UploadFileRequest) => {
       fileType: payload.type,
       fileSize: payload.fileSize,
     };
-    console.log('data: sdfnskldfld', data);
     const response = await apiRequest({
       method: 'POST',
       url: ENDPOINTS.uploadFileUrl,

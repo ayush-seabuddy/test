@@ -1,18 +1,15 @@
-import { RootState } from '@/src/redux/store';
-import Colors from '@/src/utils/Colors';
-import { ImagesAssets } from '@/src/utils/ImageAssets';
-import { Image } from 'expo-image';
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform, StyleSheet, View } from 'react-native';
-import { useSelector } from 'react-redux';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { RootState } from "@/src/redux/store";
+import Colors from "@/src/utils/Colors";
+import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { Image } from "expo-image";
+import { Tabs } from "expo-router";
+import React from "react";
+import { Platform, StyleSheet, View } from "react-native";
+import { useSelector } from "react-redux";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const TAB_ICONS: Record<
-  string,
-  { focused: any; unfocused: any }
-> = {
-  '(community)': {
+const TAB_ICONS: Record<string, { focused: any; unfocused: any }> = {
+  "(community)": {
     focused: ImagesAssets.selectedHome,
     unfocused: ImagesAssets.unselectedHome,
   },
@@ -31,23 +28,15 @@ const TAB_ICONS: Record<
 };
 
 const BottomTabbarLayout = () => {
-  const userDetails = useSelector(
-    (state: RootState) => state.userDetails
-  );
-
+  const userDetails = useSelector((state: RootState) => state.userDetails);
   const insets = useSafeAreaInsets();
-  console.log(insets);
-
-
   /**
    * Bottom spacing logic:
    * - Gesture navigation → insets.bottom = 0–8
    * - Button navigation → insets.bottom = 24–48
    */
   const bottomSpacing =
-    Platform.OS === 'android'
-      ? Math.max(insets.bottom, 30)
-      : insets.bottom;
+    Platform.OS === "android" ? Math.max(insets.bottom, 30) : insets.bottom;
 
   return (
     <Tabs
@@ -62,13 +51,11 @@ const BottomTabbarLayout = () => {
           },
         ],
         tabBarIcon: ({ focused }) => {
-          const isProfile = route.name === 'profile';
+          const isProfile = route.name === "profile";
 
           const iconSource = isProfile
-            ? userDetails.profileUrl ?? ImagesAssets.userIcon
-            : TAB_ICONS[route.name]?.[
-            focused ? 'focused' : 'unfocused'
-            ];
+            ? (userDetails.profileUrl ?? ImagesAssets.userIcon)
+            : TAB_ICONS[route.name]?.[focused ? "focused" : "unfocused"];
 
           return (
             <View
@@ -83,22 +70,20 @@ const BottomTabbarLayout = () => {
                 source={iconSource}
                 cachePolicy="memory-disk"
                 placeholder={ImagesAssets.userIcon}
-                placeholderContentFit='cover'
+                placeholderContentFit="cover"
                 style={[
                   styles.tabIcon,
                   {
-                    resizeMode: isProfile ? 'cover' : 'contain',
+                    resizeMode: isProfile ? "cover" : "contain",
                   },
                   isProfile
                     ? focused && {
-                      borderColor: Colors.lightGreen,
-                      borderWidth: 0.5,
-                    }
+                        borderColor: Colors.lightGreen,
+                        borderWidth: 0.5,
+                      }
                     : {
-                      tintColor: focused
-                        ? Colors.lightGreen
-                        : 'white',
-                    },
+                        tintColor: focused ? Colors.lightGreen : "white",
+                      },
                 ]}
               />
             </View>
@@ -119,21 +104,21 @@ export default BottomTabbarLayout;
 
 const styles = StyleSheet.create({
   bottomNavbar: {
-    position: 'absolute',
+    position: "absolute",
     height: 55,
     borderRadius: 25,
-    backgroundColor: 'rgba(84, 97, 94, 1)',
+    backgroundColor: "rgba(84, 97, 94, 1)",
     marginHorizontal: 10,
     paddingTop: 7,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: "rgba(255, 255, 255, 0.2)",
   },
   iconContainer: {
     height: 65,
     width: 65,
     borderRadius: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   tabIcon: {
     width: 27,
@@ -141,13 +126,13 @@ const styles = StyleSheet.create({
     borderRadius: 50,
   },
   iconDefaultBackground: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   iconFocusedBackground: {
-    backgroundColor: '#262626',
+    backgroundColor: "#262626",
     borderWidth: 4,
-    borderColor: 'rgba(54, 75, 56, 0.6)',
-    shadowColor: '#fff',
+    borderColor: "rgba(54, 75, 56, 0.6)",
+    shadowColor: "#fff",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 4,

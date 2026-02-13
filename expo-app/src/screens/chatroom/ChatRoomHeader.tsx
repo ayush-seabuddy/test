@@ -93,6 +93,9 @@ type ChatRoomHeaderProps = {
   GroupName?: string;
   setSearchValue: (value: string) => void;
   participantIds?: any[];
+  isSearchOpen: boolean;
+  setIsSearchOpen: (value: boolean) => void;
+  onCloseSearch: () => void;
 };
 
 const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
@@ -102,13 +105,15 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
   GroupName,
   setSearchValue,
   participantIds,
+  isSearchOpen,
+  setIsSearchOpen,
+  onCloseSearch,
 }) => {
   type RBSheetRef = {
     open: () => void;
     close: () => void;
   };
 
-  const [isSearchOpen, setSearchOpen] = useState(false);
   const [renderList, setRenderList] = useState(false);
   const [memberSearch, setMemberSearch] = useState("");
   const { t } = useTranslation();
@@ -167,7 +172,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
       {isSearchOpen ? (
         <ChatSearchComponent
           setSearchValue={setSearchValue}
-          close={() => setSearchOpen(false)}
+          close={onCloseSearch}
         />
       ) : (
         <View style={styles.container}>
@@ -197,7 +202,7 @@ const ChatRoomHeader: React.FC<ChatRoomHeaderProps> = ({
 
           <View style={styles.rightContainer}>
             <TouchableOpacity
-              onPress={() => setSearchOpen(true)}
+              onPress={() => setIsSearchOpen(true)}
               style={[styles.headerButton, styles.searchButton]}
             >
               <Search color="white" size={20} />

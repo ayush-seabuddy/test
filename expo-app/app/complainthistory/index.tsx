@@ -4,18 +4,18 @@ import {
   Text,
   View,
   TouchableOpacity,
-} from 'react-native';
-import React, { useEffect, useState, useCallback } from 'react';
-import GlobalHeader from '@/src/components/GlobalHeader';
-import { useTranslation } from 'react-i18next';
-import { router } from 'expo-router';
-import { getallcomplainthistory } from '@/src/apis/apiService';
-import { showToast } from '@/src/components/GlobalToast';
-import { formatDate, formatStatus } from '@/src/utils/helperFunctions';
-import CommonLoader from '@/src/components/CommonLoader';
-import EmptyComponent from '@/src/components/EmptyComponent';
-import { useNetwork } from '@/src/hooks/useNetworkStatusHook';
-import Colors from '@/src/utils/Colors';
+} from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
+import GlobalHeader from "@/src/components/GlobalHeader";
+import { useTranslation } from "react-i18next";
+import { router } from "expo-router";
+import { getallcomplainthistory } from "@/src/apis/apiService";
+import { showToast } from "@/src/components/GlobalToast";
+import { formatDate, formatStatus } from "@/src/utils/helperFunctions";
+import CommonLoader from "@/src/components/CommonLoader";
+import EmptyComponent from "@/src/components/EmptyComponent";
+import { useNetwork } from "@/src/hooks/useNetworkStatusHook";
+import Colors from "@/src/utils/Colors";
 
 interface Complaint {
   id: string;
@@ -46,18 +46,18 @@ const ComplaintHistoryScreen = () => {
       const res = await getallcomplainthistory({ page: pageNo, limit: 10 });
 
       if (res?.success && res?.status === 200) {
-        setComplaintData(prev =>
+        setComplaintData((prev) =>
           pageNo === 1
             ? res.data.allHelplineForms
-            : [...prev, ...res.data.allHelplineForms]
+            : [...prev, ...res.data.allHelplineForms],
         );
         setTotalPages(res.data.totalPages);
         setPage(pageNo);
       } else {
-        showToast.error(t('oops'), res?.message);
+        showToast.error(t("oops"), res?.message);
       }
     } catch {
-      showToast.error(t('oops'), t('somethingwentwrong'));
+      showToast.error(t("oops"), t("somethingwentwrong"));
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -77,7 +77,7 @@ const ComplaintHistoryScreen = () => {
   const getStatusStyle = (status: string) => {
     const formattedStatus = formatStatus(status).toLowerCase();
 
-    if (formattedStatus === 'active' || formattedStatus === 'open') {
+    if (formattedStatus === "active" || formattedStatus === "open") {
       return styles.activeStatus;
     }
     return styles.closedStatus;
@@ -89,7 +89,7 @@ const ComplaintHistoryScreen = () => {
         style={styles.complaintHistoryView}
         onPress={() =>
           router.push({
-            pathname: '/helplineform',
+            pathname: "/helplineform",
             params: {
               complaintId: item.id,
               complaintStatus: item.status,
@@ -98,32 +98,26 @@ const ComplaintHistoryScreen = () => {
           })
         }
       >
-        <Text style={styles.helplineName}>
-          {item?.helpline?.helplineName}
-        </Text>
+        <Text style={styles.helplineName}>{item?.helpline?.helplineName}</Text>
 
-        <Text style={styles.dateText}>
-          {formatDate(item.createdAt)}
-        </Text>
+        <Text style={styles.dateText}>{formatDate(item.createdAt)}</Text>
 
         <View style={[styles.statusContainer, getStatusStyle(item.status)]}>
-          <Text style={styles.statusText}>
-            {formatStatus(item.status)}
-          </Text>
+          <Text style={styles.statusText}>{formatStatus(item.status)}</Text>
         </View>
       </TouchableOpacity>
     ),
-    []
+    [],
   );
 
   const ListFooter = useCallback(
     () => (loadingMore ? <CommonLoader /> : null),
-    [loadingMore]
+    [loadingMore],
   );
 
   return (
     <View style={styles.main}>
-      <GlobalHeader title={t('complaintHistory')} />
+      <GlobalHeader title={t("complaintHistory")} />
 
       {loading ? (
         <View style={styles.loaderView}>
@@ -132,7 +126,7 @@ const ComplaintHistoryScreen = () => {
       ) : complaintdata.length > 0 ? (
         <FlatList
           data={complaintdata}
-          keyExtractor={item => item.id}
+          keyExtractor={(item) => item.id}
           renderItem={renderItem}
           onEndReached={loadMore}
           onEndReachedThreshold={0.2}
@@ -143,8 +137,8 @@ const ComplaintHistoryScreen = () => {
           <EmptyComponent
             text={
               isOnline
-                ? t('nocomplaintHistoryFound')
-                : t('nointernetconnection')
+                ? t("nocomplaintHistoryFound")
+                : t("nointernetconnection")
             }
           />
         </View>
@@ -158,13 +152,13 @@ export default ComplaintHistoryScreen;
 const styles = StyleSheet.create({
   main: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
 
   loaderView: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   complaintHistoryView: {
@@ -172,21 +166,21 @@ const styles = StyleSheet.create({
     marginTop: 10,
     padding: 20,
     borderRadius: 10,
-    backgroundColor: '#ededed',
+    backgroundColor: "#ededed",
   },
 
   helplineName: {
     fontSize: 15,
-    fontFamily: 'WhyteInktrap-Bold',
+    fontFamily: "WhyteInktrap-Bold",
     lineHeight: 20,
-    color: '#000',
+    color: "#000",
   },
 
   dateText: {
     marginTop: 4,
-    fontFamily: 'Poppins-Regular',
+    fontFamily: "Poppins-Regular",
     fontSize: 12,
-    color: '#555',
+    color: "#555",
   },
 
   statusContainer: {
@@ -194,8 +188,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     width: 60,
     height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   activeStatus: {
@@ -203,19 +197,20 @@ const styles = StyleSheet.create({
   },
 
   closedStatus: {
-    backgroundColor: '#D9534F',
+    paddingTop: 2,
+    backgroundColor: "#D9534F",
   },
 
   statusText: {
-    fontFamily: 'Poppins-Regular',
-    fontSize: 12,
-    color: '#fff',
-    textAlign: 'center',
+    fontFamily: "Poppins-Regular",
+    fontSize: 10,
+    color: "#fff",
+    textAlign: "center",
   },
 
   nodatafoundView: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

@@ -1,27 +1,45 @@
-import CommonLoader from '@/src/components/CommonLoader';
-import CustomLottie from '@/src/components/CustomLottie';
-import Slider from '@react-native-community/slider';
-import { setAudioModeAsync, useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import CommonLoader from "@/src/components/CommonLoader";
+import CustomLottie from "@/src/components/CustomLottie";
+import Slider from "@react-native-community/slider";
+import {
+  setAudioModeAsync,
+  useAudioPlayer,
+  useAudioPlayerStatus,
+} from "expo-audio";
 import { router } from "expo-router";
-import { ChevronLeft, FastForward, Pause, Play, Repeat, Repeat1 } from 'lucide-react-native';
-import React from 'react';
-import { Dimensions, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Content } from './type';
+import {
+  ChevronLeft,
+  FastForward,
+  Pause,
+  Play,
+  Repeat,
+  Repeat1,
+} from "lucide-react-native";
+import React from "react";
+import {
+  Dimensions,
+  Image,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { Content } from "./type";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 const AudioDetails = ({ data: fullDetails }: { data: Content }) => {
   const audioUrl = fullDetails?.contentUrl?.[0];
-React.useEffect(() => {
-  setAudioModeAsync({
-    playsInSilentMode: true,
-    shouldPlayInBackground: false,
-    interruptionMode: 'mixWithOthers',
-  });
-}, []);
+  React.useEffect(() => {
+    setAudioModeAsync({
+      playsInSilentMode: true,
+      shouldPlayInBackground: false,
+      interruptionMode: "mixWithOthers",
+    });
+  }, []);
 
-
-  const player = useAudioPlayer(audioUrl ?? '', {
+  const player = useAudioPlayer(audioUrl ?? "", {
     updateInterval: 500,
     downloadFirst: true,
   });
@@ -37,15 +55,18 @@ React.useEffect(() => {
   };
 
   const formatTime = (seconds: number | undefined) => {
-    if (!seconds || seconds === 0) return '0:00';
+    if (!seconds || seconds === 0) return "0:00";
     const minutes = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+    return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
   const seekBy = (seconds: number) => {
     if (!status.isLoaded || status.currentTime === undefined) return;
-    const newTime = Math.max(0, Math.min(status.duration ?? 0, status.currentTime + seconds));
+    const newTime = Math.max(
+      0,
+      Math.min(status.duration ?? 0, status.currentTime + seconds),
+    );
     player.seekTo(newTime);
   };
 
@@ -98,13 +119,23 @@ React.useEffect(() => {
           />
 
           <View style={styles.timeLabels}>
-            <Text style={styles.timeText}>{formatTime(status.currentTime)}</Text>
+            <Text style={styles.timeText}>
+              {formatTime(status.currentTime)}
+            </Text>
             <Text style={styles.timeText}>{formatTime(status.duration)}</Text>
           </View>
 
           <View style={styles.playbackControls}>
-            <TouchableOpacity onPress={() => seekBy(-10)} disabled={!status.isLoaded}>
-              <FastForward size={32} color="#fff" strokeWidth={2} style={styles.rewindIcon} />
+            <TouchableOpacity
+              onPress={() => seekBy(-10)}
+              disabled={!status.isLoaded}
+            >
+              <FastForward
+                size={32}
+                color="#fff"
+                strokeWidth={2}
+                style={styles.rewindIcon}
+              />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -113,7 +144,7 @@ React.useEffect(() => {
               style={styles.playPauseButton}
             >
               {!status.isLoaded ? (
-                <CommonLoader fullScreen/>
+                <CommonLoader fullScreen />
               ) : status.playing ? (
                 <Pause size={24} color="#000" />
               ) : (
@@ -121,7 +152,10 @@ React.useEffect(() => {
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => seekBy(10)} disabled={!status.isLoaded}>
+            <TouchableOpacity
+              onPress={() => seekBy(10)}
+              disabled={!status.isLoaded}
+            >
               <FastForward size={32} color="#fff" strokeWidth={2} />
             </TouchableOpacity>
           </View>
@@ -129,7 +163,10 @@ React.useEffect(() => {
       </View>
 
       <View style={styles.background}>
-        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} customSyle={{ height: height * 0.55 }} />
+        <CustomLottie
+          isBlurView={Platform.OS === "ios" ? true : false}
+          customSyle={{ height: height * 0.55 }}
+        />
       </View>
     </View>
   );
@@ -140,26 +177,26 @@ export default AudioDetails;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   backButton: {
     margin: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   mainContent: {
     flex: 1,
     padding: 20,
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    alignItems: "center",
+    justifyContent: "space-between",
     zIndex: 10,
   },
   thumbnailContainer: {
-    alignItems: 'center',
+    alignItems: "center",
   },
   thumbnail: {
     width: 300,
@@ -168,55 +205,55 @@ const styles = StyleSheet.create({
     borderRadius: 150,
   },
   controlsContainer: {
-    justifyContent: 'flex-start',
-    alignItems: 'center',
+    justifyContent: "flex-start",
+    alignItems: "center",
     width: width,
     height: height * 0.4,
     paddingHorizontal: 16,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
-    color: '#fff',
+    color: "#fff",
   },
   loopButton: {
     marginVertical: 20,
   },
   slider: {
-    width: '100%',
+    width: "100%",
     height: 40,
   },
   timeLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
     marginBottom: 30,
   },
   timeText: {
-    color: '#fff',
+    color: "#fff",
   },
   playbackControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    width: '100%',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
+    width: "100%",
     marginBottom: 20,
   },
   rewindIcon: {
-    transform: [{ rotate: '180deg' }],
+    transform: [{ rotate: "180deg" }],
   },
   playPauseButton: {
     width: 60,
     height: 60,
     borderRadius: 35,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
   },
   background: {
     height: height,
     width: width,
-    position: 'absolute',
+    position: "absolute",
   },
 });

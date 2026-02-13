@@ -8,7 +8,6 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import Colors from "../utils/Colors";
 
 const { width, height } = Dimensions.get("window");
 
@@ -19,59 +18,57 @@ type CustomLottieProps = {
   customSyle?: StyleProp<ViewStyle>;
 };
 
-const CustomLottie: React.FC<CustomLottieProps> = ({
-  type = "default",
-  componentHeight,
-  isBlurView = true,
-  customSyle,
-}) => {
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: Colors.white,
-    },
-    lottieContainer: {
-      width: width,
-      height: componentHeight ?? height * 0.68,
-      borderTopLeftRadius: 25,
-      borderTopRightRadius: 25,
-      overflow: "hidden",
-      position: "absolute",
-      bottom: 0,
-    },
-    blurView: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: "rgba(7, 34, 11, 0.62)",
-      borderTopLeftRadius: 25,
-      borderTopRightRadius: 25,
-    },
-  });
+const CustomLottie: React.FC<CustomLottieProps> = React.memo(
+  ({ type = "default", componentHeight, isBlurView = true, customSyle }) => {
+    const lottieSource = require("../../assets/Background.json");
 
-  const lottieSource = require("../../assets/Background.json");
+    return (
+      <View
+        style={[
+          styles.lottieContainer,
+          customSyle,
+          { height: componentHeight ?? height * 0.68 },
+          type === "fullscreen" && styles.fullscreen,
+        ]}
+      >
+        <LottieView
+          source={lottieSource}
+          autoPlay
+          loop
+          cacheComposition
+          resizeMode="cover"
+          style={StyleSheet.absoluteFill}
+          hardwareAccelerationAndroid
+          enableMergePathsAndroidForKitKatAndAbove
+        />
 
-  return (
-    <View
-      style={[
-        styles.lottieContainer,
-        customSyle,
-        type === "fullscreen" && { height: "100%" },
-      ]}
-    >
-      <LottieView
-        source={lottieSource}
-        autoPlay
-        loop
-        resizeMode="cover"
-        style={StyleSheet.absoluteFill}
-        hardwareAccelerationAndroid
-        enableMergePathsAndroidForKitKatAndAbove
-      />
-
-      {isBlurView && (
-        <BlurView style={styles.blurView} tint="light" intensity={100} />
-      )}
-    </View>
-  );
-};
+        {isBlurView && (
+          <BlurView style={styles.blurView} tint="light" intensity={60} />
+        )}
+      </View>
+    );
+  },
+);
 
 export default CustomLottie;
+
+const styles = StyleSheet.create({
+  lottieContainer: {
+    width: width,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    overflow: "hidden",
+    position: "absolute",
+    bottom: 0,
+  },
+  blurView: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(7, 34, 11, 0.62)",
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+  },
+  fullscreen: {
+    height: "100%",
+    borderRadius: 0,
+  },
+});

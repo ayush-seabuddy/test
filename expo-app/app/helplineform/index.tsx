@@ -88,7 +88,14 @@ const HelplineFormScreen = () => {
 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const flatListRef = useRef<FlatList>(null);
+  const getStatusStyle = (status: string) => {
+    const formattedStatus = formatStatus(status).toLowerCase();
 
+    if (formattedStatus === "active" || formattedStatus === "open") {
+      return styles.activeStatus;
+    }
+    return styles.closedStatus;
+  };
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!isViewMode) {
@@ -393,24 +400,48 @@ const HelplineFormScreen = () => {
   return (
     <View style={styles.container}>
       <GlobalHeader title={isViewMode ? t("helplineForm") : helplineName} />
-
-      {/* Header Section */}
       {isViewMode ? (
-        <View style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
-          {/* Status – always visible */}
-          <Text style={styles.boldText}>
-            {t("status")} :{" "}
-            <Text style={styles.toggleLabel}>
-              {formatStatus(complaintStatus ?? "")}
-            </Text>
-          </Text>
-
-          {/* Response – ONLY when status is CLOSED */}
+        <View
+          style={{
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            margin: 10,
+            borderRadius: 10,
+            justifyContent: "center",
+            backgroundColor: "#ededed",
+            borderWidth: 1,
+            borderColor: "#fff",
+            elevation: 2,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+            }}
+          >
+            <Text style={styles.boldText}>{t("status")} : </Text>
+            <View
+              style={[
+                styles.statusContainer,
+                getStatusStyle(complaintStatus ?? ""),
+              ]}
+            >
+              <Text style={styles.statusText}>
+                {formatStatus(complaintStatus ?? "")}
+              </Text>
+            </View>
+          </View>
           {complaintStatus === "CLOSED" && (
-            <Text style={styles.boldText}>
-              {t("reponse")} :{" "}
+            <View>
+              <Text style={styles.boldText}>{t("reponse")} : </Text>
               <Text style={styles.toggleLabel}>{complaintResponse}</Text>
-            </Text>
+            </View>
           )}
         </View>
       ) : (
@@ -433,9 +464,7 @@ const HelplineFormScreen = () => {
         <View style={{ flex: 1 }}>
           <CustomLottie
             isBlurView={Platform.OS === "ios" ? true : false}
-            componentHeight={
-              complaintStatus === "CLOSED" ? height * 0.7 : height * 0.8
-            }
+            componentHeight={height * 0.65}
           />
 
           {isOnline ? (
@@ -450,8 +479,7 @@ const HelplineFormScreen = () => {
                   renderItem={renderQuestion}
                   keyExtractor={(item) => item.id}
                   contentContainerStyle={{
-                    padding: 16,
-                    paddingTop: 45,
+                    padding: 10,
                     paddingBottom: isViewMode ? 40 : 120,
                   }}
                   showsVerticalScrollIndicator={false}
@@ -542,7 +570,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     fontFamily: "Poppins-Regular",
-    paddingHorizontal: 10,
     lineHeight: 25,
   },
   questionContainer: {
@@ -667,6 +694,29 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     lineHeight: 22,
     fontFamily: "Poppins-Regular",
+  },
+  statusContainer: {
+    borderRadius: 20,
+    width: 60,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  activeStatus: {
+    backgroundColor: Colors.lightGreen,
+  },
+
+  closedStatus: {
+    paddingTop: 2,
+    backgroundColor: "#D9534F",
+  },
+
+  statusText: {
+    fontFamily: "Poppins-Regular",
+    fontSize: 10,
+    color: "#fff",
+    textAlign: "center",
   },
   modalButton: {
     backgroundColor: "#02130B",

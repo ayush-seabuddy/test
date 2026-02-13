@@ -121,12 +121,6 @@ const FeatureFrame: React.FC<FeatureFrameProps> = ({ onOpenPDF }) => {
 
   return (
     <View style={styles.frameWrapper}>
-      <BlurView
-        style={StyleSheet.absoluteFill}
-        tint="regular"
-        intensity={800}
-      />
-
       <View style={styles.greetingSection}>
         <TouchableOpacity
           style={styles.greetingCard}
