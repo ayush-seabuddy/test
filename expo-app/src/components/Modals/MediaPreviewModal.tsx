@@ -1,20 +1,20 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import {
-  Modal,
-  View,
-  StyleSheet,
-  Dimensions,
-  TouchableOpacity,
-  StatusBar,
-  Platform,
-  Text,
-  ActivityIndicator,
-} from "react-native";
 import { Image } from "expo-image";
+import * as ScreenOrientation from "expo-screen-orientation";
+import { Send, SendHorizonal, Volume2, VolumeX, X } from "lucide-react-native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Dimensions,
+  Modal,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import ImageViewer from "react-native-image-zoom-viewer";
-import * as ScreenOrientation from 'expo-screen-orientation';
-import { X, Send, Volume2, VolumeX } from "lucide-react-native";
-import Video from "react-native-video"; // ← Only this
+import Video from "react-native-video";
+import CommonLoader from "../CommonLoader";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -38,7 +38,6 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
   canSend = false,
   uploadImageToCloudinary,
 }) => {
-
   const styles = StyleSheet.create({
     modalOverlay: {
       flex: 1,
@@ -97,8 +96,8 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
       alignSelf: "center",
     },
     sendButton: {
-      width: 64,
-      height: 64,
+      width: 60,
+      height: 60,
       borderRadius: 32,
       backgroundColor: "#fff",
       justifyContent: "center",
@@ -115,26 +114,29 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
     },
   });
 
-
-
-  const [isLoading, setIsLoading] = useState(true);
+  const [_isLoading, setIsLoading] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [videoAspectRatio, setVideoAspectRatio] = useState(1);
-  const [dimensions, setDimensions] = useState({ width: screenWidth, height: screenHeight });
+  const [dimensions, setDimensions] = useState({
+    width: screenWidth,
+    height: screenHeight,
+  });
 
   const mediaUri = uri || PLACEHOLDER_IMAGE;
   const isPlaceholder = mediaUri === PLACEHOLDER_IMAGE;
 
   const viewerRef = useRef<any>(null);
-  const [imageStatus, setImageStatus] = useState<'loading' | 'success' | 'fail'>('loading');
+  const [_imageStatus, setImageStatus] = useState<
+    "loading" | "success" | "fail"
+  >("loading");
 
   useEffect(() => {
     const interval = setInterval(() => {
       if (viewerRef.current?.state?.imageSizes?.[0]) {
         const status = viewerRef.current.state.imageSizes[0].status;
         setImageStatus(status);
-        if (status === 'success' || status === 'fail') {
-          setIsLoading(false)
+        if (status === "success" || status === "fail") {
+          setIsLoading(false);
           clearInterval(interval);
         }
       }
@@ -143,7 +145,6 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
     return () => clearInterval(interval);
   }, []);
 
-  // Handle orientation changes
   useEffect(() => {
     const subscription = Dimensions.addEventListener("change", ({ window }) => {
       setDimensions({ width: window.width, height: window.height });
@@ -151,18 +152,15 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
     return () => subscription?.remove();
   }, []);
 
-  // Lock to portrait when modal closes
   useEffect(() => {
     if (visible) {
-      // Allow rotation when modal is open
-      ScreenOrientation.unlockAsync().catch(() => { }); // silent fail if already unlocked
+      ScreenOrientation.unlockAsync().catch(() => {});
     }
 
-    // Cleanup: lock to portrait when modal closes/unmounts
     return () => {
-      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT).catch(
-        () => { }
-      );
+      ScreenOrientation.lockAsync(
+        ScreenOrientation.OrientationLock.PORTRAIT,
+      ).catch(() => {});
     };
   }, [visible]);
 
@@ -173,7 +171,6 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
 
   const toggleMute = () => setIsMuted((prev) => !prev);
 
-  // Dynamic video size based on aspect ratio and orientation
   const videoWidth = dimensions.width;
   const videoHeight = videoWidth / videoAspectRatio;
 
@@ -191,7 +188,6 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
 
     const images = [{ url: mediaUri }];
     return (
-
       <>
         <ImageViewer
           ref={viewerRef}
@@ -201,7 +197,7 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
           renderIndicator={() => <View />}
           loadingRender={() => (
             <View style={styles.loaderContainer}>
-              <ActivityIndicator size="large" color="#ffffff" />
+              <CommonLoader fullScreen color="#fff" />
             </View>
           )}
           backgroundColor="transparent"
@@ -230,14 +226,15 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
         onLoad={(data) => {
           setIsLoading(false);
           if (data.naturalSize?.width && data.naturalSize?.height) {
-            setVideoAspectRatio(data.naturalSize.width / data.naturalSize.height);
+            setVideoAspectRatio(
+              data.naturalSize.width / data.naturalSize.height,
+            );
           }
         }}
         onError={(e) => {
           console.warn("Video error:", e);
           setIsLoading(false);
         }}
-        // Optional: better performance on Android
         ignoreSilentSwitch="ignore"
       />
     );
@@ -258,7 +255,11 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
         <View style={styles.topBar}>
           {type === "video" && (
             <TouchableOpacity onPress={toggleMute} style={styles.iconButton}>
-              {isMuted ? <VolumeX size={24} color="#fff" /> : <Volume2 size={24} color="#fff" />}
+              {isMuted ? (
+                <VolumeX size={24} color="#fff" />
+              ) : (
+                <Volume2 size={24} color="#fff" />
+              )}
             </TouchableOpacity>
           )}
           <TouchableOpacity onPress={handleClose} style={styles.iconButton}>
@@ -266,35 +267,21 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
           </TouchableOpacity>
         </View>
 
-        {/* Media Content */}
-        <View style={styles.mediaWrapper}>
-          {renderContent()}
-          {isLoading && (
-            <View style={styles.loader}>
-              <ActivityIndicator size="large" color="#fff" />
-            </View>
-          )}
-        </View>
+        <View style={styles.mediaWrapper}>{renderContent()}</View>
 
-        {/* Send Button */}
         {canSend && (
           <View style={styles.sendButtonContainer}>
             <TouchableOpacity
               onPress={uploadImageToCloudinary}
               style={styles.sendButton}
             >
-              <Send size={28} color="#000" />
+              <SendHorizonal size={26} color="#000" />
             </TouchableOpacity>
           </View>
         )}
       </View>
     </Modal>
   );
-
-
-
 };
-
-
 
 export default MediaPreviewModal;

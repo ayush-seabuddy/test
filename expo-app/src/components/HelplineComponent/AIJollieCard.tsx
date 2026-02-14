@@ -3,6 +3,7 @@ import { Animated, Dimensions, StyleSheet, Text, TouchableOpacity, View } from "
 import { useTranslation } from "react-i18next";
 import { Image } from "expo-image";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { router } from "expo-router";
 
 const { width } = Dimensions.get("window");
 
@@ -76,7 +77,15 @@ export default function AIJollieCard() {
                             <TouchableOpacity
                                 activeOpacity={0.85}
                                 style={[styles.card, isCenter && styles.centerCard]}
-                                onPress={() => { }
+                                onPress={() => {
+                                    router.push({
+                                        pathname: '/aichatbots',
+                                        params: {
+                                            chatbotType: bot.type,
+                                            chatbotName: bot.label
+                                        }
+                                    })
+                                }
                                 }
                             >
                                 <Text style={[styles.label, isCenter && styles.labelCenter]}>
@@ -107,6 +116,7 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 16,
+        lineHeight: 30,
         textAlign: "center",
         color: "#262626",
         fontWeight: "500",
@@ -133,6 +143,7 @@ const styles = StyleSheet.create({
     },
     label: {
         fontSize: 14,
+        lineHeight: 20,
         color: "#262626",
         fontFamily: "WhyteInktrap-Medium",
     },

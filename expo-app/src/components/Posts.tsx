@@ -1,19 +1,14 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import {
-  ActivityIndicator,
-  RefreshControl,
-  View,
-  StyleSheet,
-  Text,
-  FlatList,
-} from 'react-native';
-import { getallposts } from '../apis/apiService';
-import { showToast } from './GlobalToast';
-import { useTranslation } from 'react-i18next';
-import Colors from '../utils/Colors';
-import PostScreen from './PostScreen';
-import { Image } from 'expo-image';
-import { ImagesAssets } from '../utils/ImageAssets';
+import { Image } from "expo-image";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
+import { getallposts } from "../apis/apiService";
+import Colors from "../utils/Colors";
+import CommonLoader from "./CommonLoader";
+import { showToast } from "./GlobalToast";
+import PostScreen from "./PostScreen";
+import EmptyComponent from "./EmptyComponent";
+import { useNetwork } from "../hooks/useNetworkStatusHook";
 
 export interface Post {
   id: string | number;
@@ -42,72 +37,107 @@ export interface Post {
   [key: string]: any;
 }
 
-const Posts: React.FC = () => {
+interface PostsProps {
+  ListHeaderComponent?: React.ComponentType<any> | React.ReactElement | null;
+}
+
+const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
   const { t } = useTranslation();
+  const isOnline = useNetwork();
+
   const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const isFetchingMore = useRef(false);
 
+  const isFetchingMore = useRef(false);
   const limit = 10;
 
   const handlePostDeleted = useCallback((deletedId: string | number) => {
-    setPosts(prev => prev.filter(p => p.id !== deletedId));
+    setPosts((prev) => prev.filter((p) => p.id !== deletedId));
   }, []);
 
-  const fetchPosts = useCallback(async (pageNum = 1, isRefresh = false) => {
-    if (isFetchingMore.current && !isRefresh) return;
-    if (!hasMore && !isRefresh) return;
+  const handlePostReported = useCallback((deletedId: string | number) => {
+    setPosts((prev) => prev.filter((p) => p.id !== deletedId));
+  }, []);
 
-    isFetchingMore.current = true;
-
-    if (!isRefresh) setLoading(pageNum === 1);
-    else setRefreshing(true);
-
-    try {
-      const response = await getallposts({ page: pageNum, limit });
-      if (response.success) {
-        const newPosts: Post[] = response.data.hangoutsList || [];
-
-        setPosts(prev => {
-          if (isRefresh || pageNum === 1) return newPosts;
-
-          const existingIds = new Set(prev.map(p => p.id));
-          const filtered = newPosts.filter(p => !existingIds.has(p.id));
-          return [...prev, ...filtered];
-        });
-
-        setHasMore(newPosts.length === limit);
-        setPage(pageNum);
-      } else {
-        showToast.error(t('oops'), response.message);
+  const fetchPosts = useCallback(
+    async (pageNum = 1, isRefresh = false) => {
+      // 🚫 DO NOT CALL API WHEN OFFLINE
+      if (!isOnline) {
+        setInitialLoading(false);
+        setRefreshing(false);
+        setLoadingMore(false);
+        return;
       }
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-      showToast.error(t('oops'), t('somethingwentwrong'));
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-      isFetchingMore.current = false;
-    }
-  }, [hasMore, limit, t]);
+
+      if (isFetchingMore.current && !isRefresh) return;
+      if (!hasMore && !isRefresh) return;
+
+      isFetchingMore.current = true;
+
+      if (isRefresh) {
+        setRefreshing(true);
+      } else if (pageNum === 1) {
+        setInitialLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+
+      try {
+        const response = await getallposts({ page: pageNum, limit });
+
+        if (response.success) {
+          const newPosts: Post[] = response.data.hangoutsList || [];
+
+          setPosts((prev) => {
+            if (isRefresh || pageNum === 1) return newPosts;
+
+            const existingIds = new Set(prev.map((p) => p.id));
+            const filtered = newPosts.filter((p) => !existingIds.has(p.id));
+            return [...prev, ...filtered];
+          });
+
+          setHasMore(newPosts.length === limit);
+          setPage(pageNum);
+        } else {
+          showToast.error(
+            t("oops"),
+            response.message || t("somethingwentwrong"),
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+        showToast.error(t("oops"), t("somethingwentwrong"));
+      } finally {
+        setInitialLoading(false);
+        setLoadingMore(false);
+        setRefreshing(false);
+        isFetchingMore.current = false;
+      }
+    },
+    [hasMore, isOnline, limit, t],
+  );
 
   useEffect(() => {
-    fetchPosts(1, true);
-  }, []);
+    fetchPosts(1);
+  }, [isOnline]);
 
   const onRefresh = useCallback(() => {
+    if (!isOnline) return;
     setHasMore(true);
     setPage(1);
     fetchPosts(1, true);
-  }, [fetchPosts]);
+  }, [fetchPosts, isOnline]);
 
   const loadMore = useCallback(() => {
-    if (loading || !hasMore || isFetchingMore.current) return;
+    if (!isOnline) return;
+    if (loadingMore || initialLoading || !hasMore || isFetchingMore.current)
+      return;
     fetchPosts(page + 1);
-  }, [loading, hasMore, page, fetchPosts]);
+  }, [loadingMore, initialLoading, hasMore, page, fetchPosts, isOnline]);
 
   const renderItem = useCallback(
     ({ item, index }: { item: Post; index: number }) => {
@@ -115,63 +145,80 @@ const Posts: React.FC = () => {
         ...item,
         imageUrls: item.imageUrls || item.images || [],
       };
-      return <PostScreen post={normalizedPost} index={index} onPostDeleted={handlePostDeleted} />;
+
+      return (
+        <PostScreen
+          post={normalizedPost}
+          index={index}
+          onPostDeleted={handlePostDeleted}
+          onPostReported={handlePostReported}
+        />
+      );
     },
-    [handlePostDeleted]
+    [handlePostDeleted, handlePostReported],
   );
 
-  const keyExtractor = useCallback((item: Post) => item.id.toString(), []);
-
   const ListFooter = () => {
-    if (!loading || posts.length === 0) return null;
+    if (!loadingMore) return <View style={{ marginBottom: 120 }} />;
     return (
       <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color={Colors.lightGreen} />
+        <CommonLoader />
+        <View style={{ marginBottom: 120 }} />
       </View>
     );
   };
 
   const ListEmpty = () => {
-    if (loading) return null;
+    if (initialLoading) return null;
+
     return (
       <View style={styles.emptyState}>
-        <Image source={ImagesAssets.nodatafound} style={styles.nodatafoundImage} />
-        <Text style={styles.emptyText}>{t('nopostfound') || 'No posts yet'}</Text>
+        <EmptyComponent
+          text={
+            !isOnline ? t("nointernetconnection") : t("youarenotpostedanything")
+          }
+        />
       </View>
     );
   };
 
-  if (loading && posts.length === 0) {
+  if (initialLoading && posts.length === 0 && isOnline) {
     return (
       <View style={styles.centerLoader}>
-        <ActivityIndicator size="small" color={Colors.lightGreen} />
+        <CommonLoader fullScreen />
       </View>
     );
   }
 
   return (
     <FlatList
+      ListHeaderComponent={ListHeaderComponent}
       data={posts}
       renderItem={renderItem}
-      keyExtractor={keyExtractor}
+      keyExtractor={(item) => item.id.toString()}
       onEndReached={loadMore}
-      onEndReachedThreshold={0.8} 
+      onEndReachedThreshold={0.3}
       ListFooterComponent={ListFooter}
       ListEmptyComponent={ListEmpty}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          colors={['#8DAF02']}
-          tintColor={Colors.lightGreen}
+          enabled={isOnline}
+          colors={[Colors.darkGreen]}
+          tintColor={Colors.darkGreen}
         />
       }
       showsVerticalScrollIndicator={false}
       removeClippedSubviews={true}
-      maxToRenderPerBatch={10}
-      windowSize={21}
-      initialNumToRender={10}
-      contentContainerStyle={posts.length === 0 ? styles.emptyContainer : undefined}
+      windowSize={7}
+      initialNumToRender={5}
+      maxToRenderPerBatch={5}
+      updateCellsBatchingPeriod={50}
+      keyboardShouldPersistTaps="always"
+      contentContainerStyle={
+        posts.length === 0 ? styles.emptyContainer : undefined
+      }
     />
   );
 };
@@ -179,32 +226,23 @@ const Posts: React.FC = () => {
 const styles = StyleSheet.create({
   centerLoader: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
   },
   footerLoader: {
     paddingVertical: 30,
-    alignItems: 'center',
+    alignItems: "center",
   },
   emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   emptyState: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingTop: 100,
     gap: 20,
-  },
-  nodatafoundImage: {
-    width: 150,
-    height: 150,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#666',
-    fontFamily: 'Poppins-Regular',
   },
 });
 

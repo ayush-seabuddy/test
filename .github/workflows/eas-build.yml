@@ -1,0 +1,145 @@
+name: EAS Build and Deploy
+
+on:
+  push:
+    branches:
+      - feature/expo-migration
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to build'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - ios
+          - android
+      profile:
+        description: 'Build profile'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - preview
+      submit:
+        description: 'Auto-submit to stores'
+        required: true
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  build:
+    name: EAS Build and Deploy
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./expo-app
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
+          cache: 'npm'
+          cache-dependency-path: expo-app/package-lock.json
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Get build parameters
+        id: params
+        run: |
+          # Default to production build with auto-submit on push
+          PLATFORM="${{ github.event.inputs.platform || 'all' }}"
+          PROFILE="${{ github.event.inputs.profile || 'production' }}"
+          SUBMIT="${{ github.event.inputs.submit || 'true' }}"
+          
+          echo "platform=$PLATFORM" >> $GITHUB_OUTPUT
+          echo "profile=$PROFILE" >> $GITHUB_OUTPUT
+          echo "submit=$SUBMIT" >> $GITHUB_OUTPUT
+          
+          echo "Building for platform: $PLATFORM with profile: $PROFILE"
+          echo "Auto-submit to stores: $SUBMIT"
+
+      - name: Build on EAS
+        env:
+          EXPO_APPLE_ID: ${{ secrets.APPLE_ID }}
+          EXPO_ASC_APP_ID: ${{ secrets.ASC_APP_ID }}
+          EXPO_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          EXPO_APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.EXPO_APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          ASC_APP_ID: ${{ secrets.ASC_APP_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          PLATFORM="${{ steps.params.outputs.platform }}"
+          PROFILE="${{ steps.params.outputs.profile }}"
+          SUBMIT="${{ steps.params.outputs.submit }}"
+          
+          echo "🚀 Starting EAS Build"
+          echo "📱 Platform: $PLATFORM"
+          echo "🔧 Profile: $PROFILE"
+          echo "📤 Auto-submit: $SUBMIT"
+          
+          # For preview builds, use simulator for iOS to avoid credential issues
+          if [ "$PROFILE" == "preview" ]; then
+            echo "🧪 Building preview/testing builds..."
+            if [ "$PLATFORM" == "ios" ]; then
+              echo "Building iOS simulator build for preview..."
+              eas build --platform ios --profile preview --non-interactive --no-wait
+            elif [ "$PLATFORM" == "android" ]; then
+              echo "Building Android APK for preview..."
+              eas build --platform android --profile preview --non-interactive --no-wait
+            else
+              echo "Building all platforms for preview..."
+              eas build --platform android --profile preview --non-interactive --no-wait
+              eas build --platform ios --profile preview --non-interactive --no-wait
+            fi
+          else
+            # Production builds with auto-submit to App Store & Play Store
+            echo "🏭 Building production builds for store submission..."
+            echo "🧹 Using --clear-cache for clean build"
+            if [ "$SUBMIT" == "true" ]; then
+              echo "📤 Will auto-submit to App Store (TestFlight) and Play Store after build completes"
+              eas build --platform $PLATFORM --profile $PROFILE --clear-cache --non-interactive --no-wait --auto-submit
+            else
+              echo "⏸️ Building without auto-submit (manual submission required)"
+              eas build --platform $PLATFORM --profile $PROFILE --clear-cache --non-interactive --no-wait
+            fi
+          fi
+
+      - name: Build Summary
+        run: |
+          echo "✅ Build triggered successfully!"
+          echo ""
+          echo "📋 Build Configuration:"
+          echo "   Platform: ${{ steps.params.outputs.platform }}"
+          echo "   Profile: ${{ steps.params.outputs.profile }}"
+          echo "   Auto-submit: ${{ steps.params.outputs.submit }}"
+          echo ""
+          if [ "${{ steps.params.outputs.profile }}" == "production" ] && [ "${{ steps.params.outputs.submit }}" == "true" ]; then
+            echo "🎯 Production builds will be submitted to:"
+            echo "   📱 iOS → App Store (TestFlight)"
+            echo "   🤖 Android → Play Store (Internal Testing)"
+            echo ""
+          fi
+          echo "📊 Monitor your build at:"
+          echo "   https://expo.dev/accounts/seabuddyco1/projects/SeaBuddy/builds"
+          echo ""
+          echo "📱 After submission, access via:"
+          echo "   iOS: App Store Connect → TestFlight"
+          echo "   Android: Play Console → Internal Testing"

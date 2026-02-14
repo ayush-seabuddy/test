@@ -1,21 +1,25 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { getallassessments, saveassessmentresponse } from '@/src/apis/apiService';
+import CommonLoader from '@/src/components/CommonLoader';
+import GlobalButton from '@/src/components/GlobalButton';
+import { showToast } from '@/src/components/GlobalToast';
+import PersonalityMapResultModal from '@/src/components/PersonalityMapResultModal';
+import Colors from '@/src/utils/Colors';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { ChevronRight } from 'lucide-react-native';
+import moment from 'moment-timezone';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
+  BackHandler,
+  FlatList,
+  Pressable,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
-  Pressable,
-  FlatList,
-  ActivityIndicator,
 } from 'react-native';
-import Colors from '@/src/utils/Colors';
 import * as Progress from 'react-native-progress';
-import { useTranslation } from 'react-i18next';
-import { ChevronRight } from 'lucide-react-native';
-import { getallassessments, saveassessmentresponse } from '@/src/apis/apiService';
-import { showToast } from '@/src/components/GlobalToast';
-import GlobalButton from '@/src/components/GlobalButton';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import PersonalityMapResultModal from '@/src/components/PersonalityMapResultModal';
 
 type AnswerOption = { option: string; score: number };
 type Question = {
@@ -27,18 +31,63 @@ type Question = {
 };
 
 const PAGE_SIZE = 10;
+const STORAGE_KEY = 'personality_test_answers';
 
 const PersonalityMapTestScreen = () => {
   const { t } = useTranslation();
+  const router = useRouter();
+  const params = useLocalSearchParams<{ testData?: string, screenName: string }>();
   const flatListRef = useRef<FlatList>(null);
-
+  const previousMonth = moment().subtract(1, 'month');
   const [allQuestions, setAllQuestions] = useState<Question[]>([]);
   const [displayedQuestions, setDisplayedQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [showResultPopup, setshowResultPopup] = useState(false);
+  const [showResultPopup, setShowResultPopup] = useState(false);
+
+  const parsedTestData = params.testData
+    ? JSON.parse(params.testData as string)
+    : null;
+  const parsedScreeName = params.screenName
+
+
+  const isRequiredTest = parsedTestData?.isRequires === true;
+
+  // Load saved answers from AsyncStorage
+  const loadSavedAnswers = useCallback(async () => {
+    try {
+      const savedAnswers = await AsyncStorage.getItem(STORAGE_KEY);
+      if (savedAnswers) {
+        const parsed = JSON.parse(savedAnswers);
+        setAnswers(parsed);
+        console.log('Loaded saved answers:', Object.keys(parsed).length);
+      }
+    } catch (error) {
+      console.error('Error loading saved answers:', error);
+    }
+  }, []);
+
+  // Save answers to AsyncStorage whenever they change
+  const saveAnswersToStorage = useCallback(async (answersToSave: Record<string, number>) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(answersToSave));
+      console.log('Saved answers to storage:', Object.keys(answersToSave).length);
+    } catch (error) {
+      console.error('Error saving answers:', error);
+    }
+  }, []);
+
+  // Clear saved answers from storage
+  const clearSavedAnswers = useCallback(async () => {
+    try {
+      await AsyncStorage.removeItem(STORAGE_KEY);
+      console.log('Cleared saved answers from storage');
+    } catch (error) {
+      console.error('Error clearing saved answers:', error);
+    }
+  }, []);
 
   const fetchQuestions = useCallback(async () => {
     setLoading(true);
@@ -53,51 +102,91 @@ const PersonalityMapTestScreen = () => {
           order: q.order,
         }));
 
-        const sorted = raw.sort((a: Question, b: Question) => +a.order - +b.order);
+        // Better sorting that handles string-to-number conversion properly
+        const sorted = raw.sort((a: Question, b: Question) => {
+          const orderA = parseInt(a.order, 10) || 0;
+          const orderB = parseInt(b.order, 10) || 0;
+          return orderA - orderB;
+        });
+
         const unique = Array.from(new Map(sorted.map(q => [q.id, q])).values()) as Question[];
 
         setAllQuestions(unique);
         setDisplayedQuestions(unique.slice(0, PAGE_SIZE));
+
+        // Load saved answers after questions are loaded
+        await loadSavedAnswers();
       } else {
-        showToast.error(t('oops'), res.message);
+        showToast.error(t('oops'), res.message || t('somethingwentwrong'));
       }
     } catch (err: any) {
       showToast.error(t('oops'), err.message || t('somethingwentwrong'));
     } finally {
       setLoading(false);
     }
-  }, [t]);
+  }, [t, loadSavedAnswers]);
 
   useEffect(() => {
     fetchQuestions();
   }, [fetchQuestions]);
 
-  const loadMoreQuestions = () => {
+  // Auto-save answers whenever they change
+  useEffect(() => {
+    const id = setTimeout(() => {
+      if (Object.keys(answers).length > 0) {
+        saveAnswersToStorage(answers);
+      }
+    }, 300);
+
+    return () => clearTimeout(id);
+  }, [answers]);
+
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!isRequiredTest) return;
+
+      const onBackPress = () => true;
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => subscription.remove();
+    }, [isRequiredTest])
+  );
+
+  const loadMoreQuestions = useCallback(() => {
     if (loadingMore || displayedQuestions.length >= allQuestions.length) return;
+
     setLoadingMore(true);
-    setTimeout(() => {
-      const nextStart = displayedQuestions.length;
-      const nextEnd = Math.min(nextStart + PAGE_SIZE, allQuestions.length);
-      const more = allQuestions.slice(nextStart, nextEnd);
-      setDisplayedQuestions(prev => [...prev, ...more]);
-      setLoadingMore(false);
-    }, 500);
-  };
+
+    const nextStart = displayedQuestions.length;
+    const nextEnd = Math.min(nextStart + PAGE_SIZE, allQuestions.length);
+
+    setDisplayedQuestions(prev => [
+      ...prev,
+      ...allQuestions.slice(nextStart, nextEnd),
+    ]);
+
+    setLoadingMore(false);
+  }, [loadingMore, displayedQuestions, allQuestions]);
+
 
   const answeredCount = Object.keys(answers).length;
   const totalQuestions = allQuestions.length;
   const progress = totalQuestions > 0 ? answeredCount / totalQuestions : 0;
-  const isComplete = answeredCount === totalQuestions;
+  const isComplete = answeredCount === totalQuestions && totalQuestions > 0;
 
   const handleSelect = (questionId: string, score: number) => {
     setAnswers(prev => ({ ...prev, [questionId]: score }));
   };
 
   const scrollToFirstUnanswered = () => {
-    const idx = displayedQuestions.findIndex(q => !answers[q.id]);
-    if (idx !== -1) {
-      flatListRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0.5 });
-      showToast.error('Incomplete', 'Please answer all questions');
+    const firstUnanswered = allQuestions.find(q => !answers[q.id]);
+    if (firstUnanswered) {
+      const idx = displayedQuestions.findIndex(q => q.id === firstUnanswered.id);
+      if (idx !== -1) {
+        flatListRef.current?.scrollToIndex({ index: idx, animated: true, viewPosition: 0.5 });
+      }
+      showToast.error(t('incomplete'), t('please_answer_all'));
     }
   };
 
@@ -113,7 +202,7 @@ const PersonalityMapTestScreen = () => {
     try {
       const payload = {
         questionType: 'PERSONALITY',
-        month: new Date().toISOString().slice(0, 7),
+        month: previousMonth.format('MM-YYYY'),
         answers: Object.entries(answers).map(([questionId, answer]) => ({
           questionId,
           answer,
@@ -124,71 +213,80 @@ const PersonalityMapTestScreen = () => {
       const res = await saveassessmentresponse(payload);
 
       if (res.success && res.status === 200) {
-        showToast.success(t('success'), res.message);
+        showToast.success(t('success'), res.message || t('assessment_submitted'));
 
         try {
-          const user = JSON.parse((await AsyncStorage.getItem('userDetails')) || '{}');
-          user.isPersonalityTestCompleted = true;
-          await AsyncStorage.setItem('userDetails', JSON.stringify(user));
+          const userStr = await AsyncStorage.getItem('userDetails');
+          if (userStr) {
+            const user = JSON.parse(userStr);
+            user.isPersonalityTestCompleted = true;
+            await AsyncStorage.setItem('userDetails', JSON.stringify(user));
+          }
         } catch (_) { }
-        setshowResultPopup(true);
 
+        // Clear saved answers after successful submission
+        await clearSavedAnswers();
+
+        setShowResultPopup(true);
       } else {
-        showToast.error('Error', res.message);
+        showToast.error(t('error'), res.message || t('somethingwentwrong'));
       }
     } catch (err: any) {
-      showToast.error('Error', err.message);
+      showToast.error(t('error'), err.message || t('somethingwentwrong'));
     } finally {
       setSubmitting(false);
     }
   };
+  const renderQuestion = useCallback(
+    ({ item }: { item: Question }) => {
+      const selectedScore = answers[item.id];
 
-  const renderQuestion = ({ item }: { item: Question }) => {
-    const selectedScore = answers[item.id];
+      return (
+        <View style={styles.questionContainer}>
+          <Text style={styles.questionText}>
+            {item.order}. {item.question}
+          </Text>
 
-    return (
-      <View style={styles.questionContainer}>
-        <Text style={styles.questionText}>
-          {displayedQuestions.indexOf(item) + 1}. {item.question}
-        </Text>
+          <View style={styles.radioRow}>
+            {item.answerOptions.map((opt, idx) => {
+              const isSelected = selectedScore === opt.score;
+              const showLabel = idx === 0 || idx === item.answerOptions.length - 1;
 
-        <View style={styles.radioRow}>
-          {item.answerOptions.map((opt, idx) => {
-            const isSelected = selectedScore === opt.score;
-            const showLabel = idx === 0 || idx === item.answerOptions.length - 1;
-
-            return (
-              <Pressable
-                key={opt.score}
-                onPress={() => handleSelect(item.id, opt.score)}
-                style={styles.optionContainer}
-              >
-                <View style={[styles.radioOuter, isSelected && styles.radioOuterActive]}>
-                  {isSelected && <View style={styles.radioInner} />}
-                </View>
-                {showLabel && <Text style={styles.radioLabelText}>{opt.option}</Text>}
-              </Pressable>
-            );
-          })}
+              return (
+                <Pressable
+                  key={opt.score}
+                  onPress={() => handleSelect(item.id, opt.score)}
+                  style={styles.optionContainer}
+                >
+                  <View style={[styles.radioOuter, isSelected && styles.radioOuterActive]}>
+                    {isSelected && <View style={styles.radioInner} />}
+                  </View>
+                  {showLabel && <Text style={styles.radioLabelText}>{opt.option}</Text>}
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
-      </View>
-    );
-  };
+      );
+    },
+    [answers]
+  );
+
 
   const renderFooter = () => {
     const allLoaded = displayedQuestions.length >= allQuestions.length;
 
     return (
       <View style={styles.footerContainer}>
-        {loadingMore && <ActivityIndicator size="small" color="#84A402" style={{ marginVertical: 20 }} />}
+        {loadingMore && <CommonLoader containerStyle={{ marginVertical: 20 }} />}
         {allLoaded && (
           <>
             <Text style={styles.confidentialityText}>{t('happinessindexdisclaimer')}</Text>
             <GlobalButton
               onPress={handleNextPress}
-              title={submitting ? 'Submitting...' : t('common.next')}
+              title={submitting ? t('submitting') : t('common.next')}
               buttonStyle={styles.nextButton}
-              disabled={submitting}
+              disabled={submitting || !isComplete}
             />
           </>
         )}
@@ -196,35 +294,26 @@ const PersonalityMapTestScreen = () => {
     );
   };
 
-  if (loading) {
-    return (
-      <View style={styles.main}>
-        <ActivityIndicator size="large" color="#84A402" />
-      </View>
-    );
-  }
-
-  if (allQuestions.length === 0) {
-    return (
-      <View style={styles.main}>
-        <Text style={styles.noQuestionsText}>{t('noquestionsavailable')}</Text>
-      </View>
-    );
-  }
-
   return (
     <View style={styles.main}>
-      <PersonalityMapResultModal visible={showResultPopup} setModalVisible={setshowResultPopup} />
-
+      {showResultPopup && (
+        <PersonalityMapResultModal
+          visible={showResultPopup}
+          setModalVisible={setShowResultPopup}
+        />
+      )}
       <View style={styles.header}>
-
         <View style={styles.innerView}>
-
           <Text style={styles.personalitymaptext}>{t('personalitymap')}</Text>
-          <View style={styles.skipView}>
-            <Text style={styles.skip}>{t('skip')}</Text>
-            <ChevronRight size={20} color={Colors.textSecondary} />
-          </View>
+          {!isRequiredTest && (
+            <TouchableOpacity
+              onPress={() => parsedScreeName === 'HealthScreen' ? router.back() : router.replace('/home')}
+              style={styles.skipView}
+            >
+              <Text style={styles.skip}>{t('skip')}</Text>
+              <ChevronRight size={20} color={Colors.textSecondary} />
+            </TouchableOpacity>
+          )}
         </View>
 
         <Text style={styles.personalitymapdesc}>{t('personalitymapdesc')}</Text>
@@ -233,7 +322,7 @@ const PersonalityMapTestScreen = () => {
           progress={progress}
           color="#84A402"
           height={7}
-          unfilledColor={Colors.iconColor}
+          unfilledColor="#E0E0E0"
           borderWidth={0}
           width={null}
           style={styles.progressbar}
@@ -242,10 +331,16 @@ const PersonalityMapTestScreen = () => {
         <Text style={styles.progresspercentage}>
           {Math.round(progress * 100)}% {t('completedquestions')} ({answeredCount}/{totalQuestions})
         </Text>
-        <Text style={styles.mandatoryText}>{t('mandatorydesc')}</Text>
-      </View>
 
-      <FlatList
+        <Text style={styles.mandatoryText}>
+          {isRequiredTest
+            ? t('mandatorydesc')
+            : t('mandatoryindays', { diffDays: 7 })}
+        </Text>
+      </View>
+      {loading ? <View style={styles.loader}>
+        <CommonLoader fullScreen />
+      </View> : <FlatList
         ref={flatListRef}
         data={displayedQuestions}
         renderItem={renderQuestion}
@@ -255,7 +350,17 @@ const PersonalityMapTestScreen = () => {
         onEndReachedThreshold={0.3}
         ListFooterComponent={renderFooter}
         contentContainerStyle={{ paddingBottom: 40 }}
+        removeClippedSubviews
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={7}
+        updateCellsBatchingPeriod={50}
+        extraData={answers}
       />
+
+      }
+
+
     </View>
   );
 };
@@ -264,8 +369,9 @@ export default PersonalityMapTestScreen;
 
 const styles = StyleSheet.create({
   main: { flex: 1, backgroundColor: Colors.captainanimatedlayoutbg },
+  loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: { margin: 16, gap: 10, paddingBottom: 10 },
-  innerView: { flexDirection: 'row', justifyContent: 'space-between' },
+  innerView: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   personalitymaptext: { fontSize: 20, lineHeight: 22, color: '#161616', fontFamily: 'WhyteInktrap-Bold' },
   personalitymapdesc: { fontFamily: 'Poppins-Regular', fontSize: 12, color: 'black' },
   skip: { fontSize: 14, color: Colors.textSecondary, fontFamily: 'Poppins-Regular' },
@@ -283,6 +389,6 @@ const styles = StyleSheet.create({
   radioInner: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#84A402' },
   radioLabelText: { fontSize: 11, color: '#fff', fontFamily: 'Poppins-Regular', textAlign: 'center' },
   footerContainer: { paddingHorizontal: 20, paddingTop: 30, paddingBottom: 40, alignItems: 'center' },
-  confidentialityText: { fontSize: 13, color: 'black', lineHeight: 20, fontFamily: 'Poppins-Regular' },
+  confidentialityText: { fontSize: 13, color: '#000', lineHeight: 20, fontFamily: 'Poppins-Regular', textAlign: 'center' },
   noQuestionsText: { color: '#fff', textAlign: 'center', marginTop: 50, fontSize: 16 },
 });

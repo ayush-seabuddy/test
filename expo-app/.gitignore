@@ -1,45 +1,91 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
-
-# dependencies
+# =====================
+# Dependencies
+# =====================
 node_modules/
 
+# =====================
 # Expo
+# =====================
 .expo/
 dist/
 web-build/
 expo-env.d.ts
 
-# Native
+# =====================
+# Native (Expo Prebuild)
+# =====================
+/android
+/ios
 .kotlin/
-*.orig.*
+.cxx/
+
+# =====================
+# Android / Gradle
+# =====================
+.gradle/
+build/
+*.iml
+.idea/
+
+# =====================
+# Certificates / Keys (Very Sensitive)
+# =====================
 *.jks
+*.keystore
 *.p8
 *.p12
 *.key
+*.pem
 *.mobileprovision
 
-# Metro
-.metro-health-check*
+# Firebase Admin SDK (DO NOT COMMIT)
+*firebase-adminsdk*.json
 
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
+# EAS Credentials
+credentials.json
+credentials/
 
-# macOS
-.DS_Store
-*.pem
-
-# local env files
+# =====================
+# Environment files
+# =====================
+.env
 .env.local
 .env.production
 .env.staging
 
-# typescript
+# =====================
+# Metro / Debug
+# =====================
+.metro-health-check*
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# =====================
+# OS
+# =====================
+.DS_Store
+Thumbs.db
+
+# =====================
+# TypeScript
+# =====================
 *.tsbuildinfo
 
-app-example
+# =====================
+# Logs
+# =====================
+*.log
 
-# generated native folders
-/ios
-/android
+# =====================
+# Misc
+# =====================
+app-example
+ios.json
+android.json
+
+# =====================
+# Optional Firebase Backup Safety
+# =====================
+google-services*.backup.json
+GoogleService-Info*.backup.plist

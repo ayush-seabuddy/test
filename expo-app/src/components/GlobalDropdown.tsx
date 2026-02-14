@@ -1,21 +1,15 @@
-import React from "react";
+import { Check, ChevronDown, ChevronUp } from "lucide-react-native";
 import type { ReactElement } from "react";
+import React from "react";
 import {
   StyleSheet,
+  Text,
+  TextStyle,
   View,
   ViewStyle,
-  TextStyle,
-  Text,
 } from "react-native";
 import { Dropdown, MultiSelect } from "react-native-element-dropdown";
-import { Check, ChevronDown, ChevronUp } from "lucide-react-native";
 import Colors from "../utils/Colors";
-
-type DropdownItem = {
-  label: string;
-  value: string;
-};
-
 type GlobalDropdownProps<T> = {
   data: T[];
   value: any;
@@ -25,6 +19,7 @@ type GlobalDropdownProps<T> = {
   labelField: keyof T;
   valueField: keyof T;
   searchable?: boolean;
+  searchableplaceholder?:string
   multiple?: boolean;
   containerStyle?: ViewStyle;
   dropdownStyle?: ViewStyle;
@@ -49,6 +44,8 @@ const GlobalDropdown = <T,>({
   valueField,
 
   searchable = false,
+
+  searchableplaceholder = "Select an option",
   multiple = false,
 
   containerStyle,
@@ -184,6 +181,7 @@ const GlobalDropdown = <T,>({
           valueField={String(valueField)}
           placeholder={getTriggerText()}
           search={searchable}
+          searchPlaceholder={searchableplaceholder}
           value={value}
           onChange={(item) => onChange(item[valueField])}
           disable={disable}
@@ -211,12 +209,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
   },
-  placeholderStyle: { fontSize: 14, color: "white" },
-  selectedTextStyle: { fontSize: 14, color: "white" },
-  itemTextStyle: { fontSize: 14, color: "white" },
+  placeholderStyle: { fontSize: 14, color: "white" , fontFamily:'Poppins-Regular' },
+  selectedTextStyle: { fontSize: 14, color: "white" ,fontFamily:'Poppins-Regular' },
+  itemTextStyle: { fontSize: 14, color: "white",fontFamily:'Poppins-Regular'  },
   selectedStyle: { borderRadius: 12 },
   itemContainer: { padding: 12, backgroundColor: "white" },
-  selectedItemText: { fontWeight: "bold" },
+  selectedItemText: { fontWeight: "bold",color:'white' },
   itemText: {
     fontSize: 14,
     color: "#262626",

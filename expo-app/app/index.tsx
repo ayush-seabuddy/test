@@ -1,7 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
-import i18next from "i18next";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { I18nextProvider } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 
@@ -10,42 +8,28 @@ import CustomStatusBar from "@/src/components/CustomStatusBar";
 import { createTables } from "@/src/database/chatSchema";
 import { initI18n } from "@/src/localization/i18n";
 import Colors from "@/src/utils/Colors";
+import i18next from "i18next";
 import Splash from "./onboarding/Splash";
 
 export default function Index() {
-  const router = useRouter();
+  /** ---------------- INIT ---------------- */
   useEffect(() => {
-    const init = async () => {
+    const initialize = async () => {
       await initI18n();
-
-      setTimeout(() => {
-        router.replace("/community/social");
-      }, 2500);
-      //    setTimeout(async()=>{
-      //   // console.log("hello");
-      // let data  =await login({email:"rishabhmaurya186@gmail.com",password:"Seekware@123"})
-      // AsyncStorage.setItem("userDetails", JSON.stringify(data?.data));
-      // await AsyncStorage.setItem("authToken", data?.data.authToken);
-
-      //   router.replace("/home");
-      // },3000)
+      createTables();
     };
-
-    init();
+    initialize();
   }, []);
 
-  useEffect(() => {
-    createTables();
-  })
-
+  /** ---------------- UI ---------------- */
   return (
     <I18nextProvider i18n={i18next}>
       <AppContainer>
         <CustomStatusBar />
         <LinearGradient
           colors={[Colors.white, "#06361F"]}
-          style={styles.container}
           locations={[0.65, 1]}
+          style={styles.container}
         >
           <View style={styles.splashOverlay}>
             <Splash />
@@ -57,7 +41,11 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  splashOverlay: { position: "absolute", zIndex: 5, top: 0 },
+  container: {
+    flex: 1,
+  },
+  splashOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 5,
+  },
 });
-

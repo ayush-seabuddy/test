@@ -1,24 +1,26 @@
-import React, { useState, useRef, useEffect } from "react";
-import {
-  Dimensions,
-  StyleSheet,
-  Text,
-  View,
-  Animated,
-  Platform,
-  TouchableOpacity,
-} from "react-native";
-import { Mail, Lock, CheckSquare, Square, Check } from "lucide-react-native";
-import { useTranslation } from "react-i18next";
+import GlobalButton from "@/src/components/GlobalButton";
+import GlobalTextInput from "@/src/components/GlobalTextInput";
+import { showToast } from "@/src/components/GlobalToast";
 import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
-import GlobalButton from "@/src/components/GlobalButton";
-import { router } from "expo-router";
-import GlobalTextInput from "@/src/components/GlobalTextInput";
-import { login } from "../../src/apis/apiService";
-import { showToast } from "@/src/components/GlobalToast";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import KeyboardWrapper from "@/src/components/KeyboardWrapper";
+import { router } from "expo-router";
+import { Check, Lock, Mail } from "lucide-react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Animated,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { login } from "../../src/apis/apiService";
+import { usePostHog } from "posthog-react-native";
 
 const { height } = Dimensions.get("window");
 
@@ -29,7 +31,7 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
   const { t } = useTranslation();
-
+  const posthog = usePostHog();
   const logoTranslateY = useRef(new Animated.Value(height)).current;
 
   useEffect(() => {
@@ -59,55 +61,74 @@ const LoginScreen = () => {
     setLoading(true);
 
     try {
-      const apiResponse = await login({ email, password });
+      const ExpoPushToken = await AsyncStorage.getItem("ExpoPushToken");
+
+      const payload: {
+        email: string;
+        password: string;
+        deviceToken?: string;
+      } = { email, password };
+
+      if (ExpoPushToken) payload.deviceToken = ExpoPushToken;
+
+      const apiResponse = await login(payload);
       setLoading(false);
 
       if (apiResponse.success && apiResponse.status === 200) {
-        showToast.success(
-          t("loginsuccessful"),
-          t("welcomeback")
+        showToast.success(t("loginsuccessful"), t("welcomeback"));
+
+        await AsyncStorage.setItem(
+          "userDetails",
+          JSON.stringify(apiResponse.data),
         );
-        await AsyncStorage.setItem('userDetails', JSON.stringify(apiResponse.data));
-        await AsyncStorage.setItem('authToken', apiResponse.data.authToken);
-        await AsyncStorage.setItem('userId', apiResponse.data.id);
-        const storedData = await AsyncStorage.getItem('userDetails');
 
+        apiResponse?.data.authToken &&
+          (await AsyncStorage.setItem("authToken", apiResponse.data.authToken));
+        apiResponse?.data.id &&
+          (await AsyncStorage.setItem("userId", apiResponse.data.id));
+        apiResponse?.data.shipId &&
+          (await AsyncStorage.setItem("shipId", apiResponse.data.shipId));
+        apiResponse?.data.employerId &&
+          (await AsyncStorage.setItem(
+            "employerId",
+            apiResponse.data.employerId,
+          ));
 
-        const user = JSON.parse(storedData ?? "");
+        const storedData = await AsyncStorage.getItem("userDetails");
+        const user = JSON.parse(storedData ?? "{}");
 
-        console.log("Stored user data:", storedData);
-
-        if (user.isProfileCompleted === true && user?.department === "Shore_Staff") {
-          router.push('/home');
-        } else if (
-          user.isPersonalityTestCompleted === true &&
-          user.isProfileCompleted === true
-        ) {
-          router.push('/home');
-        } else if (user.isProfileCompleted === true) {
-          router.push('/personalitymap')
-        } else {
-          router.push("/onboarding");
+        if (user?.email) {
+          posthog.identify(user.email, {
+            email: user.email,
+            name: user.name,
+            userId: user.id,
+          });
         }
-      }
 
-      else {
-        showToast.error(
-          t('oops'),
-          apiResponse.message
-        );
+        if (
+          user.isProfileCompleted &&
+          (user.department === "Shore_Staff" || user.isPersonalityTestCompleted)
+        ) {
+          router.replace("/home");
+        } else if (user.isProfileCompleted) {
+          router.replace("/personalitymap");
+        } else {
+          router.replace("/onboarding");
+        }
+      } else {
+        showToast.error(t("oops"), apiResponse.message);
       }
-    } catch (error) {
+    } catch {
       setLoading(false);
-      showToast.error(
-        t('error'),
-        t('somethingwentwrong')
-      );
+      showToast.error(t("error"), t("somethingwentwrong"));
     }
   };
 
   return (
-    <KeyboardWrapper>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "padding"}
+    >
       <View style={{ flex: 1, backgroundColor: Colors.background }}>
         <View style={styles.wrapper}>
           <View style={styles.backgroundOverlay} />
@@ -115,82 +136,96 @@ const LoginScreen = () => {
 
           <Animated.Image
             source={ImagesAssets.splashCaptainImage}
-            style={[styles.logo, { transform: [{ translateY: logoTranslateY }] }]}
+            style={[
+              styles.logo,
+              { transform: [{ translateY: logoTranslateY }] },
+            ]}
           />
 
           <View style={styles.formCard}>
-            <View style={styles.formContent}>
-              <View style={styles.header}>
-                <Text style={styles.title}>{t("welcome")}</Text>
-                <Text style={styles.subtitle}>{t("logintoyouraccount")}</Text>
-              </View>
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 40 }}
+            >
+              <View style={styles.formContent}>
+                <View style={styles.header}>
+                  <Text style={styles.title}>{t("welcome")}</Text>
+                  <Text style={styles.subtitle}>{t("logintoyouraccount")}</Text>
+                </View>
 
-              <GlobalTextInput
-                placeholder={t("enteryouremail")}
-                value={email}
-                onChangeText={handleEmailChange}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                leftIcon={<Mail size={20} color={Colors.iconMuted} />}
-                error={email && emailError}
-              />
+                <GlobalTextInput
+                  placeholder={t("enteryouremail")}
+                  value={email}
+                  onChangeText={handleEmailChange}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  leftIcon={<Mail size={20} color={Colors.iconMuted} />}
+                  error={email && emailError}
+                />
 
-              <GlobalTextInput
-                placeholder={t("enterpassword")}
-                value={password}
-                onChangeText={setPassword}
-                secure
-                leftIcon={<Lock size={20} color={Colors.iconMuted} />}
-                error={
-                  password && password.length < 8
-                    ? t("passwordshould8charlong")
-                    : ""
-                }
-              />
+                <GlobalTextInput
+                  placeholder={t("enterpassword")}
+                  value={password}
+                  onChangeText={setPassword}
+                  secure
+                  leftIcon={<Lock size={20} color={Colors.iconMuted} />}
+                  error={
+                    password && password.length < 8
+                      ? t("passwordshould8charlong")
+                      : ""
+                  }
+                />
 
-              <View style={styles.termsRow}>
+                <View style={styles.termsRow}>
+                  <TouchableOpacity
+                    onPress={() => setTermsAccepted(!termsAccepted)}
+                  >
+                    <View
+                      style={[
+                        styles.checkbox,
+                        termsAccepted && styles.checkboxChecked,
+                      ]}
+                    >
+                      {termsAccepted && (
+                        <Check size={16} color={Colors.white} />
+                      )}
+                    </View>
+                  </TouchableOpacity>
+
+                  <Text style={styles.termsText}>{t("iacceptthe")}</Text>
+
+                  <TouchableOpacity
+                    onPress={() => router.push("../termsandcondition")}
+                  >
+                    <Text style={styles.termsLink}>
+                      {t("termsandconditions")}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
+                <GlobalButton
+                  title={t("login")}
+                  onPress={handleLogin}
+                  buttonStyle={styles.loginButton}
+                  loading={loading}
+                  disabled={!isFormValid}
+                />
+
                 <TouchableOpacity
-                  onPress={() => setTermsAccepted(!termsAccepted)}
+                  style={styles.forgotPassword}
+                  onPress={() => router.push("/auth/ForgotPassword")}
                 >
-
-                  <View style={[styles.checkbox, termsAccepted && styles.checkboxChecked]}>
-                    {termsAccepted && <Check size={16} color={Colors.white} />}
-                  </View>
-
-                </TouchableOpacity>
-
-                <Text style={styles.termsText}>{t("iacceptthe")}</Text>
-                <TouchableOpacity
-                  onPress={() => router.push("../termsandcondition")}
-                >
-                  <Text style={styles.termsLink}>
-                    {t("termsandconditions")}
+                  <Text style={styles.forgotPasswordText}>
+                    {t("forgotPassword")}
                   </Text>
                 </TouchableOpacity>
               </View>
-
-              <GlobalButton
-                title={t("login")}
-                onPress={handleLogin}
-                buttonStyle={styles.loginButton}
-                loading={loading}
-                disabled={!isFormValid}
-              />
-
-              <TouchableOpacity
-                style={styles.forgotPassword}
-                onPress={() => router.push("/auth/ForgotPassword")}
-              >
-                <Text style={styles.forgotPasswordText}>
-                  {t("forgotPassword")}
-                </Text>
-              </TouchableOpacity>
-            </View>
+            </ScrollView>
           </View>
         </View>
       </View>
-    </KeyboardWrapper>
-
+    </KeyboardAvoidingView>
   );
 };
 
@@ -235,6 +270,7 @@ const styles = StyleSheet.create({
   formContent: { paddingBottom: 20, paddingHorizontal: 16 },
   header: { alignItems: "center", marginBottom: 12 },
   title: {
+    lineHeight: 20,
     fontFamily: "WhyteInktrap-Bold",
     fontSize: 20,
     paddingTop: Platform.OS === "android" ? 0 : 10,
@@ -270,18 +306,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.textMuted,
     fontFamily: "Poppins-Regular",
-  }, loginButton: {
-    width: '100%'
+  },
+  loginButton: {
+    width: "100%",
   },
   checkbox: {
     width: 20,
     height: 20,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     marginRight: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   checkboxChecked: {
     backgroundColor: Colors.lightGreen,

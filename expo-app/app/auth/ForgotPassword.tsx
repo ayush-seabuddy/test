@@ -1,27 +1,27 @@
+import GlobalButton from "@/src/components/GlobalButton";
+import GlobalTextInput from "@/src/components/GlobalTextInput";
+import { showToast } from "@/src/components/GlobalToast";
+import KeyboardWrapper from "@/src/components/KeyboardWrapper";
+import Colors from "@/src/utils/Colors";
+import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { useRouter } from "expo-router";
+import { Mail } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
+  Animated,
+  Dimensions,
+  Keyboard,
+  Platform,
+  StyleSheet,
   Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  Keyboard,
-  StyleSheet,
-  Dimensions,
-  Animated,
-  Platform,
+  View,
 } from "react-native";
-import { Mail } from "lucide-react-native";
-import GlobalButton from "@/src/components/GlobalButton";
-import GlobalTextInput from "@/src/components/GlobalTextInput";
-import { ImagesAssets } from "@/src/utils/ImageAssets";
-import { useTranslation } from "react-i18next";
-import { useRouter } from "expo-router";
-import Colors from "@/src/utils/Colors";
 import { forgotpassword } from "../../src/apis/apiService";
-import { showToast } from "@/src/components/GlobalToast";
-import KeyboardWrapper from "@/src/components/KeyboardWrapper";
 
-const { width, height } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 
 const ForgotPasswordScreen = () => {
   const [email, setEmail] = useState("");
@@ -57,7 +57,7 @@ const ForgotPasswordScreen = () => {
     if (!validateEmail(email)) return;
     setloading(true);
     try {
-      const apiResponse = await forgotpassword({email});
+      const apiResponse = await forgotpassword({ email });
       setloading(false);
       if (apiResponse.success && apiResponse.status === 200) {
         showToast.success(
@@ -173,6 +173,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: "WhyteInktrap-Bold",
     fontSize: 20,
+    lineHeight: 30,
     color: "#161616",
     paddingTop: Platform.OS === "android" ? 0 : 10,
   },

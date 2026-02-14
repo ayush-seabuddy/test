@@ -1,6 +1,5 @@
 import React, { ReactNode } from "react";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { ScrollView } from "react-native-gesture-handler";
 
 interface Props {
   children: ReactNode;

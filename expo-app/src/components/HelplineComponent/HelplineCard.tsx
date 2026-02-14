@@ -1,29 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import { getallhelplines } from '@/src/apis/apiService';
+import { getUserDetails } from '@/src/utils/helperFunctions';
+import { ImagesAssets } from '@/src/utils/ImageAssets';
+import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     FlatList,
     StyleSheet,
     Text,
-    View,
-    ActivityIndicator,
     TouchableOpacity,
+    View,
 } from 'react-native';
-import { getallhelplines } from '@/src/apis/apiService';
-import { showToast } from '../GlobalToast';
-import { useTranslation } from 'react-i18next';
-import { Image } from 'expo-image';
-import { ImagesAssets } from '@/src/utils/ImageAssets';
-import Colors from '@/src/utils/Colors';
-import AIJollieCard from './AIJollieCard';
-import * as Haptics from 'expo-haptics';
-import EmergencyModal from '../Modals/EmergencyModal';
 import {
+    ConversationOptions,
     Freshchat,
     FreshchatConfig,
     FreshchatUser,
-    ConversationOptions,
 } from 'react-native-freshchat-sdk';
-import { getUserDetails } from '@/src/utils/helperFunctions';
-import { useRouter } from 'expo-router';
+import CommonLoader from '../CommonLoader';
+import { showToast } from '../GlobalToast';
+import EmergencyModal from '../Modals/EmergencyModal';
+import AIJollieCard from './AIJollieCard';
 
 interface Helpline {
     id: string;
@@ -41,23 +40,8 @@ const HelplineAndAICards = () => {
     const { t } = useTranslation();
     const router = useRouter();
     const [loading, setLoading] = useState(true);
-    const [helplineData, setHelplineData] = useState<Helpline[]>([]);
+    const [dynamicHelplines, setDynamicHelplines] = useState<Helpline[]>([]);
     const [emergencyModalVisible, setEmergencyModalVisible] = useState(false);
-
-    const staticHelpline: Helpline[] = [
-        {
-            id: 'static-1',
-            helplineName: t('emergencyandsos'),
-            helplineDescription: t('emergencyandsos_description'),
-            iconUrl: ImagesAssets.sosImage,
-        },
-        {
-            id: 'static-2',
-            helplineName: t('sailorssocietylive'),
-            helplineDescription: t('sailorssocietylive_description'),
-            iconUrl: ImagesAssets.sailorsIcon,
-        },
-    ];
 
     useEffect(() => {
         const setupFreshchat = async () => {
@@ -126,21 +110,21 @@ const HelplineAndAICards = () => {
         };
     }, []);
 
-    /** API load */
     const getHelplines = async () => {
         try {
             setLoading(true);
             const res = await getallhelplines({ helplineType: "HELPLINE" });
 
-            if (res.success && res.status === 200)
-                setHelplineData([...staticHelpline, ...(res.data || [])]);
-            else {
+            if (res.success && res.status === 200) {
+                setDynamicHelplines(res.data || []);
+            } else {
                 showToast.error(t('oops'), res.message || t('somethingwentwrong'));
-                setHelplineData(staticHelpline);
+                setDynamicHelplines([]);
             }
         } catch (e) {
+            console.log('Error', e)
             showToast.error(t('oops'), t('somethingwentwrong'));
-            setHelplineData(staticHelpline);
+            setDynamicHelplines([]);
         } finally {
             setLoading(false);
         }
@@ -149,6 +133,25 @@ const HelplineAndAICards = () => {
     useEffect(() => {
         getHelplines();
     }, []);
+
+    const helplineData = useMemo(() => {
+        const staticHelplines: Helpline[] = [
+            {
+                id: 'static-1',
+                helplineName: t('emergencyandsos'),
+                helplineDescription: t('emergencyandsos_description'),
+                iconUrl: ImagesAssets.sosImage,
+            },
+            {
+                id: 'static-2',
+                helplineName: t('sailorssocietylive'),
+                helplineDescription: t('sailorssocietylive_description'),
+                iconUrl: ImagesAssets.sailorsIcon,
+            },
+        ];
+
+        return [...staticHelplines, ...dynamicHelplines];
+    }, [t, dynamicHelplines]);
 
     const openEmergencyModal = () => {
         Haptics.selectionAsync();
@@ -189,7 +192,7 @@ const HelplineAndAICards = () => {
             >
                 <View style={styles.card}>
                     <View style={styles.content}>
-                        <Image source={item.iconUrl} style={styles.icon} contentFit="contain" />
+                        <Image source={item.iconUrl} style={styles.icon} contentFit="contain" placeholder={ImagesAssets.helplineFormIcon} placeholderContentFit='cover'/>
                         <View style={styles.textContainer}>
                             <Text style={[styles.title, isSOS && styles.titleEmergency]}>
                                 {item.helplineName}
@@ -202,12 +205,13 @@ const HelplineAndAICards = () => {
         );
     };
 
-    if (loading)
+    if (loading) {
         return (
             <View style={styles.centerContainer}>
-                <ActivityIndicator size="large" color={Colors.lightGreen} />
+                <CommonLoader fullScreen />
             </View>
         );
+    }
 
     return (
         <>

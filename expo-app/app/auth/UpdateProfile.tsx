@@ -1,16 +1,16 @@
-import { Dimensions, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ChevronLeft, Check } from 'lucide-react-native';
-import CustomLottie from '@/src/components/CustomLottie';
-import GlobalHeader from '@/src/components/GlobalHeader';
-import GlobalDropdown from '@/src/components/GlobalDropdown';
-import { useTranslation } from 'react-i18next';
-import GlobalButton from '@/src/components/GlobalButton';
 import { getallcountries, updateprofile, UpdateProfileRequest } from '@/src/apis/apiService';
+import CustomLottie from '@/src/components/CustomLottie';
+import GlobalButton from '@/src/components/GlobalButton';
+import GlobalDropdown from '@/src/components/GlobalDropdown';
+import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import Colors from '@/src/utils/Colors';
 import { getUserDetails } from '@/src/utils/helperFunctions';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Check } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type User = {
   department?: string;
@@ -224,7 +224,7 @@ const UpdateProfile = () => {
       setLoading(false);
 
       if (res.success && res.status === 200) {
-        showToast.success(t('success'),res.message);
+        showToast.success(t('success'), res.message);
         router.push('/personalitymap');
       } else {
         showToast.error(t('oops'), res.message ?? t('somethingwentwrong'));
@@ -264,12 +264,11 @@ const UpdateProfile = () => {
     <View style={styles.main}>
       <GlobalHeader
         title={t('profileDetails')}
-        leftIcon={<ChevronLeft size={20} />}
         onLeftPress={currentStep > 1 ? handlePrev : () => router.back()}
       />
 
       <View style={styles.bottomCard1}>
-        <CustomLottie isBlurView={false} componentHeight={height * 0.85} />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} componentHeight={height * 0.85} />
       </View>
 
       <View style={styles.mainContent}>
@@ -480,6 +479,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#262626',
     marginBottom: 10,
+    lineHeight:20,
     fontFamily: 'WhyteInktrap-Bold',
   },
   description: {

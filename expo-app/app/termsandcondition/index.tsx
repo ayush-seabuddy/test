@@ -1,16 +1,15 @@
-import React from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    ScrollView,
-    TouchableOpacity,
-    Platform,
-    Linking,
-} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+    Linking,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 
 const Terms = () => {
     const navigation = useNavigation();
@@ -20,7 +19,7 @@ const Terms = () => {
     };
 
     return (
-        <View>
+        <View style={styles.container}>
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
@@ -155,9 +154,10 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        paddingBottom:30,
     },
     header: {
-        paddingTop: Platform.OS === 'ios' ? 30 : 0,
+        paddingTop: Platform.OS === 'ios' ? 30 : 10,
         paddingHorizontal: 16,
         paddingBottom: 12,
         flexDirection: 'row',

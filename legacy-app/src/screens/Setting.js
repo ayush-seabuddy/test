@@ -1,20 +1,20 @@
-import React, { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dimensions,
+  Image,
+  ScrollView,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
-  ScrollView,
-  Image,
+  View,
 } from "react-native";
-import ProfleSettingHeader from "../component/headers/ProfileHeader/ProfleSettingHeader";
-import { ImagesAssets } from "../assets/ImagesAssets";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiCallWithToken, apiServerUrl } from "../Api";
-import SignOutModal from "../component/Modals/SignOutModal";
+import { ImagesAssets } from "../assets/ImagesAssets";
+import ProfleSettingHeader from "../component/headers/ProfileHeader/ProfleSettingHeader";
 import DeleteModal from "../component/Modals/DeleteModal";
-import { useTranslation } from "react-i18next";
+import SignOutModal from "../component/Modals/SignOutModal";
 
 const { width, height } = Dimensions.get("screen");
 

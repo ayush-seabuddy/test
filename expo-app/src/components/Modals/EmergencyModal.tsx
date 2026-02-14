@@ -1,26 +1,28 @@
-import React, { useCallback, useState } from "react";
-import {
-    Modal,
-    Text,
-    StyleSheet,
-    View,
-    Pressable,
-    Image,
-    TouchableOpacity,
-    FlatList,
-    Linking,
-    Alert,
-    ActivityIndicator,
-    Dimensions
-} from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getallhelplines } from "@/src/apis/apiService";
-import { showToast } from "../GlobalToast";
-import { useTranslation } from "react-i18next";
-import { PhoneCall, X } from "lucide-react-native";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
 import * as Haptics from 'expo-haptics';
+import { PhoneCall, X } from "lucide-react-native";
+import React, { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+    Alert,
+    Dimensions,
+    FlatList,
+    Image,
+    Linking,
+    Modal,
+    Pressable,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from "react-native";
+import CommonLoader from "../CommonLoader";
+import { showToast } from "../GlobalToast";
+import EmptyComponent from "../EmptyComponent";
+import { useNetwork } from "@/src/hooks/useNetworkStatusHook";
 
 const { width, height } = Dimensions.get("window");
 
@@ -46,7 +48,7 @@ const EmergencyModal: React.FC<EmergencyModalProps> = ({ visible, onClose }) => 
     const [list, setList] = useState<EmergencyItem[]>([]);
     const [user, setUser] = useState<UserDetails | null>(null);
     const { t } = useTranslation();
-
+    const isOnline = useNetwork();
     const loadUser = async () => {
         try {
             const userJson = await AsyncStorage.getItem('userDetails');
@@ -60,6 +62,10 @@ const EmergencyModal: React.FC<EmergencyModalProps> = ({ visible, onClose }) => 
     };
 
     const getEmergencyData = async () => {
+        if (!isOnline) {
+            showToast.error(t('oops'), t('nointernetconnection'));
+            return;
+        }
         try {
             setLoading(true);
             const res = await getallhelplines({ helplineType: 'EMERGENCY_NUMBER' });
@@ -84,13 +90,13 @@ const EmergencyModal: React.FC<EmergencyModalProps> = ({ visible, onClose }) => 
     const callNow = (num?: string) => {
         if (!num) return;
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        Linking.openURL(`tel:${num}`).catch(() => Alert.alert(t('error'), t('cannot_make_call')));
+        Linking.openURL(`tel:${num}`).catch(() => showToast.error(t('oops'), t('cannot_make_call')));
     };
 
     const chatWhatsApp = (url?: string) => {
         if (!url) return;
         Haptics.selectionAsync();
-        Linking.openURL(url).catch(() => Alert.alert("WhatsApp", t('whatsapp_not_installed')));
+        Linking.openURL(url).catch(() => Alert.alert(t('oops'), t('whatsapp_not_installed')));
     };
 
     return (
@@ -102,20 +108,22 @@ const EmergencyModal: React.FC<EmergencyModalProps> = ({ visible, onClose }) => 
                 <Pressable style={styles.overlay} onPress={onClose} />
 
                 <View style={styles.card}>
-                    <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-                          <Text style={styles.helloText}>
-                        {t('hey')} <Text style={styles.name}>{user?.fullName || 'there'}!</Text>
-                    </Text>
-                        <X size={24} color="#000" />
-                    </TouchableOpacity>
+                    <View style={styles.closeBtn}>
+                        <Text style={styles.helloText}>
+                            {t('hey')} <Text style={styles.name}>{user?.fullName || 'there'}!</Text>
+                        </Text>
+                        <TouchableOpacity onPress={onClose}>
+                            <X size={24} color="#000" />
+                        </TouchableOpacity>
+                    </View>
                     <Text style={styles.heading}>{t('emergency_lines')}</Text>
 
                     {loading ? (
                         <View style={{ flex: 1, justifyContent: 'center' }}>
-                            <ActivityIndicator size="large" color="#D32F2F" />
+                            <CommonLoader fullScreen color="#D32F2F" />
                         </View>
                     ) : list.length === 0 ? (
-                        <Text style={styles.noData}>{t('no_emergency_numbers')}</Text>
+                        <EmptyComponent text={t('nodataavailable')} />
                     ) : (
                         <FlatList
                             data={list}
@@ -178,17 +186,17 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 25,
         borderTopRightRadius: 25,
         padding: 20,
-        paddingTop:24,
+        paddingTop: 24,
         zIndex: 3,
-         position:"absolute",
-    bottom:0 
+        position: "absolute",
+        bottom: 0
     },
 
-    closeBtn: { justifyContent:'space-between',flexDirection:'row'},
+    closeBtn: { justifyContent: 'space-between', flexDirection: 'row' },
 
     helloText: { fontSize: 16, fontFamily: "Poppins-SemiBold", color: '#333' },
-    name: { color: "#D32F2F", fontFamily: "WhyteInktrap-Bold" },
-    heading: { fontSize: 18, marginBottom: 10, fontFamily: "WhyteInktrap-Bold" },
+    name: { color: "#D32F2F", fontFamily: "WhyteInktrap-Bold" ,lineHeight:20,},
+    heading: { fontSize: 18, marginVertical: 5, fontFamily: "WhyteInktrap-Bold", lineHeight: 30 },
     noData: { textAlign: 'center', color: '#666', marginTop: 20 },
 
     row: {
@@ -202,7 +210,7 @@ const styles = StyleSheet.create({
     },
     rowLeft: { flexDirection: "row", flex: 1, alignItems: "center", marginRight: 12 },
     iconBox: { backgroundColor: "#FFBF00", padding: 12, borderRadius: 14, marginRight: 14 },
-    nameText: { fontSize: 12, fontFamily: "WhyteInktrap-Medium" ,lineHeight:20},
+    nameText: { fontSize: 12, fontFamily: "WhyteInktrap-Medium", lineHeight: 20 },
     desc: { fontSize: 11, marginVertical: 4, color: '#555', fontFamily: "Poppins-Regular" },
     phone: { fontSize: 12, fontFamily: "Poppins-SemiBold" },
     wIcon: { width: 32, height: 32, tintColor: "#25D366" }

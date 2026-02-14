@@ -1,7 +1,7 @@
-import React from "react";
-import { View, Text, StyleSheet, ViewStyle } from "react-native";
-import Toast, { BaseToast, ErrorToast } from "react-native-toast-message";
 import Colors from "@/src/utils/Colors";
+import React from "react";
+import { StyleSheet } from "react-native";
+import Toast, { BaseToast, ErrorToast } from "react-native-toast-message";
 
 // ✅ Custom Success Toast
 export const SuccessToast = (props: any) => (

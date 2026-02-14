@@ -1,50 +1,164 @@
-# Welcome to your Expo app 👋
+# SeaBuddy Mobile App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Social maritime platform built with React Native and Expo SDK 54.
 
-## Get started
+## Prerequisites
 
-1. Install dependencies
+- **Node.js**: 20.19.4 or higher
+- **npm**: 10.x or higher
+- **Expo CLI**: Latest version
+- **EAS CLI**: Latest version (for builds)
+- **iOS**: macOS with Xcode 15+ (for iOS development)
+- **Android**: Android Studio with SDK 34+ (for Android development)
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Installation
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Development
 
-## Learn more
+### Start Development Server
 
-To learn more about developing your project with Expo, look at the following resources:
+```bash
+# Local environment
+npm start
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+# Staging environment
+npm run start:staging
 
-## Join the community
+# Production environment
+npm run start:prod
+```
 
-Join our community of developers creating universal apps.
+### Run on Devices/Emulators
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+# iOS Simulator
+npm run ios:local
+
+# Android Emulator
+npm run android:local
+
+# Specific environments
+npm run ios:staging
+npm run android:prod
+```
+
+## Building & Deployment
+
+### Preview Builds (Testing)
+
+```bash
+# iOS Simulator + Android APK
+eas build --platform all --profile preview
+
+# Single platform
+eas build --platform ios --profile preview
+eas build --platform android --profile preview
+```
+
+### Production Builds (Store Submission)
+
+```bash
+# Build and auto-submit to TestFlight + Play Store
+eas build --platform all --profile production --auto-submit
+
+# Build only (manual submit later)
+eas build --platform all --profile production
+```
+
+### Manual Submission
+
+```bash
+eas submit --platform ios --latest
+eas submit --platform android --latest
+```
+
+## CI/CD
+
+Automatic builds and submissions are configured for the `feature/expo-migration` branch:
+
+- **On Push**: Triggers production build with auto-submit
+- **iOS**: Submits to TestFlight
+- **Android**: Submits to Play Store Internal Testing
+
+Monitor builds: https://expo.dev/accounts/seabuddyco1/projects/SeaBuddy/builds
+
+## Environment Configuration
+
+Create environment files in the `expo-app` directory:
+
+- `.env` - Local development
+- `.env.staging` - Staging environment
+- `.env.prod` - Production environment
+
+Required variables:
+
+```
+EXPO_PUBLIC_API_URL=your_api_url
+EXPO_PUBLIC_SOCKET_URL=your_socket_url
+```
+
+## Project Structure
+
+```
+expo-app/
+├── app/              # Expo Router screens
+├── src/
+│   ├── apis/         # API services
+│   ├── components/   # Reusable components
+│   ├── redux/        # State management
+│   ├── utils/        # Utility functions
+│   └── localization/ # i18n support
+├── assets/           # Images, fonts, translations
+└── Context/          # React contexts
+```
+
+## Key Commands
+
+```bash
+# Development
+npm start                    # Start Metro bundler
+npm run lint                 # Run ESLint
+
+# Building
+eas build --profile preview  # Test build
+eas build --profile production --auto-submit  # Production + submit
+
+# Credentials
+eas credentials -p ios       # Manage iOS credentials
+eas credentials -p android   # Manage Android credentials
+
+# Build Management
+eas build:list              # List recent builds
+eas build:view <build-id>   # View build details
+```
+
+## Troubleshooting
+
+### Clear Cache
+
+```bash
+npx expo start --clear
+```
+
+### Reset Dependencies
+
+```bash
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### iOS Pods Issues
+
+```bash
+cd ios && pod install && cd ..
+```
+
+## Support
+
+- **EAS Dashboard**: https://expo.dev/accounts/seabuddyco1/projects/SeaBuddy
+- **App Store Connect**: https://appstoreconnect.apple.com
+- **Play Console**: https://play.google.com/console

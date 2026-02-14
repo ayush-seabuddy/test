@@ -1,6 +1,6 @@
+import { updateFleetList, updateShipList } from "@/src/redux/chatListSlice";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { updateFleetList, updateShipList } from "@/src/redux/chatListSlice";
 import { db } from "../database/chatDB";
 import { ChatRoom } from "../screens/chat/types/chatRoom";
 
@@ -72,7 +72,9 @@ function getShipChatRooms(): ChatRoom[] {
             profileUrl: sender.profileUrl || null,
           });
         }
-      } catch (e) {}
+      } catch (error) {
+        console.log('Error', error)
+      }
     }
 
     // You can enhance this later by storing user profile JSON in chat_participants if needed

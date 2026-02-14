@@ -1,25 +1,27 @@
-import React from "react";
-import {
-    View,
-    Image,
-    Text,
-    StyleSheet,
-    Dimensions,
-    TouchableOpacity,
-} from "react-native";
+import GlobalButton from "@/src/components/GlobalButton";
+import GlobalPopOver from "@/src/components/GlobalPopover";
 import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
-import { useRouter } from "expo-router";
-import { useTranslation } from "react-i18next";
-import GlobalButton from "@/src/components/GlobalButton";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Info } from "lucide-react-native";
-import GlobalPopOver from "@/src/components/GlobalPopover";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import {
+    Dimensions,
+    Image,
+    StyleSheet,
+    Text,
+    View,
+} from "react-native";
 
 const { width, height } = Dimensions.get("window");
 
 const PersonalityMapIntroScreen = () => {
     const router = useRouter();
     const { t } = useTranslation();
+    const params = useLocalSearchParams<{
+        testData?: string;
+    }>();
 
     return (
         <View style={styles.container}>
@@ -60,7 +62,12 @@ const PersonalityMapIntroScreen = () => {
                 <GlobalButton
                     title={t("start_button")}
                     onPress={() => {
-                        router.push('/personalitymap/PersonalityMapTestScreen');
+                        router.push({
+                            pathname: '/personalitymap/PersonalityMapTestScreen',
+                            params: {
+                                testData: params.testData || '',
+                            },
+                        });
                     }}
                     buttonStyle={styles.customButton}
                     textStyle={styles.customButtonText}
@@ -87,6 +94,7 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 18,
+        lineHeight:20,
         fontFamily: "WhyteInktrap-Bold",
         color: Colors.textPrimary,
     },

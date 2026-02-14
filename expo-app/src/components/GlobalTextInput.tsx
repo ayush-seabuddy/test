@@ -91,10 +91,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         height: 50,
     },
-    leftIcon: { marginRight: 8 },
+    leftIcon: { marginRight: 16 },
     input: {
         flex: 1,
-        marginTop: 3,
         fontSize: 14,
         fontFamily: "Poppins-Regular",
         color: Colors.textPrimary,

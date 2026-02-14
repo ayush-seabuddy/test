@@ -1,103 +1,153 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  StyleSheet,
-  Platform,
-  Dimensions,
-  BackHandler,
-} from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useTranslation } from "react-i18next";
-import Colors from "@/src/utils/Colors";
+import { viewProfile } from "@/src/apis/apiService";
 import CustomLottie from "@/src/components/CustomLottie";
-import { useExitOnBack } from '@/src/hooks/useExitOnBack';
 import ExitAppModal from "@/src/components/Modals/ExitAppModal";
 import PDFModal from "@/src/components/Modals/PDFModal";
+import { useExitOnBack } from "@/src/hooks/useExitOnBack";
+import { updateUserField } from "@/src/redux/userDetailsSlice";
 import FeatureFrame from "@/src/screens/home/FeatureFrame";
-import CustomStatusBar from "@/src/components/CustomStatusBar";
 import HeaderBanner from "@/src/screens/home/HeaderBanner";
-import NotificationPermissionModal from "@/src/components/Modals/NotificationPermissionModal";
+import Colors from "@/src/utils/Colors";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  BackHandler,
+  Dimensions,
+  Platform,
+  StyleSheet,
+  View,
+} from "react-native";
+import { useDispatch } from "react-redux";
 
 const { height } = Dimensions.get("window");
 const isProMax = Platform.OS === "ios" && height >= 926;
-const Home = ({ }) => {
+
+const Home = () => {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
+
   const [exitModalVisible, setExitModalVisible] = useState(false);
   const [companyLogo, setCompanyLogo] = useState("");
+  const [companyLogoSize, setCompanyLogoSize] = useState({
+    width: 60,
+    height: 60,
+  });
 
-  const [pdfModalVisible, setPdfModalVisible] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState("");
-  const [pdfTitle, setPdfTitle] = useState("App Guide");
+  const [pdfState, setPdfState] = useState({
+    visible: false,
+    url: "",
+    title: t("app_guide"),
+  });
 
-  const getLogo = async () => {
+  const getLogo = useCallback(async () => {
     try {
       const storedData = await AsyncStorage.getItem("userDetails");
-      const userDetails = JSON.parse(storedData ?? "");
-      if (userDetails.companyLogo) setCompanyLogo(userDetails.companyLogo);
+      if (!storedData) return;
+
+      const userDetails = JSON.parse(storedData);
+      if (userDetails?.companyLogo) {
+        setCompanyLogo(userDetails.companyLogo);
+      }
     } catch (error) {
       console.error("Error fetching logo:", error);
     }
-  };
-  useEffect(() => {
-    getLogo();
   }, []);
 
-  const handleExit = () => {
+  useEffect(() => {
+    getLogo();
+  }, [getLogo]);
+
+  useEffect(() => {
+    const fetchProfileDetails = async () => {
+      const result = await viewProfile();
+      if (!result?.data) return;
+
+      if (result?.data?.companyLogo) {
+        setCompanyLogo(result?.data.companyLogo);
+      }
+
+      if (result?.data?.companyLogoWidth && result?.data?.companyLogoHeight) {
+        setCompanyLogoSize({
+          width: result?.data.companyLogoWidth,
+          height: result?.data.companyLogoHeight,
+        });
+      }
+      if (result?.data?.imageLimit && result?.data?.videoLimit) {
+        const imageLimit = result?.data.imageLimit || 100;
+        const videoLimit = result?.data.videoLimit || 200;
+        await AsyncStorage.setItem("imageLimit", JSON.stringify(imageLimit));
+        await AsyncStorage.setItem("videoLimit", JSON.stringify(videoLimit));
+      }
+      Object.entries(result.data).forEach(([key, value]) => {
+        dispatch(updateUserField({ key, value }));
+      });
+    };
+
+    fetchProfileDetails();
+  }, [dispatch]);
+
+  const handleExit = useCallback(() => {
     setExitModalVisible(false);
-    if (Platform.OS === 'android') {
+    if (Platform.OS === "android") {
       BackHandler.exitApp();
     }
-  };
+  }, []);
 
   useExitOnBack({
     onConfirmExit: () => setExitModalVisible(true),
   });
 
+  const handleOpenPDF = useCallback((url: string, title: string) => {
+    setPdfState({
+      visible: true,
+      url,
+      title,
+    });
+  }, []);
 
+  const handleClosePDF = useCallback(() => {
+    setPdfState({
+      visible: false,
+      url: "",
+      title: t("app_guide"),
+    });
+  }, []);
 
-  const handleOpenPDF: (url: string, title: string) => void = (url, title) => {
-    setPdfUrl(url);
-    setPdfTitle(title);
-    setPdfModalVisible(true);
-  };
-
-  const handleClosePDF = () => {
-    setPdfModalVisible(false);
-    setPdfUrl("");
-    setPdfTitle("App Guide");
-  };
-
-
-return (
-  <View style={styles.container}>
-    <HeaderBanner companyLogo={companyLogo} isProMax={isProMax} />
-    <View style={styles.contentContainer}>
-      <View style={styles.backgroundOverlay}>
-        <CustomLottie isBlurView={false} />
-      </View>
-
-      <ExitAppModal
-        exitModalVisible={exitModalVisible}
-        setExitModalVisible={setExitModalVisible}
-        onExit={handleExit}
+  return (
+    <View style={styles.container}>
+      <HeaderBanner
+        companyLogo={companyLogo}
+        isProMax={isProMax}
+        companyLogoSize={companyLogoSize}
       />
 
-      <View style={styles.featureFrameContainer}>
-        <FeatureFrame onOpenPDF={handleOpenPDF} />
+      <View style={styles.contentContainer}>
+        <View style={styles.backgroundOverlay}>
+          <CustomLottie isBlurView={Platform.OS === "ios" ? true : false} />
+        </View>
+
+        <ExitAppModal
+          exitModalVisible={exitModalVisible}
+          setExitModalVisible={setExitModalVisible}
+          onExit={handleExit}
+        />
+
+        <View style={styles.featureFrameContainer}>
+          <FeatureFrame onOpenPDF={handleOpenPDF} />
+        </View>
       </View>
+
+      <PDFModal
+        visible={pdfState.visible}
+        onClose={handleClosePDF}
+        pdfUrl={pdfState.url}
+        title={pdfState.title}
+      />
     </View>
-
-    {/* <NotificationPermissionModal /> */}
-
-    <PDFModal
-      visible={pdfModalVisible}
-      onClose={handleClosePDF}
-      pdfUrl={pdfUrl}
-      title={pdfTitle}
-    />
-  </View>
-);
+  );
 };
+
+export default Home;
 
 const styles = StyleSheet.create({
   container: {
@@ -105,9 +155,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   contentContainer: {
+    flex: 1,
     alignItems: "center",
     backgroundColor: "#fff",
-    flex: 1,
   },
   backgroundOverlay: {
     position: "absolute",
@@ -119,11 +169,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFFB2",
   },
   featureFrameContainer: {
-    flex: 1,
     position: "absolute",
-    bottom: "6%",
+    bottom: "10%",
+    flex: 1,
     paddingHorizontal: 8,
   },
 });
-
-export default Home;

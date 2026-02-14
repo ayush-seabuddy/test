@@ -1,5 +1,3 @@
-// types/chatRoom.ts  (or put it wherever you keep your types)
-
 export interface ChatParticipant {
   userId: string
   socketId?: string
@@ -10,13 +8,6 @@ export interface ChatParticipant {
   isRead: boolean
   unReadMessages: number
   lastReadAt: string | null
-}
-
-export interface MessageUser {
-  id: string
-  fullName: string
-  email: string
-  profileUrl: string | null
 }
 
 export interface LastMessage {
@@ -87,12 +78,12 @@ export interface MessageUser {
 }
 
 export interface MessageReaction {
-  id: string;
+  id?: string;
   userId: string;
   messageId: string;
   reaction: string;       // "❤️" | "😂" | "😊" etc.
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ParentMessage {
@@ -122,11 +113,13 @@ export interface ChatMessage {
   caption: string | null;
   fileName: string | null;
   thumbnail: string | null;
-  createdAtId: string;
+  createdAtId: string|number;
   status: "ACTIVE" | "EDIT" | "DELETE" | string;
   createdAt: string;
   updatedAt: string;
   messageUser: MessageUser;
-  parentMessage: ParentMessage | null;
+  parentMessage?: ParentMessage | null;
   chatReactionDetails: MessageReaction[];
+  participants: ChatParticipant[];
+  type?: 'message';
 }

@@ -8,7 +8,7 @@ import { ChatMessage } from "../screens/chat/types/chatRoom";
  * Page 2 = older than page 1, etc.
  */
 export function useLoadPreviousMessages(chatRoomId: string, limit = 30) {
-  
+
   const loadPage = useCallback(
     async (page: number = 1): Promise<ChatMessage[]> => {
       if (page < 1) page = 1;
@@ -55,13 +55,15 @@ export function useLoadPreviousMessages(chatRoomId: string, limit = 30) {
         LIMIT ? OFFSET ?
       `, [chatRoomId, limit, offset]);
 
-      
+
       let formateMessages = rows.map(row => {
         let reactions: any[] = [];
         if (row.reactions_json && row.reactions_json !== "null") {
           try {
             reactions = JSON.parse(row.reactions_json);
-          } catch (e) {}
+          } catch (error) {
+            console.log('Error', error)
+          }
         }
 
         const messageUser = row.mu_id ? {

@@ -1,14 +1,22 @@
-import React from "react";
-import { View, Text, Image, StyleSheet } from "react-native";
-import { useTranslation } from "react-i18next";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { Image, StyleSheet, Text, View } from "react-native";
 
 type HeaderBannerProps = {
   companyLogo?: string;
   isProMax?: boolean;
+  companyLogoSize?: {
+    width: number;
+    height: number;
+  };
 };
 
-const HeaderBanner: React.FC<HeaderBannerProps> = ({ companyLogo, isProMax = false }) => {
+const HeaderBanner: React.FC<HeaderBannerProps> = ({ companyLogo, isProMax = false , companyLogoSize={
+  width: 60,
+  height: 60,
+} }) => {
+  console.log("companyLogoSize: ", companyLogoSize);
   const { t } = useTranslation();
 
   return (
@@ -19,7 +27,7 @@ const HeaderBanner: React.FC<HeaderBannerProps> = ({ companyLogo, isProMax = fal
         <View style={styles.logoContainer}>
           {companyLogo ? (
             <Image
-              style={styles.companyLogo}
+              style={companyLogoSize}
               resizeMode="contain"
               source={{ uri: companyLogo }}
             />
@@ -57,24 +65,24 @@ const styles = StyleSheet.create({
   topRow: {
     flexDirection: "row",
     width: "100%",
-    marginHorizontal: 15,
+    marginHorizontal: 16,
     justifyContent: "space-between",
-    marginTop: 10,
+    marginTop: 5,
   },
   topRowProMax: {
     marginTop: 35,
   },
   logoContainer: {
-    padding: 20,
+    marginLeft: 16,
   },
   companyLogo: {
-    width: 55,
-    height: 55,
+    width: 60,
+    height: 60,
   },
   partnerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 30,
+    marginRight: 20,
     gap: 5,
   },
   partnerText: {
@@ -86,7 +94,7 @@ const styles = StyleSheet.create({
     width: 55,
     height: 55,
   },
- illustrativeIcon: {
+  illustrativeIcon: {
     width: "80%",
     height: "75%",
   },

@@ -1,31 +1,31 @@
-import React, { useEffect, useState, useRef } from "react";
-import {
-  Dimensions,
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-  TextInput,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
-  Keyboard,
-  Platform,
-} from "react-native";
-import { ImagesAssets } from "../assets/ImagesAssets";
-import { useFormik } from "formik";
-import PhoneInput, { getCountryByPhoneNumber } from "react-native-international-phone-number";
-import Colors from "../colors/Colors";
-import { MultiSelect } from "react-native-element-dropdown";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
-import { apiServerUrl } from "../Api";
+import { useFormik } from "formik";
+import { useEffect, useRef, useState } from "react";
+import {
+  Dimensions,
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from "react-native";
+import { MultiSelect } from "react-native-element-dropdown";
+import PhoneInput, { getCountryByPhoneNumber } from "react-native-international-phone-number";
 import Toast from "react-native-toast-message";
-import Loader from "../component/Loader";
+import * as Yup from "yup";
+import { apiServerUrl } from "../Api";
+import { ImagesAssets } from "../assets/ImagesAssets";
+import Colors from "../colors/Colors";
 import CustomDropdown from "../CommonApi";
 import ProfleSettingHeader from "../component/headers/ProfileHeader/ProfleSettingHeader";
-import * as Yup from "yup";
+import Loader from "../component/Loader";
 import CustomDateTimePicker from "../component/Modals/CustomDateTimePicker";
 
 const { width, height } = Dimensions.get("screen");
@@ -255,7 +255,8 @@ const EditProfile = ({ navigation, route }) => {
           setErrors({});
         }
         else{
-          await validationSchema.validate(values, { abortEarly: false });
+         const data = await validationSchema.validate(values, { abortEarly: false });
+         console.log("data:sdlfksflksdf ", data);
           setErrors({});
         }
        
@@ -314,6 +315,7 @@ const EditProfile = ({ navigation, route }) => {
           navigation.goBack();
         }
       } catch (error) {
+        console.log("error:sdfdsjlfksdlfsdk ", error);
         if (error.name === "ValidationError") {
           const validationErrors = {};
           // Collect all error messages

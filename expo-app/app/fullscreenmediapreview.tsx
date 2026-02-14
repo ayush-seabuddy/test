@@ -1,10 +1,8 @@
-// FullScreenMediaModal.tsx
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Modal,
   StyleSheet,
   View,
-  ScrollView,
   Dimensions,
   Pressable,
   TouchableOpacity,
@@ -12,11 +10,11 @@ import {
   PanResponder,
   StatusBar,
 } from "react-native";
-import { useRouter } from "expo-router";
-import { X } from "lucide-react-native";
-import { Image } from "expo-image";
-import { VideoView, useVideoPlayer } from "expo-video";
+import { X, Volume2, VolumeX, ChevronLeft, ChevronRight } from "lucide-react-native";
+import ImageViewer from "react-native-image-zoom-viewer";
+import Video, { VideoRef } from "react-native-video";
 import Colors from "@/src/utils/Colors";
+import CommonLoader from "@/src/components/CommonLoader";
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -40,81 +38,53 @@ const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
 }) => {
   const [activeIndex, setActiveIndex] = useState(initialIndex);
   const [showUI, setShowUI] = useState(true);
-  const scrollViewRef = useRef<ScrollView>(null);
+  const [isMuted, setIsMuted] = useState(false);
+  const [loadingStates, setLoadingStates] = useState<{ [key: number]: boolean }>({});
+  const [paused, setPaused] = useState(false);
 
-  // Animation values for swipe-to-dismiss
   const translateY = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(1)).current;
 
-  // Video players pre-created for performance
-  const videoUris = useMemo(() => media.filter(m => m.type === "video").map(m => m.uri), [media]);
+  const videoRefs = useRef<{ [key: number]: VideoRef | null }>({});
 
-  const players = videoUris.map(uri =>
-    useVideoPlayer(uri, player => {
-      player.loop = true;
-      player.muted = false;
-      player.volume = 1.0;
-    })
-  );
-
-  const playerMap = useMemo(() => {
-    const map = new Map<string, any>();
-    videoUris.forEach((uri, i) => map.set(uri, players[i]));
-    return map;
-  }, [videoUris, players]);
-
-  // Auto scroll to initial index
   useEffect(() => {
     if (visible) {
       setActiveIndex(initialIndex);
       setShowUI(true);
-      setTimeout(() => {
-        scrollViewRef.current?.scrollTo({
-          x: initialIndex * SCREEN_WIDTH,
-          animated: false,
-        });
-      }, 100);
+      setPaused(false);
+      setLoadingStates({});
+    } else {
+      setPaused(true);
     }
   }, [visible, initialIndex]);
 
-  // Play active video, pause others
-  useEffect(() => {
-    if (!visible) return;
+  const toggleUI = () => {
+    setShowUI((prev) => !prev);
+  };
 
-    media.forEach((item, idx) => {
-      const player = playerMap.get(item.uri);
-      if (!player || item.type !== "video") return;
+  const toggleMute = () => {
+    setIsMuted((prev) => !prev);
+  };
 
-      if (idx === activeIndex) {
-        player.play();
-        player.seekBy(-player.position); // safely resets to start
-      } else {
-        player.pause();
-      }
-    });
-  }, [activeIndex, visible, media, playerMap]);
-  // Handle horizontal scroll
-  const handleScroll = (event: any) => {
-    const x = event.nativeEvent.contentOffset.x;
-    const newIndex = Math.round(x / SCREEN_WIDTH);
-    if (newIndex !== activeIndex) {
-      setActiveIndex(newIndex);
+  const goToPrev = () => {
+    if (activeIndex > 0) {
+      setActiveIndex(activeIndex - 1);
     }
   };
 
-  // Toggle UI on tap
-  const toggleUI = () => {
-    setShowUI(prev => !prev);
+  const goToNext = () => {
+    if (activeIndex < media.length - 1) {
+      setActiveIndex(activeIndex + 1);
+    }
   };
 
-  // Swipe down to close
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dy) > 20,
       onPanResponderMove: (_, gesture) => {
         if (gesture.dy > 0) {
           translateY.setValue(gesture.dy);
-          opacity.setValue(1 - gesture.dy / SCREEN_HEIGHT * 0.7);
+          opacity.setValue(1 - (gesture.dy / SCREEN_HEIGHT) * 0.7);
         }
       },
       onPanResponderRelease: (_, gesture) => {
@@ -152,45 +122,63 @@ const FullScreenMediaModal: React.FC<FullScreenMediaModalProps> = ({
     })
   ).current;
 
+  const setLoading = (index: number, loading: boolean) => {
+    setLoadingStates((prev) => ({ ...prev, [index]: loading }));
+  };
+
+  const handleIndexChange = (index?: number) => {
+    if (index !== undefined) {
+      setActiveIndex(index);
+    }
+  };
+
   const renderItem = (item: MediaItem, index: number) => {
     if (item.type === "video") {
-      const player = playerMap.get(item.uri);
+      const isActive = index === activeIndex;
 
       return (
-        <Pressable
-          key={index}
-          style={styles.mediaContainer}
-          onPress={toggleUI}
-          {...panResponder.panHandlers}
-        >
-          {player && (
-            <VideoView
-              player={player}
-              style={StyleSheet.absoluteFillObject}
-              contentFit="contain"
-              nativeControls={showUI}
-            />
+        <View key={index} style={styles.mediaContainer}>
+          <Video
+            ref={(ref) => {
+              videoRefs.current[index] = ref;
+            }}
+            source={{ uri: item.uri }}
+            style={StyleSheet.absoluteFillObject}
+            resizeMode="contain"
+            repeat={true}
+            paused={!isActive || paused}
+            muted={isMuted}
+            controls={showUI}
+            onLoadStart={() => setLoading(index, true)}
+            onLoad={() => setLoading(index, false)}
+            onError={() => setLoading(index, false)}
+            playInBackground={false}
+            playWhenInactive={false}
+          />
+
+          {loadingStates[index] && (
+            <View style={styles.loaderContainer}>
+              <CommonLoader fullScreen color="#ffffff" />
+            </View>
           )}
-        </Pressable>
+
+          {!showUI && (
+            <Pressable style={StyleSheet.absoluteFillObject} onPress={toggleUI} />
+          )}
+        </View>
       );
     }
-return (
-  <Pressable
-    key={index}
-    style={styles.mediaContainer}
-    onPress={toggleUI}
-    {...panResponder.panHandlers}
-  >
-  <Image
-    source={{ uri: item.uri }}
-    style={StyleSheet.absoluteFillObject}
-    contentFit="contain"
-    transition={300}
-  />
-  </Pressable>
-);
 
+    return null;
   };
+
+  const currentMedia = media[activeIndex];
+  const isVideo = currentMedia?.type === "video";
+
+  const imageUrls = media.map((item) => ({ url: item.uri }));
+
+  const showLeftArrow = activeIndex > 0;
+  const showRightArrow = activeIndex < media.length - 1;
 
   return (
     <Modal
@@ -201,10 +189,7 @@ return (
       onRequestClose={onClose}
     >
       <Animated.View
-        style={[
-          styles.modalBackdrop,
-          { opacity },
-        ]}
+        style={[styles.modalBackdrop, { opacity }]}
         pointerEvents="box-none"
       >
         <StatusBar hidden={!showUI} />
@@ -214,44 +199,80 @@ return (
             flex: 1,
             transform: [{ translateY }],
           }}
-          {...panResponder.panHandlers}
         >
-          {/* Close Button */}
           <Animated.View
-            style={[
-              styles.closeButton,
-              !showUI && styles.hidden,
-            ]}
+            style={[styles.topBar, !showUI && styles.hidden]}
           >
-            <TouchableOpacity onPress={onClose} style={styles.closeButtonInner}>
+            {isVideo && (
+              <TouchableOpacity onPress={toggleMute} style={styles.iconButton}>
+                {isMuted ? (
+                  <VolumeX size={24} color="#fff" />
+                ) : (
+                  <Volume2 size={24} color="#fff" />
+                )}
+              </TouchableOpacity>
+            )}
+
+            <View style={{ flex: 1 }} />
+
+            <TouchableOpacity onPress={onClose} style={styles.iconButton}>
               <X size={24} color="white" strokeWidth={2} />
             </TouchableOpacity>
           </Animated.View>
 
-          {/* Media Carousel */}
-          <ScrollView
-            ref={scrollViewRef}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onScroll={handleScroll}
-            onMomentumScrollEnd={handleScroll}
-            scrollEventThrottle={16}
-            decelerationRate="fast"
-            contentContainerStyle={{
-              width: SCREEN_WIDTH * media.length,
-            }}
-          >
-            {media.map(renderItem)}
-          </ScrollView>
+          {isVideo ? (
+            <View {...panResponder.panHandlers} style={{ flex: 1 }}>
+              {renderItem(currentMedia, activeIndex)}
+            </View>
+          ) : (
+            <ImageViewer
+              imageUrls={imageUrls}
+              index={activeIndex}
+              onChange={handleIndexChange}
+              enableSwipeDown={true}
+              onSwipeDown={onClose}
+              onClick={toggleUI}
+              renderIndicator={() => <View />}
+              loadingRender={() => (
+                <View style={styles.loaderContainer}>
+                  <CommonLoader fullScreen color="#ffffff" />
+                </View>
+              )}
+              backgroundColor="transparent"
+              enableImageZoom={true}
+              saveToLocalByLongPress={false}
+              doubleClickInterval={250}
+              style={{ flex: 1 }}
+            />
+          )}
 
-          {/* Pagination Dots */}
+          {showUI && media.length > 1 && (
+            <>
+              {showLeftArrow && (
+                <TouchableOpacity
+                  style={[styles.navButton, styles.navButtonLeft]}
+                  onPress={goToPrev}
+                  activeOpacity={0.7}
+                >
+                  <ChevronLeft size={24} color="#ffffff" strokeWidth={1.5} />
+                </TouchableOpacity>
+              )}
+
+              {showRightArrow && (
+                <TouchableOpacity
+                  style={[styles.navButton, styles.navButtonRight]}
+                  onPress={goToNext}
+                  activeOpacity={0.7}
+                >
+                  <ChevronRight size={24} color="#ffffff" strokeWidth={1.5} />
+                </TouchableOpacity>
+              )}
+            </>
+          )}
+
           {media.length > 1 && (
             <Animated.View
-              style={[
-                styles.pagination,
-                !showUI && styles.hidden,
-              ]}
+              style={[styles.pagination, !showUI && styles.hidden]}
             >
               {media.map((_, i) => (
                 <View
@@ -272,7 +293,6 @@ return (
 
 export default FullScreenMediaModal;
 
-// Styles
 const styles = StyleSheet.create({
   modalBackdrop: {
     flex: 1,
@@ -284,16 +304,28 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  closeButton: {
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  topBar: {
     position: "absolute",
     top: 50,
+    left: 20,
     right: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     zIndex: 20,
   },
-  closeButtonInner: {
-    padding: 12,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    borderRadius: 30,
+  iconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   hidden: {
     opacity: 0,
@@ -305,6 +337,7 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: "row",
     justifyContent: "center",
+    zIndex: 10,
   },
   dot: {
     width: 8,
@@ -319,5 +352,26 @@ const styles = StyleSheet.create({
   },
   dotInactive: {
     backgroundColor: "rgba(255,255,255,0.4)",
+  },
+
+  navButton: {
+    position: "absolute",
+    top: "50%",
+    transform: [{ translateY: -30 }],
+    width: 40,
+    borderWidth: 0.5,
+    borderColor: '#fff',
+    height: 40,
+    borderRadius: 30,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    alignItems: "center",
+    // zIndex: 15,
+  },
+  navButtonLeft: {
+    left: 16,
+  },
+  navButtonRight: {
+    right: 16,
   },
 });

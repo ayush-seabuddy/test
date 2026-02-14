@@ -1,28 +1,28 @@
-import React, { useState, useRef, useEffect } from "react";
+import { forgotpassword, verifyotp } from "@/src/apis/apiService";
+import CustomLottie from "@/src/components/CustomLottie";
+import GlobalButton from "@/src/components/GlobalButton";
+import { showToast } from "@/src/components/GlobalToast";
+import Colors from "@/src/utils/Colors";
+import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Mail } from "lucide-react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
-  View,
-  Text,
-  StyleSheet,
-  Dimensions,
   Animated,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
+  Dimensions,
   Keyboard,
+  KeyboardAvoidingView,
   Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import { OtpInput } from "react-native-otp-entry";
-import { Mail, ArrowRight, LogIn } from "lucide-react-native";
-import CustomLottie from "@/src/components/CustomLottie";
-import Colors from "@/src/utils/Colors";
-import { useTranslation } from "react-i18next";
-import { ImagesAssets } from "@/src/utils/ImageAssets";
-import GlobalButton from "@/src/components/GlobalButton";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { showToast } from "@/src/components/GlobalToast";
-import { forgotpassword, verifyotp } from "@/src/apis/apiService";
 
-const { width, height } = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 
 const OTPVerification = () => {
   const { email } = useLocalSearchParams();
@@ -32,6 +32,7 @@ const OTPVerification = () => {
   const translateY = useRef(new Animated.Value(height)).current;
   const { t } = useTranslation();
   const router = useRouter();
+
   useEffect(() => {
     Animated.timing(translateY, {
       toValue: 0,
@@ -50,20 +51,19 @@ const OTPVerification = () => {
         router.push({
           pathname: '/auth/ResetPassword',
           params: { email }
-        })
-      }
-      else {
+        });
+      } else {
         showToast.error(t('oops'), apiResponse.message);
       }
-    }
-    catch (error) {
+    } catch (error) {
       setloading(false);
+      console.log('Error', error)
       showToast.error(
         t('error'),
         t('somethingwentwrong')
       );
     }
-  }
+  };
 
   const resendOTP = async () => {
     setloading(true);
@@ -74,100 +74,95 @@ const OTPVerification = () => {
         showToast.success(
           t('success'),
           apiResponse.message,
-        )
-      }
-      else {
+        );
+      } else {
         showToast.error(
           t('oops'),
           apiResponse.message,
-        )
+        );
       }
-    }
-    catch (error) {
+    } catch (error) {
+      console.log('Error', error)
       setloading(false);
       showToast.error(
         t('error'),
         t('somethingwentwrong')
       );
     }
-
   };
 
   return (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.innerContainer}>
+          <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} />
 
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.innerContainer}>
+          <View style={styles.topBackground} />
+          <Animated.Image
+            source={ImagesAssets.splashCaptainImage}
+            style={[styles.logo, { transform: [{ translateY }] }]}
+          />
 
-        <CustomLottie isBlurView={false} />
+          <View style={styles.bottomCard}>
+            <View style={styles.cardContent}>
+              <Text style={styles.title}>{t('emailverification')}</Text>
 
-        <View style={styles.topBackground} />
-        <Animated.Image
-          source={ImagesAssets.splashCaptainImage}
-          style={[styles.logo, { transform: [{ translateY }] }]}
-        />
-
-        <View style={styles.bottomCard}>
-          <View style={styles.cardContent}>
-            <Text style={styles.title}>{t('emailverification')}</Text>
-
-            <View style={styles.emailContainer}>
-              <Mail size={20} color="#161616" style={styles.emailIcon} />
-              <Text style={styles.subtitle}>
-                {t('wehavesentthecodedescription', { email: email })}
-              </Text>
-            </View>
-
-            <View style={styles.otpContainer}>
-              <OtpInput
-                autoFocus={false}
-                numberOfDigits={6}
-                focusColor={Colors.lightGreen}
-                onFilled={(value) => setOtp(value)}
-                onTextChange={(value) => setOtp(value)}
-                theme={{
-                  pinCodeContainerStyle: styles.otpBox,
-                  focusedPinCodeContainerStyle: styles.otpBoxFocused,
-                  pinCodeTextStyle: styles.otpText,
-                }}
-              />
-            </View>
-
-
-            <GlobalButton
-              title={t('continue')}
-              onPress={verifyOTP}
-              buttonStyle={{width:'90%'}}
-              loading={loading}
-              disabled={otp.length !== 6}
-            />
-            <TouchableOpacity style={styles.resendContainer}
-              onPress={resendOTP}
-            >
-              <Text style={styles.resendText}>{t('clickheretoresend')}</Text>
-            </TouchableOpacity>
-
-            <View style={styles.loginContainer}>
-              <Text style={styles.loginPrompt}>{t('alreadyhaveanaccount')}</Text>
-              <TouchableOpacity onPress={() => { router.replace('/auth/Login') }}>
-                <Text style={styles.loginLink}>
-                  {t('loginNow')}
+              <View style={styles.emailContainer}>
+                <Mail size={20} color="#161616" style={styles.emailIcon} />
+                <Text style={styles.subtitle}>
+                  {t('wehavesentthecodedescription', { email: email })}
                 </Text>
+              </View>
+
+              <View style={styles.otpContainer}>
+                <OtpInput
+                  autoFocus={false}
+                  numberOfDigits={6}
+                  focusColor={Colors.lightGreen}
+                  onFilled={(value) => setOtp(value)}
+                  onTextChange={(value) => setOtp(value)}
+                  theme={{
+                    pinCodeContainerStyle: styles.otpBox,
+                    focusedPinCodeContainerStyle: styles.otpBoxFocused,
+                    pinCodeTextStyle: styles.otpText,
+                  }}
+                />
+              </View>
+
+              <GlobalButton
+                title={t('continue')}
+                onPress={verifyOTP}
+                buttonStyle={{ width: '90%' }}
+                loading={loading}
+                disabled={otp.length !== 6}
+              />
+              <TouchableOpacity style={styles.resendContainer} onPress={resendOTP}>
+                <Text style={styles.resendText}>{t('clickheretoresend')}</Text>
               </TouchableOpacity>
+
+              <View style={styles.loginContainer}>
+                <Text style={styles.loginPrompt}>{t('alreadyhaveanaccount')}</Text>
+                <TouchableOpacity onPress={() => { router.replace('/auth/Login'); }}>
+                  <Text style={styles.loginLink}>
+                    {t('loginNow')}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </TouchableWithoutFeedback>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
 export default OTPVerification;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#CCCCCC",
-  },
   innerContainer: {
     flex: 1,
   },
@@ -206,6 +201,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: "WhyteInktrap-Bold",
     fontSize: 20,
+    lineHeight:20,
     color: "#161616",
     textAlign: "center",
     paddingTop: Platform.OS === "android" ? 0 : 10,
@@ -250,27 +246,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: "Poppins-Medium",
   },
-  continueButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    height: 50,
-    marginHorizontal: 22,
-    borderRadius: 10,
-    marginTop: 30,
-  },
-  buttonActive: {
-    backgroundColor: "#02130B",
-  },
-  buttonInactive: {
-    backgroundColor: "#808080",
-  },
-  continueText: {
-    color: "#fff",
-    fontSize: 18,
-    fontFamily: "Poppins-SemiBold",
-    marginRight: 8,
-  },
   resendContainer: {
     alignItems: "center",
     marginTop: 20,
@@ -297,7 +272,5 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins-SemiBold",
     color: "#06361F",
     marginLeft: 5,
-    flexDirection: "row",
-    alignItems: "center",
   },
 });

@@ -1,23 +1,23 @@
 import React from "react";
 import {
-  Text,
-  View,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
   Dimensions,
+  Image,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-import { useTranslation } from "react-i18next";
 import CustomLottie from "@/src/components/CustomLottie";
-import { ImagesAssets } from "@/src/utils/ImageAssets";
-import Colors from "@/src/utils/Colors";
-import { History, Home } from "lucide-react-native";
 import HelplineAndAICards from "@/src/components/HelplineComponent/HelplineCard";
-import AIJollieCard from "@/src/components/HelplineComponent/AIJollieCard";
+import Colors from "@/src/utils/Colors";
+import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { router } from "expo-router";
+import { History, Home } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
 
-const { width, height } = Dimensions.get("window");
-
+const { height } = Dimensions.get("window");
 const HelplineScreen = () => {
   const { t } = useTranslation();
 
@@ -26,10 +26,18 @@ const HelplineScreen = () => {
 
       <View style={styles.headerContainer}>
         <Text style={styles.title}>{t("helplines")}</Text>
-        <TouchableOpacity style={styles.historyButton}>
+        <TouchableOpacity style={styles.historyButton}
+          onPress={() => {
+            router.push('/complainthistory');
+          }}
+        >
           <History size={21} color="#000" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.homeButton}>
+        <TouchableOpacity style={styles.homeButton}
+          onPress={() => {
+            router.replace('/home')
+          }}
+        >
           <Home size={21} color="#000" />
         </TouchableOpacity>
       </View>
@@ -41,7 +49,7 @@ const HelplineScreen = () => {
       />
 
       <View style={styles.backgroundImage}>
-        <CustomLottie isBlurView={false} componentHeight={height * 0.9} />
+        <CustomLottie isBlurView={Platform.OS === 'ios' ? true : false} componentHeight={height * 0.9} />
       </View>
 
       <View style={styles.cardContainer}>
@@ -73,16 +81,16 @@ const styles = StyleSheet.create({
   },
   historyButton: {
     position: "absolute",
-    right: 62,
+    right: 70,
     backgroundColor: "#B0DB0266",
-    padding: 6,
+    padding: 5,
     borderRadius: 10,
   },
   homeButton: {
     position: "absolute",
-    right: 10,
+    right: 20,
     backgroundColor: "#B0DB0266",
-    padding: 6,
+    padding: 5,
     borderRadius: 10,
   },
   illustrativeIcon: {
@@ -98,7 +106,7 @@ const styles = StyleSheet.create({
   },
   cardContainer: {
     position: "absolute",
-    top: "28%",
+    top: "40%",
     left: 16,
     right: 16,
     bottom: 16,

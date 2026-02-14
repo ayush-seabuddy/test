@@ -1,106 +1,74 @@
-// CustomHeader.js
-import React, { useCallback, useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Platform,
-  Image,
-  TextInput,
-} from "react-native";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { getUnreadNotificationCount } from "@/src/apis/apiService";
 import Colors from "@/src/utils/Colors";
+import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { useFocusEffect , router } from "expo-router";
 import { House } from "lucide-react-native";
-import { router } from "expo-router";
+import React, { useCallback, useState } from "react";
+import {
+  Image,
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+type AppRoutes =
+  | "/notification"
+  | "/company-library"
+  | "/globalSearch"
+  | "/home";
 
 const SocialHeader = () => {
-  const navigation = useNavigation();
+  const [unreadNotification, setUnreadNotification] = useState(0);
 
-  const [Notification, setNotification] = useState([]);
-  const [unreadNotification, setUnreadNotification] = useState(0)
+  const fetchUnreadCount = useCallback(async () => {
+    try {
+      const response = await getUnreadNotificationCount();
+      setUnreadNotification(response.data.allNotifications ?? 0);
+    } catch (error) {
+      console.log("Error fetching unread notifications:", error);
+    }
+  }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      fetchUnreadCount();
+    }, [fetchUnreadCount])
+  );
 
-//   const GetAllNotification = async () => {
-//     const dbResult = await AsyncStorage.getItem("userDetails");
-//     const userDetails = JSON.parse(dbResult);
-//     try {
-//       const queryParams = new URLSearchParams({
-//         page: 1,
-//         limit: 100,
-//       }).toString();
-//       var response = await apiCallWithToken(
-//         apiServerUrl + "/user/getAllNotifications?" + queryParams,
-//         "GET",
-//         null,
-//         userDetails.authToken
-//       );
+  const navigateTo = (route: AppRoutes) => {
+    router.push(route);
+  };
 
+  const goHome = () => {
+    router.replace("/home");
+  };
 
-//       setNotification(response.result.notificationsList);
-//     } catch (error) {
-//       console.log(error);
-//     }
-//   };
-
-//   const unReadNotification = async () => {
-//     const dbResult = await AsyncStorage.getItem("userDetails");
-//     const userDetails = JSON.parse(dbResult);
-//     try {
-//       var response = await apiCallWithToken(
-//         apiServerUrl + "/user/getUnreadNotificationCount?",
-//         "GET",
-//         null,
-//         userDetails.authToken
-//       );
-//       setUnreadNotification(response.result.allNotifications);
-//     } catch (error) {
-//       console.log(error);
-//     }
-//   };
-
-//   useFocusEffect(
-//     useCallback(() => {
-//       GetAllNotification();
-//       unReadNotification();
-//       return () => {
-//       };
-//     }, [])
-//   );
-
-return (
+  return (
     <View style={styles.container}>
       <Image source={ImagesAssets.appTitleLogo} style={styles.titleLogo} />
 
       <View style={styles.iconGroup}>
-        {/* Notification Button */}
-        <TouchableOpacity style={styles.iconButton}>
+        {/* Notification */}
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigateTo("/notification")}>
           <View style={styles.iconWrapper}>
-            <Image source={ImagesAssets.notificationBell} style={styles.iconImage} />
-            <View style={styles.badgeWrapper}>
-              <Text style={styles.badgeText}>{Notification.length}</Text>
-            </View>
+            <Image source={ImagesAssets.notificationBell} style={styles.icon} />
+            {unreadNotification > 0 && <View style={styles.badgeDot} />}
           </View>
         </TouchableOpacity>
 
         {/* Company Library */}
-        <TouchableOpacity style={styles.iconButton}>
-          <View style={styles.iconWrapper}>
-            <Image source={ImagesAssets.companyLibraryLogo} style={styles.iconImage} />
-          </View>
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigateTo("/company-library")}>
+          <Image source={ImagesAssets.companyLibraryLogo} style={styles.icon} />
         </TouchableOpacity>
 
         {/* Search */}
-        <TouchableOpacity style={styles.iconButton}>
-          <View style={styles.iconWrapper}>
-            <Image source={ImagesAssets.searchLogo} style={styles.iconImage} />
-          </View>
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigateTo("/globalSearch")}>
+          <Image source={ImagesAssets.searchLogo} style={styles.icon} />
         </TouchableOpacity>
 
         {/* Home */}
-        <TouchableOpacity style={styles.homeButton} onPress={() => router.push("/home")}>
+        <TouchableOpacity style={styles.homeButton} onPress={goHome}>
           <House size={22} color="#000" />
         </TouchableOpacity>
       </View>
@@ -116,14 +84,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     height: 60,
-    paddingHorizontal: 10,
+    paddingHorizontal: 16,
     backgroundColor: Colors.white,
     ...Platform.select({
       ios: {
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,
-        shadowRadius: 3.5,
+        shadowRadius: 3.84,
       },
       android: {
         elevation: 5,
@@ -139,50 +107,39 @@ const styles = StyleSheet.create({
 
   iconGroup: {
     flexDirection: "row",
-    marginRight: 10,
+    alignItems: "center",
   },
 
   iconButton: {
-    marginLeft: 10,
+    marginLeft: 14,
   },
 
   iconWrapper: {
-    borderRadius: 8,
-    padding: 4,
     position: "relative",
   },
 
-  iconImage: {
+  icon: {
     width: 24,
     height: 24,
     resizeMode: "contain",
   },
 
-  badgeWrapper: {
+  badgeDot: {
     position: "absolute",
-    top: -5,
-    right: -5,
+    top: -2,
+    right: 1,
+    width: 10,
+    height: 10,
     backgroundColor: Colors.lightGreen,
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 4,
-    borderWidth: 0.5,
+    borderRadius: 5,
+    borderWidth: 1.5,
     borderColor: Colors.white,
-  },
-
-  badgeText: {
-    color: Colors.white,
-    fontSize: 12,
-    fontWeight: "bold",
   },
 
   homeButton: {
     backgroundColor: "#B0DB0266",
     borderRadius: 10,
     padding: 6,
-    marginLeft: 10,
+    marginLeft: 13,
   },
 });

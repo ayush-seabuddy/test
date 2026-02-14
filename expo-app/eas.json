@@ -1,30 +1,50 @@
 {
   "cli": {
-    "version": ">= 5.0.0"
+    "version": ">= 5.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal",
-      "env": {
-        "APP_ENV": "local"
-      }
-    },
     "preview": {
+      "channel": "preview",
       "distribution": "internal",
+      "autoIncrement": true,
       "env": {
-        "APP_ENV": "staging"
+        "APP_ENV": "staging",
+        "EXPO_PUBLIC_API_URL": "$API_URL",
+        "EXPO_PUBLIC_SOCKET_URL": "$SOCKET_URL"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
       }
     },
     "production": {
+      "channel": "production",
+      "distribution": "store",
+      "autoIncrement": true,
+      "env": {
+        "APP_ENV": "production",
+        "EXPO_PUBLIC_API_URL": "$API_URL",
+        "EXPO_PUBLIC_SOCKET_URL": "$SOCKET_URL"
+      },
       "android": {
-        "gradleCommand": ":app:assembleRelease"
+        "gradleCommand": ":app:bundleRelease"
       },
       "ios": {
-        "buildConfiguration": "Release"
+        "buildConfiguration": "Release",
+        "autoIncrement": "buildNumber"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "track": "internal"
       },
-      "env": {
-        "APP_ENV": "production"
+      "ios": {
+        "ascAppId": "6739109542"
       }
     }
   }

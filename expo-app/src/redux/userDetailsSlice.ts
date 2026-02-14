@@ -1,5 +1,5 @@
-import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
 export interface UserDetails {
   authToken: string;
@@ -56,6 +56,7 @@ const initialState: UserDetails = {
   status: "",
   uniqueId: "",
   userType: "",
+  isNotification: false
 };
 
 export const userDetailsSlice = createSlice({
