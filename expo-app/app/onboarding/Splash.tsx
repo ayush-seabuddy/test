@@ -138,11 +138,34 @@ const Splash = () => {
         }
 
         const userDetails = JSON.parse(userDetailsStr);
+
         const userId = userDetails?.id;
+        const shipId = userDetails?.shipId;
+        const employerId = userDetails?.employerId;
 
         if (!userId) {
           await forceLogout();
           return;
+        }
+
+        await AsyncStorage.setItem("userId", userId.toString());
+
+        if (shipId) {
+          await AsyncStorage.setItem("shipId", shipId.toString());
+        }
+
+        if (employerId) {
+          await AsyncStorage.setItem("employerId", employerId.toString());
+        }
+
+        if (userDetails?.email) {
+          posthog?.identify?.(userDetails.email, {
+            email: userDetails.email,
+            name: userDetails.name,
+            userId: userDetails.id,
+            shipId: shipId,
+            employerId: employerId,
+          });
         }
 
         const userData = await viewUserProfile(userId);
@@ -201,7 +224,7 @@ const Splash = () => {
         await forceLogout();
       }
     },
-    [router, viewUserProfile, forceLogout],
+    [router, viewUserProfile, forceLogout, posthog],
   );
 
   useEffect(() => {
