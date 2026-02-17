@@ -172,7 +172,7 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
     if (initialLoading) return null;
 
     return (
-      <View style={styles.emptyState}>
+      <View style={styles.emptyFullScreen}>
         <EmptyComponent
           text={
             !isOnline ? t("nointernetconnection") : t("youarenotpostedanything")
@@ -216,9 +216,10 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
       maxToRenderPerBatch={5}
       updateCellsBatchingPeriod={50}
       keyboardShouldPersistTaps="always"
-      contentContainerStyle={
-        posts.length === 0 ? styles.emptyContainer : undefined
-      }
+      contentContainerStyle={[
+        { flexGrow: 1 },
+        posts.length === 0 && { flex: 1 },
+      ]}
     />
   );
 };
@@ -229,6 +230,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#fff",
+  },
+  emptyFullScreen: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   footerLoader: {
     paddingVertical: 30,
