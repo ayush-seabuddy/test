@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
-import { ChevronLeft } from 'lucide-react-native';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import Video from 'react-native-video';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -172,7 +171,7 @@ const PreviewPostScreen: React.FC = () => {
 
             if (apiResponse.success && apiResponse.status === 200) {
                 showToast.success(t('success'), t('postcreatedsuccessfully'));
-                router.push('/(bottomtab)/(community)/social');
+                router.replace('/(bottomtab)/(community)/social');
             } else {
                 showToast.error(t('oops'), apiResponse.message);
             }
@@ -203,7 +202,7 @@ const PreviewPostScreen: React.FC = () => {
 
             if (apiResponse.success && apiResponse.status === 200) {
                 showToast.success(t('success'), t('postupdatedsuccessfully'));
-                router.push('/(bottomtab)/(community)/social');
+                router.replace('/(bottomtab)/(community)/social');
             } else {
                 showToast.error(t('oops'), apiResponse.message);
             }
