@@ -6,7 +6,6 @@ import {
 import { RootState } from "@/src/redux/store";
 import Colors from "@/src/utils/Colors";
 import socketService from "@/src/utils/socketService";
-import { useNavigation } from "@react-navigation/native";
 import { router, Tabs, useFocusEffect, usePathname } from "expo-router";
 import React, { useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -17,15 +16,7 @@ export default function CommunityLayout() {
   const { t } = useTranslation();
   const pathname = usePathname();
   const routes = ["/social", "/chats"] as const;
-  const navigation = useNavigation();
 
-  useEffect(() => {
-    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
-      e.preventDefault();
-    });
-
-    return unsubscribe;
-  }, []);
   const { unreadMessageCount } = useSelector(
     (state: RootState) => state.chatList,
   );
