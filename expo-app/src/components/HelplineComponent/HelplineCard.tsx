@@ -23,6 +23,7 @@ import CommonLoader from '../CommonLoader';
 import { showToast } from '../GlobalToast';
 import EmergencyModal from '../Modals/EmergencyModal';
 import AIJollieCard from './AIJollieCard';
+import { Logger } from '@/src/utils/logger';
 
 interface Helpline {
     id: string;
@@ -58,7 +59,7 @@ const HelplineAndAICards = () => {
                 await Freshchat.init(config);
 
                 const userData = await getUserDetails();
-                console.log("User data loaded:", userData);
+                Logger.info("User data loaded:", userData);
 
                 const fcUser = new FreshchatUser();
 
@@ -84,13 +85,13 @@ const HelplineAndAICards = () => {
                         phone: userData.mobileNumber || '',
                     });
 
-                    console.log(`Freshchat ready → ${fcUser.firstName} ${fcUser.lastName}`);
+                    Logger.info(`Freshchat ready → ${fcUser.firstName} ${fcUser.lastName}`);
                 } else {
                     Freshchat.setUser(fcUser);
                     Freshchat.identifyUser(`guest_${Date.now()}`, null);
                 }
             } catch (err: any) {
-                console.warn("Freshchat init failed:", err);
+                Logger.error("Freshchat init failed:", err);
             }
         };
 
@@ -100,7 +101,7 @@ const HelplineAndAICards = () => {
     useEffect(() => {
         const unreadListener = () => {
             Freshchat.getUnreadCountAsync((data) => {
-                if (data?.status) console.log("Unread messages:", data.count);
+                if (data?.status) Logger.info("Unread messages:", { UnreadMessageCount: data.count ?? 0 });
             });
         };
         Freshchat.addEventListener(Freshchat.EVENT_UNREAD_MESSAGE_COUNT_CHANGED, unreadListener);
@@ -122,7 +123,7 @@ const HelplineAndAICards = () => {
                 setDynamicHelplines([]);
             }
         } catch (e) {
-            console.log('Error', e)
+            Logger.error('Error', {Error:String(e)})
             showToast.error(t('oops'), t('somethingwentwrong'));
             setDynamicHelplines([]);
         } finally {

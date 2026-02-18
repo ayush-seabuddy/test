@@ -12,6 +12,7 @@ import { getDataUsage } from '@/src/apis/apiService';
 import CommonLoader from '@/src/components/CommonLoader';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
+import { Logger } from '@/src/utils/logger';
 
 const GraphScreen: React.FC = () => {
   const [dataUsed, setDataUsed] = useState<string>('0');
@@ -35,7 +36,7 @@ const GraphScreen: React.FC = () => {
         setDataUsed('0');
       }
     } catch (error) {
-      console.error('Error fetching data usage:', error);
+      Logger.error('Error fetching data usage:', {Error:String(error)});
       setDataUsed('0');
     } finally {
       setLoading(false);

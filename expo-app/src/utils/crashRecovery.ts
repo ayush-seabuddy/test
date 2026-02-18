@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Updates from 'expo-updates';
 import { Platform } from 'react-native';
+import { Logger } from "@/src/utils/logger";
 
 const CRASH_KEY = 'app_crash_count';
 const MAX_CRASHES = 3;
@@ -11,7 +12,7 @@ export async function safeReload() {
 
         if (count >= MAX_CRASHES) {
             await AsyncStorage.removeItem(CRASH_KEY);
-            return; // stop infinite loop
+            return;
         }
 
         await AsyncStorage.setItem(CRASH_KEY, String(count + 1));
@@ -24,7 +25,7 @@ export async function safeReload() {
             }
         }, 1200);
     } catch (e) {
-        console.error('safeReload failed', e);
+        Logger.error('safeReload failed', {Error:String(e)});
     }
 }
 

@@ -1,8 +1,13 @@
 import { getallcontents } from "@/src/apis/apiService";
 import CommonLoader from "@/src/components/CommonLoader";
 import ShowContentCard from "@/src/components/ShowContentCard";
-import { listAllCategory, setContentsLoading, updateContentList } from "@/src/redux/ContentSlice";
+import {
+  listAllCategory,
+  setContentsLoading,
+  updateContentList,
+} from "@/src/redux/ContentSlice";
 import { AppDispatch, RootState } from "@/src/redux/store";
+import { Logger } from "@/src/utils/logger";
 import { ChevronRight } from "lucide-react-native";
 import React, { useEffect } from "react";
 import {
@@ -10,7 +15,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -29,74 +34,85 @@ interface CategorySectionProps {
 const CategorySection: React.FC<CategorySectionProps> = ({
   onCategoryPress,
 }) => {
-  const { contentList, categoryList , loading: contentLoading  } = useSelector((state: RootState) => state.content)
+  const {
+    contentList,
+    categoryList,
+    loading: contentLoading,
+  } = useSelector((state: RootState) => state.content);
 
   const dispatch = useDispatch<AppDispatch>();
-    // Fetch all contents by category
-    useEffect(() => {
-      const loadCategoriesAndContents = async () => {
-        try {
-          dispatch(setContentsLoading(true));
-          const categoryList = await dispatch(listAllCategory()).unwrap();
-          if (categoryList.length === 0) {
-            dispatch(setContentsLoading(false));
-            return;
-          }
-          await Promise.all(
-            categoryList.map(async (item: { id: any }) => {
-              try {
-                const response = await getallcontents({ subCategory: item.id });
-                if (response?.data) {
-                  dispatch(updateContentList({ data: response.data, id: item.id }));
-                }
-              } catch (err) {
-                console.error(`Failed to load contents for category ${item.id}:`, err);
-              }
-            })
-          );
+  // Fetch all contents by category
+  useEffect(() => {
+    const loadCategoriesAndContents = async () => {
+      try {
+        dispatch(setContentsLoading(true));
+        const categoryList = await dispatch(listAllCategory()).unwrap();
+        if (categoryList.length === 0) {
           dispatch(setContentsLoading(false));
-        } catch (error) {
-          console.error('Failed to load categories:', error);
+          return;
         }
-      };
-      loadCategoriesAndContents();
-    }, [dispatch]);
+        await Promise.all(
+          categoryList.map(async (item: { id: any }) => {
+            try {
+              const response = await getallcontents({ subCategory: item.id });
+              if (response?.data) {
+                dispatch(
+                  updateContentList({ data: response.data, id: item.id }),
+                );
+              }
+            } catch (err) {
+              Logger.error(`Failed to load contents for category ${item.id}:`, {
+                Error: String(err),
+              });
+            }
+          }),
+        );
+        dispatch(setContentsLoading(false));
+      } catch (error) {
+        Logger.error("Failed to load categories:", { Error: String(error) });
+      }
+    };
+    loadCategoriesAndContents();
+  }, [dispatch]);
   return (
     <>
-      {contentLoading ?
-      <View style={{marginVertical: 20}}>
-        <CommonLoader fullScreen/>
-      </View> 
-      :
-      categoryList?.map((item) => {
-        const contents = contentList?.[item.id]?.allContents || contentList?.[item.id] || [];
-        if (!contents.length) return null;
-        const [mainTitle, subtitle] = item.Name.includes("(")
-          ? [item.Name.split("(")[0].trim(), item.Name.split("(")[1]?.split(")")[0]]
-          : [item.Name, null];
+      {contentLoading ? (
+        <View style={{ marginVertical: 20 }}>
+          <CommonLoader fullScreen />
+        </View>
+      ) : (
+        categoryList?.map((item) => {
+          const contents =
+            contentList?.[item.id]?.allContents || contentList?.[item.id] || [];
+          if (!contents.length) return null;
+          const [mainTitle, subtitle] = item.Name.includes("(")
+            ? [
+                item.Name.split("(")[0].trim(),
+                item.Name.split("(")[1]?.split(")")[0],
+              ]
+            : [item.Name, null];
 
-        return (
-          <View key={item.id} style={styles.sectionContainer}>
-
-            <View style={styles.header}>
-              <View>
-                <Text style={styles.categoryTitle}>{mainTitle}</Text>
-                {item.description && (
-                  <Text style={styles.categorySub}>{item.description}</Text>
-                )}
+          return (
+            <View key={item.id} style={styles.sectionContainer}>
+              <View style={styles.header}>
+                <View>
+                  <Text style={styles.categoryTitle}>{mainTitle}</Text>
+                  {item.description && (
+                    <Text style={styles.categorySub}>{item.description}</Text>
+                  )}
+                </View>
+                <TouchableOpacity onPress={() => onCategoryPress(item)}>
+                  <ChevronRight size={20} color="#404040" />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity onPress={() => onCategoryPress(item)}>
-                <ChevronRight size={20} color="#404040" />
-              </TouchableOpacity>
+              <ShowContentCard
+                keyId={item.id}
+                data={contentList[item.id] || {}}
+              />
             </View>
-            <ShowContentCard
-              keyId={item.id}
-              data={contentList[item.id] || {}}
-            />
-
-          </View>
-        );
-      })}
+          );
+        })
+      )}
     </>
   );
 };
@@ -119,7 +135,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     fontFamily: "Poppins-SemiBold",
     color: "#404040",
-
   },
   categorySub: {
     fontSize: isProMax ? 13 : 12,
@@ -127,7 +142,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     fontFamily: "Poppins-Regular",
     color: "#404040",
-    marginBottom: 10
+    marginBottom: 10,
   },
   scrollView: {
     marginTop: 10,

@@ -1,10 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import {
-  Dimensions,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Dimensions, ScrollView, StyleSheet, View } from "react-native";
 
 import { getAllDoctors } from "@/src/apis/apiService";
 import CommonLoader from "@/src/components/CommonLoader";
@@ -12,6 +7,7 @@ import EmptyComponent from "@/src/components/EmptyComponent";
 import WellnessOfficerCard from "@/src/screens/WellnessOfficerList/WellnessOfficerCard";
 import { useTranslation } from "react-i18next";
 import Header from "./Header";
+import { Logger } from "@/src/utils/logger";
 
 const { width } = Dimensions.get("window");
 
@@ -30,7 +26,7 @@ const WellnessOfficerList = () => {
         setData([]);
       }
     } catch (error) {
-      console.log("Error fetching doctors:", error);
+      Logger.error("Error fetching doctors:", { Error: String(error) });
       setData([]);
     } finally {
       setLoading(false);
@@ -46,7 +42,17 @@ const WellnessOfficerList = () => {
       <Header />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.contentContainer}>
-          {loading && <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><CommonLoader fullScreen /></View>}
+          {loading && (
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <CommonLoader fullScreen />
+            </View>
+          )}
 
           {data.length > 0 ? (
             <View>
@@ -59,7 +65,7 @@ const WellnessOfficerList = () => {
           ) : (
             !loading && (
               <View style={styles.emptyState}>
-                <EmptyComponent text={t('nodataavailable')} />
+                <EmptyComponent text={t("nodataavailable")} />
               </View>
             )
           )}

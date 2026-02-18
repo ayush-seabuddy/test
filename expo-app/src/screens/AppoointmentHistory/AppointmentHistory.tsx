@@ -9,6 +9,7 @@ import WellnessOfficerCard, {
   type WellnessOfficer,
 } from "../WellnessOfficerList/WellnessOfficerCard";
 import Header from "./Header";
+import { Logger } from "@/src/utils/logger";
 
 const AppointmentHistory = () => {
   const [data, setData] = useState<any[]>([]);
@@ -35,7 +36,7 @@ const AppointmentHistory = () => {
 
       setData((prev) => (pageNumber === 1 ? newData : [...prev, ...newData]));
     } catch (error) {
-      console.log(error);
+      Logger.error(String(error));
     } finally {
       setLoading(false);
       setLoadingMore(false);

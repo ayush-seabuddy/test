@@ -1,5 +1,6 @@
 import * as ImageManipulator from 'expo-image-manipulator';
 import { File } from 'expo-file-system';
+import { Logger } from './logger';
 
 /**
  * Compresses an image from the given URI and returns the new compressed URI.
@@ -31,10 +32,10 @@ export async function compressImage(
     const originalSizeBytes = originalFile.size || 0;
 
     const originalSizeStr = formatBytes(originalSizeBytes);
-    console.log(`${logPrefix} Original: ${originalSizeStr} (${originalSizeBytes} bytes)`);
+    Logger.info(`${logPrefix} Original: ${originalSizeStr} (${originalSizeBytes} bytes)`);
 
     if (originalSizeBytes === 0) {
-      console.warn(`${logPrefix} Could not determine original file size`);
+      Logger.warn(`${logPrefix} Could not determine original file size`);
     }
 
     // 2. Prepare manipulations
@@ -64,17 +65,17 @@ export async function compressImage(
     const compressedSizeBytes = compressedFile.size || 0;
 
     const compressedSizeStr = formatBytes(compressedSizeBytes);
-    console.log(`${logPrefix} Compressed: ${compressedSizeStr} (${compressedSizeBytes} bytes)`);
+    Logger.info(`${logPrefix} Compressed: ${compressedSizeStr} (${compressedSizeBytes} bytes)`);
 
     const reduction = originalSizeBytes > 0
       ? Math.round(((originalSizeBytes - compressedSizeBytes) / originalSizeBytes) * 100)
       : 0;
 
-    console.log(`${logPrefix} Size reduction: ${reduction}%`);
+    Logger.info(`${logPrefix} Size reduction: ${reduction}%`);
 
     return result.uri;
   } catch (error) {
-    console.error(`${logPrefix} Compression failed:`, error);
+    Logger.error(`${logPrefix} Compression failed:`, {Error:String(error)});
     throw error; // or return originalUri if you want fallback
   }
 }

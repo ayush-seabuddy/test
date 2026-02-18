@@ -1,6 +1,7 @@
 import { getUnreadNotificationCount } from "@/src/apis/apiService";
 import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { Logger } from "@/src/utils/logger";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
@@ -22,7 +23,7 @@ const ChatHeader = ({ }) => {
           setProfile(JSON.parse(userData));
         }
       } catch (error) {
-        console.error("Error fetching user details:", error);
+        Logger.error("Error fetching user details:", {Error:String(error)});
       }
     };
     getUserDetails();
@@ -33,7 +34,7 @@ const ChatHeader = ({ }) => {
       let response = await getUnreadNotificationCount();
       setUnreadNotification(response.data.allNotifications);
     } catch (error) {
-      console.log(error);
+      Logger.error(String(error));
     }
   };
 

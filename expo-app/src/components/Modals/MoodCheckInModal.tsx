@@ -2,6 +2,7 @@ import { moodTracker } from "@/src/apis/apiService";
 import CommonLoader from "@/src/components/CommonLoader";
 import { showToast } from "@/src/components/GlobalToast";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { Logger } from "@/src/utils/logger";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Image } from "expo-image";
 import { X } from "lucide-react-native";
@@ -229,7 +230,7 @@ export const MoodCheckInModal = ({
         );
       }
     } catch (error) {
-      console.error("Mood submit failed:", error);
+      Logger.error("Mood submit failed:", {Error:String(error)});
       showToast.error(t("error"), t("failedtosavemood"));
     } finally {
       setLoading(false);

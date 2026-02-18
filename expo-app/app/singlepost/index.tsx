@@ -4,6 +4,7 @@ import EmptyComponent from '@/src/components/EmptyComponent';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import PostScreen from '@/src/components/PostScreen';
+import { Logger } from '@/src/utils/logger';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -47,7 +48,7 @@ const SinglePostScreen = () => {
                 showToast.error(t('oops'), errorMessage);
             }
         } catch (err: any) {
-            console.error('Error fetching post:', err);
+            Logger.error('Error fetching post:', err);
             const errorMessage =
                 err?.message || err?.data?.message || t('somethingwentwrong');
             showToast.error(t('oops'), errorMessage);

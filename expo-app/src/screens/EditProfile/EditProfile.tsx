@@ -7,6 +7,7 @@ import { useNetwork } from '@/src/hooks/useNetworkStatusHook';
 import { RootState } from '@/src/redux/store';
 import { updateUserField } from '@/src/redux/userDetailsSlice';
 import Colors from '@/src/utils/Colors';
+import { Logger } from '@/src/utils/logger';
 import { router } from 'expo-router';
 import {
   Activity,
@@ -127,7 +128,7 @@ const EditProfile = () => {
         }
       }
     } catch (error) {
-      console.error('Error parsing date:', error);
+      Logger.error('Error parsing date:', {Error:String(error)});
     }
     return null;
   };
@@ -235,7 +236,7 @@ const EditProfile = () => {
           setAbout(object.bio || object.about || '');
         }
       } catch (err) {
-        console.error('viewProfile error', err);
+        Logger.error('viewProfile error', {Error:String(err)});
         showToast.error(t('error'), 'Failed to load profile');
       } finally {
         setloadingdetails(false);
@@ -329,7 +330,7 @@ const EditProfile = () => {
         showToast.error(t('oops') || 'Oops', errorMessages || t('error'));
       } else if (error instanceof Error) {
         showToast.error(t('oops') || 'Oops', t('failedtoupdateprofile') || 'Failed to update profile. Please try again');
-        console.error('Error updating profile:', error);
+        Logger.error('Error updating profile:', {Error:String(error)});
       } else {
         showToast.error(t('oops') || 'Oops', t('failedtoupdateprofile') || 'Failed to update profile. Please try again');
       }

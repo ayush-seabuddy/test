@@ -3,6 +3,7 @@ import { PlayerError, VideoPlayerStatus, VideoView, useVideoPlayer } from "expo-
 import React, { useCallback, useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import CommonLoader from "./CommonLoader";
+import { Logger } from "../utils/logger";
 
 interface Props {
   uri: string;
@@ -16,12 +17,12 @@ const VideoPlayer: React.FC<Props> = ({ uri }) => {
   const [playerStatus, setPlayerStatus] = useState<VideoPlayerStatus>('idle');
 
   const [playerError, setPlayerError] = useState<PlayerError | undefined>();
-  console.log("playerError: ", playerError);
+  Logger.error("playerError: ", playerError);
   useEffect(() => {
     const subscription = player.addListener('statusChange', ({ status, error }) => {
       setPlayerStatus(status);
       setPlayerError(error);
-      console.log('Player status changed: ', status);
+      Logger.info('Player status changed: ', {Status:String(status)});
     });
 
     return () => {
@@ -35,7 +36,7 @@ const VideoPlayer: React.FC<Props> = ({ uri }) => {
         try {
           player.pause()
         } catch (e) {
-          console.warn("Mute failed (likely already released):", e);
+          Logger.warn("Mute failed (likely already released):", {Error:String(e)});
         }
       };
     }, [player])

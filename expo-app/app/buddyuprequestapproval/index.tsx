@@ -17,6 +17,7 @@ import { Play, X } from 'lucide-react-native'
 import React, { useCallback, useEffect, useRef, useState, memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FlatList, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Logger } from '@/src/utils/logger'
 
 const getMimeType = (uri: string, type: 'image' | 'video'): string => {
     if (type === 'video') return 'video/mp4';
@@ -73,8 +74,6 @@ const BuddyUpRequestApprovalScreen = () => {
                     },
                 ],
             })
-            console.log("userDetails: sdfkjsdklfsjdflkd", (userDetails.designation === "Captain" ||
-                userDetails.designation === "Chief engineer"));
             setLoading(false)
 
             if (apiResponse.success && apiResponse.status === 200) {
@@ -150,7 +149,7 @@ const BuddyUpRequestApprovalScreen = () => {
         } catch (error: any) {
             const msg = (error && (error.message || error)) || '';
             if (!msg.toString().toLowerCase().includes('cancel')) {
-                console.error('Error picking media:', error);
+                Logger.error('Error picking media:', error);
                 showToast.error(t('error'), t('imagePickFailed'));
             }
         } finally {
@@ -206,7 +205,7 @@ const BuddyUpRequestApprovalScreen = () => {
                         }
                     } catch (err: any) {
                         retryCount++;
-                        console.warn(`Upload attempt ${retryCount}/${MAX_RETRIES + 1} failed for ${item.id}:`, err.message || err);
+                        Logger.warn(`Upload attempt ${retryCount}/${MAX_RETRIES + 1} failed for ${item.id}:`, err.message || err);
 
                         if (retryCount > MAX_RETRIES) {
                             setSelectedMedia(prev => prev.map(m =>

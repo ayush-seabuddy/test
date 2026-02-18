@@ -16,7 +16,6 @@ const HeaderBanner: React.FC<HeaderBannerProps> = ({ companyLogo, isProMax = fal
   width: 60,
   height: 60,
 } }) => {
-  console.log("companyLogoSize: ", companyLogoSize);
   const { t } = useTranslation();
 
   return (

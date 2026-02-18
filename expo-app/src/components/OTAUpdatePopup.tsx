@@ -8,6 +8,7 @@ import {
   Easing,
 } from 'react-native';
 import * as Updates from 'expo-updates';
+import { Logger } from '../utils/logger';
 
 type Props = {
   children: ReactNode;
@@ -73,7 +74,7 @@ export default function OTAUpdatePopup({ children }: Props) {
         });
       }, remaining);
     } catch (error) {
-      console.error('[OTA] Update failed:', error);
+      Logger.error('[OTA] Update failed:', {Error:String(error)});
       setIsUpdating(false);
     }
   };

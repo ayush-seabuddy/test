@@ -44,12 +44,13 @@ import BottomSheet from "./BottomSheet";
 import CommentsSection from "./CommentsSection";
 import CommonLoader from "./CommonLoader";
 import { showToast } from "./GlobalToast";
+import { Logger } from "../utils/logger";
 try {
   if (typeof TimeAgo.addLocale === "function") {
     TimeAgo.addLocale(en);
   }
 } catch (e) {
-  console.warn("Failed to ensure TimeAgo locale is registered:", e);
+  Logger.warn("Failed to ensure TimeAgo locale is registered:", {Error:String(e)});
 }
 
 const { width } = Dimensions.get("window");
@@ -876,7 +877,7 @@ const PostScreen: React.FC<PostScreenProps> = ({
         likeComments: [{ hangoutId: post.id, isLiked: newLikeState }],
       } as any);
     } catch (err) {
-      console.log("Error", err);
+      Logger.error("Error", {Error:String(err)});
       setPostState((prev) => {
         let updatedLikedUsers = [...prev.likedUsers];
         if (newLikeState) {

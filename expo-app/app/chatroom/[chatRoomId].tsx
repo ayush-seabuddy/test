@@ -50,6 +50,7 @@ import { FlatList } from "react-native-gesture-handler";
 import RBSheet from "react-native-raw-bottom-sheet";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
+import { Logger } from "@/src/utils/logger";
 
 type ChatRoomScreenParams = {
   chatRoomDetails: ChatRoom;
@@ -146,7 +147,7 @@ const ChatRoomScreen = () => {
             viewPosition: 0,
           });
         } catch (err) {
-          console.warn("scrollToIndex failed:", err);
+          Logger.warn("scrollToIndex failed:", { Error: String(err) });
         }
       }
     },
@@ -221,7 +222,6 @@ const ChatRoomScreen = () => {
     content: string;
     messageType: string;
   }) => {
-    console.log("message: ", message);
     if (!message.id) {
       return;
     }
@@ -402,7 +402,7 @@ const ChatRoomScreen = () => {
       setReplyingTo(null);
       setInputHeight(55);
     } catch (error) {
-      console.log("Error sending/editing message:", error);
+      Logger.error("Error sending/editing message:", { Error: String(error) });
     }
   };
 
@@ -439,9 +439,9 @@ const ChatRoomScreen = () => {
       }
     } catch (error) {
       if (error instanceof Error) {
-        console.error("Error fetching data:", error.message);
+        Logger.error("Error fetching data:", { Error: error.message });
       } else {
-        console.error("Error fetching data:", error);
+        Logger.error("Error fetching data:", { Error: String(error) });
       }
     }
   };
@@ -518,7 +518,7 @@ const ChatRoomScreen = () => {
       socketService.on("getUserMessage", handleGetUserMessage);
       socketService.on("receiveChatReaction", handleReceiveChatReaction);
       socketService.on("getChatReaction", (data) => {
-        console.log("getChatReaction: ", data);
+        Logger.info("getChatReaction: ", data);
       });
 
       return () => {
@@ -597,8 +597,6 @@ const ChatRoomScreen = () => {
   }, [isSearchOpen, chatListState]);
 
   const handleLoadMore = () => {
-    console.log("Load more triggered", currentPage, totalPage);
-
     if (loadingMore || currentPage >= totalPage) return;
     setLoadingMore(true);
     setCurrentPage((prev) => prev + 1);
@@ -655,7 +653,7 @@ const ChatRoomScreen = () => {
       setContentImage("");
       setReplyingTo(null);
     } catch (error) {
-      console.log("Error sending image message:", error);
+      Logger.error("Error sending image message:", { Error: String(error) });
     }
   };
 
@@ -731,15 +729,11 @@ const ChatRoomScreen = () => {
         type: result.mime,
       };
 
-      console.log("result.assets?.[0]: ", assetLikeObject);
-
       const uri = assetLikeObject.uri;
       if (!uri) {
         setLoading(false);
         return;
       }
-
-      console.log("uri: ", uri);
 
       setMediaModalVisible(true);
       setSelectedMedia({
@@ -759,7 +753,7 @@ const ChatRoomScreen = () => {
         return;
       }
 
-      console.log("Error", error);
+      Logger.error("Error", error);
     }
   };
   type ChatListItem =

@@ -4,6 +4,7 @@ import en from "javascript-time-ago/locale/en.json";
 import moment from 'moment-timezone';
 import { Dimensions, Text } from 'react-native';
 import ReactTimeAgo from 'react-time-ago';
+import { Logger } from "@/src/utils/logger";
 import { viewProfile } from '../apis/apiService';
 import { updateFleetList, updateShipList } from '../redux/chatListSlice';
 import { setUserDetails } from '../redux/userDetailsSlice';
@@ -84,7 +85,7 @@ export const getUserDetails = async () => {
     if (!jsonValue) return null;
     return JSON.parse(jsonValue);
   } catch (error) {
-    console.error("Error reading userDetails:", error);
+    Logger.error("Error reading userDetails:", {Error:String(error)});
     return null;
   }
 };
@@ -109,11 +110,9 @@ export const getChatList = async (dispatch: any) => {
   let storeEmployerId = await AsyncStorage.getItem('employerId');
 
   const payloadShip = { userId: storeUserId, shipId: storeShipId };
-  console.log("payloadShip: ", payloadShip);
   socketService.emit("getAllGroupChatRooms", payloadShip);
 
   const payloadFleet = { userId: storeUserId, employerId: storeEmployerId };
-  console.log("payloadFleet: ", payloadFleet);
   socketService.emit("getAllGroupChatRooms", payloadFleet);
 
   socketService.on("groupChatRooms", (data) => {

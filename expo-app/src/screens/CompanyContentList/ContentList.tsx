@@ -3,6 +3,7 @@ import CommonLoader from '@/src/components/CommonLoader';
 import EmptyComponent from '@/src/components/EmptyComponent';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import Colors from '@/src/utils/Colors';
+import { Logger } from '@/src/utils/logger';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
@@ -146,7 +147,7 @@ const CompanyContentList = ({headerTitle, contentType}:{headerTitle:string , con
 
 
     } catch (error) {
-      console.log("error: ", error);
+      Logger.error("error: ", {Error:String(error)});
       return []
     }finally{
       setLoading(false)

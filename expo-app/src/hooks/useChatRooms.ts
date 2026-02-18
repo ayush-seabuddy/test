@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { db } from "../database/chatDB";
 import { ChatRoom } from "../screens/chat/types/chatRoom";
+import { Logger } from "../utils/logger";
 
 
 
@@ -73,7 +74,7 @@ function getShipChatRooms(): ChatRoom[] {
           });
         }
       } catch (error) {
-        console.log('Error', error)
+        Logger.error('Error', {Error:String(error)})
       }
     }
 

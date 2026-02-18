@@ -13,6 +13,7 @@ import CreateCustomCategoryModal from '@/src/components/Modals/CreateCustomCateg
 import Colors from '@/src/utils/Colors'
 import { getUserDetails } from '@/src/utils/helperFunctions'
 import { ImagesAssets } from '@/src/utils/ImageAssets'
+import { Logger } from '@/src/utils/logger'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import BottomSheet, {
     BottomSheetBackdrop,
@@ -162,31 +163,21 @@ const CreateYourBuddyUpEvent = () => {
 
     // Initialize component - runs once on mount
     useEffect(() => {
-        console.log('DEBUG: Component mounted');
-        console.log('DEBUG: Params received:', params);
-
         const initializeComponent = async () => {
             if (isInitialized) return;
-
-            console.log('DEBUG: Initializing component');
-
             // Check if we're in edit mode
             if (params.editMode === 'true') {
-                console.log('DEBUG: EDIT mode detected from params');
                 setIsEditMode(true);
                 setExistingEventId(params.eventId as string);
 
                 // Set all params directly
                 if (params.eventName) {
-                    console.log('DEBUG: Setting eventName from params:', params.eventName);
                     setEventName(params.eventName as string);
                 }
                 if (params.categoryId) {
-                    console.log('DEBUG: Setting selectedEventId from params:', params.categoryId);
                     setSelectedEventId(params.categoryId as string);
                 }
                 if (params.imageUrl) {
-                    console.log('DEBUG: Setting defaultEventImage from params:', params.imageUrl);
                     setDefaultEventImage(params.imageUrl as string);
                 }
 
@@ -226,7 +217,7 @@ const CreateYourBuddyUpEvent = () => {
                             setPreInvitedUserIds(invitedIds);
                         }
                     } catch (e) {
-                        console.log("Could not parse invitedPeoples", e);
+                        Logger.error("Could not parse invitedPeoples", {Error:String(e)});
                     }
                 }
 
@@ -235,26 +226,21 @@ const CreateYourBuddyUpEvent = () => {
             }
             // Check if we're coming from category list
             else if (params.isFromCategoryList === 'true') {
-                console.log('DEBUG: FROM CATEGORY LIST detected');
                 setIsFromCategoryList(true);
 
                 if (params.selectedEventId) {
-                    console.log('DEBUG: Setting selectedEventId from category:', params.selectedEventId);
                     setSelectedEventId(params.selectedEventId as string);
                 }
                 if (params.selectedEventName) {
-                    console.log('DEBUG: Setting eventName from category:', params.selectedEventName);
                     setEventName(params.selectedEventName as string);
                 }
                 if (params.selectedEventImage) {
-                    console.log('DEBUG: Setting defaultEventImage from category:', params.selectedEventImage);
                     setDefaultEventImage(params.selectedEventImage as string);
                 }
 
                 setHasPrefilled(true);
             }
             else {
-                console.log('DEBUG: CREATE mode detected (normal)');
                 setHasPrefilled(true);
             }
 
@@ -267,26 +253,14 @@ const CreateYourBuddyUpEvent = () => {
     // Fetch events after initialization
     useEffect(() => {
         if (isInitialized && !hasFetchedEvents.current) {
-            console.log('DEBUG: Fetching events after initialization');
             getallbuddyevents();
         }
     }, [isInitialized]);
 
     const getallbuddyevents = async () => {
         if (hasFetchedEvents.current) {
-            console.log('DEBUG: Skipping API call, already fetched');
             return;
         }
-
-        console.log('DEBUG: getallbuddyevents called');
-        console.log('DEBUG: Current state:', {
-            isEditMode,
-            isFromCategoryList,
-            eventName,
-            selectedEventId,
-            defaultEventImage,
-            hasPrefilled
-        });
 
         setLoading(true);
         hasFetchedEvents.current = true;
@@ -315,16 +289,12 @@ const CreateYourBuddyUpEvent = () => {
                 const allEventsList = [...formattedEvents, ...customCategories, CREATE_YOUR_OWN_OPTION];
                 setAllEvents(allEventsList);
 
-                console.log('DEBUG: API response received. Formatted events count:', formattedEvents.length);
 
                 if (isEditMode) {
-                    console.log('DEBUG: EDIT mode processing');
-                    // In edit mode, we should already have the correct event set from params
-                    // Just verify that the event exists in the list
+        
                     if (selectedEventId) {
                         const matchingEvent = formattedEvents.find((e: AllEvents) => e.id === selectedEventId);
                         if (matchingEvent) {
-                            console.log('DEBUG: Matching event found in list:', matchingEvent.categoryName);
                             // Only update if not already set from params
                             if (!eventName) {
                                 setEventName(matchingEvent.categoryName);
@@ -336,14 +306,11 @@ const CreateYourBuddyUpEvent = () => {
                     }
                 }
                 else if (isFromCategoryList) {
-                    console.log('DEBUG: FROM CATEGORY LIST processing');
                     // We already have the event data from params
                     // Just verify the event exists in the list
                     if (selectedEventId) {
                         const matchingEvent = formattedEvents.find((e: AllEvents) => e.id === selectedEventId);
                         if (matchingEvent) {
-                            console.log('DEBUG: Matching event found in list for category selection:', matchingEvent.categoryName);
-                            // Ensure we have the latest data
                             if (!eventName) {
                                 setEventName(matchingEvent.categoryName);
                             }
@@ -354,15 +321,12 @@ const CreateYourBuddyUpEvent = () => {
                     }
                 }
                 else {
-                    console.log('DEBUG: NORMAL CREATE mode processing');
                     // Normal create mode: use first event as default only if not already set
                     if (formattedEvents.length > 0) {
                         const firstEvent = formattedEvents[0];
-                        console.log('DEBUG: First event:', firstEvent.categoryName);
 
                         // Only set defaults if nothing is already set
                         if (!eventName && !selectedEventId && !defaultEventImage) {
-                            console.log('DEBUG: Setting first event as default:', firstEvent.categoryName);
                             setEventName(firstEvent.categoryName);
                             setSelectedEventId(firstEvent.id);
                             setDefaultEventImage(firstEvent.categoryImage);
@@ -380,20 +344,13 @@ const CreateYourBuddyUpEvent = () => {
                         }
                     }
                 }
-
-                console.log('DEBUG: Final state after API:', {
-                    eventName,
-                    selectedEventId,
-                    defaultEventImage,
-                    isFromCategoryList
-                });
             } else {
                 showToast.error(t('oops'), apiResponse.message);
             }
         } catch (err) {
-            console.error('Error fetching events:', err);
+            Logger.error('Error fetching events:', {Error:String(err)});
             showToast.error(t('oops'), t('somethingwentwrong'));
-            hasFetchedEvents.current = false; // Reset on error
+            hasFetchedEvents.current = false;
         } finally {
             setLoading(false);
         }
@@ -411,9 +368,6 @@ const CreateYourBuddyUpEvent = () => {
     }
 
     const handleEventSelect = (item: AllEvents, id?: string | null) => {
-        console.log('DEBUG: handleEventSelect called with:', item);
-
-        // Check if it's the "Create Your Own" option
         if (item.id === 'create_your_own') {
             setCustomCategoryModalVisible(true);
             if (id) {
@@ -432,7 +386,6 @@ const CreateYourBuddyUpEvent = () => {
     }
 
     const handleCustomCategoryCreated = (newCategory: AllEvents) => {
-        console.log('DEBUG: New custom category created:', newCategory);
 
         // Add the new category to the custom categories list
         setCustomCategories(prev => [...prev, newCategory]);
@@ -543,7 +496,7 @@ const CreateYourBuddyUpEvent = () => {
                 // user cancelled — nothing to do
                 return
             }
-            console.error('Error picking media:', error)
+            Logger.error('Error picking media:', error)
             showToast.error(t('error'), t('imagePickFailed'))
         }
     }, [t])
@@ -610,7 +563,6 @@ const CreateYourBuddyUpEvent = () => {
 
                     if (preSelected.length > 0) {
                         setSelectedParticipants(preSelected);
-                        console.log(`Pre-selected ${preSelected.length} invited users`);
                     }
                 }
                 if (filteredUsers.length === 0) {
@@ -625,7 +577,7 @@ const CreateYourBuddyUpEvent = () => {
                 )
             }
         } catch (error: any) {
-            console.log('Error fetching users:', error)
+            Logger.error('Error fetching users:', error)
             showToast.error(t('error'), 'Failed to load users')
         } finally {
             setIsFetchingUsers(false)
@@ -662,15 +614,13 @@ const CreateYourBuddyUpEvent = () => {
                 }
             }
         } catch (error: any) {
-            console.log('Error fetching users:', error)
+            Logger.error('Error fetching users:', error)
             showToast.error(t('error'), 'Failed to load users')
         } finally {
         }
     }, [preInvitedUserIds])
 
     useEffect(() => {
-        console.log('preInvitedUserIds changed:', preInvitedUserIds);
-
         addTagUser()
     }, [preInvitedUserIds])
 
@@ -709,7 +659,6 @@ const CreateYourBuddyUpEvent = () => {
     )
 
     const getDisplayImage = React.useCallback(() => {
-        console.log('DEBUG: getDisplayImage memo - selectedMedia:', selectedMedia?.uri, 'defaultEventImage:', defaultEventImage);
         if (selectedMedia?.uri) {
             return { uri: selectedMedia.uri }
         }
@@ -798,7 +747,7 @@ const CreateYourBuddyUpEvent = () => {
                 showToast.error(t('oops'), apiResponse.message || (isEditMode ? 'Failed to update event' : 'Failed to create event'))
             }
         } catch (error: any) {
-            console.error('Event operation error:', error)
+            Logger.error('Event operation error:', error)
             showToast.error(t('oops'), t('somethingwentwrong'))
         } finally {
             setLoading(false)

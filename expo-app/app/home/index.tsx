@@ -7,6 +7,7 @@ import { updateUserField } from "@/src/redux/userDetailsSlice";
 import FeatureFrame from "@/src/screens/home/FeatureFrame";
 import HeaderBanner from "@/src/screens/home/HeaderBanner";
 import Colors from "@/src/utils/Colors";
+import { Logger } from "@/src/utils/logger";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -49,7 +50,7 @@ const Home = () => {
         setCompanyLogo(userDetails.companyLogo);
       }
     } catch (error) {
-      console.error("Error fetching logo:", error);
+      Logger.error("Error fetching logo:", {Error:String(error)});
     }
   }, []);
 

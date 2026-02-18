@@ -13,6 +13,7 @@ import { PieChart } from "react-native-chart-kit"
 import { ScrollView } from 'react-native-gesture-handler'
 import Bargraph from './Bargraph'
 import GraphScreen from './GraphScreen'
+import { Logger } from '@/src/utils/logger'
 
 const Analytics = () => {
   interface GroupActivity {
@@ -107,7 +108,7 @@ const Analytics = () => {
 
       await Linking.openSettings();
     } catch (error) {
-      console.error('Failed to open Health/Fit or Settings:', error);
+      Logger.error('Failed to open Health/Fit or Settings:', {Error:String(error)});
       Linking.openSettings().catch(() => { });
     }
   };

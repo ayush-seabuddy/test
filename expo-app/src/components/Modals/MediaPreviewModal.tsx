@@ -15,6 +15,7 @@ import {
 import ImageViewer from "react-native-image-zoom-viewer";
 import Video from "react-native-video";
 import CommonLoader from "../CommonLoader";
+import { Logger } from "@/src/utils/logger";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -232,7 +233,7 @@ const MediaPreviewModal: React.FC<MediaPreviewModalProps> = ({
           }
         }}
         onError={(e) => {
-          console.warn("Video error:", e);
+          Logger.warn("Video error:", {Error:String(e)});
           setIsLoading(false);
         }}
         ignoreSilentSwitch="ignore"

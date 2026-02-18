@@ -21,6 +21,7 @@ import CommonLoader from './CommonLoader';
 import EmptyComponent from './EmptyComponent';
 import GlobalHeader from './GlobalHeader';
 import { showToast } from './GlobalToast';
+import { Logger } from '../utils/logger';
 
 const { width } = Dimensions.get('window');
 
@@ -74,7 +75,7 @@ const BuddyUpEventList = ({ userId, type, from, ActivitiesData }: Props) => {
         const parsed = typeof userData === 'string' ? JSON.parse(userData) : userData;
         setLoggeduserData(parsed);
       } catch (e) {
-        console.log('Parsing User Error:', e);
+        Logger.error('Parsing User Error:', {Error:String(e)});
       }
     };
     loadUser();
@@ -114,7 +115,7 @@ const BuddyUpEventList = ({ userId, type, from, ActivitiesData }: Props) => {
         showToast.error(t('oops'), apiResponse.message);
       }
     } catch (error) {
-      console.log('Error', error)
+      Logger.error('Error', {Error:String(error)})
       showToast.error(t('oops'), t('somethingwentwrong'));
     } finally {
       setDeleteModalVisible(false);
@@ -165,7 +166,7 @@ const BuddyUpEventList = ({ userId, type, from, ActivitiesData }: Props) => {
         setPage((prev) => prev + 1);
       }
     } catch (error) {
-      console.log('Error fetching buddy up events:', error);
+      Logger.error('Error fetching buddy up events:', {Error:String(error)});
     } finally {
       setLoading(false);
       setLoadingMore(false);

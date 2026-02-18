@@ -29,6 +29,7 @@ import { useDispatch } from "react-redux";
 import { usePostHog } from "posthog-react-native";
 import { clearAllChatLists } from "@/src/redux/chatListSlice";
 import Colors from "@/src/utils/Colors";
+import { Logger } from "@/src/utils/logger";
 
 const { height, width } = Dimensions.get("window");
 
@@ -77,7 +78,7 @@ const Splash = () => {
       dispatch(clearAllChatLists());
       router.replace("/auth/Login");
     } catch (error) {
-      console.error("Force logout failed:", error);
+      Logger.error("Force logout failed:", { Error: String(error) });
     }
   }, [dispatch, router]);
 
@@ -107,7 +108,7 @@ const Splash = () => {
 
       const apiResponse = await getapplastversion();
 
-      console.log("🌐 Version API Response:", apiResponse);
+      Logger.info("🌐 Version API Response:", { Info: String(apiResponse) });
 
       if (apiResponse?.status === 200 && apiResponse?.data) {
         const platformKey = Platform.OS === "ios" ? "ios" : "android";
@@ -121,10 +122,10 @@ const Splash = () => {
         const isPopUp =
           platformData.isPopUp === true || platformData.isPopUp === "true";
 
-        console.log("📱 Installed:", currentVersion);
-        console.log("🌐 Latest:", latestVersion);
-        console.log("🆙 Needs Update:", needsUpdate);
-        console.log("📢 isPopUp:", isPopUp);
+        Logger.info("📱 Installed:", { Info: String(currentVersion) });
+        Logger.info("🌐 Latest:", latestVersion);
+        Logger.info("🆙 Needs Update:", { Info: String(needsUpdate) });
+        Logger.info("📢 isPopUp:", { Info: String(isPopUp) });
 
         if (isPopUp && needsUpdate) {
           setVersionInfo(platformData);
@@ -133,7 +134,7 @@ const Splash = () => {
         }
       }
     } catch (error) {
-      console.warn("⚠️ Version Check Failed → Continuing App Flow");
+      Logger.warn("⚠️ Version Check Failed → Continuing App Flow");
     }
 
     return false;
@@ -142,7 +143,7 @@ const Splash = () => {
   const handleUpdate = () => {
     if (versionInfo?.url) {
       Linking.openURL(versionInfo.url).catch((err: Error) =>
-        console.error("Error opening store:", err),
+        Logger.error("Error opening store:", { Error: String(err) }),
       );
     }
   };
@@ -253,7 +254,7 @@ const Splash = () => {
           router.replace("/home");
         }
       } catch (error) {
-        console.error("Splash Initialization Error:", error);
+        Logger.error("Splash Initialization Error:", { Error: String(error) });
         await forceLogout();
       }
     },

@@ -31,6 +31,7 @@ import BottomSheet, {
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import { getUserDetails } from "@/src/utils/helperFunctions";
+import { Logger } from "@/src/utils/logger";
 
 interface SailorsOfTheMonth {
   id: string;
@@ -261,7 +262,7 @@ const LeaderboardScreen = () => {
         }
       }
     } catch (error) {
-      console.error("Error fetching leaderboard:", error);
+      Logger.error("Error fetching leaderboard:", { Error: String(error) });
       if (!isLoadMore) {
         showToast.error(t("oops"), t("somethingwentwrong"));
       }

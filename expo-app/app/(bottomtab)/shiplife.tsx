@@ -1,25 +1,39 @@
-import { getalladminbuddyupcategories, GETALLBUDDYUPEVENTS, getleaderboard, viewProfile } from '@/src/apis/apiService'
-import CommonLoader from '@/src/components/CommonLoader'
-import EmptyComponent from '@/src/components/EmptyComponent'
-import GlobalPopOver from '@/src/components/GlobalPopover'
-import { showToast } from '@/src/components/GlobalToast'
-import AdminBuddyUpCategory from '@/src/components/ShipLifeComponent/AdminBuddyUpCategory'
-import BuddyUpEventCard from '@/src/components/ShipLifeComponent/BuddyUpEventCard'
-import HowMilesWorkPopup from '@/src/components/ShipLifeComponent/HowMilesWorkPopup'
-import TopThreeEmployees from '@/src/components/ShipLifeComponent/TopThreeEmployees'
-import ShipLifeScreenHeader from '@/src/components/ShipLifeScreenHeader'
-import { useNetwork } from '@/src/hooks/useNetworkStatusHook'
-import Colors from '@/src/utils/Colors'
-import { getUserDetails } from '@/src/utils/helperFunctions'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { router, useFocusEffect } from 'expo-router'
-import LottieView from 'lottie-react-native'
-import { InfoIcon } from 'lucide-react-native'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Dimensions, FlatList, ListRenderItem, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import {
+  getalladminbuddyupcategories,
+  GETALLBUDDYUPEVENTS,
+  getleaderboard,
+  viewProfile,
+} from "@/src/apis/apiService";
+import CommonLoader from "@/src/components/CommonLoader";
+import EmptyComponent from "@/src/components/EmptyComponent";
+import GlobalPopOver from "@/src/components/GlobalPopover";
+import { showToast } from "@/src/components/GlobalToast";
+import AdminBuddyUpCategory from "@/src/components/ShipLifeComponent/AdminBuddyUpCategory";
+import BuddyUpEventCard from "@/src/components/ShipLifeComponent/BuddyUpEventCard";
+import HowMilesWorkPopup from "@/src/components/ShipLifeComponent/HowMilesWorkPopup";
+import TopThreeEmployees from "@/src/components/ShipLifeComponent/TopThreeEmployees";
+import ShipLifeScreenHeader from "@/src/components/ShipLifeScreenHeader";
+import { useNetwork } from "@/src/hooks/useNetworkStatusHook";
+import Colors from "@/src/utils/Colors";
+import { getUserDetails } from "@/src/utils/helperFunctions";
+import { Logger } from "@/src/utils/logger";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router, useFocusEffect } from "expo-router";
+import LottieView from "lottie-react-native";
+import { InfoIcon } from "lucide-react-native";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Dimensions,
+  FlatList,
+  ListRenderItem,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-const { height } = Dimensions.get('screen');
+const { height } = Dimensions.get("screen");
 
 interface AdminBuddyUpCategoryType {
   id: string;
@@ -28,32 +42,32 @@ interface AdminBuddyUpCategoryType {
 }
 
 interface BuddyUpEvent {
-  id: string
-  eventName: string
-  description: string
-  startDateTime: string
-  endDateTime: string
-  location?: string
-  imageUrls: string[]
-  joinedPeople: string[]
-  categoryId?: string
-  hashtags?: string[]
-  isPublic?: boolean
-  status?: string
+  id: string;
+  eventName: string;
+  description: string;
+  startDateTime: string;
+  endDateTime: string;
+  location?: string;
+  imageUrls: string[];
+  joinedPeople: string[];
+  categoryId?: string;
+  hashtags?: string[];
+  isPublic?: boolean;
+  status?: string;
   activityUser: {
-    id: string
-    fullName: string
-    email: string
-    profileUrl: string
-    userType: string
-  }
+    id: string;
+    fullName: string;
+    email: string;
+    profileUrl: string;
+    userType: string;
+  };
 }
 
 interface TopEmployee {
-  id: string,
-  fullName: string,
-  profileUrl: string,
-  rewardPoints: string
+  id: string;
+  fullName: string;
+  profileUrl: string;
+  rewardPoints: string;
 }
 
 interface LoggedUserData {
@@ -67,53 +81,59 @@ interface LoggedUserData {
 }
 
 type ListItem =
-  | { type: 'header' }
-  | { type: 'description' }
-  | { type: 'categories'; data: AdminBuddyUpCategoryType[] }
-  | { type: 'leaderboard'; data: TopEmployee[] }
-  | { type: 'createButton' }
-  | { type: 'filter' }
-  | { type: 'viewall' }
-  | { type: 'events'; data: BuddyUpEvent[] }
+  | { type: "header" }
+  | { type: "description" }
+  | { type: "categories"; data: AdminBuddyUpCategoryType[] }
+  | { type: "leaderboard"; data: TopEmployee[] }
+  | { type: "createButton" }
+  | { type: "filter" }
+  | { type: "viewall" }
+  | { type: "events"; data: BuddyUpEvent[] };
 
 const ShipLifeScreen = () => {
   const { t } = useTranslation();
-  const [selectedStatus, setSelectedStatus] = useState<'ON_GOING' | 'PAST' | 'REQUESTED'>('ON_GOING');
+  const [selectedStatus, setSelectedStatus] = useState<
+    "ON_GOING" | "PAST" | "REQUESTED"
+  >("ON_GOING");
   const isOnline = useNetwork();
-  const [buddyupCategory, setbuddyupCategory] = useState<AdminBuddyUpCategoryType[]>([]);
+  const [buddyupCategory, setbuddyupCategory] = useState<
+    AdminBuddyUpCategoryType[]
+  >([]);
   const [ongoingEvents, setOngoingEvents] = useState<BuddyUpEvent[]>([]);
   const [pastEvents, setPastEvents] = useState<BuddyUpEvent[]>([]);
   const [requestedEvents, setRequestedEvents] = useState<BuddyUpEvent[]>([]);
 
   const [isBoarded, setIsBoarded] = useState(false);
   const [shipId, setShipId] = useState<string | null>(null);
-  const [designation, setDesignation] = useState('');
-  const [department, setDepartment] = useState('');
+  const [designation, setDesignation] = useState("");
+  const [department, setDepartment] = useState("");
   const [topEmployee, settopEmployee] = useState<TopEmployee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [loggeduserData, setloggeduserData] = useState<LoggedUserData | null>(null);
+  const [loggeduserData, setloggeduserData] = useState<LoggedUserData | null>(
+    null,
+  );
 
   // Handle event deletion from child component
   const handleEventDeleted = useCallback((eventId: string) => {
     // Remove from all event lists to ensure consistency
-    setOngoingEvents(prev => prev.filter(item => item.id !== eventId));
-    setPastEvents(prev => prev.filter(item => item.id !== eventId));
-    setRequestedEvents(prev => prev.filter(item => item.id !== eventId));
+    setOngoingEvents((prev) => prev.filter((item) => item.id !== eventId));
+    setPastEvents((prev) => prev.filter((item) => item.id !== eventId));
+    setRequestedEvents((prev) => prev.filter((item) => item.id !== eventId));
   }, []);
 
   // Currently displayed events (limited to 5)
   const displayedEvents = useMemo(() => {
-    if (selectedStatus === 'ON_GOING') return ongoingEvents.slice(0, 5);
-    if (selectedStatus === 'PAST') return pastEvents.slice(0, 5);
-    if (selectedStatus === 'REQUESTED') return requestedEvents.slice(0, 5);
+    if (selectedStatus === "ON_GOING") return ongoingEvents.slice(0, 5);
+    if (selectedStatus === "PAST") return pastEvents.slice(0, 5);
+    if (selectedStatus === "REQUESTED") return requestedEvents.slice(0, 5);
     return [];
   }, [selectedStatus, ongoingEvents, pastEvents, requestedEvents]);
 
   // Full list for "View All" check
   const getFullEventsList = () => {
-    if (selectedStatus === 'ON_GOING') return ongoingEvents;
-    if (selectedStatus === 'PAST') return pastEvents;
-    if (selectedStatus === 'REQUESTED') return requestedEvents;
+    if (selectedStatus === "ON_GOING") return ongoingEvents;
+    if (selectedStatus === "PAST") return pastEvents;
+    if (selectedStatus === "REQUESTED") return requestedEvents;
     return [];
   };
 
@@ -124,10 +144,11 @@ const ShipLifeScreen = () => {
     const loadUser = async () => {
       const userData = await getUserDetails();
       try {
-        const parsed = typeof userData === "string" ? JSON.parse(userData) : userData;
+        const parsed =
+          typeof userData === "string" ? JSON.parse(userData) : userData;
         setloggeduserData(parsed);
       } catch (e) {
-        console.log("Parsing User Error:", e);
+        Logger.error("Parsing User Error:", { Error: String(e) });
       }
     };
     loadUser();
@@ -137,8 +158,8 @@ const ShipLifeScreen = () => {
     if (!isOnline) return;
     try {
       const [ongoingRes, pastRes] = await Promise.all([
-        GETALLBUDDYUPEVENTS({ page: 1, limit: 10, eventType: 'ON_GOING' }),
-        GETALLBUDDYUPEVENTS({ page: 1, limit: 10, eventType: 'PAST' }),
+        GETALLBUDDYUPEVENTS({ page: 1, limit: 10, eventType: "ON_GOING" }),
+        GETALLBUDDYUPEVENTS({ page: 1, limit: 10, eventType: "PAST" }),
       ]);
 
       if (ongoingRes.success && ongoingRes.status === 200) {
@@ -148,11 +169,11 @@ const ShipLifeScreen = () => {
       if (pastRes.success && pastRes.status === 200) {
         setPastEvents(pastRes.data.groupActivityList ?? []);
       }
-      if (designation === 'Captain') {
+      if (designation === "Captain") {
         const requestedRes = await GETALLBUDDYUPEVENTS({
           page: 1,
           limit: 10,
-          filter: 'REQUESTED',
+          filter: "REQUESTED",
         });
 
         if (requestedRes.success && requestedRes.status === 200) {
@@ -160,7 +181,7 @@ const ShipLifeScreen = () => {
         }
       }
     } catch (err) {
-      showToast.error(t('oops'), t('somethingwentwrong'));
+      showToast.error(t("oops"), t("somethingwentwrong"));
     }
   };
 
@@ -169,7 +190,7 @@ const ShipLifeScreen = () => {
       if (loggeduserData?.id && isOnline) {
         fetchEventsOnFocus();
       }
-    }, [loggeduserData?.id, isOnline])
+    }, [loggeduserData?.id, isOnline]),
   );
 
   // Reset data when going offline
@@ -193,40 +214,48 @@ const ShipLifeScreen = () => {
 
     setIsLoading(true);
     try {
-      const [adminbuddyRes, topemployeeRes, ongoingRes, pastRes, viewprofileRes] = await Promise.all([
+      const [
+        adminbuddyRes,
+        topemployeeRes,
+        ongoingRes,
+        pastRes,
+        viewprofileRes,
+      ] = await Promise.all([
         getalladminbuddyupcategories({ isAdmin: true }),
         getleaderboard({ isZero: false }),
-        GETALLBUDDYUPEVENTS({ page: 1, limit: 10, eventType: 'ON_GOING' }),
-        GETALLBUDDYUPEVENTS({ page: 1, limit: 10, eventType: 'PAST' }),
-        viewProfile({ userId: loggeduserData?.id })
+        GETALLBUDDYUPEVENTS({ page: 1, limit: 10, eventType: "ON_GOING" }),
+        GETALLBUDDYUPEVENTS({ page: 1, limit: 10, eventType: "PAST" }),
+        viewProfile({ userId: loggeduserData?.id }),
       ]);
 
       // Categories
       if (adminbuddyRes.success && adminbuddyRes.status === 200) {
-        setbuddyupCategory(adminbuddyRes.data.groupActivityCategoriesList ?? []);
+        setbuddyupCategory(
+          adminbuddyRes.data.groupActivityCategoriesList ?? [],
+        );
       } else {
-        showToast.error(t('oops'), adminbuddyRes.message);
+        showToast.error(t("oops"), adminbuddyRes.message);
       }
 
       // Leaderboard
       if (topemployeeRes.success && topemployeeRes.status === 200) {
         settopEmployee(topemployeeRes.data.allUsers?.usersList ?? []);
       } else {
-        showToast.error(t('oops'), topemployeeRes.message);
+        showToast.error(t("oops"), topemployeeRes.message);
       }
 
       // Ongoing Events
       if (ongoingRes.success && ongoingRes.status === 200) {
         setOngoingEvents(ongoingRes.data.groupActivityList ?? []);
       } else {
-        showToast.error(t('oops'), ongoingRes.message);
+        showToast.error(t("oops"), ongoingRes.message);
       }
 
       // Past Events
       if (pastRes.success && pastRes.status === 200) {
         setPastEvents(pastRes.data.groupActivityList ?? []);
       } else {
-        showToast.error(t('oops'), pastRes.message);
+        showToast.error(t("oops"), pastRes.message);
       }
 
       // Profile & Boarding Status
@@ -237,24 +266,28 @@ const ShipLifeScreen = () => {
 
         if (viewprofileRes.data.shipId && loggeduserData) {
           loggeduserData.shipId = viewprofileRes.data.shipId;
-          await AsyncStorage.setItem("userDetails", JSON.stringify(loggeduserData));
+          await AsyncStorage.setItem(
+            "userDetails",
+            JSON.stringify(loggeduserData),
+          );
         }
 
         if (viewprofileRes.data?.isBoarded?.allShips?.length > 0) {
-          const userStatus = viewprofileRes.data.isBoarded.allShips[0].crewMembers.find(
-            (crew: any) => crew.userId === loggeduserData?.id
-          );
+          const userStatus =
+            viewprofileRes.data.isBoarded.allShips[0].crewMembers.find(
+              (crew: any) => crew.userId === loggeduserData?.id,
+            );
           if (userStatus?.isBoarded) {
             setIsBoarded(true);
           } else {
-            setSelectedStatus('PAST'); // Default to PAST if not boarded
+            setSelectedStatus("PAST"); // Default to PAST if not boarded
           }
         }
       } else {
-        showToast.error(t('oops'), viewprofileRes.message);
+        showToast.error(t("oops"), viewprofileRes.message);
       }
     } catch (err) {
-      showToast.error(t('oops'), t('somethingwentwrong'));
+      showToast.error(t("oops"), t("somethingwentwrong"));
     } finally {
       setIsLoading(false);
     }
@@ -271,23 +304,28 @@ const ShipLifeScreen = () => {
 
   // Fetch requested events only when Captain selects the tab (lazy load)
   const fetchRequestedEvents = async () => {
-    if (!isOnline || requestedEvents.length > 0 || designation !== 'Captain') return;
+    if (!isOnline || requestedEvents.length > 0 || designation !== "Captain")
+      return;
 
     try {
-      const res = await GETALLBUDDYUPEVENTS({ page: 1, limit: 10, filter: 'REQUESTED' });
+      const res = await GETALLBUDDYUPEVENTS({
+        page: 1,
+        limit: 10,
+        filter: "REQUESTED",
+      });
       if (res.success && res.status === 200) {
         setRequestedEvents(res.data.groupActivityList ?? []);
       } else {
-        showToast.error(t('oops'), res.message);
+        showToast.error(t("oops"), res.message);
       }
     } catch {
-      showToast.error(t('oops'), t('somethingwentwrong'));
+      showToast.error(t("oops"), t("somethingwentwrong"));
     }
   };
 
-  const handleTabChange = (status: 'ON_GOING' | 'PAST' | 'REQUESTED') => {
+  const handleTabChange = (status: "ON_GOING" | "PAST" | "REQUESTED") => {
     setSelectedStatus(status);
-    if (status === 'REQUESTED' && designation === 'Captain') {
+    if (status === "REQUESTED" && designation === "Captain") {
       fetchRequestedEvents();
     }
   };
@@ -295,7 +333,7 @@ const ShipLifeScreen = () => {
   const handleViewAll = () => {
     const eventType = selectedStatus;
     router.push({
-      pathname: '/viewallbuddyupevents',
+      pathname: "/viewallbuddyupevents",
       params: {
         eventType: eventType,
       },
@@ -306,34 +344,33 @@ const ShipLifeScreen = () => {
     const listData: ListItem[] = [];
 
     if (isBoarded) {
-      listData.push({ type: 'header' });
-      listData.push({ type: 'description' });
-      listData.push({ type: 'categories', data: buddyupCategory });
-      listData.push({ type: 'leaderboard', data: topEmployee });
-      listData.push({ type: 'createButton' });
+      listData.push({ type: "header" });
+      listData.push({ type: "description" });
+      listData.push({ type: "categories", data: buddyupCategory });
+      listData.push({ type: "leaderboard", data: topEmployee });
+      listData.push({ type: "createButton" });
     }
 
-    listData.push({ type: 'filter' });
+    listData.push({ type: "filter" });
 
     if (showViewAll) {
-      listData.push({ type: 'viewall' });
+      listData.push({ type: "viewall" });
     }
 
-    listData.push({ type: 'events', data: displayedEvents });
+    listData.push({ type: "events", data: displayedEvents });
 
     return listData;
   };
 
   const renderItem: ListRenderItem<ListItem> = ({ item }) => {
     switch (item.type) {
-
-      case 'header':
+      case "header":
         return (
           <View style={styles.titleView}>
-            <Text style={styles.buddyuptext}>{t('buddyup')}</Text>
+            <Text style={styles.buddyuptext}>{t("buddyup")}</Text>
             <GlobalPopOver
               showOkButton
-              buttonText={t('close')}
+              buttonText={t("close")}
               buttonStyle={styles.okBtnStyle}
               popOverContent={<HowMilesWorkPopup />}
             >
@@ -342,77 +379,107 @@ const ShipLifeScreen = () => {
           </View>
         );
 
-      case 'description':
-        return <Text style={styles.buddyupdescription}>{t('buddyup_description')}</Text>;
+      case "description":
+        return (
+          <Text style={styles.buddyupdescription}>
+            {t("buddyup_description")}
+          </Text>
+        );
 
-      case 'categories':
+      case "categories":
         return <AdminBuddyUpCategory buddyupCategory={item.data} />;
 
-      case 'leaderboard':
+      case "leaderboard":
         return <TopThreeEmployees topEmployee={item.data} />;
 
-      case 'createButton':
+      case "createButton":
         return (
-          <TouchableOpacity style={styles.createyourbuddyupButton}
+          <TouchableOpacity
+            style={styles.createyourbuddyupButton}
             onPress={() => {
-              router.push('/createyourbuddyupevent')
+              router.push("/createyourbuddyupevent");
             }}
           >
             <Text style={styles.createyourbuddyupText}>
-              {t('createyourbuddyup')}
+              {t("createyourbuddyup")}
             </Text>
           </TouchableOpacity>
         );
 
-      case 'filter':
+      case "filter":
         return (
           <View style={styles.tabContainer}>
             {isBoarded && (
               <TouchableOpacity
-                style={[styles.tab, selectedStatus === "ON_GOING" && styles.activeTab]}
+                style={[
+                  styles.tab,
+                  selectedStatus === "ON_GOING" && styles.activeTab,
+                ]}
                 onPress={() => handleTabChange("ON_GOING")}
               >
-                <Text style={styles.tabText}>{t('ongoing')}</Text>
+                <Text style={styles.tabText}>{t("ongoing")}</Text>
               </TouchableOpacity>
             )}
             <TouchableOpacity
-              style={[styles.tab, selectedStatus === "PAST" && styles.activeTab]}
+              style={[
+                styles.tab,
+                selectedStatus === "PAST" && styles.activeTab,
+              ]}
               onPress={() => handleTabChange("PAST")}
             >
-              <Text style={styles.tabText}>{t('past')}</Text>
+              <Text style={styles.tabText}>{t("past")}</Text>
             </TouchableOpacity>
             {isBoarded && designation === "Captain" && (
               <TouchableOpacity
-                style={[styles.tab, selectedStatus === "REQUESTED" && styles.activeTab]}
+                style={[
+                  styles.tab,
+                  selectedStatus === "REQUESTED" && styles.activeTab,
+                ]}
                 onPress={() => handleTabChange("REQUESTED")}
               >
-                <Text style={styles.tabText}>{t('requested')}</Text>
+                <Text style={styles.tabText}>{t("requested")}</Text>
               </TouchableOpacity>
             )}
           </View>
         );
 
-      case 'viewall':
+      case "viewall":
         return (
-          <View style={{ alignItems: "flex-end", marginHorizontal: 5, marginBottom: 5 }}>
-            <TouchableOpacity style={styles.ViewAllButton} onPress={handleViewAll}>
-              <Text style={styles.ViewAllText}>{t('viewall')}</Text>
+          <View
+            style={{
+              alignItems: "flex-end",
+              marginHorizontal: 5,
+              marginBottom: 5,
+            }}
+          >
+            <TouchableOpacity
+              style={styles.ViewAllButton}
+              onPress={handleViewAll}
+            >
+              <Text style={styles.ViewAllText}>{t("viewall")}</Text>
             </TouchableOpacity>
           </View>
         );
 
-      case 'events':
+      case "events":
         if (item.data.length > 0) {
-          return <BuddyUpEventCard buddyupevents={item.data} onEventDeleted={handleEventDeleted} />;
+          return (
+            <BuddyUpEventCard
+              buddyupevents={item.data}
+              onEventDeleted={handleEventDeleted}
+            />
+          );
         } else {
           return (
-            <View style={{
-              width: '100%',
-              height: height * 0.4,
-              justifyContent: "center",
-              alignItems: "center",
-            }}>
-              <EmptyComponent text={t('nobuddyupfound')} />
+            <View
+              style={{
+                width: "100%",
+                height: height * 0.4,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <EmptyComponent text={t("nobuddyupfound")} />
             </View>
           );
         }
@@ -422,14 +489,15 @@ const ShipLifeScreen = () => {
     }
   };
 
-  const keyExtractor = (item: ListItem, index: number) => `${item.type}-${index}`;
+  const keyExtractor = (item: ListItem, index: number) =>
+    `${item.type}-${index}`;
 
   if (!isOnline) {
     return (
       <View style={styles.main}>
         <ShipLifeScreenHeader />
         <View style={styles.centerContainer}>
-          <EmptyComponent text={t('nointernetconnection')} />
+          <EmptyComponent text={t("nointernetconnection")} />
         </View>
       </View>
     );
@@ -452,26 +520,24 @@ const ShipLifeScreen = () => {
         <ShipLifeScreenHeader />
         <View style={styles.centerContainer}>
           <LottieView
-            source={require('../../assets/Ship.json')}
+            source={require("../../assets/Ship.json")}
             autoPlay
             loop
             style={styles.animation}
           />
-          <Text style={styles.notOnShipText}>
-            {t('youarenotonanyship')}
-          </Text>
+          <Text style={styles.notOnShipText}>{t("youarenotonanyship")}</Text>
         </View>
       </View>
     );
   }
 
-  if (department === 'Shore_Staff') {
+  if (department === "Shore_Staff") {
     return (
       <View style={styles.main}>
         <ShipLifeScreenHeader />
         <View style={styles.centerContainer}>
           <Text style={styles.shoreStaffText}>
-            {t('thissectionapplicableforshipstaff')}
+            {t("thissectionapplicableforshipstaff")}
           </Text>
         </View>
       </View>
@@ -499,27 +565,31 @@ const ShipLifeScreen = () => {
 export default ShipLifeScreen;
 
 const styles = StyleSheet.create({
-  main: { flex: 1, backgroundColor: '#f5f5f5' },
-  flatListContent: { paddingHorizontal: 16, paddingVertical: 10, paddingBottom: 30 },
+  main: { flex: 1, backgroundColor: "#f5f5f5" },
+  flatListContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingBottom: 30,
+  },
 
   titleView: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   tabContainer: {
-    borderColor: '#ededed',
+    borderColor: "#ededed",
     borderWidth: 0.5,
     borderRadius: 10,
     elevation: 2,
-    backgroundColor: 'white',
-    flexDirection: 'row',
+    backgroundColor: "white",
+    flexDirection: "row",
     marginBottom: 10,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   tab: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 8,
     margin: 5,
   },
@@ -530,8 +600,8 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 12,
-    color: 'black',
-    fontFamily: 'Poppins-Regular',
+    color: "black",
+    fontFamily: "Poppins-Regular",
   },
   animation: {
     width: 250,
@@ -540,13 +610,13 @@ const styles = StyleSheet.create({
   buddyuptext: {
     fontSize: 25,
     fontWeight: "600",
-    color: 'grey',
-    fontFamily: "Poppins-SemiBold"
+    color: "grey",
+    fontFamily: "Poppins-SemiBold",
   },
   buddyupdescription: {
-    fontFamily: 'Poppins-Regular',
+    fontFamily: "Poppins-Regular",
     fontSize: 13,
-    color: 'grey',
+    color: "grey",
   },
   okBtnStyle: { backgroundColor: Colors.lightGreen },
   createyourbuddyupButton: {
@@ -567,7 +637,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   ViewAllButton: {
     justifyContent: "center",
@@ -576,24 +646,24 @@ const styles = StyleSheet.create({
   ViewAllText: {
     color: "#949494",
     fontSize: 12,
-    fontFamily: 'Poppins-Regular'
+    fontFamily: "Poppins-Regular",
   },
   centerContainer: {
     flex: 1,
-    alignItems: 'center',
-    marginTop:'30%'
+    alignItems: "center",
+    marginTop: "30%",
   },
   notOnShipText: {
     fontSize: 14,
-    fontFamily: 'Poppins-Regular',
-    color: '#8A8A8A',
-    textAlign: 'center',
+    fontFamily: "Poppins-Regular",
+    color: "#8A8A8A",
+    textAlign: "center",
   },
   shoreStaffText: {
     fontSize: 16,
     color: "gray",
     fontFamily: "Poppins-SemiBold",
-    textAlign: 'center',
+    textAlign: "center",
     paddingHorizontal: 20,
   },
 });

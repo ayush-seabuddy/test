@@ -9,6 +9,7 @@ import { showToast } from "./GlobalToast";
 import PostScreen from "./PostScreen";
 import EmptyComponent from "./EmptyComponent";
 import { useNetwork } from "../hooks/useNetworkStatusHook";
+import { Logger } from "../utils/logger";
 
 export interface Post {
   id: string | number;
@@ -109,7 +110,7 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
           );
         }
       } catch (error) {
-        console.error("Error fetching posts:", error);
+        Logger.error("Error fetching posts:", { Error: String(error) });
         showToast.error(t("oops"), t("somethingwentwrong"));
       } finally {
         setInitialLoading(false);

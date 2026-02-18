@@ -18,6 +18,7 @@ import {
 } from "react-native";
 import { useDispatch } from "react-redux";
 import { usePostHog } from "posthog-react-native";
+import { Logger } from "@/src/utils/logger";
 
 const Settings = () => {
   const { t } = useTranslation();
@@ -28,15 +29,13 @@ const Settings = () => {
     try {
       // 1️⃣ Extract token FIRST
       const expoPushToken = await AsyncStorage.getItem("ExpoPushToken");
-      console.log("ExpoPushToken:", expoPushToken);
+      Logger.info("ExpoPushToken:", {ExpoPushToken:String(expoPushToken)});
 
       // 2️⃣ Call logout API if token exists
       if (expoPushToken) {
         const payload: signoutPayload = {
           deviceTokens: [expoPushToken],
         };
-
-        console.log("payload:", payload);
         await logout(payload);
       }
 
@@ -57,7 +56,7 @@ const Settings = () => {
       // 7️⃣ Navigate to login
       router.replace("/auth/Login");
     } catch (error) {
-      console.error("Error during logout:", error);
+      Logger.error("Error during logout:", {Error:String(error)});
     } finally {
       setModalVisible(false);
     }

@@ -5,6 +5,7 @@ import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import { RootState } from '@/src/redux/store';
 import { updateUserField } from '@/src/redux/userDetailsSlice';
+import { Logger } from '@/src/utils/logger';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect } from 'expo-router';
 import { Edit, Plus, Trash2 } from 'lucide-react-native';
@@ -58,7 +59,7 @@ const WorkExperienceScreen = () => {
             }
 
         } catch (error) {
-            console.error('Error fetching profile details:', error);
+            Logger.error('Error fetching profile details:', {Error:String(error)});
         }
     }, []);
 
@@ -85,7 +86,7 @@ const WorkExperienceScreen = () => {
                 showToast.success(t('success'), t('workingexperiencedeleted'));
             }
         } catch (error: any) {
-            console.error('Delete error:', error.response?.data || error.message);
+            Logger.error('Delete error:', error.response?.data || error.message);
             showToast.error(t('error'), t('somethingwentwrong'));
         } finally {
             setLoading(false);
@@ -96,7 +97,7 @@ const WorkExperienceScreen = () => {
 
     const handleEditExperience = (item: WorkExperience) => {
         router.push({
-            pathname: '/WorkExperience/addExperience',
+            pathname: '/workexperience/addExperience',
             params: {
                 id: item.id,
                 companyName: item.companyName,
@@ -110,7 +111,7 @@ const WorkExperienceScreen = () => {
 
     const handleAddExperience = () => {
         router.push({
-            pathname: '/WorkExperience/addExperience',
+            pathname: '/workexperience/addExperience',
             params: {
                 isEdit: 'false'
             }

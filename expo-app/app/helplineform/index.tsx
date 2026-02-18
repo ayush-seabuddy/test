@@ -33,6 +33,7 @@ import { formatStatus } from "@/src/utils/helperFunctions";
 import CommonLoader from "@/src/components/CommonLoader";
 import { useNetwork } from "@/src/hooks/useNetworkStatusHook";
 import EmptyComponent from "@/src/components/EmptyComponent";
+import { Logger } from "@/src/utils/logger";
 
 interface Question {
   id: string;
@@ -117,7 +118,7 @@ const HelplineFormScreen = () => {
         showToast.error(t("oops"), res.message || "Failed to load form");
       }
     } catch (err) {
-      console.log("Error", err);
+      Logger.error("Error", {Error:String(err)});
       showToast.error(t("oops"), t("somethingwentwrong"));
     } finally {
       setLoading(false);
@@ -154,7 +155,7 @@ const HelplineFormScreen = () => {
         showToast.error(t("oops"), res.message || "Failed to load answers");
       }
     } catch (err: any) {
-      console.error("Fetch answers error:", err);
+      Logger.error("Fetch answers error:", err);
       showToast.error(t("oops"), t("somethingwentwrong"));
     } finally {
       setLoading(false);
@@ -273,7 +274,7 @@ const HelplineFormScreen = () => {
         showToast.error(t("oops"), apiResponse.message);
       }
     } catch (error: any) {
-      console.error("Submit error:", error);
+      Logger.error("Submit error:", error);
       showToast.error(t("oops"), t("somethingwentwrong"));
     } finally {
       setSubmitting(false);

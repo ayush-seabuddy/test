@@ -7,7 +7,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
 import { BlurView } from "expo-blur";
 import { Image } from "expo-image";
-import { router, useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
+import {
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
+  useNavigation,
+} from "expo-router";
 import { ChevronDown, Share2 } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -19,12 +24,13 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 import CommonLoader from "@/src/components/CommonLoader";
 import EmptyComponent from "@/src/components/EmptyComponent";
 import { generateAndSharePersonalityPDF } from "@/src/components/PersonalityPDFReport";
+import { Logger } from "@/src/utils/logger";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -64,7 +70,7 @@ const PersonalityMapResultScreen = () => {
   const toggleAnim = (
     expanded: boolean,
     anim: Animated.Value,
-    setter: React.Dispatch<React.SetStateAction<boolean>>
+    setter: React.Dispatch<React.SetStateAction<boolean>>,
   ) => {
     setter(!expanded);
     Animated.timing(anim, {
@@ -76,7 +82,7 @@ const PersonalityMapResultScreen = () => {
 
   // Check network connectivity
   useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener(state => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
       setIsConnected(state.isConnected ?? false);
     });
 
@@ -89,18 +95,20 @@ const PersonalityMapResultScreen = () => {
       const subscription = BackHandler.addEventListener(
         "hardwareBackPress",
         () => {
-          screenName === 'HealthScreen' ? router.back() : router.replace("/home");
+          screenName === "HealthScreen"
+            ? router.back()
+            : router.replace("/home");
           return true;
-        }
+        },
       );
 
       return () => subscription.remove();
-    }, [screenName])
+    }, [screenName]),
   );
 
   // Handle system back gesture (swipe/gesture navigation)
   useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
       // Prevent default behavior
       e.preventDefault();
 
@@ -108,7 +116,7 @@ const PersonalityMapResultScreen = () => {
       unsubscribe();
 
       // Navigate based on screenName
-      if (screenName === 'HealthScreen') {
+      if (screenName === "HealthScreen") {
         navigation.dispatch(e.data.action);
       } else {
         router.replace("/home");
@@ -121,11 +129,13 @@ const PersonalityMapResultScreen = () => {
   useEffect(() => {
     (async () => {
       try {
-        const userDetails = JSON.parse(await AsyncStorage.getItem("userDetails") || "{}");
+        const userDetails = JSON.parse(
+          (await AsyncStorage.getItem("userDetails")) || "{}",
+        );
         const fullName = userDetails.fullName || "User";
         setUserName(fullName);
       } catch (e) {
-        console.log('Error', e)
+        Logger.error("Error", { Error: String(e) });
         setUserName("User");
       }
     })();
@@ -133,7 +143,7 @@ const PersonalityMapResultScreen = () => {
 
   const sharePDF = async () => {
     if (!data) {
-      showToast.error(t('oops'), t('nodataavailable'));
+      showToast.error(t("oops"), t("nodataavailable"));
       return;
     }
 
@@ -156,7 +166,9 @@ const PersonalityMapResultScreen = () => {
 
     try {
       setloading(true);
-      const apiResponse = await getallassessmentsResult({ questionType: "PERSONALITY" });
+      const apiResponse = await getallassessmentsResult({
+        questionType: "PERSONALITY",
+      });
       setloading(false);
       if (apiResponse.success && apiResponse.status === 200) {
         const insights = apiResponse.data.data.insights;
@@ -165,7 +177,7 @@ const PersonalityMapResultScreen = () => {
         showToast.error(t("oops"), apiResponse.message);
       }
     } catch (error) {
-      console.log('Error', error)
+      Logger.error("Error", { Error: String(error) });
       setloading(false);
       showToast.error(t("oops"), t("somethingwentwrong"));
     }
@@ -175,8 +187,13 @@ const PersonalityMapResultScreen = () => {
     getAssessmentResult();
   }, []);
 
-  const traitsList = Array.isArray(data?.personality_traits) ? data.personality_traits : [];
-  const careerObj = typeof data?.career_path === "object" && !Array.isArray(data?.career_path) ? data.career_path : {};
+  const traitsList = Array.isArray(data?.personality_traits)
+    ? data.personality_traits
+    : [];
+  const careerObj =
+    typeof data?.career_path === "object" && !Array.isArray(data?.career_path)
+      ? data.career_path
+      : {};
   const normalizedTraits = React.useMemo(() => {
     if (!data?.personality_traits) return [];
 
@@ -186,18 +203,16 @@ const PersonalityMapResultScreen = () => {
         Object.entries(obj).map(([title, value]) => ({
           title,
           value,
-        }))
+        })),
       );
     }
 
     // Case 2: Object
     if (typeof data.personality_traits === "object") {
-      return Object.entries(data.personality_traits).map(
-        ([title, value]) => ({
-          title,
-          value,
-        })
-      );
+      return Object.entries(data.personality_traits).map(([title, value]) => ({
+        title,
+        value,
+      }));
     }
 
     return [];
@@ -217,7 +232,11 @@ const PersonalityMapResultScreen = () => {
         <View>
           <Text style={styles.personaresulttext}>{t("personaresult")}</Text>
         </View>
-        <TouchableOpacity onPress={sharePDF} style={styles.shareIcon} activeOpacity={0.7}>
+        <TouchableOpacity
+          onPress={sharePDF}
+          style={styles.shareIcon}
+          activeOpacity={0.7}
+        >
           <Share2 size={18} color="#02130b" />
         </TouchableOpacity>
       </View>
@@ -262,7 +281,11 @@ const PersonalityMapResultScreen = () => {
 
           {/* Personality Description */}
           <View style={styles.personalityDescCard}>
-            <BlurView style={StyleSheet.absoluteFill} tint="light" intensity={50} />
+            <BlurView
+              style={StyleSheet.absoluteFill}
+              tint="light"
+              intensity={50}
+            />
             <View style={styles.personalityDescHeader}>
               <Text style={styles.personalityDescText}>
                 {t("personalityDescText") || "Personality Description"}
@@ -290,21 +313,32 @@ const PersonalityMapResultScreen = () => {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.desc} numberOfLines={descExpanded ? undefined : 4}>
+            <Text
+              style={styles.desc}
+              numberOfLines={descExpanded ? undefined : 4}
+            >
               {data?.description ?? ""}
             </Text>
           </View>
 
           {/* Personality Traits */}
           <View style={styles.personalityDescCard}>
-            <BlurView style={StyleSheet.absoluteFill} tint="light" intensity={50} />
+            <BlurView
+              style={StyleSheet.absoluteFill}
+              tint="light"
+              intensity={50}
+            />
             <View style={styles.personalityDescHeader}>
               <Text style={styles.personalityDescText}>
                 {t("personalitytraits") || "Personality Traits"}
               </Text>
               <TouchableOpacity
                 onPress={() =>
-                  toggleAnim(traitsExpanded, rotateTraitsAnim, setTraitsExpanded)
+                  toggleAnim(
+                    traitsExpanded,
+                    rotateTraitsAnim,
+                    setTraitsExpanded,
+                  )
                 }
                 style={styles.iconButton}
               >
@@ -345,14 +379,22 @@ const PersonalityMapResultScreen = () => {
 
           {/* Career Path */}
           <View style={styles.personalityDescCard}>
-            <BlurView style={StyleSheet.absoluteFill} tint="light" intensity={50} />
+            <BlurView
+              style={StyleSheet.absoluteFill}
+              tint="light"
+              intensity={50}
+            />
             <View style={styles.personalityDescHeader}>
               <Text style={styles.personalityDescText}>
                 {t("careerpath") || "Career Path"}
               </Text>
               <TouchableOpacity
                 onPress={() =>
-                  toggleAnim(careerExpanded, rotateCareerAnim, setCareerExpanded)
+                  toggleAnim(
+                    careerExpanded,
+                    rotateCareerAnim,
+                    setCareerExpanded,
+                  )
                 }
                 style={styles.iconButton}
               >
@@ -429,7 +471,6 @@ const PersonalityMapResultScreen = () => {
       )}
     </View>
   );
-
 };
 
 export default PersonalityMapResultScreen;
@@ -438,7 +479,11 @@ const styles = StyleSheet.create({
   main: { flex: 1 },
 
   backgroundContainer: { ...StyleSheet.absoluteFillObject, zIndex: -1 },
-  backgroundImage: { width: "100%", height: "100%", backgroundColor: '#ededed' },
+  backgroundImage: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#ededed",
+  },
 
   header: {
     marginVertical: 10,
@@ -474,7 +519,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 20,
     borderWidth: 0.5,
-    borderColor: '#fff',
+    borderColor: "#fff",
     backgroundColor: "#f1f1f1",
   },
 
@@ -529,7 +574,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 20,
     borderWidth: 0.5,
-    borderColor: '#fff',
+    borderColor: "#fff",
     backgroundColor: "#f1f1f1",
     overflow: "hidden",
   },
@@ -577,12 +622,12 @@ const styles = StyleSheet.create({
   },
 
   loader: {
-    paddingTop: '80%',
+    paddingTop: "80%",
   },
 
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

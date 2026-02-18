@@ -17,6 +17,7 @@ import CommonLoader from '@/src/components/CommonLoader';
 import { Image } from 'expo-image';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
 import EmptyComponent from '@/src/components/EmptyComponent';
+import { Logger } from '@/src/utils/logger';
 
 const { width } = Dimensions.get('window');
 
@@ -108,7 +109,7 @@ const ContentList = () => {
 
       return [];
     } catch (error) {
-      console.log('error:', error);
+      Logger.error('error:', {Error:String(error)});
       return [];
     }
   };
@@ -124,7 +125,7 @@ const ContentList = () => {
       setData(newData);
       setPage(1);
     } catch (error) {
-      console.log(error);
+      Logger.error(String(error));
     } finally {
       setInitialLoading(false);
       setLoading(false);
