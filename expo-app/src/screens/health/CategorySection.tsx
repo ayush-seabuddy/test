@@ -1,4 +1,3 @@
-// components/Cards/CategorySection.tsx
 import { getallcontents } from "@/src/apis/apiService";
 import CommonLoader from "@/src/components/CommonLoader";
 import ShowContentCard from "@/src/components/ShowContentCard";

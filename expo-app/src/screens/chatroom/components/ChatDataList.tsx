@@ -58,6 +58,8 @@ const Chats = ({
   setLoading,
   fetchChatReactions,
 }: ChatsProps) => {
+  const { t } = useTranslation();
+
   if (item.type === "date") {
     return (
       <View style={styles.dateSeparatorContainer}>
@@ -72,7 +74,6 @@ const Chats = ({
     setSelectedMedia({ uri, isVideo: false });
     setMediaModalVisible(true);
   };
-  const { t } = useTranslation();
   const handleLongPress = (item: ChatMessage) => {
     let reaction =
       item?.chatReactionDetails?.find(

@@ -103,7 +103,6 @@ const ProfilePhoto = () => {
       }
     } catch (error: any) {
       if (error?.message && error.message.toLowerCase().includes('cancel')) {
-        // user cancelled - ignore
       } else {
         console.error('Image Picker Error:', error);
         showToast.error(t('error'), t('imagePickFailed'));
