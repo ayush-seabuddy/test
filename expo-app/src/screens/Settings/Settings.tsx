@@ -107,7 +107,7 @@ const Settings = () => {
           </View>
 
           <Text style={styles.versionText}>
-            Version {Application.nativeApplicationVersion}
+            {t('version')} {Application.nativeApplicationVersion}
           </Text>
         </ScrollView>
       </View>

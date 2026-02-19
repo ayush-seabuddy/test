@@ -9,7 +9,6 @@ import {
   Dimensions,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  ActivityIndicator,
 } from "react-native";
 import { Image } from "expo-image";
 import { useTranslation } from "react-i18next";

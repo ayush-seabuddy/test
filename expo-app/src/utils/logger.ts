@@ -6,7 +6,7 @@ import {
 } from "@opentelemetry/sdk-logs";
 import { OTLPLogExporter } from "@opentelemetry/exporter-logs-otlp-http";
 
-const POSTHOG_API_KEY = "phc_LYxVgQmPQSyrXAv134auG5e5khoPh9GgCDQvmvdjhVH"; 
+const POSTHOG_API_KEY = "phc_LYxVgQmPQSyrXAv134auG5e5khoPh9GgCDQvmvdjhVH";
 const POSTHOG_LOGS_ENDPOINT = "https://us.i.posthog.com/i/v1/logs";
 
 // 1. Create the OTLP exporter pointing to PostHog
@@ -25,7 +25,7 @@ logs.setGlobalLoggerProvider(loggerProvider);
 // 3. Get a named logger for your app
 const logger = logs.getLogger(
   "SeaBuddy",
-  Application.nativeApplicationVersion ?? "1.0.0" 
+  Application.nativeApplicationVersion ?? "1.0.0",
 );
 
 // 4. Helper functions matching common log levels
@@ -48,13 +48,25 @@ export const Logger = {
     });
   },
 
-  error: (message: string, attributes?: Record<string, string>) => {
-    logger.emit({
-      severityNumber: SeverityNumber.ERROR,
-      severityText: "ERROR",
-      body: message,
-      attributes,
-    });
+  error: (message: string, attributes?: Record<string, string> | null) => {
+    console.log("🪵 Logger.error called");
+    console.log("🪵 Raw attributes:", attributes);
+
+    const safeAttributes =
+      attributes && typeof attributes === "object" ? attributes : {};
+
+    console.log("🪵 Safe attributes:", safeAttributes);
+
+    try {
+      logger.emit({
+        severityNumber: SeverityNumber.ERROR,
+        severityText: "ERROR",
+        body: message,
+        attributes: safeAttributes,
+      });
+    } catch (e) {
+      console.log("🔥 LOGGER EMIT FAILED:", e);
+    }
   },
 
   debug: (message: string, attributes?: Record<string, string>) => {

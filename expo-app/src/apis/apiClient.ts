@@ -67,13 +67,13 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error("❌ ERROR URL:", error.config?.url);
+    console.log("❌ ERROR URL:", error.config?.url);
     Logger.info("❌ ERROR URL:", error.config?.url);
 
-    console.error("❌ ERROR RESPONSE:", error.response?.data);
+    console.log("❌ ERROR RESPONSE:", error.response?.data);
     Logger.info("❌ ERROR RESPONSE:", error.response?.data);
 
-    console.error("❌ ERROR MESSAGE:", error.message);
+    console.log("❌ ERROR MESSAGE:", error.message);
     Logger.info("❌ ERROR MESSAGE:", error.message);
 
     return Promise.reject(error);
