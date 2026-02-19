@@ -25,7 +25,6 @@ import { showToast } from "@/src/components/GlobalToast";
 import { useTranslation } from "react-i18next";
 import { router, useLocalSearchParams } from "expo-router";
 import GlobalHeader from "@/src/components/GlobalHeader";
-import { ChevronLeft } from "lucide-react-native";
 import Colors from "@/src/utils/Colors";
 import CustomLottie from "@/src/components/CustomLottie";
 import GlobalButton from "@/src/components/GlobalButton";
@@ -118,7 +117,7 @@ const HelplineFormScreen = () => {
         showToast.error(t("oops"), res.message || "Failed to load form");
       }
     } catch (err) {
-      Logger.error("Error", {Error:String(err)});
+      Logger.error("Error", { Error: String(err) });
       showToast.error(t("oops"), t("somethingwentwrong"));
     } finally {
       setLoading(false);
@@ -409,9 +408,9 @@ const HelplineFormScreen = () => {
             margin: 10,
             borderRadius: 10,
             justifyContent: "center",
-            backgroundColor: "#ededed",
+            backgroundColor: "#fff",
             borderWidth: 1,
-            borderColor: "#fff",
+            borderColor: "#ededed",
             elevation: 2,
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 2 },
@@ -557,7 +556,7 @@ const HelplineFormScreen = () => {
 export default HelplineFormScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: { flex: 1, backgroundColor: "#ededed" },
   toggleContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
