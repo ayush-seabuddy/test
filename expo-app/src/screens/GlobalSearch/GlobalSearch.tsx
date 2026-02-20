@@ -23,6 +23,7 @@ import { PostInterface } from '../ContentDetails/type';
 import MusicCard from '../companyLibrary/MusicCard';
 import EmptyComponent from '@/src/components/EmptyComponent';
 import { ImagesAssets } from '@/src/utils/ImageAssets';
+import { Logger } from '@/src/utils/logger';
 
 const GlobalSearch = () => {
   const [searchText, setSearchText] = useState('');
@@ -94,7 +95,7 @@ const GlobalSearch = () => {
         setResults({});
       }
     } catch (error) {
-      console.error('Search error:', error);
+      Logger.error('Search error:', {Error:String(error)});
       setResults({});
     } finally {
       setLoading(false);

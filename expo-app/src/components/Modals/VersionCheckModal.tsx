@@ -1,4 +1,5 @@
 import Colors from "@/src/utils/Colors";
+import { Logger } from "@/src/utils/logger";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -38,7 +39,7 @@ const VersionCheckModal: React.FC<VersionCheckModalProps> = ({
   const handleUpdate = () => {
     if (versionInfo.url) {
       Linking.openURL(versionInfo.url).catch((err) =>
-        console.error("Failed to open store URL:", err)
+        Logger.error("Failed to open store URL:", err)
       );
     }
     onUpdate();

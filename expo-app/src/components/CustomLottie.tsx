@@ -49,6 +49,7 @@ const CustomLottie: React.FC<CustomLottieProps> = React.memo(
     );
   },
 );
+CustomLottie.displayName = "CustomLottie";
 
 export default CustomLottie;
 

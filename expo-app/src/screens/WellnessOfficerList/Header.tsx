@@ -49,7 +49,7 @@ const Header = () => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => router.push('/AppointmentHistory')}
+            onPress={() => router.push('/appointmenthistory')}
             style={styles.headerButton}
           >
             <View style={styles.historyIconBackground}>

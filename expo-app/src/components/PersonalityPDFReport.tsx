@@ -3,6 +3,7 @@ import * as Sharing from "expo-sharing";
 import { File, Paths } from "expo-file-system";
 import { Platform } from "react-native";
 import { showToast } from "@/src/components/GlobalToast";
+import { Logger } from "../utils/logger";
 
 interface CorrectiveAction {
   challenge: string;
@@ -198,7 +199,7 @@ export const generateAndSharePersonalityPDF = async ({
 
     return finalUri;
   } catch (error: any) {
-    console.error("PDF Error:", error);
+    Logger.error("PDF Error:", error);
     if (error.message !== "User cancellation.") {
       showToast.error("Error", "Failed to generate or share PDF");
     }

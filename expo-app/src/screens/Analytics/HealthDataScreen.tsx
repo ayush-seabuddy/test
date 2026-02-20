@@ -1,4 +1,5 @@
 import CommonLoader from '@/src/components/CommonLoader';
+import { Logger } from '@/src/utils/logger';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import {
@@ -75,7 +76,7 @@ const HealthDataScreen: React.FC = () => {
         );
       }
     } catch (error) {
-      console.error('Health Connect initialization failed:', error);
+      Logger.error('Health Connect initialization failed:', {Error:String(error)});
       Alert.alert('Error', 'Failed to connect to Health Connect.');
     } finally {
       setIsLoading(false);
@@ -116,7 +117,7 @@ const HealthDataScreen: React.FC = () => {
 
       setSleepData(dailyData);
     } catch (error) {
-      console.error('Failed to fetch sleep data:', error);
+      Logger.error('Failed to fetch sleep data:', {Error:String(error)});
       Alert.alert('Error', 'Could not retrieve sleep data.');
     } finally {
       setIsLoading(false);

@@ -983,5 +983,6 @@
   "tapToRemove": "点击删除",
   "noReactionFound": "没有找到反应",
   "thisActionIsForYourChatMessage": "This action is for your chat message",
-  "thisMessageHasBeenDeleted": "This message has been deleted"
+  "thisMessageHasBeenDeleted": "This message has been deleted",
+    "version":"版本"
 }

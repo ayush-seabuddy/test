@@ -992,5 +992,6 @@
   "tapToRemove": "Tap to remove",
   "noReactionFound": "No reaction found",
   "thisActionIsForYourChatMessage": "This action is for your chat message",
-  "thisMessageHasBeenDeleted": "This message has been deleted"
+  "thisMessageHasBeenDeleted": "This message has been deleted",
+  "version":"Version"
 }

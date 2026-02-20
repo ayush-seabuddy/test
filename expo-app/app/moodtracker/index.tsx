@@ -18,6 +18,7 @@ import { RootState } from "@/src/redux/store";
 import Colors from "@/src/utils/Colors";
 import { height } from "@/src/utils/helperFunctions";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { Logger } from "@/src/utils/logger";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BlurView } from "expo-blur";
 import { Image } from "expo-image";
@@ -337,7 +338,7 @@ const MoodTracker: React.FC = () => {
         setLastFiveDays(res.data?.moodTrackerList ?? []);
       }
     } catch (error) {
-      console.error("Mood history fetch failed:", error);
+      Logger.error("Mood history fetch failed:", { Error: String(error) });
     }
   }, []);
 
@@ -367,7 +368,9 @@ const MoodTracker: React.FC = () => {
           await fetchMoodHistory();
         }
       } catch (error) {
-        console.error("Monthly mood data fetch failed:", error);
+        Logger.error("Monthly mood data fetch failed:", {
+          Error: String(error),
+        });
       } finally {
         setLoading(false);
       }
@@ -391,7 +394,7 @@ const MoodTracker: React.FC = () => {
         const todayStr = moment().format("YYYY-MM-DD");
         setIsTodayChecked(data.lastMoodDate === todayStr && data.isMoodTracker);
       } catch (error) {
-        console.log("Error", error);
+        Logger.error("Error", { Error: String(error) });
       }
     };
     checkToday();
@@ -456,7 +459,7 @@ const MoodTracker: React.FC = () => {
         showToast.error(t("oops"), response.data?.responseMessage);
       }
     } catch (error) {
-      console.error("Mood submit failed:", error);
+      Logger.error("Mood submit failed:", {Error:String(error)});
     } finally {
       setLoading(false);
       setModalVisible(false);

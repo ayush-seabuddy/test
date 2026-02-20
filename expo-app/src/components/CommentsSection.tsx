@@ -18,6 +18,7 @@ import { ImagesAssets } from "../utils/ImageAssets";
 import BottomSheet from "./BottomSheet";
 import CommonLoader from "./CommonLoader";
 import { showToast } from "./GlobalToast";
+import { Logger } from "../utils/logger";
 
 const ColorsLight = {
   textPrimary: "#1F2937",
@@ -250,7 +251,7 @@ const CommentsSection: React.FC<{
         setComments(formatted);
       }
     } catch (err) {
-      console.log("Error", err);
+      Logger.error("Error", {Error:String(err)});
       showToast.error(t("error"), t("somethingwentwrong"));
     } finally {
       setCommentLoading(false);
@@ -321,7 +322,7 @@ const CommentsSection: React.FC<{
         setReplyingTo(null);
         Keyboard.dismiss();
       } catch (err) {
-        console.log("Error", err);
+        Logger.error("Error", { Error: String(err) });
         setComments(previousComments);
         showToast.error(t("error"), t("somethingwentwrong"));
       } finally {
@@ -413,7 +414,7 @@ const CommentsSection: React.FC<{
         400,
       );
     } catch (err) {
-      console.log("Error", err);
+      Logger.error("Error", {Error:String(err)});
       setComments(previousComments);
       if (!isReply) onCommentCountChange?.(-1);
       showToast.error(t("error"), t("somethingwentwrong"));
@@ -506,7 +507,7 @@ const CommentsSection: React.FC<{
 
       await likecommentpost(payload);
     } catch (err) {
-      console.log("Error", err);
+      Logger.error("Error", {Error:String(err)});
       setComments(previousComments);
       if (!isReply) onCommentCountChange?.(1);
       showToast.error(t("error"), t("somethingwentwrong"));

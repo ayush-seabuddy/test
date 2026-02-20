@@ -8,6 +8,7 @@ import { PostInterface } from "../ContentDetails/type";
 import EmptyComponent from "@/src/components/EmptyComponent";
 import { useTranslation } from "react-i18next";
 import CommonLoader from "@/src/components/CommonLoader";
+import { Logger } from "@/src/utils/logger";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -24,7 +25,7 @@ const UserPost = () => {
   const fetchPosts = useCallback(
     async (pageToFetch: number, isLoadMore: boolean = false) => {
       if (!userDetails?.id) {
-        console.log("⚠️ No userId found. Skipping fetch.");
+        Logger.info("⚠️ No userId found. Skipping fetch.");
         setLoading(false);
         return;
       }
@@ -40,7 +41,7 @@ const UserPost = () => {
           setLoading(true);
         }
 
-        console.log(
+        Logger.info(
           `Fetching posts - Page: ${pageToFetch}, userId: ${userDetails.id}`,
         );
 
@@ -50,7 +51,7 @@ const UserPost = () => {
           limit: ITEMS_PER_PAGE,
         });
 
-        console.log("API Response:", response);
+        Logger.info("API Response:", { Data: String(response) });
 
         if (response?.data) {
           const newPosts: PostInterface[] = response.data.hangoutsList || [];
@@ -65,11 +66,11 @@ const UserPost = () => {
           setCurrentPage(pageToFetch + 1);
           setHasMore(totalPages > pageToFetch);
         } else {
-          console.log("No data in response");
+          Logger.info("No data in response");
           if (!isLoadMore) setPosts([]);
         }
       } catch (error) {
-        console.error("Error fetching posts:", error);
+        Logger.error("Error fetching posts:", { Error: String(error) });
         if (!isLoadMore) setPosts([]);
       } finally {
         setLoading(false);
@@ -81,8 +82,6 @@ const UserPost = () => {
 
   // Trigger fetch when userId becomes available
   useEffect(() => {
-    console.log("useEffect triggered - userDetails.id:", userDetails?.id);
-
     if (userDetails?.id) {
       // Reset state on new user
       setPosts([]);
@@ -92,7 +91,6 @@ const UserPost = () => {
 
       fetchPosts(1, false);
     } else {
-      console.log("No userId yet, waiting...");
       setPosts([]);
       setLoading(false);
     }
@@ -100,7 +98,6 @@ const UserPost = () => {
 
   const handleLoadMore = () => {
     if (hasMore && !loadingMore && !loading) {
-      console.log("Loading more... next page:", currentPage);
       fetchPosts(currentPage, true);
     }
   };

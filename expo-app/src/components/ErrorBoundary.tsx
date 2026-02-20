@@ -2,6 +2,7 @@ import ErrorScreen from '@/app/errorscreen';
 import * as Updates from 'expo-updates';
 import React from 'react';
 import { Platform } from 'react-native';
+import { Logger } from '../utils/logger';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -22,7 +23,7 @@ export default class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: any, info: any) {
-    console.error('ErrorBoundary caught:', error, info);
+    Logger.error('ErrorBoundary caught:', { error, info });
   }
 
   reload = async () => {

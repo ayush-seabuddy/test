@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { getUnreadNotificationCount, viewProfile } from "../apis/apiService";
+import { Logger } from "../utils/logger";
 
 const ShipLifeScreenHeader = () => {
   const { t } = useTranslation();
@@ -43,7 +44,7 @@ const ShipLifeScreenHeader = () => {
       const notificationRes = await getUnreadNotificationCount()
       setUnreadNotification(notificationRes.data.allNotifications ?? 0);
     } catch (error) {
-      console.log("Error fetching initial header data:", error);
+      Logger.error("Error fetching initial header data:", {Error:String(error)});
       setUnreadNotification(0);
     }
   }, []);

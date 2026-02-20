@@ -4,6 +4,7 @@ import GlobalButton from "@/src/components/GlobalButton";
 import { showToast } from "@/src/components/GlobalToast";
 import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { Logger } from "@/src/utils/logger";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Mail } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
@@ -57,7 +58,7 @@ const OTPVerification = () => {
       }
     } catch (error) {
       setloading(false);
-      console.log('Error', error)
+      Logger.error('Error', {Error:String(error)})
       showToast.error(
         t('error'),
         t('somethingwentwrong')
@@ -82,7 +83,7 @@ const OTPVerification = () => {
         );
       }
     } catch (error) {
-      console.log('Error', error)
+      Logger.error('Error', {Error:String(error)})
       setloading(false);
       showToast.error(
         t('error'),

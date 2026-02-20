@@ -5,6 +5,7 @@ import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import { showToast } from "@/src/components/GlobalToast";
 import { TFunction } from "i18next";
+import { Logger } from "@/src/utils/logger";
 
 /**
  * Request push notification permissions and get expo push token
@@ -48,7 +49,6 @@ export async function registerForPushNotificationsAsync() {
           projectId,
         })
       ).data;
-      console.log(pushTokenString, "Push Token");
       return pushTokenString;
     } catch (e: unknown) {
       throw new Error(`${e}`);
@@ -75,7 +75,7 @@ export async function requestCameraPermission(t: TFunction): Promise<boolean> {
     
     return true;
   } catch (err) {
-    console.error("Camera permission request error:", err);
+    Logger.error("Camera permission request error:", {Error:String(err)});
     return false;
   }
 }
@@ -97,7 +97,7 @@ export async function requestMediaLibraryPermission(t: TFunction): Promise<boole
     
     return true;
   } catch (err) {
-    console.error("Media library permission request error:", err);
+    Logger.error("Media library permission request error:", {Error:String(err)});
     return false;
   }
 }
@@ -113,9 +113,7 @@ export async function requestAllPermissions(t: TFunction): Promise<void> {
       requestCameraPermission(t),
       requestMediaLibraryPermission(t),
     ]);
-    
-    console.log("All permissions requested");
   } catch (err) {
-    console.error("Error requesting permissions:", err);
+    Logger.error("Error requesting permissions:", {Errr:String(err)});
   }
 }

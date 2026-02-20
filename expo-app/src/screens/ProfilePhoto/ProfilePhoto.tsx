@@ -28,6 +28,7 @@ import {
   Linking,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { Logger } from '@/src/utils/logger';
 
 const ProfilePhoto = () => {
   const userDetails = useSelector((state: RootState) => state.userDetails);
@@ -103,9 +104,8 @@ const ProfilePhoto = () => {
       }
     } catch (error: any) {
       if (error?.message && error.message.toLowerCase().includes('cancel')) {
-        // user cancelled - ignore
       } else {
-        console.error('Image Picker Error:', error);
+        Logger.error('Image Picker Error:', error);
         showToast.error(t('error'), t('imagePickFailed'));
       }
     } finally {
@@ -125,12 +125,7 @@ const ProfilePhoto = () => {
         name: `profile_${Date.now()}.jpg`,
         type: 'image/jpeg',
       } as any);
-      console.log('====================================');
-      // console.log(`⬆️ Uploading file ${index + 1}/${selectedMedia.length}`);
-      console.log(formData);
-      console.log('====================================');
 
-      console.log("userDetails.authToken: ", userDetails.authToken);
       const response = await axios.post(
         `${BASE_URL}/user/uploadFile`,
         formData,
@@ -143,17 +138,14 @@ const ProfilePhoto = () => {
         }
       );
       if (response.data?.responseCode === 200 && response.data.result) {
-        console.log("response.data.result: ", response.data.result);
+        Logger.info("response.data.result: ", response.data.result);
         showToast.success(t('success'), t('profileupdatedsuccessfully'))
-        const updateProfilePhoto = await updateprofile({
-          profileUrl: response.data.result, userId: userDetails.id
-        })
         dispatch(updateUserField({ key: "profileUrl", value: response.data.result }));
       } else {
         throw new Error(response.data?.message || 'Upload failed');
       }
     } catch (error) {
-      console.error('Upload failed:', error);
+      Logger.error('Upload failed:', {Error:String(error)});
       showToast.error(t('error'), t('failedtouploadimagetoserver'));
     } finally {
       setIsLoading(false);

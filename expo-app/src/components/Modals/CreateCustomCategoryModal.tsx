@@ -19,6 +19,7 @@ import {
 } from 'react-native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import CommonLoader from '../CommonLoader'
+import { Logger } from '@/src/utils/logger'
 
 interface CreateCustomCategoryModalProps {
     visible: boolean
@@ -68,7 +69,7 @@ const CreateCustomCategoryModal = ({
                 });
             }
         } catch (error) {
-            console.error('Error picking image:', error);
+            Logger.error('Error picking image:', {Error:String(error)});
             showToast.error(t('error'), t('imagePickFailed'));
         }
     }
@@ -139,7 +140,7 @@ const CreateCustomCategoryModal = ({
                 )
             }
         } catch (err) {
-            console.error('Error creating category:', err)
+            Logger.error('Error creating category:', {Error:String(err)})
             showToast.error(t('oops'), t('somethingwentwrong'))
         } finally {
             setLoading(false)

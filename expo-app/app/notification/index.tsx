@@ -9,6 +9,7 @@ import EmptyComponent from "@/src/components/EmptyComponent";
 import { showToast } from "@/src/components/GlobalToast";
 import { useNetwork } from "@/src/hooks/useNetworkStatusHook";
 import Colors from "@/src/utils/Colors";
+import { Logger } from "@/src/utils/logger";
 import { router } from "expo-router";
 import {
   ChevronLeft,
@@ -91,8 +92,6 @@ const NotificationScreen = () => {
         if (response.success && response.status === 200) {
           const newNotifications = response.data.notificationsList || [];
 
-          console.log(newNotifications);
-
           setNotifications((prev) => {
             if (!isLoadMore) {
               return newNotifications;
@@ -115,7 +114,7 @@ const NotificationScreen = () => {
           );
         }
       } catch (error) {
-        console.error("Fetch notifications error:", error);
+        Logger.error("Fetch notifications error:", { Error: String(error) });
         showToast.error(t("oops"), t("somethingwentwrong"));
       } finally {
         setLoading(false);
@@ -137,7 +136,7 @@ const NotificationScreen = () => {
         );
       }
     } catch (error) {
-      console.error("Mark single read error:", error);
+      Logger.error("Mark single read error:", { Error: String(error) });
     }
   }, []);
 
@@ -155,7 +154,7 @@ const NotificationScreen = () => {
         showToast.error(t("oops"), response.message);
       }
     } catch (error) {
-      console.error("Mark all read error:", error);
+      Logger.error("Mark all read error:", { Error: String(error) });
       showToast.error(t("oops"), t("somethingwentwrong"));
     } finally {
       setLoading(false);
@@ -179,7 +178,7 @@ const NotificationScreen = () => {
         showToast.error(t("oops"), response.message);
       }
     } catch (error) {
-      console.error("Delete notification error:", error);
+      Logger.error("Delete notification error:", { Error: String(error) });
       showToast.error(t("oops"), t("somethingwentwrong"));
     } finally {
       setDeleteSingleModalVisible(false);
@@ -202,7 +201,7 @@ const NotificationScreen = () => {
         showToast.error(t("oops"), response.message);
       }
     } catch (error) {
-      console.error("Clear all notifications error:", error);
+      Logger.error("Clear all notifications error:", { Error: String(error) });
       showToast.error(t("oops"), t("somethingwentwrong"));
     } finally {
       setLoading(false);
@@ -267,7 +266,7 @@ const NotificationScreen = () => {
               showToast.error(t("oops"), t("somethingwentwrong"));
             }
           } catch (error) {
-            console.log("Error opening URL:", error);
+            Logger.error("Error opening URL:", { Error: String(error) });
             showToast.error(t("oops"), t("somethingwentwrong"));
           }
           return;
@@ -285,7 +284,7 @@ const NotificationScreen = () => {
           setNotificationDetailModalVisible(true);
         }
       } catch (error) {
-        console.error("Navigation failed:", error);
+        Logger.error("Navigation failed:", { Error: String(error) });
         showToast.error(t("oops"), t("somethingwentwrong"));
       }
     },

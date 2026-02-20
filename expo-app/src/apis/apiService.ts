@@ -2,6 +2,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { Platform } from 'react-native';
 import { apiRequest } from './apiHelpers';
 import { ENDPOINTS } from './endpoints';
+import { Logger } from '../utils/logger';
 
 export interface LoginRequest {
   email: string;
@@ -479,7 +480,7 @@ export const uploadfile = async (payload: UploadFileRequest) => {
       data: data,
     });
 
-    console.log('response: ', response);
+    Logger.info('response: ', {Info:String(response)});
     const { uploadUrl, key , fileUrl } = response.data;
 
     let fileBlob;
@@ -512,7 +513,7 @@ export const uploadfile = async (payload: UploadFileRequest) => {
       body: fileBlob,
     });
 
-    console.log('uploadRes: ', uploadRes);
+    Logger.info('uploadRes: ', {Info:String(uploadRes)});
     if (!uploadRes.ok) {
       throw new Error('S3 upload failed');
     }
@@ -522,7 +523,7 @@ export const uploadfile = async (payload: UploadFileRequest) => {
       data: fileUrl ? fileUrl : `https://seabuddy.s3.us-east-1.amazonaws.com/${key}`,
     };
   } catch (error) {
-    console.log('UPLOAD ERROR:', error);
+    Logger.error('UPLOAD ERROR:', {Error:String(error)});
     throw error;
   }
 };

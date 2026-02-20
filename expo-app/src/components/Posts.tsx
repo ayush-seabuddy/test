@@ -1,4 +1,3 @@
-import { Image } from "expo-image";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, RefreshControl, StyleSheet, View } from "react-native";
@@ -9,6 +8,7 @@ import { showToast } from "./GlobalToast";
 import PostScreen from "./PostScreen";
 import EmptyComponent from "./EmptyComponent";
 import { useNetwork } from "../hooks/useNetworkStatusHook";
+import { Logger } from "../utils/logger";
 
 export interface Post {
   id: string | number;
@@ -109,7 +109,7 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
           );
         }
       } catch (error) {
-        console.error("Error fetching posts:", error);
+        Logger.error("Error fetching posts:", { Error: String(error) });
         showToast.error(t("oops"), t("somethingwentwrong"));
       } finally {
         setInitialLoading(false);
@@ -172,7 +172,7 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
     if (initialLoading) return null;
 
     return (
-      <View style={styles.emptyState}>
+      <View style={styles.emptyFullScreen}>
         <EmptyComponent
           text={
             !isOnline ? t("nointernetconnection") : t("youarenotpostedanything")
@@ -216,9 +216,10 @@ const Posts: React.FC<PostsProps> = ({ ListHeaderComponent }) => {
       maxToRenderPerBatch={5}
       updateCellsBatchingPeriod={50}
       keyboardShouldPersistTaps="always"
-      contentContainerStyle={
-        posts.length === 0 ? styles.emptyContainer : undefined
-      }
+      contentContainerStyle={[
+        { flexGrow: 1 },
+        posts.length === 0 && { flex: 1 },
+      ]}
     />
   );
 };
@@ -229,6 +230,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#fff",
+  },
+  emptyFullScreen: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   footerLoader: {
     paddingVertical: 30,

@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { db } from "../database/chatDB";
 import { ChatMessage } from "../screens/chat/types/chatRoom";
+import { Logger } from "../utils/logger";
 
 /**
  * Hook to load previous messages with pagination using PAGE number
@@ -62,7 +63,7 @@ export function useLoadPreviousMessages(chatRoomId: string, limit = 30) {
           try {
             reactions = JSON.parse(row.reactions_json);
           } catch (error) {
-            console.log('Error', error)
+            Logger.error('Error', {Error:String(error)})
           }
         }
 

@@ -4,6 +4,7 @@ import EmptyComponent from '@/src/components/EmptyComponent';
 import GlobalHeader from '@/src/components/GlobalHeader';
 import { showToast } from '@/src/components/GlobalToast';
 import { useNetwork } from '@/src/hooks/useNetworkStatusHook';
+import { Logger } from '@/src/utils/logger';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowUpRight } from 'lucide-react-native';
 import moment from 'moment';
@@ -65,7 +66,7 @@ const AllAssessmentResultListing = () => {
                 setAssessmentData([]);
             }
         } catch (err) {
-            console.error(err);
+            Logger.error(String(err));
             showToast.error(t('oops'), t('somethingwentwrong'));
             setAssessmentData([]);
         } finally {

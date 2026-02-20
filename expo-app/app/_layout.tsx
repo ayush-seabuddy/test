@@ -10,7 +10,7 @@ import OTAUpdatePopup from "@/src/components/OTAUpdatePopup";
 import { initI18n } from "@/src/localization/i18n";
 import { store } from "@/src/redux/store";
 import Colors from "@/src/utils/Colors";
-import { clearCrashCount, safeReload } from "@/src/utils/crashRecovery";
+import { clearCrashCount } from "@/src/utils/crashRecovery";
 import socketService from "@/src/utils/socketService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
@@ -40,6 +40,7 @@ import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { Provider } from "react-redux";
+import { Logger } from "@/src/utils/logger";
 
 Appearance.setColorScheme("light");
 
@@ -60,10 +61,10 @@ TaskManager.defineTask(
   BACKGROUND_NOTIFICATION_TASK,
   async ({ data, error }) => {
     if (error) {
-      console.error("Background notification error:", error);
+      Logger.error("Background notification error:", { Error: String(error) });
       return;
     }
-    console.log("Background notification received:", data);
+    Logger.info("Background notification received:", { data: String(data) });
   },
 );
 
@@ -76,7 +77,9 @@ const NotificationHandler = () => {
 
   useEffect(() => {
     if (expoPushToken) {
-      console.log("🔔 Expo Push Token:", expoPushToken);
+      Logger.info("🔔 Expo Push Token", {
+        expoPushToken: expoPushToken,
+      });
       AsyncStorage.setItem("ExpoPushToken", expoPushToken).catch(console.error);
     }
   }, [expoPushToken]);
@@ -146,7 +149,7 @@ const NotificationHandler = () => {
             break;
         }
       } catch (err) {
-        console.error("Navigation error:", err);
+        Logger.error("Navigation error:", { Error: String(err) });
         showToast.error("oops", t("somethingwentwrong"));
       }
     },
@@ -190,7 +193,7 @@ export default function RootLayout() {
       try {
         await requestAllPermissions(t);
       } catch (err) {
-        console.error("Permission request error:", err);
+        Logger.error("Permission request error:", { Error: String(err) });
       }
     };
 
@@ -206,7 +209,7 @@ export default function RootLayout() {
         await NavigationBar.setButtonStyleAsync("light");
         await NavigationBar.setVisibilityAsync("visible");
       } catch (e) {
-        console.warn("[NavigationBar] setup failed", e);
+        Logger.warn("[NavigationBar] setup failed", { Error: String(e) });
       }
     })();
   }, [visibility]);
@@ -222,7 +225,7 @@ export default function RootLayout() {
         await clearCrashCount();
         setAppReady(true);
       } catch (e) {
-        console.warn("Init error:", e);
+        Logger.warn("Init error:", { Error: String(e) });
       } finally {
         await SplashScreen.hideAsync();
       }

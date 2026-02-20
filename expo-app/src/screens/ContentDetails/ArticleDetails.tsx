@@ -30,6 +30,7 @@ import { Modal } from "react-native-paper";
 
 import RelatedVideosCard from "./RelatedContentCard";
 import { Content } from "./type";
+import { Logger } from "@/src/utils/logger";
 
 const { height } = Dimensions.get("window");
 
@@ -101,7 +102,7 @@ export default function ArticleDetails({
         });
         setRecommendedData(result?.data ?? []);
       } catch (error) {
-        console.log("API Error:", error);
+        Logger.error("API Error:", {Error:String(error)});
       }
     };
 
@@ -168,7 +169,7 @@ export default function ArticleDetails({
         setIsAcknowledged(true);
       }
     } catch (error) {
-      console.error("❌ Error acknowledging content:", error);
+      Logger.error("❌ Error acknowledging content:", {Error:String(error)});
     } finally {
       setIsAcknowledging(false);
     }

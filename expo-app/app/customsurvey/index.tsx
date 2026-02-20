@@ -3,6 +3,7 @@ import CommonLoader from "@/src/components/CommonLoader";
 import GlobalHeader from "@/src/components/GlobalHeader";
 import { showToast } from "@/src/components/GlobalToast";
 import Colors from "@/src/utils/Colors";
+import { Logger } from "@/src/utils/logger";
 import Slider from "@react-native-community/slider";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
@@ -80,7 +81,7 @@ const SurveyScreen = () => {
         );
       }
     } catch (err) {
-      console.error("Error fetching survey:", err);
+      Logger.error("Error fetching survey:", { Error: String(err) });
       showToast.error(t("oops"), t("somethingwentwrong"));
     } finally {
       setLoading(false);
@@ -182,7 +183,7 @@ const SurveyScreen = () => {
 
       updateAnswer(questionId, compressed.uri);
     } catch (err) {
-      console.error("Error selecting image:", err);
+      Logger.error("Error selecting image:", { Error: String(err) });
       showToast.error(t("error"), t("imagePickFailed"));
     }
   };
@@ -216,7 +217,7 @@ const SurveyScreen = () => {
         const [datePart, timePart] = dateTimeStr.split(" ");
         return `${formatDate(datePart)} ${formatTime(timePart)}`;
       } catch (e) {
-        console.log("Error", e);
+        Logger.error("Error", { Error: String(e) });
         return dateTimeStr;
       }
     },
@@ -267,7 +268,7 @@ const SurveyScreen = () => {
           : new Date();
         setDateValue(parsed);
       } catch (e) {
-        console.log("Error", e);
+        Logger.error("Error", { Error: String(e) });
         setDateValue(new Date());
       }
       setDatePickerOpen(true);
@@ -324,7 +325,7 @@ const SurveyScreen = () => {
         showToast.error(t("oops"), apiResponse.message);
       }
     } catch (err) {
-      console.error("Error submitting survey:", err);
+      Logger.error("Error submitting survey:", { Error: String(err) });
       showToast.error(t("oops"), t("somethingwentwrong"));
     } finally {
       setSubmitting(false);

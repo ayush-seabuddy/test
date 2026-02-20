@@ -1,6 +1,7 @@
 import { getUnreadNotificationCount } from "@/src/apis/apiService";
 import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { Logger } from "@/src/utils/logger";
 import { useFocusEffect , router } from "expo-router";
 import { House } from "lucide-react-native";
 import React, { useCallback, useState } from "react";
@@ -26,7 +27,7 @@ const SocialHeader = () => {
       const response = await getUnreadNotificationCount();
       setUnreadNotification(response.data.allNotifications ?? 0);
     } catch (error) {
-      console.log("Error fetching unread notifications:", error);
+      Logger.error("Error fetching unread notifications:", {Error:String(error)});
     }
   }, []);
 

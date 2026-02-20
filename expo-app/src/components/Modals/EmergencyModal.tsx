@@ -23,6 +23,7 @@ import CommonLoader from "../CommonLoader";
 import { showToast } from "../GlobalToast";
 import EmptyComponent from "../EmptyComponent";
 import { useNetwork } from "@/src/hooks/useNetworkStatusHook";
+import { Logger } from "@/src/utils/logger";
 
 const { width, height } = Dimensions.get("window");
 
@@ -57,7 +58,7 @@ const EmergencyModal: React.FC<EmergencyModalProps> = ({ visible, onClose }) => 
                 setUser({ fullName: parsed.fullName || parsed.name || 'Friend' });
             }
         } catch (error) {
-            console.log("User load error:", error);
+            Logger.error("User load error:", {Error:String(error)});
         }
     };
 

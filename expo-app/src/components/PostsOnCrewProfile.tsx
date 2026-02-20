@@ -10,6 +10,7 @@ import FullScreenMediaModal from '@/app/fullscreenmediapreview';
 import { Copy, Play } from 'lucide-react-native';
 import { Image } from 'expo-image';
 import { ImagesAssets } from '../utils/ImageAssets';
+import { Logger } from '../utils/logger';
 
 const { width } = Dimensions.get('window');
 const ITEMS_PER_PAGE = 18;
@@ -54,7 +55,7 @@ const PostsOnCrewProfile: React.FC<PostsOnCrewProfileProps> = ({ userId }) => {
             setCurrentPage(page + 1);
             setHasMore(totalPages > page);
         } catch (error) {
-            console.error('Error fetching posts:', error);
+            Logger.error('Error fetching posts:', {Error:String(error)});
             if (!isLoadMore) setPosts([]);
         } finally {
             setLoading(false);

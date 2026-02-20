@@ -1,6 +1,7 @@
 import CustomLottie from "@/src/components/CustomLottie";
 import Colors from "@/src/utils/Colors";
 import { ImagesAssets } from "@/src/utils/ImageAssets";
+import { Logger } from "@/src/utils/logger";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
@@ -125,7 +126,7 @@ const OnboardingScreens = () => {
       if (userDetails.companyDescription)
         setcompanyDescription(userDetails.companyDescription);
     } catch (error) {
-      console.log(error);
+      Logger.error(String(error));
     }
   };
 

@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import { Modal } from "react-native-paper";
 import RelatedContentCard from "./RelatedContentCard";
 import { Content } from "./type";
+import { Logger } from "@/src/utils/logger";
 
 export default function VideosDetails({ data: fullDetails }: { data: Content }) {
   const [notificationDetailModalVisible, setNotificationDetailModalVisible] = useState(false);
@@ -56,7 +57,7 @@ export default function VideosDetails({ data: fullDetails }: { data: Content }) 
         const result = await getRecommendedContents({ contentId: fullDetails?.id });
         setRecommendedData(result.data ?? []);
       } catch (error) {
-        console.log("API Error:", error);
+        Logger.error("API Error:", {Error:String(error)});
       }
     }
 
