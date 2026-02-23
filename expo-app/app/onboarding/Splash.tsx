@@ -64,6 +64,17 @@ const Splash = () => {
   const [isVersionModalVisible, setIsVersionModalVisible] = useState(false);
   const [versionInfo, setVersionInfo] = useState<any>(null);
 
+  const withTimeout = (promise: Promise<any>, ms = 7000) =>
+    Promise.race([
+      promise,
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("timeout")), ms),
+      ),
+    ]);
+
+  const wait = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+
   const forceLogout = useCallback(async () => {
     try {
       const expoPushToken = await AsyncStorage.getItem("ExpoPushToken");
@@ -106,35 +117,27 @@ const Splash = () => {
         Application.nativeApplicationVersion || "1.0.0"
       ).trim();
 
-      const apiResponse = await getapplastversion();
-
-      Logger.info("🌐 Version API Response:", { Info: String(apiResponse) });
+      const apiResponse = await withTimeout(getapplastversion(), 5000);
 
       if (apiResponse?.status === 200 && apiResponse?.data) {
         const platformKey = Platform.OS === "ios" ? "ios" : "android";
         const platformData = apiResponse.data[platformKey];
 
         const latestVersion = platformData.lastVersion?.trim();
-
         if (!latestVersion) return false;
 
         const needsUpdate = compareVersions(currentVersion, latestVersion);
         const isPopUp =
           platformData.isPopUp === true || platformData.isPopUp === "true";
 
-        Logger.info("📱 Installed:", { Info: String(currentVersion) });
-        Logger.info("🌐 Latest:", latestVersion);
-        Logger.info("🆙 Needs Update:", { Info: String(needsUpdate) });
-        Logger.info("📢 isPopUp:", { Info: String(isPopUp) });
-
         if (isPopUp && needsUpdate) {
           setVersionInfo(platformData);
           setIsVersionModalVisible(true);
-          return true;
+          return true; // block navigation
         }
       }
     } catch (error) {
-      Logger.warn("⚠️ Version Check Failed → Continuing App Flow");
+      Logger.warn("⚠️ Version check timeout/failure → continuing");
     }
 
     return false;
@@ -154,12 +157,10 @@ const Splash = () => {
       const version = Application.nativeApplicationVersion || "1.0.0";
       const os = Platform.OS === "ios" ? "ios" : "android";
 
-      const apiResponse = await viewProfile({
-        userId,
-        os,
-        packageName,
-        version,
-      });
+      const apiResponse = await withTimeout(
+        viewProfile({ userId, os, packageName, version }),
+        7000,
+      );
 
       if (apiResponse?.status === 404) {
         await forceLogout();
@@ -184,93 +185,104 @@ const Splash = () => {
 
       return apiResponse?.success ? apiResponse.data : null;
     } catch (error: any) {
-      if (error?.response?.status === 404) {
-        await forceLogout();
-        return null;
-      }
+      Logger.warn("⚠️ Profile fetch failed → using cache");
 
       const cachedProfile = await AsyncStorage.getItem("cachedUserProfile");
       return cachedProfile ? JSON.parse(cachedProfile) : null;
     }
   };
 
-  const initializeAndNavigate = useCallback(
-    async (flowId: number) => {
-      try {
-        const wait = (ms: number) =>
-          new Promise((resolve) => setTimeout(resolve, ms));
+  const runInitialization = async (flowId: number) => {
+    const shouldBlock = await checkAppVersion();
+    if (shouldBlock) return;
 
-        const shouldBlock = await checkAppVersion();
-        if (shouldBlock) return;
+    const userDetailsStr = await AsyncStorage.getItem("userDetails");
 
-        await wait(4000);
-        if (flowId !== flowIdRef.current) return;
+    if (!userDetailsStr) {
+      await forceLogout();
+      return;
+    }
 
-        const userDetailsStr = await AsyncStorage.getItem("userDetails");
+    let userDetails;
+    try {
+      userDetails = JSON.parse(userDetailsStr);
+    } catch {
+      await forceLogout();
+      return;
+    }
 
-        if (!userDetailsStr) {
-          await forceLogout();
-          return;
-        }
+    const userId = userDetails?.id;
+    if (!userId) {
+      await forceLogout();
+      return;
+    }
 
-        const userDetails = JSON.parse(userDetailsStr);
-        const userId = userDetails?.id;
+    const userData = await viewUserProfile(userId);
+    if (flowId !== flowIdRef.current) return;
 
-        if (!userId) {
-          await forceLogout();
-          return;
-        }
+    if (userData && !userData.isProfileCompleted) {
+      router.replace("/onboarding");
+      return;
+    }
 
-        const userData = await viewUserProfile(userId);
-        if (flowId !== flowIdRef.current) return;
+    try {
+      const response = await withTimeout(viewUserTest(), 7000);
 
-        if (userData && !userData.isProfileCompleted) {
-          router.replace("/onboarding");
-          return;
-        }
+      if (response?.status === 200 && Array.isArray(response.data)) {
+        const tests: TestItem[] = response.data;
+        const targetTest = tests.find(
+          (test) => test?.open && test?.isSplash,
+        );
 
-        const response = await viewUserTest();
-        if (flowId !== flowIdRef.current) return;
+        const getRoute = (testName: string): AppRoute => {
+          switch (testName) {
+            case "Happiness":
+              return "/monthlyhappinessindex";
+            case "POMS":
+              return "/monthlywellbeingpulse";
+            case "Personality":
+              return "/personalitymap";
+            default:
+              return "/home";
+          }
+        };
 
-        if (response?.status === 200 && Array.isArray(response.data)) {
-          const tests: TestItem[] = response.data;
-          const targetTest = tests.find((test) => test?.open && test?.isSplash);
-
-          const getRoute = (testName: string): AppRoute => {
-            switch (testName) {
-              case "Happiness":
-                return "/monthlyhappinessindex";
-              case "POMS":
-                return "/monthlywellbeingpulse";
-              case "Personality":
-                return "/personalitymap";
-              default:
-                return "/home";
-            }
-          };
-
-          router.replace(targetTest ? getRoute(targetTest.testName) : "/home");
-        } else {
-          router.replace("/home");
-        }
-      } catch (error) {
-        Logger.error("Splash Initialization Error:", { Error: String(error) });
-        await forceLogout();
+        router.replace(targetTest ? getRoute(targetTest.testName) : "/home");
+      } else {
+        router.replace("/home");
       }
-    },
-    [router, forceLogout],
-  );
+    } catch {
+      Logger.warn("⚠️ Test API failed → navigating home");
+      router.replace("/home");
+    }
+  };
 
   useEffect(() => {
     flowIdRef.current += 1;
     const currentFlowId = flowIdRef.current;
 
-    initializeAndNavigate(currentFlowId);
-
-    return () => {
-      flowIdRef.current += 1;
+    const start = async () => {
+      try {
+        await Promise.all([
+          wait(3000),
+          runInitialization(currentFlowId),
+        ]);
+      } catch (error) {
+        Logger.error("💥 Splash fatal error → fallback home");
+        router.replace("/home");
+      }
     };
-  }, [initializeAndNavigate]);
+
+    start();
+
+    const fallbackTimer = setTimeout(() => {
+      Logger.warn("🚑 Splash fallback triggered");
+      router.replace("/home");
+    }, 9000);
+
+    return () => clearTimeout(fallbackTimer);
+  }, []);
+
 
   useEffect(() => {
     Animated.parallel([
@@ -281,21 +293,6 @@ const Splash = () => {
       }),
       Animated.timing(translateAnim, {
         toValue: 0,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    Animated.sequence([
-      Animated.timing(slideAnim, {
-        toValue: 1,
-        duration: 800,
-        delay: 600,
-        useNativeDriver: true,
-      }),
-      Animated.delay(800),
-      Animated.timing(headingSlideAnim, {
-        toValue: 1,
         duration: 1000,
         useNativeDriver: true,
       }),
@@ -360,13 +357,8 @@ const Splash = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  logoWrapper: {
-    opacity: 1,
-    transform: [{ translateY: 0 }],
-  },
+  container: { flex: 1 },
+  logoWrapper: { opacity: 1, transform: [{ translateY: 0 }] },
   logoImage: {
     width: "100%",
     height: "95%",
@@ -380,10 +372,7 @@ const styles = StyleSheet.create({
     bottom: "20%",
     right: "10%",
   },
-  captainImage: {
-    width: 120,
-    height: 160,
-  },
+  captainImage: { width: 120, height: 160 },
 
   modalOverlay: {
     flex: 1,
@@ -408,10 +397,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginVertical: 10,
   },
-  buttonRow: {
-    flexDirection: "row",
-    marginTop: 10,
-  },
+  buttonRow: { flexDirection: "row", marginTop: 10 },
   button: {
     flex: 1,
     height: 45,
@@ -420,15 +406,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginHorizontal: 10,
   },
-  laterButton: {
-    backgroundColor: "#EEE",
-  },
-  updateButton: {
-    backgroundColor: Colors.lightGreen,
-  },
-  laterButtonText: {
-    fontFamily: "Poppins-Regular",
-  },
+  laterButton: { backgroundColor: "#EEE" },
+  updateButton: { backgroundColor: Colors.lightGreen },
+  laterButtonText: { fontFamily: "Poppins-Regular" },
   updateButtonText: {
     color: "white",
     fontFamily: "Poppins-SemiBold",
