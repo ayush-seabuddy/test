@@ -240,9 +240,9 @@ export default function RootLayout() {
     <ErrorBoundary>
       <NotificationProvider>
         <PostHogProvider
-          apiKey="phc_LYxVgQmPQSyrXAv134auG5e5khoPh9GgCDQvmvdjhVH"
+          apiKey={process.env.EXPO_PUBLIC_POSTHOG_KEY!}
           options={{
-            host: "https://us.i.posthog.com",
+            host: process.env.EXPO_PUBLIC_POSTHOG_HOST,
             enableSessionReplay: true,
           }}
           autocapture
