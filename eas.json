@@ -1,6 +1,6 @@
 {
   "cli": {
-    "version": ">= 5.0.0",
+    "version": ">= 18.0.0",
     "appVersionSource": "remote"
   },
   "build": {
@@ -10,6 +10,22 @@
       "autoIncrement": true,
       "env": {
         "APP_ENV": "staging",
+        "EXPO_PUBLIC_API_URL": "$API_URL",
+        "EXPO_PUBLIC_SOCKET_URL": "$SOCKET_URL"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
+      }
+    },
+    "development": {
+      "channel": "development",
+      "distribution": "internal",
+      "autoIncrement": true,
+      "env": {
+        "APP_ENV": "development",
         "EXPO_PUBLIC_API_URL": "$API_URL",
         "EXPO_PUBLIC_SOCKET_URL": "$SOCKET_URL"
       },
