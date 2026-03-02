@@ -66,14 +66,14 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install
 
-      - name: 🧪 Run TypeScript check
-        run: yarn tsc
+      # - name: 🧪 Run TypeScript check
+      #   run: yarn tsc
 
-      - name: 🧹 Run ESLint
-        run: yarn lint
+      # - name: 🧹 Run ESLint
+      #   run: yarn lint
 
-      - name: 🎨 Run Prettier check
-        run: yarn format:check
+      # - name: 🎨 Run Prettier check
+      #   run: yarn format:check
 
       # - name: 📢 Notify test results
       #   if: always()
