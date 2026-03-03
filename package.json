@@ -154,7 +154,7 @@
     "yup": "^1.7.1"
   },
   "devDependencies": {
-    "@react-native-community/cli": "^13.6.9",
+    "@react-native-community/cli": "^20.1.2",
     "@types/react": "~19.1.0",
     "@types/react-native-htmlview": "^0.16.6",
     "dotenv": "^17.2.3",
