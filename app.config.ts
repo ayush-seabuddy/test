@@ -1,5 +1,6 @@
-import { ConfigContext, ExpoConfig } from "expo/config";
-import { version } from "./package.json";
+import type { ConfigContext, ExpoConfig } from "expo/config";
+
+const { version } = require("./package.json");
 
 /* -----------------------------
    EAS PROJECT SETTINGS
