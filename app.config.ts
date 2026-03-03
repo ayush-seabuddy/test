@@ -75,7 +75,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 		orientation: "portrait",
 		icon: "./assets/images/icon.png",
 		userInterfaceStyle: "automatic",
-		newArchEnabled: true,
 		jsEngine: "hermes",
 		assetBundlePatterns: ["assets/**/*"],
 
@@ -212,12 +211,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 			[
 				"expo-navigation-bar",
 				{
-					backgroundColor: "#000000",
 					barStyle: "light",
-					borderColor: "#1f2937",
 					visibility: "visible",
-					behavior: "inset-swipe",
-					position: "relative",
 				},
 			],
 

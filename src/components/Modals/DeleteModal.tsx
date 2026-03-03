@@ -11,8 +11,21 @@ import {
 } from "react-native";
 
 const { width } = Dimensions.get("window");
-const DeleteModal = ({ visible, onClose, onDelete, title}) => {
-const { t } = useTranslation();
+
+type DeleteModalProps = {
+  visible: boolean;
+  onClose: () => void;
+  onDelete: () => void;
+  title?: string;
+};
+
+const DeleteModal: React.FC<DeleteModalProps> = ({
+  visible,
+  onClose,
+  onDelete,
+  title,
+}) => {
+  const { t } = useTranslation();
   const handleNo = () => {
     onClose();
   };
@@ -23,7 +36,7 @@ const { t } = useTranslation();
         <StatusBar backgroundColor={"rgba(0, 0, 0, 0.7)"} />
 
         <View style={styles.modalContainer}>
-          <Text style={styles.titleText}>{t('delete')}</Text>
+          <Text style={styles.titleText}>{title ?? t("delete")}</Text>
           <Text style={styles.descriptionText}>
             {t('wouldyouliketodeleteyourpost')}
           </Text>

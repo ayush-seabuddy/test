@@ -7,7 +7,6 @@
     "icon": "./assets/images/icon.png",
     "scheme": "seabuddy",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "jsEngine": "hermes",
     "assetBundlePatterns": [
       "assets/**/*"

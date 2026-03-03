@@ -8,8 +8,8 @@ import { getUserDetails } from '@/src/utils/helperFunctions'
 import { ImagesAssets } from '@/src/utils/ImageAssets'
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet'
 import axios from 'axios'
-import { ResizeMode, Video } from 'expo-av'
 import { Image } from 'expo-image'
+import { VideoView, useVideoPlayer } from 'expo-video'
 import ImagePicker from 'react-native-image-crop-picker'
 import { router } from 'expo-router'
 import { useLocalSearchParams } from 'expo-router/build/hooks'
@@ -41,6 +41,23 @@ type MediaItem = {
     error?: boolean;
     retryCount?: number;
 };
+
+const InlineVideoPreview = memo(({ uri, style }: { uri: string; style: any }) => {
+    const player = useVideoPlayer({ uri }, (p) => {
+        p.loop = true;
+        p.muted = true;
+        p.play();
+    });
+
+    return (
+        <VideoView
+            player={player}
+            style={style}
+            contentFit="cover"
+            nativeControls={false}
+        />
+    );
+});
 
 const BuddyUpRequestApprovalScreen = () => {
     const { t } = useTranslation();
@@ -273,15 +290,7 @@ const BuddyUpRequestApprovalScreen = () => {
                 {item.type === 'image' ? (
                     <Image source={{ uri: item.uri }} style={styles.mediaImage} contentFit="cover" cachePolicy={"memory-disk"}/>
                 ) : (
-                    <Video
-                        source={{ uri: item.uri }}
-                        style={styles.mediaImage}
-                        resizeMode={ResizeMode.COVER}
-                        isLooping
-                        shouldPlay
-                        isMuted
-                        useNativeControls={false}
-                    />
+                    <InlineVideoPreview uri={item.uri} style={styles.mediaImage} />
                 )}
                 {item.type === 'video' && (
                     <View style={styles.videoOverlay}>

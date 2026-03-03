@@ -68,7 +68,6 @@
     "expo-application": "~55.0.8",
     "expo-asset": "~55.0.8",
     "expo-audio": "~55.0.8",
-    "expo-av": "^16.0.7",
     "expo-blur": "~55.0.8",
     "expo-build-properties": "~55.0.9",
     "expo-constants": "~55.0.7",
@@ -120,7 +119,6 @@
     "react-native-dotenv": "^3.4.11",
     "react-native-element-dropdown": "^2.12.4",
     "react-native-freshchat-sdk": "^4.7.8",
-    "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "~2.30.0",
     "react-native-health-connect": "^3.5.0",
     "react-native-htmlview": "^0.17.0",
@@ -155,12 +153,11 @@
   },
   "devDependencies": {
     "@react-native-community/cli": "^20.1.2",
-    "@types/react": "~19.1.0",
+    "@types/react": "~19.2.10",
     "@types/react-native-htmlview": "^0.16.6",
     "dotenv": "^17.2.3",
-    "eas-cli": "^18.0.6",
     "eslint": "^9.25.0",
-    "eslint-config-expo": "^10.0.0",
+    "eslint-config-expo": "^55.0.0",
     "eslint-plugin-unused-imports": "^4.3.0",
     "expo-module-scripts": "^5.0.8",
     "jest": "^29.7.0",
@@ -169,6 +166,17 @@
     "prettier": "^3.7.4",
     "react-native-svg-transformer": "^1.5.3",
     "typescript": "~5.9.2"
+  },
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "react-native-orientation-locker",
+          "react-native-freshchat-sdk"
+        ],
+        "listUnknownPackages": false
+      }
+    }
   },
   "private": true
 }
