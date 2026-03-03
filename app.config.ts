@@ -71,13 +71,17 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 		version,
 		owner: OWNER,
 		scheme: dynamic.scheme,
-
 		orientation: "portrait",
+		icon: "./assets/images/icon.png",
 		userInterfaceStyle: "automatic",
 		newArchEnabled: true,
+		jsEngine: "hermes",
+		assetBundlePatterns: ["assets/**/*"],
 
 		splash: {
 			...config.splash,
+			image: "./assets/images/splash-icon.png",
+			resizeMode: "contain",
 			backgroundColor: "#ffffff",
 		},
 
@@ -98,8 +102,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 			...config.ios,
 			bundleIdentifier: dynamic.bundleIdentifier,
 			supportsTablet: true,
+			buildNumber: "1",
+			appleTeamId: "Y38GVJM76S",
 			infoPlist: {
 				...config.ios?.infoPlist,
+				ITSAppUsesNonExemptEncryption: false,
+				UIBackgroundModes: ["audio", "fetch", "remote-notification"],
 				NSCameraUsageDescription:
 					"SeaBuddy needs access to your camera to upload photos and videos.",
 				NSPhotoLibraryUsageDescription:
@@ -115,10 +123,25 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 		android: {
 			...config.android,
 			package: dynamic.packageName,
+			versionCode: 1,
+			googleServicesFile: "./google-services.json",
+			allowBackup: false,
+			permissions: [
+				"INTERNET",
+				"CAMERA",
+				"RECORD_AUDIO",
+				"ACCESS_FINE_LOCATION",
+				"ACCESS_COARSE_LOCATION",
+			],
+			adaptiveIcon: {
+				foregroundImage: "./assets/images/adaptive-icon.png",
+				backgroundColor: "#E6F4FE",
+			},
 		},
 
 		extra: {
 			...config.extra,
+			router: {},
 			env,
 			eas: {
 				projectId: EAS_PROJECT_ID,
@@ -126,6 +149,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 		},
 
 		web: {
+			...config.web,
 			bundler: "metro",
 			output: "static",
 			favicon: "./assets/images/favicon.png",
@@ -137,7 +161,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 			"expo-router",
 			"expo-localization",
 			"expo-font",
-
+			"expo-audio",
+			"expo-image",
+			"expo-sharing",
+			"expo-web-browser",
 			[
 				"expo-video",
 				{
@@ -203,7 +230,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 		],
 
 		experiments: {
+			...config.experiments,
 			typedRoutes: true,
+			reactCompiler: true,
 		},
 	};
 };
