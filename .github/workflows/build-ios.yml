@@ -1,0 +1,124 @@
+name: Build iOS (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      profile:
+        description: 'Build profile (development, preview, production)'
+        required: true
+        type: string
+      artifact-name:
+        description: 'Name for the artifact'
+        required: true
+        type: string
+      retention-days:
+        description: 'Artifact retention days'
+        required: false
+        type: number
+        default: 30
+      node-version:
+        description: 'Node.js version'
+        required: false
+        type: string
+        default: '20'
+    secrets:
+      EXPO_TOKEN:
+        required: true
+    outputs:
+      artifact-name:
+        description: "The name of the uploaded artifact"
+        value: ${{ jobs.build-ios.outputs.artifact-name }}
+      build-success:
+        description: "Whether the build succeeded"
+        value: ${{ jobs.build-ios.outputs.build-success }}
+
+env:
+  NODE_OPTIONS: "--openssl-legacy-provider --max-old-space-size=8192"
+
+jobs:
+  build-ios:
+    name: Build iOS (${{ inputs.profile }})
+    runs-on: macos-latest
+    outputs:
+      artifact-name: ${{ steps.set-outputs.outputs.artifact-name }}
+      build-success: ${{ steps.set-outputs.outputs.build-success }}
+    
+    steps:
+      - name: 🏗 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: "npm"
+
+      - name: 📦 Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 📱 Setup EAS build cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.eas-build-local
+          key: ${{ runner.os }}-eas-ios-${{ inputs.profile }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-eas-ios-${{ inputs.profile }}-
+            ${{ runner.os }}-eas-ios-
+
+      - name: 🔨 Build iOS App/IPA
+        id: build
+        run: |
+          mkdir -p build-outputs
+          
+          # Determine output extension based on profile
+          if [ "${{ inputs.profile }}" == "production" ]; then
+            OUTPUT_FILE="app-ios-${{ inputs.profile }}.ipa"
+          else
+            OUTPUT_FILE="app-ios-${{ inputs.profile }}-simulator.app"
+          fi
+          
+          echo "Building with profile: ${{ inputs.profile }}"
+          echo "Output file: $OUTPUT_FILE"
+          
+          eas build \
+            --platform ios \
+            --profile ${{ inputs.profile }} \
+            --local \
+            --non-interactive \
+            --output=./build-outputs/$OUTPUT_FILE
+          
+          echo "output-file=$OUTPUT_FILE" >> $GITHUB_OUTPUT
+        env:
+          NODE_ENV: ${{ inputs.profile == 'development' && 'development' || 'production' }}
+
+      - name: 📦 Upload iOS Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: ./build-outputs/${{ steps.build.outputs.output-file }}
+          retention-days: ${{ inputs.retention-days }}
+          if-no-files-found: error
+
+      - name: 🎯 Set job outputs
+        id: set-outputs
+        if: always()
+        run: |
+          echo "artifact-name=${{ inputs.artifact-name }}" >> $GITHUB_OUTPUT
+          echo "build-success=${{ job.status == 'success' }}" >> $GITHUB_OUTPUT
+
+      - name: 📊 Build Summary
+        if: always()
+        run: |
+          echo "## iOS Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Profile**: ${{ inputs.profile }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Artifact**: ${{ inputs.artifact-name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Output**: ${{ steps.build.outputs.output-file }}" >> $GITHUB_STEP_SUMMARY
