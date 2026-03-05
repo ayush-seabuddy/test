@@ -27,6 +27,44 @@
     },
     {
       "client_info": {
+        "mobilesdk_app_id": "1:99688209735:android:ea2154a5641beea4458062",
+        "android_client_info": {
+          "package_name": "co.seabuddy.platform.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaLxLhYlmYQdIINld9walL9gxdn18LrMk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:99688209735:android:d4ce89eb398d3204458062",
+        "android_client_info": {
+          "package_name": "co.seabuddy.platform.prev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaLxLhYlmYQdIINld9walL9gxdn18LrMk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:99688209735:android:440f97ab360b7029458062",
         "android_client_info": {
           "package_name": "com.seekware.seabuddy"

@@ -54,7 +54,7 @@ export const getDynamicAppConfig = (
 ------------------------------ */
 export default ({ config }: ConfigContext): ExpoConfig => {
 	const env =
-		(process.env.APP_ENV as "development" | "preview" | "production") ??
+		(process.env.APP_VARIANT as "development" | "preview" | "production") ??
 		"development";
 
 	console.log("⚙️ Building for:", env);
@@ -156,9 +156,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 		},
 
 		plugins: [
+			"expo-router",
 			"@react-native-community/datetimepicker",
 			"expo-asset",
-			"expo-router",
 			"expo-localization",
 			"expo-font",
 			"expo-audio",
@@ -194,8 +194,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 				{
 					android: {
 						minSdkVersion: 26,
-						compileSdkVersion: 35,
-						targetSdkVersion: 35,
+						compileSdkVersion: 36,
+						targetSdkVersion: 36,
 						enableProguardInReleaseBuilds: true,
 						enableShrinkResourcesInReleaseBuilds: true,
 						enableMinifyInReleaseBuilds: true,
