@@ -51,7 +51,7 @@
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
     "@gorhom/bottom-sheet": "^5.2.6",
-    "@opentelemetry/api-logs": "^0.57.0",
+    "@opentelemetry/api-logs": "^0.212.0",
     "@opentelemetry/core": "^1.30.0",
     "@opentelemetry/exporter-logs-otlp-http": "^0.57.0",
     "@opentelemetry/otlp-exporter-base": "^0.57.0",
