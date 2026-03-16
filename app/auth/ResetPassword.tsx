@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     lineHeight:20,
     color: Colors.textPrimary,
     textAlign: "center",
-    paddingTop:10,
+    paddingTop: Platform.OS === "android" ? 0 : 10,
   },
   subtitle: {
     fontFamily: "Poppins-Regular",

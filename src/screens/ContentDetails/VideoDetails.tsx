@@ -1,6 +1,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import {
+  AppState,
   Dimensions,
   ScrollView,
   StyleSheet,
@@ -14,6 +15,7 @@ import CommonLoader from "@/src/components/CommonLoader";
 import GlobalHeader from "@/src/components/GlobalHeader";
 import VideoPlayer from "@/src/components/VideoPlayer";
 import Colors from "@/src/utils/Colors";
+import { Video } from "expo-av";
 import { BlurView } from "expo-blur";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
@@ -30,6 +32,23 @@ export default function VideosDetails({ data: fullDetails }: { data: Content }) 
   const [loading, setLoading] = useState(false);
   const { t } = useTranslation();
   const scrollViewRef = useRef<ScrollView>(null);
+  const videoRef = useRef<Video>(null);
+  const appState = useRef(AppState.currentState);
+
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", async (nextAppState) => {
+      if (appState.current === "active" && nextAppState !== "active") {
+        await videoRef.current?.pauseAsync();
+      }
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+      videoRef.current?.pauseAsync();
+    };
+  }, []);
 
   useEffect(() => {
     async function getRecommended() {

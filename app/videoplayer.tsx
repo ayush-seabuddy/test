@@ -41,6 +41,8 @@ export default function VideoPlayer({ videoSource }: VideoPlayerProps) {
       <VideoView
         player={player}
         style={[styles.video, { height: safeHeight }]}
+        allowsFullscreen
+        allowsPictureInPicture
         contentFit="cover"
         nativeControls={false}
       />

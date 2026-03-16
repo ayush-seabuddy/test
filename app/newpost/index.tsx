@@ -18,9 +18,9 @@ import {
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ResizeMode, Video } from "expo-av";
 import * as FileSystem from "expo-file-system";
 import { Image } from "expo-image";
-import { VideoView, useVideoPlayer } from "expo-video";
 import { Linking } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { ArrowRightCircle, Hash, Play, Tag, X } from "lucide-react-native";
@@ -77,25 +77,6 @@ const renderBackdrop = (props: any) => (
     opacity={0.5}
     pressBehavior="close"
   />
-);
-
-const InlineVideoPreview = React.memo(
-  ({ uri, style }: { uri: string; style: any }) => {
-    const player = useVideoPlayer({ uri }, (p) => {
-      p.loop = true;
-      p.muted = true;
-      p.play();
-    });
-
-    return (
-      <VideoView
-        player={player}
-        style={style}
-        contentFit="cover"
-        nativeControls={false}
-      />
-    );
-  },
 );
 
 const NewPostScreen = () => {
@@ -261,12 +242,23 @@ const NewPostScreen = () => {
             Linking.openSettings?.();
             return;
           }
+        } else if (type === "gallery") {
+          const ok = await requestMediaLibraryPermission(t);
+          if (!ok) {
+            showToast.error(
+              t("permissiondenied"),
+              t("medialibrarypermission_description"),
+            );
+            Linking.openSettings?.();
+            return;
+          }
         }
 
         mediaSheetRef.current?.dismiss();
         setIsLoading(true);
 
         let assets: any[] = [];
+
         if (type === "photo") {
           const image = await ImagePicker.openCamera(imagePickerOptions);
           assets = [image as any];
@@ -618,7 +610,15 @@ const NewPostScreen = () => {
             contentFit="cover"
           />
         ) : (
-          <InlineVideoPreview uri={item.uri} style={styles.mediaImage} />
+          <Video
+            source={{ uri: item.uri }}
+            style={styles.mediaImage}
+            resizeMode={ResizeMode.COVER}
+            isLooping
+            shouldPlay
+            isMuted
+            useNativeControls={false}
+          />
         )}
         {item.type === "video" && (
           <View style={styles.videoOverlay}>

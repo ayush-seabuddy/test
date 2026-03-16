@@ -1,5 +1,6 @@
 {
   "expo": {
+    "buildCacheProvider": "eas",
     "name": "SeaBuddy",
     "slug": "SeaBuddy",
     "version": "1.1.1",
@@ -16,7 +17,6 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.seekware.seabuddy",
@@ -35,10 +35,8 @@
         "NSLocationWhenInUseUsageDescription": "SeaBuddy uses your location to enhance your experience."
       }
     },
-
     "android": {
       "package": "co.seabuddy.platform",
-      "versionCode": 1,
       "googleServicesFile": "./google-services.json",
       "allowBackup": false,
       "permissions": [
@@ -53,28 +51,23 @@
         "backgroundColor": "#E6F4FE"
       }
     },
-
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
-
     "extra": {
       "router": {},
       "eas": {
         "projectId": "130f7684-8e60-49eb-8e4c-746ee8b1ff0b"
+      },
+      "owner": "seabuddyco1",
+      "runtimeVersion": {
+        "policy": "appVersion"
       }
-    },
-
-    "owner": "seabuddyco1",
-
-    "runtimeVersion": {
-      "policy": "appVersion"
     }
   }
 }

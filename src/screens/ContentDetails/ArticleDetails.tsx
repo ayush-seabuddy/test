@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  AppState,
   Dimensions,
   ScrollView,
   StyleSheet,
@@ -22,6 +23,7 @@ import CommonLoader from "@/src/components/CommonLoader";
 import { useWindowDimensions } from "react-native";
 import { ImageBackground } from "expo-image";
 import { BlurView } from "expo-blur";
+import { Video } from "expo-av";
 import { router } from "expo-router";
 import { t } from "i18next";
 import { Modal } from "react-native-paper";
@@ -40,6 +42,8 @@ export default function ArticleDetails({
   const { width } = useWindowDimensions();
 
   const scrollViewRef = useRef<ScrollView>(null);
+  const videoRef = useRef<Video>(null);
+  const appState = useRef(AppState.currentState);
 
   const [notificationDetailModalVisible, setNotificationDetailModalVisible] =
     useState(false);
@@ -71,6 +75,22 @@ export default function ArticleDetails({
       ? `${fullDetails.description.slice(0, DESCRIPTION_LIMIT)}...`
       : fullDetails?.description;
 
+  useEffect(() => {
+    const subscription = AppState.addEventListener(
+      "change",
+      async (nextAppState) => {
+        if (appState.current === "active" && nextAppState !== "active") {
+          await videoRef.current?.pauseAsync();
+        }
+        appState.current = nextAppState;
+      },
+    );
+
+    return () => {
+      subscription.remove();
+      videoRef.current?.pauseAsync();
+    };
+  }, []);
 
   useEffect(() => {
     if (!fullDetails?.id) return;

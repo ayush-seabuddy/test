@@ -5,12 +5,12 @@ index aece4f7..38e7774 100755
 @@ -1,42 +1,28 @@
  apply plugin: 'com.android.library'
 +apply plugin: 'com.facebook.react'
- 
+
  android {
 -    compileSdkVersion 34
 -    buildToolsVersion "34.0.0"
 +    compileSdk 34
- 
+
      defaultConfig {
 -        minSdkVersion 21
 -        targetSdkVersion 34
@@ -20,7 +20,7 @@ index aece4f7..38e7774 100755
 +        targetSdk 34
      }
 -}
- 
+
 -repositories {
 -    maven { url "https://jitpack.io" }
 -    maven {
@@ -32,7 +32,7 @@ index aece4f7..38e7774 100755
      }
 -    jcenter()
  }
- 
+
 -buildscript {
 -    repositories {
 -        maven { url "https://jitpack.io" }
@@ -50,7 +50,7 @@ index aece4f7..38e7774 100755
 +    mavenCentral()
 +    maven { url "https://jitpack.io" }
  }
- 
+
  dependencies {
      implementation "com.facebook.react:react-native:+"
 -    implementation 'com.google.android.gms:play-services-gcm:11.+'

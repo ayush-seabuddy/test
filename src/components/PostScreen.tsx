@@ -979,6 +979,10 @@ const PostScreen: React.FC<PostScreenProps> = ({
   };
 
   const hashtagsDisplay = useMemo(() => {
+    const visibleHashtags = isBuddyUpEvent
+      ? post.hashtags?.slice(0, 1)
+      : post.hashtags?.slice(0, 2);
+
     return (
       <View style={styles.hashtagsContainer}>
         {isBuddyUpEvent && (

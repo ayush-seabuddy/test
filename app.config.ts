@@ -1,7 +1,4 @@
 import type { ConfigContext, ExpoConfig } from "expo/config";
-
-const { version } = require("./package.json");
-
 /* -----------------------------
    EAS PROJECT SETTINGS
 ------------------------------ */
@@ -35,8 +32,8 @@ export const getDynamicAppConfig = (
 	if (environment === "preview") {
 		return {
 			name: `${APP_NAME} Preview`,
-			bundleIdentifier: `${BUNDLE_IDENTIFIER}.preview`,
-			packageName: `${PACKAGE_NAME}.preview`,
+			bundleIdentifier: `${BUNDLE_IDENTIFIER}.prev`,
+			packageName: `${PACKAGE_NAME}.prev`,
 			scheme: `${SCHEME}-preview`,
 		};
 	}
@@ -53,11 +50,44 @@ export const getDynamicAppConfig = (
    MAIN CONFIG
 ------------------------------ */
 export default ({ config }: ConfigContext): ExpoConfig => {
-	const env =
-		(process.env.APP_VARIANT as "development" | "preview" | "production") ??
+	const requestedEnv =
+		process.env.APP_VARIANT ??
+		process.env.EAS_BUILD_PROFILE ??
+		process.env.NODE_ENV ??
 		"development";
 
-	console.log("⚙️ Building for:", env);
+	const envMap = {
+		local: "development",
+		development: "development",
+		staging: "preview",
+		preview: "preview",
+		production: "production",
+	} as const;
+
+	const env = envMap[requestedEnv as keyof typeof envMap] ?? "development";
+	const appVersion = process.env.npm_package_version ?? "1.0.0";
+	const iosBuildNumber = process.env.IOS_BUILD_NUMBER ?? "1";
+	const appEnv = {
+		apiUrl: process.env.EXPO_PUBLIC_API_URL ?? process.env.API_URL ?? "",
+		socketUrl: process.env.EXPO_PUBLIC_SOCKET_URL ?? process.env.SOCKET_URL ?? "",
+		chatbotUrl: process.env.EXPO_PUBLIC_CHATBOT_URL ?? process.env.CHATBOT_URL ?? "",
+		posthogKey: process.env.EXPO_PUBLIC_POSTHOG_KEY ?? process.env.POSTHOG_KEY ?? "",
+		posthogHost: process.env.EXPO_PUBLIC_POSTHOG_HOST ?? process.env.POSTHOG_HOST ?? "",
+		posthogEnabled:
+			(
+				process.env.EXPO_PUBLIC_POSTHOG_ENABLED ??
+				process.env.POSTHOG_ENABLED ??
+				"false"
+			).toLowerCase() === "true",
+		freshchatAppId:
+			process.env.EXPO_PUBLIC_FRESHCHAT_APP_ID ?? process.env.FRESHCHAT_APP_ID ?? "",
+		freshchatAppKey:
+			process.env.EXPO_PUBLIC_FRESHCHAT_APP_KEY ?? process.env.FRESHCHAT_APP_KEY ?? "",
+		freshchatDomain:
+			process.env.EXPO_PUBLIC_FRESHCHAT_DOMAIN ?? process.env.FRESHCHAT_DOMAIN ?? "",
+	};
+
+	console.log("⚙️ Building for:", env, `(source: ${requestedEnv})`);
 
 	const isProduction = env === "production";
 	const isPreview = env === "preview";
@@ -66,10 +96,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
 	return {
 		...config,
-
 		name: dynamic.name,
 		slug: PROJECT_SLUG,
-		version,
+		version: appVersion,
 		owner: OWNER,
 		scheme: dynamic.scheme,
 		orientation: "portrait",
@@ -102,7 +131,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 			...config.ios,
 			bundleIdentifier: dynamic.bundleIdentifier,
 			supportsTablet: true,
-			buildNumber: "1",
+			buildNumber: iosBuildNumber,
 			appleTeamId: "Y38GVJM76S",
 			infoPlist: {
 				...config.ios?.infoPlist,
@@ -123,7 +152,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 		android: {
 			...config.android,
 			package: dynamic.packageName,
-			versionCode: 1,
 			googleServicesFile: "./google-services.json",
 			allowBackup: false,
 			permissions: [
@@ -143,6 +171,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 			...config.extra,
 			router: {},
 			env,
+			appEnv,
 			eas: {
 				projectId: EAS_PROJECT_ID,
 			},
@@ -156,15 +185,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 		},
 
 		plugins: [
-			"expo-router",
 			"@react-native-community/datetimepicker",
 			"expo-asset",
+			"expo-router",
 			"expo-localization",
 			"expo-font",
-			"expo-audio",
-			"expo-image",
-			"expo-sharing",
-			"expo-web-browser",
+
 			[
 				"expo-video",
 				{
@@ -211,8 +237,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 			[
 				"expo-navigation-bar",
 				{
+					// backgroundColor: "#000000",
 					barStyle: "light",
+					// borderColor: "#1f2937",
 					visibility: "visible",
+					// behavior: "inset-swipe",
+					// position: "relative",
 				},
 			],
 
@@ -224,7 +254,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 				},
 			],
 		],
-
 		experiments: {
 			...config.experiments,
 			typedRoutes: true,

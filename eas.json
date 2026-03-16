@@ -1,6 +1,6 @@
 {
   "cli": {
-    "version": "18.1.0",
+    "version": ">=18.3.0",
     "appVersionSource": "remote"
   },
   "build": {
@@ -8,10 +8,9 @@
       "channel": "preview",
       "distribution": "internal",
       "autoIncrement": true,
+      "environment": "preview",
       "env": {
-        "APP_VARIANT": "preview",
-        "EXPO_PUBLIC_API_URL": "$API_URL",
-        "EXPO_PUBLIC_SOCKET_URL": "$SOCKET_URL"
+    "APP_VARIANT": "preview"
       },
       "android": {
         "buildType": "apk"
@@ -21,16 +20,17 @@
       }
     },
     "development": {
+      "developmentClient": true,
       "channel": "development",
       "distribution": "internal",
       "autoIncrement": true,
+      "environment": "development",
       "env": {
-        "APP_VARIANT": "development",
-        "EXPO_PUBLIC_API_URL": "$API_URL",
-        "EXPO_PUBLIC_SOCKET_URL": "$SOCKET_URL"
+      "APP_VARIANT": "development"
       },
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug"
       },
       "ios": {
         "simulator": true
@@ -38,12 +38,11 @@
     },
     "production": {
       "channel": "production",
+      "environment": "production",
       "distribution": "store",
       "autoIncrement": true,
       "env": {
-        "APP_VARIANT": "production",
-        "EXPO_PUBLIC_API_URL": "$API_URL",
-        "EXPO_PUBLIC_SOCKET_URL": "$SOCKET_URL"
+      "APP_VARIANT": "production"
       },
       "android": {
         "gradleCommand": ":app:bundleRelease"

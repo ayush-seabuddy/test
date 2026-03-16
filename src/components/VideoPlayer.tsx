@@ -56,6 +56,8 @@ const VideoPlayer: React.FC<Props> = ({ uri }) => {
         style={styles.video}
         player={player}
         contentFit="contain"
+        allowsFullscreen
+        allowsPictureInPicture
         nativeControls
       />
     </View>
