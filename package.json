@@ -111,7 +111,7 @@
     "moment-timezone": "^0.6.0",
     "posthog-react-native": "^4.30.2",
     "posthog-react-native-session-replay": "^1.2.3",
-    "react": "19.1.0",
+    "react": "19.2.4",
     "react-dom": "19.1.0",
     "react-i18next": "^16.2.4",
     "react-native": "0.81.5",
@@ -158,7 +158,7 @@
   },
   "devDependencies": {
     "@react-native-community/cli": "^13.6.9",
-    "@types/react": "~19.1.0",
+    "@types/react": "~19.2.14",
     "@types/react-native-htmlview": "^0.16.6",
     "@typescript-eslint/eslint-plugin": "^8.57.0",
     "@typescript-eslint/parser": "^8.57.0",
